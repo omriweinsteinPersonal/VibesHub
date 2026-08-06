@@ -7,6 +7,8 @@ The project is currently in its architecture-definition phase. Implementation be
 ## Architecture package
 
 - [Product and business decisions](docs/architecture/00-product-decisions.md)
+- [System architecture](docs/architecture/01-system-architecture.md)
+- [Architecture decision records](docs/architecture/adrs/README.md)
 
 ## Current implementation order
 
