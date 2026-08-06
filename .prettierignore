@@ -1,0 +1,9 @@
+.expo
+.next
+.supabase
+.turbo
+coverage
+dist
+node_modules
+pnpm-lock.yaml
+apps/web/next-env.d.ts

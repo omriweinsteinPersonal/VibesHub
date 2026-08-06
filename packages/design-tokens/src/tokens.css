@@ -1,0 +1,12 @@
+:root {
+  --vh-accent: #c77652;
+  --vh-background: #fffdf9;
+  --vh-border: #e7ded4;
+  --vh-ink: #2b211c;
+  --vh-muted: #756b64;
+  --vh-surface: #f8f1e8;
+  --vh-white: #ffffff;
+  --vh-radius-card: 28px;
+  --vh-radius-control: 999px;
+  --vh-shadow-card: 0 18px 60px rgb(43 33 28 / 8%);
+}

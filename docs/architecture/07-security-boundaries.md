@@ -57,12 +57,12 @@ Boundary assumptions:
 
 ## 3. Data classification
 
-| Class | Examples | Baseline handling |
-|---|---|---|
-| Public | Published creator profile, approved recommendation, public product | CDN/cache allowed; integrity controls |
-| Internal | Search ranking inputs, aggregate platform statistics, operational states | Authenticated service/staff access |
-| Confidential | Email, private saves/follows, creator analytics, application evidence | Encryption, least privilege, no public caches |
-| Restricted | Auth credentials, service secrets, device tokens, raw moderation evidence, export files | Managed secrets/encryption, narrow access, strict retention/audit |
+| Class        | Examples                                                                                | Baseline handling                                                 |
+| ------------ | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Public       | Published creator profile, approved recommendation, public product                      | CDN/cache allowed; integrity controls                             |
+| Internal     | Search ranking inputs, aggregate platform statistics, operational states                | Authenticated service/staff access                                |
+| Confidential | Email, private saves/follows, creator analytics, application evidence                   | Encryption, least privilege, no public caches                     |
+| Restricted   | Auth credentials, service secrets, device tokens, raw moderation evidence, export files | Managed secrets/encryption, narrow access, strict retention/audit |
 
 Public data can still become sensitive when combined at scale. Bulk export and scraping controls are separate from per-record visibility.
 
@@ -346,21 +346,21 @@ Rate limits use privacy-conscious signals and provide recovery paths for legitim
 
 ## 20. Threat/control matrix
 
-| Threat | Primary controls |
-|---|---|
-| Account takeover | Secure auth, MFA for staff, session revocation, step-up |
-| IDOR/horizontal access | Ownership predicates, capability checks, authorization tests |
-| Creator impersonation | Reviewed application, verification history, reports |
-| SSRF/internal probing | Merchant allowlist, DNS/IP checks, isolated importer, egress limits |
-| Open redirect/phishing | Stored destination only, merchant domain allowlist, health checks |
-| Stored XSS | Plain text content, output encoding, CSP, no fetched HTML rendering |
-| Malicious/oversized media | Signed bounded upload, file inspection, renditions, moderation |
-| Webhook forgery/replay | Signature, timestamp, unique event ID/hash, inbox |
-| Duplicate job side effects | Outbox/inbox, idempotency, state reload, provider keys |
-| Analytics inflation | Server authority, deduplication, reconciliation, rate/risk filters |
-| Staff misuse | Least privilege, MFA, audit, step-up, evidence access logs |
-| Secret leakage | Managed secrets, environment scope, log scrubbing, scanning |
-| Database exfiltration | Private schemas, least privilege, TLS, restricted backups/exports |
+| Threat                     | Primary controls                                                    |
+| -------------------------- | ------------------------------------------------------------------- |
+| Account takeover           | Secure auth, MFA for staff, session revocation, step-up             |
+| IDOR/horizontal access     | Ownership predicates, capability checks, authorization tests        |
+| Creator impersonation      | Reviewed application, verification history, reports                 |
+| SSRF/internal probing      | Merchant allowlist, DNS/IP checks, isolated importer, egress limits |
+| Open redirect/phishing     | Stored destination only, merchant domain allowlist, health checks   |
+| Stored XSS                 | Plain text content, output encoding, CSP, no fetched HTML rendering |
+| Malicious/oversized media  | Signed bounded upload, file inspection, renditions, moderation      |
+| Webhook forgery/replay     | Signature, timestamp, unique event ID/hash, inbox                   |
+| Duplicate job side effects | Outbox/inbox, idempotency, state reload, provider keys              |
+| Analytics inflation        | Server authority, deduplication, reconciliation, rate/risk filters  |
+| Staff misuse               | Least privilege, MFA, audit, step-up, evidence access logs          |
+| Secret leakage             | Managed secrets, environment scope, log scrubbing, scanning         |
+| Database exfiltration      | Private schemas, least privilege, TLS, restricted backups/exports   |
 
 ## 21. Security verification gates
 

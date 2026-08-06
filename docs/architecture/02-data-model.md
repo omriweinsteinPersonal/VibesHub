@@ -23,16 +23,16 @@ PostgreSQL is the source of truth. Search documents, public feed projections, ag
 
 ## 2. Database schema boundaries
 
-| Schema | Purpose | Direct client access |
-|---|---|---|
-| `auth` | Supabase-managed identities and sessions | Through Supabase Auth only |
-| `storage` | Supabase-managed object metadata | Through storage policies and signed uploads |
-| `app` | Transactional VibesHub domain data | No; API owns access |
-| `analytics` | Raw business events and daily aggregates | No; API/worker owns access |
-| `audit` | Immutable privileged-action history | No; restricted staff access through API |
-| `ops` | Outbox, webhook receipts, imports, jobs, idempotency | No; API/worker only |
-| `search` | Rebuildable search documents and normalization | No; discovery module only |
-| `public` | Kept free of application tables | No exposed application schema by default |
+| Schema      | Purpose                                              | Direct client access                        |
+| ----------- | ---------------------------------------------------- | ------------------------------------------- |
+| `auth`      | Supabase-managed identities and sessions             | Through Supabase Auth only                  |
+| `storage`   | Supabase-managed object metadata                     | Through storage policies and signed uploads |
+| `app`       | Transactional VibesHub domain data                   | No; API owns access                         |
+| `analytics` | Raw business events and daily aggregates             | No; API/worker owns access                  |
+| `audit`     | Immutable privileged-action history                  | No; restricted staff access through API     |
+| `ops`       | Outbox, webhook receipts, imports, jobs, idempotency | No; API/worker only                         |
+| `search`    | Rebuildable search documents and normalization       | No; discovery module only                   |
+| `public`    | Kept free of application tables                      | No exposed application schema by default    |
 
 Supabase's `anon` and `authenticated` database roles receive no general grants on `app`, `analytics`, `audit`, `ops`, or `search`. Direct client operations are limited to Supabase Auth and explicitly authorized storage uploads. Core reads and writes use the VibesHub API.
 
@@ -88,17 +88,17 @@ erDiagram
 
 Hierarchical discovery categories.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `parent_id` | uuid nullable | Self-reference; restricted deletion |
-| `slug` | citext | Unique public slug |
-| `name_en` | text | Required English interface name |
-| `description_he` | text nullable | Hebrew editorial copy |
-| `cover_media_id` | uuid nullable | Approved image |
-| `status` | text | `draft`, `active`, `hidden`, `archived` |
-| `position` | integer | Editorial ordering |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
+| Column                     | Type          | Notes                                   |
+| -------------------------- | ------------- | --------------------------------------- |
+| `id`                       | uuid          | Primary key                             |
+| `parent_id`                | uuid nullable | Self-reference; restricted deletion     |
+| `slug`                     | citext        | Unique public slug                      |
+| `name_en`                  | text          | Required English interface name         |
+| `description_he`           | text nullable | Hebrew editorial copy                   |
+| `cover_media_id`           | uuid nullable | Approved image                          |
+| `status`                   | text          | `draft`, `active`, `hidden`, `archived` |
+| `position`                 | integer       | Editorial ordering                      |
+| `created_at`, `updated_at` | timestamptz   | Audit timestamps                        |
 
 Constraints and indexes:
 
@@ -111,17 +111,17 @@ Constraints and indexes:
 
 Canonical brand identity.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `slug` | citext | Unique public slug |
-| `name` | text | Display name |
-| `normalized_name` | text | Deduplication/search value |
-| `website_url` | text nullable | Validated HTTPS URL |
-| `logo_media_id` | uuid nullable | Approved media |
-| `status` | text | `active`, `merged`, `archived` |
-| `merged_into_id` | uuid nullable | Canonical replacement |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
+| Column                     | Type          | Notes                          |
+| -------------------------- | ------------- | ------------------------------ |
+| `id`                       | uuid          | Primary key                    |
+| `slug`                     | citext        | Unique public slug             |
+| `name`                     | text          | Display name                   |
+| `normalized_name`          | text          | Deduplication/search value     |
+| `website_url`              | text nullable | Validated HTTPS URL            |
+| `logo_media_id`            | uuid nullable | Approved media                 |
+| `status`                   | text          | `active`, `merged`, `archived` |
+| `merged_into_id`           | uuid nullable | Canonical replacement          |
+| `created_at`, `updated_at` | timestamptz   | Audit timestamps               |
 
 Brand merging updates references transactionally and preserves an alias record rather than silently deleting duplicate identity.
 
@@ -129,16 +129,16 @@ Brand merging updates references transactionally and preserves an alias record r
 
 External retailers that sell products.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `slug` | citext | Unique public identifier |
-| `name` | text | Display name |
-| `homepage_url` | text | Validated HTTPS homepage |
-| `import_adapter_key` | text nullable | Versioned adapter identifier |
-| `affiliate_provider` | text nullable | Provider key, not credentials |
-| `status` | text | `pending`, `active`, `suspended`, `archived` |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
+| Column                     | Type          | Notes                                        |
+| -------------------------- | ------------- | -------------------------------------------- |
+| `id`                       | uuid          | Primary key                                  |
+| `slug`                     | citext        | Unique public identifier                     |
+| `name`                     | text          | Display name                                 |
+| `homepage_url`             | text          | Validated HTTPS homepage                     |
+| `import_adapter_key`       | text nullable | Versioned adapter identifier                 |
+| `affiliate_provider`       | text nullable | Provider key, not credentials                |
+| `status`                   | text          | `pending`, `active`, `suspended`, `archived` |
+| `created_at`, `updated_at` | timestamptz   | Audit timestamps                             |
 
 Credentials and secrets are stored in managed secret infrastructure, never in this table.
 
@@ -146,15 +146,15 @@ Credentials and secrets are stored in managed secret infrastructure, never in th
 
 Normalized domains used by import and redirect allowlists.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `merchant_id` | uuid | Merchant foreign key |
-| `hostname` | citext | ASCII-normalized hostname |
-| `allow_import` | boolean | Product importer permission |
-| `allow_redirect` | boolean | Outbound-link permission |
-| `verified_at` | timestamptz nullable | Domain ownership/relationship check |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
+| Column                     | Type                 | Notes                               |
+| -------------------------- | -------------------- | ----------------------------------- |
+| `id`                       | uuid                 | Primary key                         |
+| `merchant_id`              | uuid                 | Merchant foreign key                |
+| `hostname`                 | citext               | ASCII-normalized hostname           |
+| `allow_import`             | boolean              | Product importer permission         |
+| `allow_redirect`           | boolean              | Outbound-link permission            |
+| `verified_at`              | timestamptz nullable | Domain ownership/relationship check |
+| `created_at`, `updated_at` | timestamptz          | Audit timestamps                    |
 
 Unique normalized `hostname`; redirects are checked after every redirect hop.
 
@@ -162,20 +162,20 @@ Unique normalized `hostname`; redirects are checked after every redirect hop.
 
 Canonical product independent of creator and merchant.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `slug` | citext | Stable public slug with uniqueness suffix |
-| `brand_id` | uuid nullable | Canonical brand |
-| `primary_category_id` | uuid | Primary category |
-| `name` | text | Canonical display name |
-| `normalized_name` | text | Search/deduplication value |
-| `description` | text nullable | Merchant/editorial description, not creator review |
-| `status` | text | `candidate`, `active`, `merged`, `archived` |
-| `merged_into_id` | uuid nullable | Canonical replacement |
-| `created_by_user_id` | uuid nullable | Import/manual provenance |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type          | Notes                                              |
+| ---------------------------------------- | ------------- | -------------------------------------------------- |
+| `id`                                     | uuid          | Primary key                                        |
+| `slug`                                   | citext        | Stable public slug with uniqueness suffix          |
+| `brand_id`                               | uuid nullable | Canonical brand                                    |
+| `primary_category_id`                    | uuid          | Primary category                                   |
+| `name`                                   | text          | Canonical display name                             |
+| `normalized_name`                        | text          | Search/deduplication value                         |
+| `description`                            | text nullable | Merchant/editorial description, not creator review |
+| `status`                                 | text          | `candidate`, `active`, `merged`, `archived`        |
+| `merged_into_id`                         | uuid nullable | Canonical replacement                              |
+| `created_by_user_id`                     | uuid nullable | Import/manual provenance                           |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz   | Lifecycle timestamps                               |
+| `version`                                | integer       | Optimistic concurrency                             |
 
 Indexes:
 
@@ -191,14 +191,14 @@ Products with published recommendations are archived or merged, not hard-deleted
 
 GTIN, EAN, UPC, MPN, merchant SKU, or another external identifier.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `product_id` | uuid | Product foreign key |
-| `merchant_id` | uuid nullable | Required for merchant-scoped SKU |
-| `kind` | text | `gtin`, `ean`, `upc`, `mpn`, `sku`, `other` |
-| `value` | text | Normalized identifier |
-| `created_at` | timestamptz | Audit timestamp |
+| Column        | Type          | Notes                                       |
+| ------------- | ------------- | ------------------------------------------- |
+| `id`          | uuid          | Primary key                                 |
+| `product_id`  | uuid          | Product foreign key                         |
+| `merchant_id` | uuid nullable | Required for merchant-scoped SKU            |
+| `kind`        | text          | `gtin`, `ean`, `upc`, `mpn`, `sku`, `other` |
+| `value`       | text          | Normalized identifier                       |
+| `created_at`  | timestamptz   | Audit timestamp                             |
 
 Uniqueness is `(kind, value)` for global identifiers and `(merchant_id, kind, value)` for merchant-scoped identifiers.
 
@@ -206,21 +206,21 @@ Uniqueness is `(kind, value)` for global identifiers and `(merchant_id, kind, va
 
 Merchant-specific purchase destination and observed commercial state.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `product_id` | uuid | Product foreign key |
-| `merchant_id` | uuid | Merchant foreign key |
-| `canonical_url` | text | Validated HTTPS URL |
-| `canonical_url_hash` | bytea | SHA-256 normalized URL hash |
-| `price_amount` | numeric(12,2) nullable | Observed price |
-| `currency` | char(3) nullable | Required when price is present |
-| `availability` | text | `unknown`, `in_stock`, `out_of_stock`, `preorder`, `discontinued` |
-| `price_source` | text | `merchant_page`, `feed`, `api`, `creator`, `staff` |
-| `observed_at` | timestamptz nullable | Freshness timestamp |
-| `status` | text | `active`, `stale`, `blocked`, `archived` |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type                   | Notes                                                             |
+| ---------------------------------------- | ---------------------- | ----------------------------------------------------------------- |
+| `id`                                     | uuid                   | Primary key                                                       |
+| `product_id`                             | uuid                   | Product foreign key                                               |
+| `merchant_id`                            | uuid                   | Merchant foreign key                                              |
+| `canonical_url`                          | text                   | Validated HTTPS URL                                               |
+| `canonical_url_hash`                     | bytea                  | SHA-256 normalized URL hash                                       |
+| `price_amount`                           | numeric(12,2) nullable | Observed price                                                    |
+| `currency`                               | char(3) nullable       | Required when price is present                                    |
+| `availability`                           | text                   | `unknown`, `in_stock`, `out_of_stock`, `preorder`, `discontinued` |
+| `price_source`                           | text                   | `merchant_page`, `feed`, `api`, `creator`, `staff`                |
+| `observed_at`                            | timestamptz nullable   | Freshness timestamp                                               |
+| `status`                                 | text                   | `active`, `stale`, `blocked`, `archived`                          |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz            | Lifecycle timestamps                                              |
+| `version`                                | integer                | Optimistic concurrency                                            |
 
 Constraints and indexes:
 
@@ -234,23 +234,23 @@ Constraints and indexes:
 
 The creator-owned review and storefront placement.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `creator_id` | uuid | Creator profile foreign key |
-| `product_id` | uuid | Canonical product foreign key |
-| `offer_id` | uuid | Selected merchant offer |
-| `review_text` | text | Full creator review |
-| `review_locale` | text | Initially `he` |
-| `creator_price_amount` | numeric(12,2) nullable | Explicit creator-entered price override |
-| `creator_price_currency` | char(3) nullable | Required with override |
-| `commercial_relationship` | text | `none`, `affiliate`, `gifted`, `sponsored`, `other` |
-| `lifecycle_status` | text | `draft`, `submitted`, `published`, `rejected`, `archived` |
-| `moderation_status` | text | `not_required`, `pending`, `approved`, `rejected`, `blocked` |
-| `position` | integer | Creator storefront ordering |
-| `published_at` | timestamptz nullable | Public ordering cursor |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type                   | Notes                                                        |
+| ---------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `id`                                     | uuid                   | Primary key                                                  |
+| `creator_id`                             | uuid                   | Creator profile foreign key                                  |
+| `product_id`                             | uuid                   | Canonical product foreign key                                |
+| `offer_id`                               | uuid                   | Selected merchant offer                                      |
+| `review_text`                            | text                   | Full creator review                                          |
+| `review_locale`                          | text                   | Initially `he`                                               |
+| `creator_price_amount`                   | numeric(12,2) nullable | Explicit creator-entered price override                      |
+| `creator_price_currency`                 | char(3) nullable       | Required with override                                       |
+| `commercial_relationship`                | text                   | `none`, `affiliate`, `gifted`, `sponsored`, `other`          |
+| `lifecycle_status`                       | text                   | `draft`, `submitted`, `published`, `rejected`, `archived`    |
+| `moderation_status`                      | text                   | `not_required`, `pending`, `approved`, `rejected`, `blocked` |
+| `position`                               | integer                | Creator storefront ordering                                  |
+| `published_at`                           | timestamptz nullable   | Public ordering cursor                                       |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz            | Lifecycle timestamps                                         |
+| `version`                                | integer                | Optimistic concurrency                                       |
 
 Constraints and indexes:
 
@@ -265,20 +265,20 @@ Constraints and indexes:
 
 Tracked outbound destination controlled by VibesHub.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Internal primary key |
-| `public_id` | uuid | Non-sequential redirect identifier |
-| `recommendation_id` | uuid | Owning recommendation |
-| `offer_id` | uuid | Target offer |
-| `destination_url` | text | Validated HTTPS destination |
-| `destination_url_hash` | bytea | Normalized hash |
-| `provider` | text nullable | Affiliate-network key |
-| `provider_reference` | text nullable | External tracking reference |
-| `status` | text | `active`, `unhealthy`, `blocked`, `archived` |
-| `last_checked_at` | timestamptz nullable | Health timestamp |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                     | Type                 | Notes                                        |
+| -------------------------- | -------------------- | -------------------------------------------- |
+| `id`                       | uuid                 | Internal primary key                         |
+| `public_id`                | uuid                 | Non-sequential redirect identifier           |
+| `recommendation_id`        | uuid                 | Owning recommendation                        |
+| `offer_id`                 | uuid                 | Target offer                                 |
+| `destination_url`          | text                 | Validated HTTPS destination                  |
+| `destination_url_hash`     | bytea                | Normalized hash                              |
+| `provider`                 | text nullable        | Affiliate-network key                        |
+| `provider_reference`       | text nullable        | External tracking reference                  |
+| `status`                   | text                 | `active`, `unhealthy`, `blocked`, `archived` |
+| `last_checked_at`          | timestamptz nullable | Health timestamp                             |
+| `created_at`, `updated_at` | timestamptz          | Audit timestamps                             |
+| `version`                  | integer              | Optimistic concurrency                       |
 
 Unique `public_id`; one active link per recommendation; redirect reads use a covering partial index on active `public_id`.
 
@@ -286,22 +286,22 @@ Unique `public_id`; one active link per recommendation; redirect reads use a cov
 
 `app.discount_codes` stores the code's identity and broad scope.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `creator_id` | uuid | Creator owner |
-| `merchant_id` | uuid | Accepting merchant |
-| `brand_id` | uuid nullable | Optional brand scope |
-| `code` | citext | Original value preserved; case-insensitive matching |
-| `label` | text nullable | Example: `15% off` |
-| `details_text` | text nullable | Creator terms/details |
-| `details_locale` | text | Initially `he` |
-| `starts_at`, `expires_at` | timestamptz nullable | Validity window |
-| `verification_status` | text | `unverified`, `creator_confirmed`, `staff_confirmed`, `merchant_verified`, `failed`, `stale` |
-| `last_verified_at` | timestamptz nullable | Freshness timestamp |
-| `lifecycle_status` | text | `draft`, `submitted`, `published`, `hidden`, `expired`, `archived` |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type                 | Notes                                                                                        |
+| ---------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| `id`                                     | uuid                 | Primary key                                                                                  |
+| `creator_id`                             | uuid                 | Creator owner                                                                                |
+| `merchant_id`                            | uuid                 | Accepting merchant                                                                           |
+| `brand_id`                               | uuid nullable        | Optional brand scope                                                                         |
+| `code`                                   | citext               | Original value preserved; case-insensitive matching                                          |
+| `label`                                  | text nullable        | Example: `15% off`                                                                           |
+| `details_text`                           | text nullable        | Creator terms/details                                                                        |
+| `details_locale`                         | text                 | Initially `he`                                                                               |
+| `starts_at`, `expires_at`                | timestamptz nullable | Validity window                                                                              |
+| `verification_status`                    | text                 | `unverified`, `creator_confirmed`, `staff_confirmed`, `merchant_verified`, `failed`, `stale` |
+| `last_verified_at`                       | timestamptz nullable | Freshness timestamp                                                                          |
+| `lifecycle_status`                       | text                 | `draft`, `submitted`, `published`, `hidden`, `expired`, `archived`                           |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz          | Lifecycle timestamps                                                                         |
+| `version`                                | integer              | Optimistic concurrency                                                                       |
 
 Supporting tables:
 
@@ -334,40 +334,40 @@ erDiagram
 
 One-to-one platform account mirror of `auth.users`.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key and `auth.users.id` foreign key |
-| `status` | text | `active`, `suspended`, `deletion_pending`, `deleted` |
-| `last_active_at` | timestamptz nullable | Coarse account activity |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type                 | Notes                                                |
+| ---------------------------------------- | -------------------- | ---------------------------------------------------- |
+| `id`                                     | uuid                 | Primary key and `auth.users.id` foreign key          |
+| `status`                                 | text                 | `active`, `suspended`, `deletion_pending`, `deleted` |
+| `last_active_at`                         | timestamptz nullable | Coarse account activity                              |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz          | Lifecycle timestamps                                 |
+| `version`                                | integer              | Optimistic concurrency                               |
 
 Authentication provider details remain in `auth`; application authorization never depends on editable profile fields.
 
 ### 5.2 `app.user_profiles`
 
-| Column | Type | Notes |
-|---|---|---|
-| `user_id` | uuid | Primary key |
-| `display_name` | text | Shopper-facing display value |
-| `avatar_media_id` | uuid nullable | Approved image |
-| `interface_locale` | text | Initially `en` |
-| `timezone` | text | IANA zone, default `Asia/Jerusalem` |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                     | Type          | Notes                               |
+| -------------------------- | ------------- | ----------------------------------- |
+| `user_id`                  | uuid          | Primary key                         |
+| `display_name`             | text          | Shopper-facing display value        |
+| `avatar_media_id`          | uuid nullable | Approved image                      |
+| `interface_locale`         | text          | Initially `en`                      |
+| `timezone`                 | text          | IANA zone, default `Asia/Jerusalem` |
+| `created_at`, `updated_at` | timestamptz   | Audit timestamps                    |
+| `version`                  | integer       | Optimistic concurrency              |
 
 ### 5.3 `app.user_capabilities`
 
 Server-controlled grants such as `creator`, `moderator`, and `administrator`. Shopper behavior is the default authenticated capability and does not require a grant row.
 
-| Column | Type | Notes |
-|---|---|---|
-| `user_id` | uuid | Account foreign key |
-| `capability` | text | Controlled capability value |
-| `granted_by_user_id` | uuid nullable | Staff actor/system |
-| `granted_at` | timestamptz | Grant time |
-| `revoked_at` | timestamptz nullable | Revocation time |
-| `reason` | text nullable | Audit context |
+| Column               | Type                 | Notes                       |
+| -------------------- | -------------------- | --------------------------- |
+| `user_id`            | uuid                 | Account foreign key         |
+| `capability`         | text                 | Controlled capability value |
+| `granted_by_user_id` | uuid nullable        | Staff actor/system          |
+| `granted_at`         | timestamptz          | Grant time                  |
+| `revoked_at`         | timestamptz nullable | Revocation time             |
+| `reason`             | text nullable        | Audit context               |
 
 Partial uniqueness allows at most one active grant per user and capability.
 
@@ -375,19 +375,19 @@ Partial uniqueness allows at most one active grant per user and capability.
 
 ### 5.4 `app.creator_applications`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `user_id` | uuid | Applicant |
-| `requested_handle` | citext | Desired storefront handle |
-| `display_name` | text | Proposed creator name |
-| `bio_text` | text | Hebrew bio |
-| `bio_locale` | text | Initially `he` |
-| `primary_category_id` | uuid | Requested category |
-| `status` | text | `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, `rejected`, `withdrawn` |
-| `submitted_at`, `decided_at` | timestamptz nullable | Workflow timestamps |
-| `created_at`, `updated_at` | timestamptz | Audit timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                       | Type                 | Notes                                                                                          |
+| ---------------------------- | -------------------- | ---------------------------------------------------------------------------------------------- |
+| `id`                         | uuid                 | Primary key                                                                                    |
+| `user_id`                    | uuid                 | Applicant                                                                                      |
+| `requested_handle`           | citext               | Desired storefront handle                                                                      |
+| `display_name`               | text                 | Proposed creator name                                                                          |
+| `bio_text`                   | text                 | Hebrew bio                                                                                     |
+| `bio_locale`                 | text                 | Initially `he`                                                                                 |
+| `primary_category_id`        | uuid                 | Requested category                                                                             |
+| `status`                     | text                 | `draft`, `submitted`, `under_review`, `changes_requested`, `approved`, `rejected`, `withdrawn` |
+| `submitted_at`, `decided_at` | timestamptz nullable | Workflow timestamps                                                                            |
+| `created_at`, `updated_at`   | timestamptz          | Audit timestamps                                                                               |
+| `version`                    | integer              | Optimistic concurrency                                                                         |
 
 Application social evidence is stored in `app.creator_application_social_links`; private staff notes are stored in review records and never returned through applicant DTOs.
 
@@ -395,34 +395,34 @@ Application social evidence is stored in `app.creator_application_social_links`;
 
 Immutable decision history.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `application_id` | uuid | Application foreign key |
-| `reviewer_user_id` | uuid | Moderator/admin |
-| `decision` | text | `started`, `changes_requested`, `approved`, `rejected` |
-| `public_message` | text nullable | Applicant-visible feedback |
-| `private_notes` | text nullable | Staff-only |
-| `created_at` | timestamptz | Decision time |
+| Column             | Type          | Notes                                                  |
+| ------------------ | ------------- | ------------------------------------------------------ |
+| `id`               | uuid          | Primary key                                            |
+| `application_id`   | uuid          | Application foreign key                                |
+| `reviewer_user_id` | uuid          | Moderator/admin                                        |
+| `decision`         | text          | `started`, `changes_requested`, `approved`, `rejected` |
+| `public_message`   | text nullable | Applicant-visible feedback                             |
+| `private_notes`    | text nullable | Staff-only                                             |
+| `created_at`       | timestamptz   | Decision time                                          |
 
 ### 5.6 `app.creator_profiles`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `user_id` | uuid | Unique account foreign key |
-| `handle` | citext | Unique public handle |
-| `display_name` | text | Public creator name |
-| `bio_text` | text | Hebrew bio |
-| `bio_locale` | text | Initially `he` |
-| `primary_category_id` | uuid | Primary discovery category |
-| `avatar_media_id` | uuid nullable | Approved media |
-| `verification_status` | text | `unverified`, `pending`, `verified`, `revoked` |
-| `publication_status` | text | `draft`, `pending`, `published`, `suspended`, `archived` |
-| `trust_tier` | text | `new`, `standard`, `trusted`, `restricted` |
-| `published_at` | timestamptz nullable | Storefront publication time |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type                 | Notes                                                    |
+| ---------------------------------------- | -------------------- | -------------------------------------------------------- |
+| `id`                                     | uuid                 | Primary key                                              |
+| `user_id`                                | uuid                 | Unique account foreign key                               |
+| `handle`                                 | citext               | Unique public handle                                     |
+| `display_name`                           | text                 | Public creator name                                      |
+| `bio_text`                               | text                 | Hebrew bio                                               |
+| `bio_locale`                             | text                 | Initially `he`                                           |
+| `primary_category_id`                    | uuid                 | Primary discovery category                               |
+| `avatar_media_id`                        | uuid nullable        | Approved media                                           |
+| `verification_status`                    | text                 | `unverified`, `pending`, `verified`, `revoked`           |
+| `publication_status`                     | text                 | `draft`, `pending`, `published`, `suspended`, `archived` |
+| `trust_tier`                             | text                 | `new`, `standard`, `trusted`, `restricted`               |
+| `published_at`                           | timestamptz nullable | Storefront publication time                              |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz          | Lifecycle timestamps                                     |
+| `version`                                | integer              | Optimistic concurrency                                   |
 
 Indexes:
 
@@ -452,28 +452,28 @@ erDiagram
 
 ### 6.1 `app.media_assets`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `owner_user_id` | uuid | Uploader/owner |
-| `media_type` | text | `image`, `video` |
-| `purpose` | text | `avatar`, `product`, `story`, `video_cover`, `category_cover`, `brand_logo`, `other` |
-| `source` | text | `upload`, `merchant_feed`, `merchant_page`, `staff`, `provider` |
-| `provider` | text | `supabase`, `mux`, or approved provider |
-| `provider_asset_id` | text nullable | External management identifier |
-| `provider_playback_id` | text nullable | Public/signed playback identifier |
-| `object_key` | text nullable | Storage key, never public bucket credentials |
-| `mime_type` | text | Validated MIME type |
-| `byte_size` | bigint nullable | Non-negative size |
-| `width`, `height` | integer nullable | Pixel dimensions |
-| `duration_ms` | integer nullable | Video duration |
-| `checksum_sha256` | bytea nullable | Deduplication/integrity |
-| `rights_source` | text nullable | Usage provenance |
-| `original_source_url` | text nullable | External provenance |
-| `processing_status` | text | `pending_upload`, `uploaded`, `processing`, `ready`, `failed`, `deleted` |
-| `moderation_status` | text | `pending`, `approved`, `rejected`, `blocked` |
-| `created_at`, `updated_at`, `deleted_at` | timestamptz | Lifecycle timestamps |
-| `version` | integer | Optimistic concurrency |
+| Column                                   | Type             | Notes                                                                                |
+| ---------------------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
+| `id`                                     | uuid             | Primary key                                                                          |
+| `owner_user_id`                          | uuid             | Uploader/owner                                                                       |
+| `media_type`                             | text             | `image`, `video`                                                                     |
+| `purpose`                                | text             | `avatar`, `product`, `story`, `video_cover`, `category_cover`, `brand_logo`, `other` |
+| `source`                                 | text             | `upload`, `merchant_feed`, `merchant_page`, `staff`, `provider`                      |
+| `provider`                               | text             | `supabase`, `mux`, or approved provider                                              |
+| `provider_asset_id`                      | text nullable    | External management identifier                                                       |
+| `provider_playback_id`                   | text nullable    | Public/signed playback identifier                                                    |
+| `object_key`                             | text nullable    | Storage key, never public bucket credentials                                         |
+| `mime_type`                              | text             | Validated MIME type                                                                  |
+| `byte_size`                              | bigint nullable  | Non-negative size                                                                    |
+| `width`, `height`                        | integer nullable | Pixel dimensions                                                                     |
+| `duration_ms`                            | integer nullable | Video duration                                                                       |
+| `checksum_sha256`                        | bytea nullable   | Deduplication/integrity                                                              |
+| `rights_source`                          | text nullable    | Usage provenance                                                                     |
+| `original_source_url`                    | text nullable    | External provenance                                                                  |
+| `processing_status`                      | text             | `pending_upload`, `uploaded`, `processing`, `ready`, `failed`, `deleted`             |
+| `moderation_status`                      | text             | `pending`, `approved`, `rejected`, `blocked`                                         |
+| `created_at`, `updated_at`, `deleted_at` | timestamptz      | Lifecycle timestamps                                                                 |
+| `version`                                | integer          | Optimistic concurrency                                                               |
 
 Provider secrets, signed URLs, and temporary upload URLs are never persisted as public media fields.
 
@@ -481,17 +481,17 @@ Provider secrets, signed URLs, and temporary upload URLs are never persisted as 
 
 Generated image or preview variants.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `media_asset_id` | uuid | Parent asset |
-| `kind` | text | `thumbnail`, `card`, `detail`, `avatar`, `story_cover`, `original` |
-| `object_key` | text | Provider storage key |
-| `format` | text | `avif`, `webp`, `jpeg`, `png` |
-| `width`, `height` | integer | Pixel dimensions |
-| `byte_size` | bigint | Size |
-| `status` | text | `processing`, `ready`, `failed`, `deleted` |
-| `created_at` | timestamptz | Audit timestamp |
+| Column            | Type        | Notes                                                              |
+| ----------------- | ----------- | ------------------------------------------------------------------ |
+| `id`              | uuid        | Primary key                                                        |
+| `media_asset_id`  | uuid        | Parent asset                                                       |
+| `kind`            | text        | `thumbnail`, `card`, `detail`, `avatar`, `story_cover`, `original` |
+| `object_key`      | text        | Provider storage key                                               |
+| `format`          | text        | `avif`, `webp`, `jpeg`, `png`                                      |
+| `width`, `height` | integer     | Pixel dimensions                                                   |
+| `byte_size`       | bigint      | Size                                                               |
+| `status`          | text        | `processing`, `ready`, `failed`, `deleted`                         |
+| `created_at`      | timestamptz | Audit timestamp                                                    |
 
 Unique `(media_asset_id, kind, format, width)` prevents duplicate variants.
 
@@ -585,17 +585,17 @@ Each action records case, staff actor, reason, public note, private note, metada
 
 Append-only privileged-action history:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `occurred_at` | timestamptz | Partition/order key |
-| `actor_user_id` | uuid nullable | Null after permitted anonymization/system action |
-| `action` | text | Stable action name |
-| `entity_type` | text | Domain entity type |
-| `entity_id` | uuid nullable | Target identifier |
-| `request_id` | uuid nullable | Trace correlation |
-| `before_data`, `after_data` | jsonb nullable | Redacted snapshots |
-| `metadata` | jsonb | Non-secret context |
+| Column                      | Type           | Notes                                            |
+| --------------------------- | -------------- | ------------------------------------------------ |
+| `id`                        | uuid           | Primary key                                      |
+| `occurred_at`               | timestamptz    | Partition/order key                              |
+| `actor_user_id`             | uuid nullable  | Null after permitted anonymization/system action |
+| `action`                    | text           | Stable action name                               |
+| `entity_type`               | text           | Domain entity type                               |
+| `entity_id`                 | uuid nullable  | Target identifier                                |
+| `request_id`                | uuid nullable  | Trace correlation                                |
+| `before_data`, `after_data` | jsonb nullable | Redacted snapshots                               |
+| `metadata`                  | jsonb          | Non-secret context                               |
 
 Audit rows cannot be updated or deleted by application roles. Sensitive values, tokens, raw passwords, full IP addresses, and secrets are never written to audit JSON.
 
@@ -621,23 +621,23 @@ Monthly partitioned append-only business events.
 
 Target UUID columns in the raw event table are intentionally denormalized and do not use cascading foreign keys. This allows bounded analytical retention and permitted anonymization after a domain record is deleted without making transactional deletion depend on old event partitions. Ingestion validates known identifiers before acceptance; aggregates use current domain visibility rules.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Event identifier |
-| `event_name` | text | Stable registered name |
-| `schema_version` | smallint | Payload version |
-| `occurred_at` | timestamptz | Client/server event time |
-| `received_at` | timestamptz | Server ingestion time |
-| `user_id` | uuid nullable | Authenticated account |
-| `anonymous_id_hash` | bytea nullable | Rotatable pseudonymous identifier |
-| `session_id` | uuid nullable | Session correlation |
-| `creator_id` | uuid nullable | Denormalized target |
-| `recommendation_id` | uuid nullable | Denormalized target |
-| `product_id` | uuid nullable | Denormalized target |
-| `affiliate_link_id` | uuid nullable | Denormalized target |
-| `source` | text | `web`, `ios`, `android`, `server`, `partner` |
-| `properties` | jsonb | Versioned non-sensitive attributes |
-| `deduplication_key` | text nullable | Idempotent external event key |
+| Column              | Type           | Notes                                        |
+| ------------------- | -------------- | -------------------------------------------- |
+| `id`                | uuid           | Event identifier                             |
+| `event_name`        | text           | Stable registered name                       |
+| `schema_version`    | smallint       | Payload version                              |
+| `occurred_at`       | timestamptz    | Client/server event time                     |
+| `received_at`       | timestamptz    | Server ingestion time                        |
+| `user_id`           | uuid nullable  | Authenticated account                        |
+| `anonymous_id_hash` | bytea nullable | Rotatable pseudonymous identifier            |
+| `session_id`        | uuid nullable  | Session correlation                          |
+| `creator_id`        | uuid nullable  | Denormalized target                          |
+| `recommendation_id` | uuid nullable  | Denormalized target                          |
+| `product_id`        | uuid nullable  | Denormalized target                          |
+| `affiliate_link_id` | uuid nullable  | Denormalized target                          |
+| `source`            | text           | `web`, `ios`, `android`, `server`, `partner` |
+| `properties`        | jsonb          | Versioned non-sensitive attributes           |
+| `deduplication_key` | text nullable  | Idempotent external event key                |
 
 Indexes:
 
@@ -663,19 +663,19 @@ Primary keys combine entity ID and metric date/window. Workers use idempotent up
 
 Domain changes and their asynchronous side effects are committed atomically.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | Event and idempotency identifier |
-| `topic` | text | Stable event topic |
-| `schema_version` | smallint | Payload version |
-| `aggregate_type` | text | Domain owner |
-| `aggregate_id` | uuid | Domain record |
-| `payload` | jsonb | Minimal event data |
-| `occurred_at` | timestamptz | Domain event time |
-| `available_at` | timestamptz | Earliest dispatch |
-| `dispatched_at` | timestamptz nullable | Successful queue publication |
-| `attempt_count` | integer | Dispatch attempts |
-| `last_error` | text nullable | Redacted failure summary |
+| Column           | Type                 | Notes                            |
+| ---------------- | -------------------- | -------------------------------- |
+| `id`             | uuid                 | Event and idempotency identifier |
+| `topic`          | text                 | Stable event topic               |
+| `schema_version` | smallint             | Payload version                  |
+| `aggregate_type` | text                 | Domain owner                     |
+| `aggregate_id`   | uuid                 | Domain record                    |
+| `payload`        | jsonb                | Minimal event data               |
+| `occurred_at`    | timestamptz          | Domain event time                |
+| `available_at`   | timestamptz          | Earliest dispatch                |
+| `dispatched_at`  | timestamptz nullable | Successful queue publication     |
+| `attempt_count`  | integer              | Dispatch attempts                |
+| `last_error`     | text nullable        | Redacted failure summary         |
 
 The API writes state and outbox event in one transaction. A dispatcher publishes the event to Cloud Tasks and marks it dispatched. Consumers remain idempotent because dispatch can occur more than once.
 
@@ -694,59 +694,59 @@ Operational error fields store stable codes and redacted summaries rather than t
 
 `search.documents` is a rebuildable projection.
 
-| Column | Type | Notes |
-|---|---|---|
-| `entity_type` | text | `creator`, `product`, `brand`, `category` |
-| `entity_id` | uuid | Source record |
-| `locale` | text | Search document locale |
-| `title` | text | Primary display/search value |
-| `subtitle` | text nullable | Secondary value |
-| `body` | text | Normalized searchable content |
-| `keywords` | text[] | Alternate spellings/tags |
-| `category_ids` | uuid[] | Filtering projection |
-| `popularity_score` | numeric | Derived ranking input |
-| `search_vector` | tsvector | PostgreSQL full-text document |
-| `source_updated_at` | timestamptz | Projection freshness |
-| `indexed_at` | timestamptz | Build time |
+| Column              | Type          | Notes                                     |
+| ------------------- | ------------- | ----------------------------------------- |
+| `entity_type`       | text          | `creator`, `product`, `brand`, `category` |
+| `entity_id`         | uuid          | Source record                             |
+| `locale`            | text          | Search document locale                    |
+| `title`             | text          | Primary display/search value              |
+| `subtitle`          | text nullable | Secondary value                           |
+| `body`              | text          | Normalized searchable content             |
+| `keywords`          | text[]        | Alternate spellings/tags                  |
+| `category_ids`      | uuid[]        | Filtering projection                      |
+| `popularity_score`  | numeric       | Derived ranking input                     |
+| `search_vector`     | tsvector      | PostgreSQL full-text document             |
+| `source_updated_at` | timestamptz   | Projection freshness                      |
+| `indexed_at`        | timestamptz   | Build time                                |
 
 Primary key `(entity_type, entity_id, locale)`. GIN index on `search_vector`, trigram indexes on normalized title fields, and measured filter indexes. If Algolia is added, this table remains the provider-neutral export source.
 
 ## 12. Module ownership map
 
-| Module | Owned tables |
-|---|---|
-| Identity | users, user_profiles, user_capabilities, user_consents |
-| Creator applications | creator_applications, application social links, application reviews |
-| Creators | creator_profiles, creator_categories, creator_social_links, creator_verifications |
-| Catalog | categories, brands, merchants, merchant_domains, products, identifiers, offers, product_media |
-| Recommendations | recommendations, recommendation_media, recommendation_discount_codes |
-| Discounts | discount_codes, code products, code verifications |
-| Media | media_assets, media_renditions, creator_videos |
-| Social | creator_follows, saved_products, collections, collection_items |
-| Affiliate links | affiliate_links, link health checks |
-| Analytics | raw events, daily metrics, trending scores |
-| Moderation | reports, cases, actions |
-| Notifications | preferences, device installations, notifications |
-| Operations | outbox, idempotency, webhooks, imports, jobs, deletion requests |
-| Audit | audit entries |
-| Discovery | search documents and public read projections |
+| Module               | Owned tables                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| Identity             | users, user_profiles, user_capabilities, user_consents                                        |
+| Creator applications | creator_applications, application social links, application reviews                           |
+| Creators             | creator_profiles, creator_categories, creator_social_links, creator_verifications             |
+| Catalog              | categories, brands, merchants, merchant_domains, products, identifiers, offers, product_media |
+| Recommendations      | recommendations, recommendation_media, recommendation_discount_codes                          |
+| Discounts            | discount_codes, code products, code verifications                                             |
+| Media                | media_assets, media_renditions, creator_videos                                                |
+| Social               | creator_follows, saved_products, collections, collection_items                                |
+| Affiliate links      | affiliate_links, link health checks                                                           |
+| Analytics            | raw events, daily metrics, trending scores                                                    |
+| Moderation           | reports, cases, actions                                                                       |
+| Notifications        | preferences, device installations, notifications                                              |
+| Operations           | outbox, idempotency, webhooks, imports, jobs, deletion requests                               |
+| Audit                | audit entries                                                                                 |
+| Discovery            | search documents and public read projections                                                  |
 
 Only the owning module writes its tables. Other modules use an exported service, query interface, or domain event. Cross-module database foreign keys preserve integrity but do not grant arbitrary write ownership.
 
 ## 13. Foreign-key deletion policy
 
-| Parent | Child behavior |
-|---|---|
-| Auth user deleted | Account enters deletion workflow before auth identity removal |
-| User profile | Cascade after export/retention workflow |
-| Creator profile | Archive public content; do not silently cascade published recommendations |
-| Product | Restrict deletion; merge or archive if referenced |
-| Offer | Restrict while active recommendation links exist |
-| Recommendation | Soft-delete/archive; placements and code joins can cascade after retention |
-| Media asset | Restrict while referenced; cleanup workflow removes provider asset |
-| Discount code | Archive; verification history retained |
-| Analytics target | Raw events retain opaque target UUID after domain deletion where policy permits |
-| Audit actor | Set null/anonymize when legally permitted; audit action remains |
+| Parent            | Child behavior                                                                  |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Auth user deleted | Account enters deletion workflow before auth identity removal                   |
+| User profile      | Cascade after export/retention workflow                                         |
+| Creator profile   | Archive public content; do not silently cascade published recommendations       |
+| Product           | Restrict deletion; merge or archive if referenced                               |
+| Offer             | Restrict while active recommendation links exist                                |
+| Recommendation    | Soft-delete/archive; placements and code joins can cascade after retention      |
+| Media asset       | Restrict while referenced; cleanup workflow removes provider asset              |
+| Discount code     | Archive; verification history retained                                          |
+| Analytics target  | Raw events retain opaque target UUID after domain deletion where policy permits |
+| Audit actor       | Set null/anonymize when legally permitted; audit action remains                 |
 
 Hard cascading is reserved for owned join rows and private subordinate records. Public or audited records use explicit lifecycle transitions.
 

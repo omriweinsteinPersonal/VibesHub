@@ -90,19 +90,19 @@ POST /v1/internal/jobs/{jobType}
 
 ## 5. Retry and execution policy
 
-| Job class | Initial timeout | Attempts | Backoff | Concurrency concern |
-|---|---:|---:|---|---|
-| Small projection/cache | 30 seconds | 5 | Exponential + jitter | Entity key |
-| Product import | 60 seconds | 5 | Exponential + jitter | Merchant/domain |
-| Image finalize | 60 seconds | 5 | Exponential + jitter | Asset ID |
-| Video webhook processing | 30 seconds | 8 | Exponential + jitter | Provider event/asset |
-| Link health | 30 seconds | 4 | Exponential + jitter | Domain/link |
-| Code verification | 60 seconds | 4 | Configurable | Merchant/code |
-| Analytics aggregation | 10 minutes | 5 | Exponential | Date partition |
-| Trending computation | 5 minutes | 4 | Exponential | Window |
-| Notification delivery | 30 seconds | 6 | Provider-aware | User/channel |
-| Account export/deletion | 15 minutes | 8 | Long exponential | User ID |
-| Backfill | Dedicated job limit | Operator-controlled | Checkpointed | Partition/range |
+| Job class                |     Initial timeout |            Attempts | Backoff              | Concurrency concern  |
+| ------------------------ | ------------------: | ------------------: | -------------------- | -------------------- |
+| Small projection/cache   |          30 seconds |                   5 | Exponential + jitter | Entity key           |
+| Product import           |          60 seconds |                   5 | Exponential + jitter | Merchant/domain      |
+| Image finalize           |          60 seconds |                   5 | Exponential + jitter | Asset ID             |
+| Video webhook processing |          30 seconds |                   8 | Exponential + jitter | Provider event/asset |
+| Link health              |          30 seconds |                   4 | Exponential + jitter | Domain/link          |
+| Code verification        |          60 seconds |                   4 | Configurable         | Merchant/code        |
+| Analytics aggregation    |          10 minutes |                   5 | Exponential          | Date partition       |
+| Trending computation     |           5 minutes |                   4 | Exponential          | Window               |
+| Notification delivery    |          30 seconds |                   6 | Provider-aware       | User/channel         |
+| Account export/deletion  |          15 minutes |                   8 | Long exponential     | User ID              |
+| Backfill                 | Dedicated job limit | Operator-controlled | Checkpointed         | Partition/range      |
 
 These are starting policies and remain infrastructure configuration, not domain constants. Every handler also enforces its own dependency timeouts below the overall job timeout.
 
@@ -110,64 +110,64 @@ These are starting policies and remain infrastructure configuration, not domain 
 
 ### Catalog and imports
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `catalog.product-import.requested.v1` | Creator import API | Import attempt ID | Editable product/offer candidate |
-| `catalog.product-image.ingest.v1` | Import worker/admin | Import + source image hash | Controlled media asset |
-| `catalog.offer.refresh.v1` | Scheduler/staff | Offer + refresh window | Updated freshness/availability |
-| `catalog.product.merge.v1` | Admin command | Merge operation ID | References moved to canonical product |
+| Job type                              | Producer            | Idempotency scope          | Outcome                               |
+| ------------------------------------- | ------------------- | -------------------------- | ------------------------------------- |
+| `catalog.product-import.requested.v1` | Creator import API  | Import attempt ID          | Editable product/offer candidate      |
+| `catalog.product-image.ingest.v1`     | Import worker/admin | Import + source image hash | Controlled media asset                |
+| `catalog.offer.refresh.v1`            | Scheduler/staff     | Offer + refresh window     | Updated freshness/availability        |
+| `catalog.product.merge.v1`            | Admin command       | Merge operation ID         | References moved to canonical product |
 
 Product importing is isolated from privileged networks and follows the URL-validation controls in the security document.
 
 ### Media
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `media.image.finalize.v1` | Upload completion API | Media asset ID + checksum | Validated image and renditions |
-| `media.video.event-received.v1` | Mux webhook inbox | Provider event ID | Updated video processing state |
-| `media.asset.moderate.v1` | Media ready event | Asset + moderation policy | Approved/rejected/queued state |
-| `media.asset.delete.v1` | Deletion workflow | Media asset + deletion version | Provider and storage cleanup |
-| `media.abandoned-upload.cleanup.v1` | Scheduler | Time window | Expired pending upload cleanup |
+| Job type                            | Producer              | Idempotency scope              | Outcome                        |
+| ----------------------------------- | --------------------- | ------------------------------ | ------------------------------ |
+| `media.image.finalize.v1`           | Upload completion API | Media asset ID + checksum      | Validated image and renditions |
+| `media.video.event-received.v1`     | Mux webhook inbox     | Provider event ID              | Updated video processing state |
+| `media.asset.moderate.v1`           | Media ready event     | Asset + moderation policy      | Approved/rejected/queued state |
+| `media.asset.delete.v1`             | Deletion workflow     | Media asset + deletion version | Provider and storage cleanup   |
+| `media.abandoned-upload.cleanup.v1` | Scheduler             | Time window                    | Expired pending upload cleanup |
 
 ### Discovery and caching
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `discovery.projection.refresh.v1` | Domain publication event | Entity + source version | Updated public card/read model |
-| `search.document.upsert.v1` | Domain publication event | Entity + source version + locale | Updated search document |
-| `search.document.delete.v1` | Hide/archive event | Entity + source version | Removed search document |
-| `web.cache.invalidate.v1` | Projection ready event | Invalidation set + version | Revalidated public pages/tags |
-| `discovery.trending.compute.v1` | Scheduler | Window + checkpoint | New trending score snapshot |
+| Job type                          | Producer                 | Idempotency scope                | Outcome                        |
+| --------------------------------- | ------------------------ | -------------------------------- | ------------------------------ |
+| `discovery.projection.refresh.v1` | Domain publication event | Entity + source version          | Updated public card/read model |
+| `search.document.upsert.v1`       | Domain publication event | Entity + source version + locale | Updated search document        |
+| `search.document.delete.v1`       | Hide/archive event       | Entity + source version          | Removed search document        |
+| `web.cache.invalidate.v1`         | Projection ready event   | Invalidation set + version       | Revalidated public pages/tags  |
+| `discovery.trending.compute.v1`   | Scheduler                | Window + checkpoint              | New trending score snapshot    |
 
 Cache invalidation occurs after the public projection is ready, not immediately after the source transaction, preventing the web tier from refetching an old projection.
 
 ### Discounts and links
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `discount.code.expire.v1` | Scheduler | Code + expiry | Hidden/expired code |
-| `discount.code.mark-stale.v1` | Scheduler | Code + policy window | Stale verification state |
-| `discount.code.verify.v1` | Creator/staff/scheduler | Verification attempt ID | Verification history/status |
-| `affiliate.link.health-check.v1` | Scheduler/staff | Link + check window | Health result and possible block |
+| Job type                         | Producer                | Idempotency scope       | Outcome                          |
+| -------------------------------- | ----------------------- | ----------------------- | -------------------------------- |
+| `discount.code.expire.v1`        | Scheduler               | Code + expiry           | Hidden/expired code              |
+| `discount.code.mark-stale.v1`    | Scheduler               | Code + policy window    | Stale verification state         |
+| `discount.code.verify.v1`        | Creator/staff/scheduler | Verification attempt ID | Verification history/status      |
+| `affiliate.link.health-check.v1` | Scheduler/staff         | Link + check window     | Health result and possible block |
 
 Generic code verification does not automate checkout unless a merchant-specific, legally approved adapter exists.
 
 ### Analytics
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `analytics.events.ingest.v1` | Client batch/redirect/domain events | Batch or event IDs | Validated raw events |
-| `analytics.daily.aggregate.v1` | Scheduler | Metric date + aggregate version | Daily entity metrics |
-| `analytics.raw-retention.apply.v1` | Scheduler | Retention cutoff | Deleted/exported partitions |
-| `analytics.partition.ensure.v1` | Scheduler | Future month | Ready event partition/indexes |
+| Job type                           | Producer                            | Idempotency scope               | Outcome                       |
+| ---------------------------------- | ----------------------------------- | ------------------------------- | ----------------------------- |
+| `analytics.events.ingest.v1`       | Client batch/redirect/domain events | Batch or event IDs              | Validated raw events          |
+| `analytics.daily.aggregate.v1`     | Scheduler                           | Metric date + aggregate version | Daily entity metrics          |
+| `analytics.raw-retention.apply.v1` | Scheduler                           | Retention cutoff                | Deleted/exported partitions   |
+| `analytics.partition.ensure.v1`    | Scheduler                           | Future month                    | Ready event partition/indexes |
 
 ### Notifications and accounts
 
-| Job type | Producer | Idempotency scope | Outcome |
-|---|---|---|---|
-| `notification.dispatch.v1` | Domain notification event | Notification + channel | Delivery attempt/result |
-| `account.data-export.v1` | User request | Export operation ID | Expiring encrypted export |
-| `account.delete.v1` | Scheduled deletion request | User + deletion version | Completed deletion/anonymization |
+| Job type                   | Producer                   | Idempotency scope       | Outcome                          |
+| -------------------------- | -------------------------- | ----------------------- | -------------------------------- |
+| `notification.dispatch.v1` | Domain notification event  | Notification + channel  | Delivery attempt/result          |
+| `account.data-export.v1`   | User request               | Export operation ID     | Expiring encrypted export        |
+| `account.delete.v1`        | Scheduled deletion request | User + deletion version | Completed deletion/anonymization |
 
 ## 7. Product import state machine
 
@@ -238,15 +238,15 @@ Unknown event types are recorded with a safe status and monitored; they do not r
 
 ## 12. Scheduling baseline
 
-| Schedule | Work |
-|---|---|
-| Continuous | Outbox dispatch, webhooks, imports, media, projection refresh |
-| Every 15 minutes | Expire due codes; refresh operational alerts |
-| Hourly | Incremental analytics aggregates; trending recomputation |
-| Daily | Mark stale codes, schedule link checks, clean abandoned uploads |
-| Weekly/configurable | Code verification reminders/checks by merchant policy |
-| Before month boundary | Create and verify next analytics partition |
-| Retention schedule | Export/drop eligible raw analytics partitions |
+| Schedule              | Work                                                            |
+| --------------------- | --------------------------------------------------------------- |
+| Continuous            | Outbox dispatch, webhooks, imports, media, projection refresh   |
+| Every 15 minutes      | Expire due codes; refresh operational alerts                    |
+| Hourly                | Incremental analytics aggregates; trending recomputation        |
+| Daily                 | Mark stale codes, schedule link checks, clean abandoned uploads |
+| Weekly/configurable   | Code verification reminders/checks by merchant policy           |
+| Before month boundary | Create and verify next analytics partition                      |
+| Retention schedule    | Export/drop eligible raw analytics partitions                   |
 
 Schedules are staggered and sharded to avoid a single burst at the top of an hour.
 

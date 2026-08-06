@@ -1,0 +1,10 @@
+.git
+.github
+.next
+.turbo
+**/.expo
+**/dist
+**/node_modules
+coverage
+docs
+*.log
