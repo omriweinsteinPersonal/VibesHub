@@ -10,6 +10,10 @@ The project is currently in its architecture-definition phase. Implementation be
 - [System architecture](docs/architecture/01-system-architecture.md)
 - [Data model and ERD](docs/architecture/02-data-model.md)
 - [Database migration strategy](docs/architecture/03-database-migrations.md)
+- [HTTP API contracts](docs/architecture/04-api-contracts.md)
+- [Background jobs](docs/architecture/05-background-jobs.md)
+- [Analytics event contracts](docs/architecture/06-analytics-events.md)
+- [Security boundaries](docs/architecture/07-security-boundaries.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
 
 ## Current implementation order
