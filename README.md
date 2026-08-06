@@ -8,6 +8,8 @@ The project is currently in its architecture-definition phase. Implementation be
 
 - [Product and business decisions](docs/architecture/00-product-decisions.md)
 - [System architecture](docs/architecture/01-system-architecture.md)
+- [Data model and ERD](docs/architecture/02-data-model.md)
+- [Database migration strategy](docs/architecture/03-database-migrations.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
 
 ## Current implementation order
