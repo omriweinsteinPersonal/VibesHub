@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   creatorRecommendationInputSchema,
+  creatorRecommendationMoveInputSchema,
   creatorCardSchema,
   creatorApplicationInputSchema,
   creatorDirectoryQuerySchema,
@@ -129,6 +130,18 @@ describe('shared API contracts', () => {
         contentType: 'image/jpeg',
         fileSizeBytes: 5 * 1_024 * 1_024 + 1,
       }),
+    ).toThrow();
+  });
+
+  it('allows only one bounded storefront move direction', () => {
+    expect(creatorRecommendationMoveInputSchema.parse({ direction: 'up' })).toEqual({
+      direction: 'up',
+    });
+    expect(() =>
+      creatorRecommendationMoveInputSchema.parse({ direction: 'first' }),
+    ).toThrow();
+    expect(() =>
+      creatorRecommendationMoveInputSchema.parse({ direction: 'down', id: 'extra' }),
     ).toThrow();
   });
 

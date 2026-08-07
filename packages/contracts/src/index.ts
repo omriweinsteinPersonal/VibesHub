@@ -161,6 +161,12 @@ export const creatorRecommendationPatchSchema = creatorRecommendationInputFields
     'At least one recommendation field is required',
   );
 
+export const creatorRecommendationMoveInputSchema = z
+  .object({
+    direction: z.enum(['up', 'down']),
+  })
+  .strict();
+
 export const recommendationDiscountSchema = z
   .object({
     code: z.string().trim().min(1).max(50),
@@ -197,6 +203,7 @@ export const recommendationCardSchema = z
 export const creatorRecommendationSchema = recommendationCardSchema
   .extend({
     categoryId: idSchema,
+    position: z.int().nonnegative(),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
   })
   .strict();
@@ -443,6 +450,9 @@ export type CreatorDirectoryQuery = z.infer<typeof creatorDirectoryQuerySchema>;
 export type CommercialRelationship = z.infer<typeof commercialRelationshipSchema>;
 export type CreatorRecommendationInput = z.infer<typeof creatorRecommendationInputSchema>;
 export type CreatorRecommendationPatch = z.infer<typeof creatorRecommendationPatchSchema>;
+export type CreatorRecommendationMoveInput = z.infer<
+  typeof creatorRecommendationMoveInputSchema
+>;
 export type CreatorRecommendation = z.infer<typeof creatorRecommendationSchema>;
 export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;

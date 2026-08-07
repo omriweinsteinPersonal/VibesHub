@@ -54,6 +54,7 @@ interface RecommendationRow {
   imageUrl: string;
   lifecycle: RecommendationCard['lifecycle'];
   merchantHostname: string;
+  position: number;
   publishedAt: string | null;
   priceAmountMinor: string;
   productId: string;
@@ -68,6 +69,7 @@ interface RecommendationRow {
 
 export interface CreatorRecommendationRecord extends RecommendationCard {
   categoryId: string;
+  position: number;
   productUrl: string;
 }
 
@@ -93,7 +95,7 @@ export class RecommendationRepository {
   ): Promise<CreatorRecommendationRecord | null> {
     return this.database.sql.begin(async (transaction) => {
       const sql = transaction as unknown as DatabaseClient;
-      const creator = await this.findCreator(sql, userId);
+      const creator = await this.findCreator(sql, userId, true);
       if (!creator) return null;
       const image = await this.resolveImageSource(sql, userId, input);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
@@ -108,7 +110,8 @@ export class RecommendationRepository {
           video_url,
           discount_code,
           discount_label,
-          commercial_relationship
+          commercial_relationship,
+          position
         ) values (
           ${creator.id},
           ${catalog.productId},
@@ -119,7 +122,14 @@ export class RecommendationRepository {
           ${input.videoUrl ?? null},
           ${input.discountCode?.toUpperCase() ?? null},
           ${input.discountLabel ?? null},
-          ${input.commercialRelationship}
+          ${input.commercialRelationship},
+          (
+            select coalesce(max(existing.position), -1) + 1
+            from app.recommendations existing
+            where existing.creator_id = ${creator.id}
+              and existing.lifecycle <> 'archived'
+              and existing.deleted_at is null
+          )
         )
         returning id
       `;
@@ -146,16 +156,25 @@ export class RecommendationRepository {
         and recommendation.deleted_at is null
         and (
           ${cursor?.id ?? null}::uuid is null
-          or recommendation.created_at < ${cursor?.timestamp ?? null}::timestamptz
+          or (recommendation.lifecycle = 'archived')::integer
+            > ${cursor?.archived ? 1 : 0}
           or (
-            recommendation.created_at = ${cursor?.timestamp ?? null}::timestamptz
-            and recommendation.id < ${cursor?.id ?? null}::uuid
+            (recommendation.lifecycle = 'archived') = ${cursor?.archived ?? false}
+            and recommendation.position > ${cursor?.position ?? 0}
+          )
+          or (
+            (recommendation.lifecycle = 'archived') = ${cursor?.archived ?? false}
+            and recommendation.position = ${cursor?.position ?? 0}
+            and recommendation.id > ${cursor?.id ?? null}::uuid
           )
         )
-      order by recommendation.created_at desc, recommendation.id desc
+      order by
+        (recommendation.lifecycle = 'archived')::integer,
+        recommendation.position,
+        recommendation.id
       limit ${limit + 1}
     `;
-    return mapCreatorPage(rows, limit, 'creator', this.redirectBaseUrl, 'createdAt');
+    return mapCreatorPage(rows, limit, 'creator', this.redirectBaseUrl);
   }
 
   async listPublished(
@@ -183,22 +202,16 @@ export class RecommendationRepository {
         )
         and (
           ${cursor?.id ?? null}::uuid is null
-          or recommendation.published_at < ${cursor?.timestamp ?? null}::timestamptz
+          or recommendation.position > ${cursor?.position ?? 0}
           or (
-            recommendation.published_at = ${cursor?.timestamp ?? null}::timestamptz
-            and recommendation.id < ${cursor?.id ?? null}::uuid
+            recommendation.position = ${cursor?.position ?? 0}
+            and recommendation.id > ${cursor?.id ?? null}::uuid
           )
         )
-      order by recommendation.published_at desc, recommendation.id desc
+      order by recommendation.position, recommendation.id
       limit ${limit + 1}
     `;
-    return mapPublicPage(
-      rows,
-      limit,
-      `storefront:${handle}`,
-      this.redirectBaseUrl,
-      'publishedAt',
-    );
+    return mapPublicPage(rows, limit, `storefront:${handle}`, this.redirectBaseUrl);
   }
 
   async replaceOwned(
@@ -329,17 +342,169 @@ export class RecommendationRepository {
     });
   }
 
+  async archiveOwned(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+  ): Promise<CreatorRecommendationRecord | null> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const creator = await this.findCreator(sql, userId, true);
+      if (!creator) return null;
+      const [updated] = await sql<{ id: string }[]>`
+        update app.recommendations
+        set
+          lifecycle = 'archived',
+          published_at = null,
+          version = version + 1
+        where id = ${id}
+          and creator_id = ${creator.id}
+          and version = ${expectedVersion}
+          and lifecycle <> 'archived'
+          and deleted_at is null
+        returning id
+      `;
+      if (!updated) return null;
+      await sql`
+        update app.affiliate_links
+        set status = 'archived', version = version + 1
+        where recommendation_id = ${id}
+          and status <> 'archived'
+      `;
+      return this.findOwnedWithSql(sql, updated.id, userId);
+    });
+  }
+
+  async restoreOwned(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+  ): Promise<CreatorRecommendationRecord | null> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const creator = await this.findCreator(sql, userId, true);
+      if (!creator) return null;
+      const [updated] = await sql<{ id: string }[]>`
+        update app.recommendations recommendation
+        set
+          lifecycle = 'draft',
+          position = (
+            select coalesce(max(existing.position), -1) + 1
+            from app.recommendations existing
+            where existing.creator_id = ${creator.id}
+              and existing.lifecycle <> 'archived'
+              and existing.deleted_at is null
+          ),
+          version = recommendation.version + 1
+        where recommendation.id = ${id}
+          and recommendation.creator_id = ${creator.id}
+          and recommendation.version = ${expectedVersion}
+          and recommendation.lifecycle = 'archived'
+          and recommendation.deleted_at is null
+        returning recommendation.id
+      `;
+      if (!updated) return null;
+      const [link] = await sql<{ id: string }[]>`
+        update app.affiliate_links
+        set status = 'blocked', version = version + 1
+        where recommendation_id = ${id}
+          and status = 'archived'
+        returning id
+      `;
+      if (!link) throw new Error('AFFILIATE_LINK_MISSING');
+      return this.findOwnedWithSql(sql, updated.id, userId);
+    });
+  }
+
+  async moveOwned(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+    direction: 'up' | 'down',
+  ): Promise<CreatorRecommendationRecord | null> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const creator = await this.findCreator(sql, userId, true);
+      if (!creator) return null;
+      const [current] = await sql<{ id: string; position: number }[]>`
+        select id, position
+        from app.recommendations
+        where id = ${id}
+          and creator_id = ${creator.id}
+          and version = ${expectedVersion}
+          and lifecycle <> 'archived'
+          and deleted_at is null
+        for update
+      `;
+      if (!current) return null;
+
+      const [neighbor] =
+        direction === 'up'
+          ? await sql<{ id: string; position: number }[]>`
+              select id, position
+              from app.recommendations
+              where creator_id = ${creator.id}
+                and lifecycle <> 'archived'
+                and deleted_at is null
+                and (
+                  position < ${current.position}
+                  or (position = ${current.position} and id < ${current.id})
+                )
+              order by position desc, id desc
+              limit 1
+              for update
+            `
+          : await sql<{ id: string; position: number }[]>`
+              select id, position
+              from app.recommendations
+              where creator_id = ${creator.id}
+                and lifecycle <> 'archived'
+                and deleted_at is null
+                and (
+                  position > ${current.position}
+                  or (position = ${current.position} and id > ${current.id})
+                )
+              order by position, id
+              limit 1
+              for update
+            `;
+      if (!neighbor) return this.findOwnedWithSql(sql, current.id, userId);
+
+      await sql`
+        update app.recommendations
+        set
+          position = case
+            when id = ${current.id} then ${neighbor.position}
+            else ${current.position}
+          end,
+          version = version + 1
+        where id in (${current.id}, ${neighbor.id})
+      `;
+      return this.findOwnedWithSql(sql, current.id, userId);
+    });
+  }
+
   private async findCreator(
     sql: DatabaseClient,
     userId: string,
+    lock = false,
   ): Promise<CreatorIdRow | null> {
-    const [creator] = await sql<CreatorIdRow[]>`
-      select id
-      from app.creator_profiles
-      where user_id = ${userId}
-        and status = 'approved'
-        and published_at is not null
-    `;
+    const [creator] = lock
+      ? await sql<CreatorIdRow[]>`
+          select id
+          from app.creator_profiles
+          where user_id = ${userId}
+            and status = 'approved'
+            and published_at is not null
+          for update
+        `
+      : await sql<CreatorIdRow[]>`
+          select id
+          from app.creator_profiles
+          where user_id = ${userId}
+            and status = 'approved'
+            and published_at is not null
+        `;
     return creator ?? null;
   }
 
@@ -370,6 +535,7 @@ export class RecommendationRepository {
         recommendation.discount_label as "discountLabel",
         recommendation.commercial_relationship as "commercialRelationship",
         recommendation.lifecycle,
+        recommendation.position,
         recommendation.published_at as "publishedAt",
         recommendation.version,
         recommendation.created_at as "createdAt",
@@ -392,7 +558,6 @@ export class RecommendationRepository {
       join app.merchants merchant on merchant.id = offer.merchant_id
       join app.affiliate_links affiliate_link
         on affiliate_link.recommendation_id = recommendation.id
-       and affiliate_link.status <> 'archived'
       join app.merchant_domains merchant_domain
         on merchant_domain.id = affiliate_link.merchant_domain_id
        and merchant_domain.merchant_id = affiliate_link.merchant_id
@@ -563,9 +728,8 @@ function mapCreatorPage(
   limit: number,
   scope: string,
   redirectBaseUrl: string,
-  timestampField: 'createdAt' | 'publishedAt',
 ): CreatorRecommendationPage {
-  return mapPage(rows, limit, scope, timestampField, (row) =>
+  return mapPage(rows, limit, scope, (row) =>
     mapCreatorRecommendation(row, redirectBaseUrl),
   );
 }
@@ -575,9 +739,8 @@ function mapPublicPage(
   limit: number,
   scope: string,
   redirectBaseUrl: string,
-  timestampField: 'createdAt' | 'publishedAt',
 ): RecommendationPage {
-  return mapPage(rows, limit, scope, timestampField, (row) =>
+  return mapPage(rows, limit, scope, (row) =>
     mapRecommendationCard(row, redirectBaseUrl),
   );
 }
@@ -586,18 +749,23 @@ function mapPage<T>(
   rows: RecommendationRow[],
   limit: number,
   scope: string,
-  timestampField: 'createdAt' | 'publishedAt',
   mapper: (row: RecommendationRow) => T,
 ): { items: T[]; nextCursor: string | null } {
   const hasMore = rows.length > limit;
   const visibleRows = hasMore ? rows.slice(0, limit) : rows;
   const last = visibleRows.at(-1);
-  const timestamp = last?.[timestampField];
   return {
     items: visibleRows.map(mapper),
     nextCursor:
-      hasMore && last && timestamp
-        ? encodeRecommendationCursor({ id: last.id, timestamp }, scope)
+      hasMore && last
+        ? encodeRecommendationCursor(
+            {
+              archived: last.lifecycle === 'archived',
+              id: last.id,
+              position: last.position,
+            },
+            scope,
+          )
         : null,
   };
 }
@@ -609,6 +777,7 @@ function mapCreatorRecommendation(
   return {
     ...mapRecommendationCard(row, redirectBaseUrl),
     categoryId: row.categoryId,
+    position: row.position,
     productUrl: row.productUrl,
   };
 }

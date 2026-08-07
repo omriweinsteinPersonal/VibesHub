@@ -390,6 +390,56 @@ textarea:disabled {
   margin-top: 80px;
 }
 
+.studioFilters {
+  background: var(--vh-surface);
+  border-radius: var(--vh-radius-control);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 30px 0 14px;
+  max-width: 620px;
+  padding: 5px;
+}
+
+.studioFilters button,
+.studioOrderActions button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--vh-radius-control);
+  color: var(--vh-muted);
+  cursor: pointer;
+  font: inherit;
+  min-height: 42px;
+}
+
+.studioFilters button {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.studioFilters button span {
+  background: rgb(43 33 28 / 7%);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  min-width: 24px;
+  padding: 3px 7px;
+}
+
+.studioFilters button.active {
+  background: white;
+  border-color: var(--vh-border);
+  box-shadow: 0 2px 5px rgb(43 33 28 / 8%);
+  color: var(--vh-ink);
+}
+
+.studioOrderHint {
+  color: var(--vh-muted);
+  font-size: 0.82rem;
+  margin: 0 0 28px;
+}
+
 .studioRecommendation {
   min-width: 0;
 }
@@ -422,6 +472,33 @@ textarea:disabled {
 
 .studioActions {
   margin-top: 12px;
+}
+
+.studioOrderActions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 12px;
+}
+
+.studioOrderActions button {
+  border-color: var(--vh-border);
+}
+
+.studioOrderActions button:hover:not(:disabled) {
+  border-color: var(--vh-accent);
+  color: var(--vh-accent);
+}
+
+.studioOrderActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.button.danger {
+  background: #fff7f4;
+  border-color: #efc9bc;
+  color: #8a3028;
 }
 
 .studioActions .button {
@@ -678,6 +755,10 @@ textarea:disabled {
   }
 
   .domainReviewFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .studioFilters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

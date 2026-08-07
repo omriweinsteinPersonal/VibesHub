@@ -6,15 +6,17 @@ import { problem } from '../api-problem.js';
 
 const cursorPayloadSchema = z
   .object({
+    archived: z.boolean(),
     id: z.uuid(),
+    position: z.int().nonnegative(),
     scope: z.string().min(1).max(100),
-    timestamp: z.iso.datetime(),
   })
   .strict();
 
 export interface RecommendationCursor {
+  archived: boolean;
   id: string;
-  timestamp: string;
+  position: number;
 }
 
 export function normalizeCatalogName(value: string): string {
@@ -49,7 +51,7 @@ export function decodeRecommendationCursor(
       JSON.parse(Buffer.from(value, 'base64url').toString('utf8')),
     );
     if (parsed.scope !== scope) throw new Error('Cursor scope mismatch');
-    return { id: parsed.id, timestamp: parsed.timestamp };
+    return { archived: parsed.archived, id: parsed.id, position: parsed.position };
   } catch {
     throw problem(422, 'VALIDATION_FAILED', 'The recommendation cursor is invalid');
   }

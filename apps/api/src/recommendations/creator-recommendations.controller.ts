@@ -11,9 +11,11 @@ import {
 } from '@nestjs/common';
 import {
   creatorRecommendationInputSchema,
+  creatorRecommendationMoveInputSchema,
   creatorRecommendationPatchSchema,
   recommendationDirectoryQuerySchema,
   type CreatorRecommendationInput,
+  type CreatorRecommendationMoveInput,
   type CreatorRecommendationPatch,
 } from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
@@ -113,8 +115,52 @@ export class CreatorRecommendationsController {
     return this.transition('unpublish', id, actor, ifMatch, idempotencyHeader, request);
   }
 
+  @Post(':id/archive')
+  archive(
+    @Param('id') id: string,
+    @CurrentActor() actor: RequestActor,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Headers('idempotency-key') idempotencyHeader: string | undefined,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.transition('archive', id, actor, ifMatch, idempotencyHeader, request);
+  }
+
+  @Post(':id/restore')
+  restore(
+    @Param('id') id: string,
+    @CurrentActor() actor: RequestActor,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Headers('idempotency-key') idempotencyHeader: string | undefined,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.transition('restore', id, actor, ifMatch, idempotencyHeader, request);
+  }
+
+  @Post(':id/move')
+  async move(
+    @Param('id') id: string,
+    @CurrentActor() actor: RequestActor,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Headers('idempotency-key') idempotencyHeader: string | undefined,
+    @Body() body: CreatorRecommendationMoveInput,
+    @Req() request: FastifyRequest,
+  ) {
+    const input = creatorRecommendationMoveInputSchema.parse(body);
+    const version = parseIfMatch(ifMatch);
+    const key = this.idempotency.requireKey(idempotencyHeader);
+    const data = await this.idempotency.execute(
+      actor.userId,
+      `creator-recommendations.${id}.move`,
+      key,
+      { id, input, version },
+      () => this.recommendations.move(id, actor.userId, version, input),
+    );
+    return singleResponse(data, request.id);
+  }
+
   private async transition(
-    command: 'publish' | 'unpublish',
+    command: 'archive' | 'publish' | 'restore' | 'unpublish',
     id: string,
     actor: RequestActor,
     ifMatch: string | undefined,

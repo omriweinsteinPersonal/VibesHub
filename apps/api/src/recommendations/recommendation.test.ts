@@ -20,8 +20,9 @@ describe('recommendation primitives', () => {
 
   it('binds keyset cursors to one collection scope', () => {
     const cursor = {
+      archived: false,
       id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
-      timestamp: '2026-08-07T10:00:00.000Z',
+      position: 4,
     };
     const encoded = encodeRecommendationCursor(cursor, 'storefront:noa-levi');
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   creatorRecommendationInputSchema,
   type CreatorRecommendationInput,
+  type CreatorRecommendationMoveInput,
   type CreatorRecommendationPatch,
 } from '@vibeshub/contracts';
 
@@ -145,6 +146,74 @@ export class RecommendationService {
     );
     if (!draft) throw this.preconditionFailed();
     return draft;
+  }
+
+  async archive(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+  ): Promise<CreatorRecommendationRecord> {
+    const current = await this.requireCurrentVersion(id, userId, expectedVersion);
+    if (current.lifecycle === 'archived') {
+      throw problem(
+        409,
+        'INVALID_STATE_TRANSITION',
+        'This recommendation is already archived',
+      );
+    }
+    const archived = await this.recommendations.archiveOwned(id, userId, expectedVersion);
+    if (!archived) throw this.preconditionFailed();
+    return archived;
+  }
+
+  async restore(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+  ): Promise<CreatorRecommendationRecord> {
+    const current = await this.requireCurrentVersion(id, userId, expectedVersion);
+    if (current.lifecycle !== 'archived') {
+      throw problem(
+        409,
+        'INVALID_STATE_TRANSITION',
+        'Only an archived recommendation can be restored',
+      );
+    }
+    try {
+      const restored = await this.recommendations.restoreOwned(
+        id,
+        userId,
+        expectedVersion,
+      );
+      if (!restored) throw this.preconditionFailed();
+      return restored;
+    } catch (error) {
+      this.translateCatalogError(error);
+    }
+  }
+
+  async move(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+    input: CreatorRecommendationMoveInput,
+  ): Promise<CreatorRecommendationRecord> {
+    const current = await this.requireCurrentVersion(id, userId, expectedVersion);
+    if (current.lifecycle === 'archived') {
+      throw problem(
+        409,
+        'INVALID_STATE_TRANSITION',
+        'Restore this recommendation before changing its storefront position',
+      );
+    }
+    const moved = await this.recommendations.moveOwned(
+      id,
+      userId,
+      expectedVersion,
+      input.direction,
+    );
+    if (!moved) throw this.preconditionFailed();
+    return moved;
   }
 
   private async requireCurrentVersion(

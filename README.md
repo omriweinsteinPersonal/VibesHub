@@ -79,4 +79,4 @@ docker/
 6. Implement identity, creator applications, and moderation. **Complete**
 7. Deliver public discovery, creator recommendations, image media, tracked shopping, and merchant review. **Phase 1 complete**
 8. Deliver shopper saves and creator follows. **Complete**
-9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases.
+9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases. Creator recommendation ordering and recoverable archiving are now complete.

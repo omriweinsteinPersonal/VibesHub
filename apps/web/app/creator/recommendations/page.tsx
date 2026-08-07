@@ -15,7 +15,11 @@ import {
   type FormEvent,
 } from 'react';
 
-import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
+import {
+  apiCollectionRequest,
+  apiRequest,
+  publicApiCollectionRequest,
+} from '../../../lib/api';
 import {
   recommendationImageAccept,
   uploadRecommendationImage,
@@ -37,6 +41,8 @@ interface EditorState {
   videoUrl: string;
 }
 
+type ContentFilter = 'all' | 'draft' | 'published' | 'archived';
+
 const emptyEditor: EditorState = {
   brandName: '',
   categoryId: '',
@@ -57,6 +63,7 @@ export default function CreatorRecommendationsPage() {
   const [recommendations, setRecommendations] = useState<CreatorRecommendation[]>([]);
   const [editor, setEditor] = useState<EditorState>(emptyEditor);
   const [editing, setEditing] = useState<CreatorRecommendation | null>(null);
+  const [filter, setFilter] = useState<ContentFilter>('all');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(true);
@@ -71,10 +78,10 @@ export default function CreatorRecommendationsPage() {
     try {
       const [categoryPage, recommendationPage] = await Promise.all([
         publicApiCollectionRequest<CategoryCard>('/categories'),
-        apiRequest<CreatorRecommendation[]>('/creator/recommendations?limit=48'),
+        apiCollectionRequest<CreatorRecommendation>('/creator/recommendations?limit=48'),
       ]);
       setCategories(categoryPage.data);
-      setRecommendations(recommendationPage);
+      setRecommendations(recommendationPage.data);
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -159,8 +166,16 @@ export default function CreatorRecommendationsPage() {
 
   async function transition(
     recommendation: CreatorRecommendation,
-    command: 'publish' | 'unpublish',
+    command: 'archive' | 'publish' | 'restore' | 'unpublish',
   ) {
+    if (
+      command === 'archive' &&
+      !window.confirm(
+        'Archive this recommendation? It will leave your storefront and can be restored later.',
+      )
+    ) {
+      return;
+    }
     setError('');
     setNotice('');
     try {
@@ -172,11 +187,27 @@ export default function CreatorRecommendationsPage() {
           method: 'POST',
         },
       );
-      setNotice(
-        command === 'publish'
-          ? 'Recommendation is live on your storefront.'
-          : 'Recommendation moved back to drafts.',
+      setNotice(transitionNotice(command));
+      await load();
+    } catch (cause) {
+      setError(messageFor(cause));
+    }
+  }
+
+  async function move(recommendation: CreatorRecommendation, direction: 'up' | 'down') {
+    setError('');
+    setNotice('');
+    try {
+      await apiRequest<CreatorRecommendation>(
+        `/creator/recommendations/${recommendation.id}/move`,
+        {
+          body: JSON.stringify({ direction }),
+          headers: { 'if-match': `"${recommendation.version}"` },
+          idempotent: true,
+          method: 'POST',
+        },
       );
+      setNotice('Storefront order updated.');
       await load();
     } catch (cause) {
       setError(messageFor(cause));
@@ -244,6 +275,13 @@ export default function CreatorRecommendationsPage() {
     uploadStage === 'authorizing' ||
     uploadStage === 'uploading' ||
     uploadStage === 'validating';
+  const activeRecommendations = recommendations.filter(
+    (recommendation) => recommendation.lifecycle !== 'archived',
+  );
+  const visibleRecommendations =
+    filter === 'all'
+      ? recommendations
+      : recommendations.filter((recommendation) => recommendation.lifecycle === filter);
 
   return (
     <main className="workspacePage">
@@ -471,6 +509,32 @@ export default function CreatorRecommendationsPage() {
             <p>{recommendations.length} total</p>
           </div>
 
+          <div className="studioFilters" aria-label="Filter recommendations">
+            {(['all', 'draft', 'published', 'archived'] as const).map((value) => (
+              <button
+                aria-pressed={filter === value}
+                className={filter === value ? 'active' : ''}
+                key={value}
+                type="button"
+                onClick={() => setFilter(value)}
+              >
+                {filterLabel(value)}
+                <span>
+                  {value === 'all'
+                    ? recommendations.length
+                    : recommendations.filter(
+                        (recommendation) => recommendation.lifecycle === value,
+                      ).length}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="studioOrderHint">
+            Use the arrows to choose the order shoppers see on your storefront. Drafts
+            keep their position when published.
+          </p>
+
           {loading ? (
             <div className="directoryState" role="status">
               Loading recommendations…
@@ -480,45 +544,98 @@ export default function CreatorRecommendationsPage() {
               <h3>Your storefront is ready for its first product</h3>
               <p>Create a draft above. Nothing becomes public until you publish it.</p>
             </div>
+          ) : visibleRecommendations.length === 0 ? (
+            <div className="directoryState">
+              <h3>No {filterLabel(filter).toLocaleLowerCase('en')} recommendations</h3>
+              <p>Choose another filter or create a new recommendation above.</p>
+            </div>
           ) : (
             <div className="studioRecommendationGrid">
-              {recommendations.map((recommendation) => (
-                <div className="studioRecommendation" key={recommendation.id}>
-                  <div className="studioStatusRow">
-                    <span className={`statusPill ${recommendation.lifecycle}`}>
-                      {recommendation.lifecycle}
-                    </span>
-                    <span>Version {recommendation.version}</span>
-                  </div>
-                  <RecommendationCardView recommendation={recommendation} />
-                  <div className="studioActions">
-                    <button
-                      className="button secondary"
-                      type="button"
-                      onClick={() => beginEditing(recommendation)}
-                    >
-                      Edit
-                    </button>
-                    {recommendation.lifecycle === 'draft' ? (
-                      <button
-                        className="button primary"
-                        type="button"
-                        onClick={() => transition(recommendation, 'publish')}
-                      >
-                        Publish
-                      </button>
-                    ) : recommendation.lifecycle === 'published' ? (
-                      <button
-                        className="button secondary"
-                        type="button"
-                        onClick={() => transition(recommendation, 'unpublish')}
-                      >
-                        Unpublish
-                      </button>
+              {visibleRecommendations.map((recommendation) => {
+                const activeIndex = activeRecommendations.findIndex(
+                  (item) => item.id === recommendation.id,
+                );
+                return (
+                  <div className="studioRecommendation" key={recommendation.id}>
+                    <div className="studioStatusRow">
+                      <span className={`statusPill ${recommendation.lifecycle}`}>
+                        {recommendation.lifecycle}
+                      </span>
+                      <span>
+                        {recommendation.lifecycle === 'archived'
+                          ? 'Not shown on storefront'
+                          : `Storefront position ${activeIndex + 1}`}
+                      </span>
+                    </div>
+                    <RecommendationCardView recommendation={recommendation} />
+                    {recommendation.lifecycle !== 'archived' ? (
+                      <div className="studioOrderActions" aria-label="Storefront order">
+                        <button
+                          aria-label={`Move ${recommendation.productName} earlier`}
+                          disabled={activeIndex <= 0}
+                          type="button"
+                          onClick={() => move(recommendation, 'up')}
+                        >
+                          ↑ Earlier
+                        </button>
+                        <button
+                          aria-label={`Move ${recommendation.productName} later`}
+                          disabled={activeIndex === activeRecommendations.length - 1}
+                          type="button"
+                          onClick={() => move(recommendation, 'down')}
+                        >
+                          ↓ Later
+                        </button>
+                      </div>
                     ) : null}
+                    <div className="studioActions">
+                      {recommendation.lifecycle !== 'archived' ? (
+                        <button
+                          className="button secondary"
+                          type="button"
+                          onClick={() => beginEditing(recommendation)}
+                        >
+                          Edit
+                        </button>
+                      ) : null}
+                      {recommendation.lifecycle === 'draft' ? (
+                        <button
+                          className="button primary"
+                          type="button"
+                          onClick={() => transition(recommendation, 'publish')}
+                        >
+                          Publish
+                        </button>
+                      ) : recommendation.lifecycle === 'published' ? (
+                        <button
+                          className="button secondary"
+                          type="button"
+                          onClick={() => transition(recommendation, 'unpublish')}
+                        >
+                          Unpublish
+                        </button>
+                      ) : recommendation.lifecycle === 'archived' ? (
+                        <button
+                          className="button secondary"
+                          type="button"
+                          onClick={() => transition(recommendation, 'restore')}
+                        >
+                          Restore as draft
+                        </button>
+                      ) : null}
+                      {recommendation.lifecycle !== 'archived' ? (
+                        <button
+                          className="button danger"
+                          type="button"
+                          onClick={() => transition(recommendation, 'archive')}
+                        >
+                          Archive
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -543,16 +660,36 @@ function messageFor(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'The request could not be completed.';
 }
 
+function filterLabel(filter: ContentFilter): string {
+  return {
+    all: 'All',
+    archived: 'Archived',
+    draft: 'Drafts',
+    published: 'Live',
+  }[filter];
+}
+
+function transitionNotice(
+  command: 'archive' | 'publish' | 'restore' | 'unpublish',
+): string {
+  return {
+    archive: 'Recommendation archived and removed from your storefront.',
+    publish: 'Recommendation is live on your storefront.',
+    restore: 'Recommendation restored as a draft at the end of your storefront order.',
+    unpublish: 'Recommendation moved back to drafts.',
+  }[command];
+}
+
 async function fetchCreatorContent(): Promise<{
   categories: CategoryCard[];
   recommendations: CreatorRecommendation[];
 }> {
   const [categoryPage, recommendationPage] = await Promise.all([
     publicApiCollectionRequest<CategoryCard>('/categories'),
-    apiRequest<CreatorRecommendation[]>('/creator/recommendations?limit=48'),
+    apiCollectionRequest<CreatorRecommendation>('/creator/recommendations?limit=48'),
   ]);
   return {
     categories: categoryPage.data,
-    recommendations: recommendationPage,
+    recommendations: recommendationPage.data,
   };
 }

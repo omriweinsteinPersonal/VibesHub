@@ -403,6 +403,8 @@ Ready result returns an editable product/offer candidate, extraction provenance,
 | POST   | `/creator/recommendations/{id}/publish`        | Publish when policy permits                     |
 | POST   | `/creator/recommendations/{id}/unpublish`      | Remove from public feeds                        |
 | POST   | `/creator/recommendations/{id}/archive`        | Archive eligible content                        |
+| POST   | `/creator/recommendations/{id}/restore`        | Restore archived content as a draft             |
+| POST   | `/creator/recommendations/{id}/move`           | Move one active card earlier or later           |
 
 The server validates that selected offer belongs to the product, media belongs to the creator and is ready, codes are compatible, and disclosure is supplied.
 
