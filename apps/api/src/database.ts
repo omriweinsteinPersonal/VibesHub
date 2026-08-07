@@ -26,6 +26,10 @@ export class Database implements OnApplicationShutdown {
     return this.client;
   }
 
+  async checkHealth(): Promise<void> {
+    await this.sql`select 1`;
+  }
+
   async onApplicationShutdown(): Promise<void> {
     if (this.client) await this.client.end({ timeout: 5 });
   }

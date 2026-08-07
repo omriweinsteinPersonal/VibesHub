@@ -67,6 +67,7 @@ docker/
 - [Analytics event contracts](docs/architecture/06-analytics-events.md)
 - [Security boundaries](docs/architecture/07-security-boundaries.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
+- [Production identity deployment runbook](docs/operations/production-identity-slice.md)
 
 ## Delivery sequence
 

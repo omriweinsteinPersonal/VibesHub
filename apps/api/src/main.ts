@@ -18,7 +18,10 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors({ credentials: true, origin: config.corsOrigins });
   app.setGlobalPrefix('v1', {
-    exclude: [{ method: RequestMethod.GET, path: 'health' }],
+    exclude: [
+      { method: RequestMethod.GET, path: 'health' },
+      { method: RequestMethod.GET, path: 'health/ready' },
+    ],
   });
   app.enableShutdownHooks();
 
