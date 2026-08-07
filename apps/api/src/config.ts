@@ -7,7 +7,7 @@ const environmentSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().max(65_535).default(4000),
-  SUPABASE_ANON_KEY: z.string().trim().min(1).optional(),
+  SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1).optional(),
   SUPABASE_URL: z.url().optional(),
 });
 
@@ -18,7 +18,7 @@ export interface ApiConfig {
   logLevel: 'debug' | 'info' | 'warn' | 'error';
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
-  supabaseAnonKey?: string;
+  supabasePublishableKey?: string;
   supabaseUrl?: string;
 }
 
@@ -36,15 +36,16 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
   };
 
   if (parsed.DATABASE_URL) config.databaseUrl = parsed.DATABASE_URL;
-  if (parsed.SUPABASE_ANON_KEY) config.supabaseAnonKey = parsed.SUPABASE_ANON_KEY;
+  if (parsed.SUPABASE_PUBLISHABLE_KEY)
+    config.supabasePublishableKey = parsed.SUPABASE_PUBLISHABLE_KEY;
   if (parsed.SUPABASE_URL) config.supabaseUrl = parsed.SUPABASE_URL;
 
   if (
     parsed.NODE_ENV === 'production' &&
-    (!config.databaseUrl || !config.supabaseAnonKey || !config.supabaseUrl)
+    (!config.databaseUrl || !config.supabasePublishableKey || !config.supabaseUrl)
   ) {
     throw new Error(
-      'DATABASE_URL, SUPABASE_URL, and SUPABASE_ANON_KEY are required in production',
+      'DATABASE_URL, SUPABASE_URL, and SUPABASE_PUBLISHABLE_KEY are required in production',
     );
   }
 

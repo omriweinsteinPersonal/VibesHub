@@ -22,7 +22,7 @@ describe('API configuration', () => {
 
   it('fails closed when production identity infrastructure is missing', () => {
     expect(() => parseApiConfig({ NODE_ENV: 'production' })).toThrow(
-      'DATABASE_URL, SUPABASE_URL, and SUPABASE_ANON_KEY are required in production',
+      'DATABASE_URL, SUPABASE_URL, and SUPABASE_PUBLISHABLE_KEY are required in production',
     );
   });
 });

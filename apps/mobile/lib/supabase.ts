@@ -46,10 +46,10 @@ let client: SupabaseClient | undefined;
 export function getSupabaseClient(): SupabaseClient {
   if (client) return client;
   const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey)
+  const publishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey)
     throw new Error('Supabase public environment variables are not configured');
-  client = createClient(url, anonKey, {
+  client = createClient(url, publishableKey, {
     auth: {
       autoRefreshToken: true,
       detectSessionInUrl: false,

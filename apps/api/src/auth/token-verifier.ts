@@ -22,8 +22,8 @@ export class SupabaseTokenVerifier implements TokenVerifier {
   constructor() {
     const config = parseApiConfig(process.env);
     this.client =
-      config.supabaseUrl && config.supabaseAnonKey
-        ? createClient(config.supabaseUrl, config.supabaseAnonKey, {
+      config.supabaseUrl && config.supabasePublishableKey
+        ? createClient(config.supabaseUrl, config.supabasePublishableKey, {
             auth: {
               autoRefreshToken: false,
               detectSessionInUrl: false,
