@@ -418,16 +418,18 @@ The server validates that selected offer belongs to the product, media belongs t
 
 ### Discount codes
 
-| Method    | Path                                    | Purpose                                   |
-| --------- | --------------------------------------- | ----------------------------------------- |
-| GET       | `/creator/discount-codes`               | List owned codes                          |
-| POST      | `/creator/discount-codes`               | Create draft code                         |
-| GET/PATCH | `/creator/discount-codes/{id}`          | Read/update with ownership/version checks |
-| PUT       | `/creator/discount-codes/{id}/products` | Replace product scope                     |
-| POST      | `/creator/discount-codes/{id}/submit`   | Submit/verify according to policy         |
-| POST      | `/creator/discount-codes/{id}/hide`     | Remove from storefront                    |
-| POST      | `/creator/discount-codes/{id}/confirm`  | Creator confirmation with timestamp       |
-| POST      | `/creator/discount-codes/{id}/archive`  | Archive code                              |
+| Method    | Path                                   | Purpose                                   |
+| --------- | -------------------------------------- | ----------------------------------------- |
+| GET       | `/creator/discount-codes`              | List owned codes                          |
+| POST      | `/creator/discount-codes`              | Create draft code                         |
+| GET/PATCH | `/creator/discount-codes/{id}`         | Read/update with ownership/version checks |
+| POST      | `/creator/discount-codes/{id}/hide`    | Remove from storefront                    |
+| POST      | `/creator/discount-codes/{id}/confirm` | Confirm, timestamp, and publish the code  |
+| POST      | `/creator/discount-codes/{id}/archive` | Archive code                              |
+
+Product-scoped replacement and staff/merchant verification remain planned. The first
+release supports merchant-wide creator-confirmed codes and recommendation placement;
+it does not represent creator confirmation as merchant verification.
 
 ### Media and standalone videos
 

@@ -1,4 +1,8 @@
-import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
+import type {
+  DiscountCodeVerificationStatus,
+  RecommendationCard,
+  RecommendationCreator,
+} from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -82,6 +86,14 @@ export function RecommendationCardView({
               {recommendation.discount.label ? (
                 <small>{recommendation.discount.label}</small>
               ) : null}
+              {recommendation.discount.verificationStatus ? (
+                <small>
+                  {discountTruth(
+                    recommendation.discount.verificationStatus,
+                    recommendation.discount.expiresAt ?? null,
+                  )}
+                </small>
+              ) : null}
             </div>
           ) : (
             <span className="merchantDomain">{recommendation.merchantHostname}</span>
@@ -98,6 +110,27 @@ export function RecommendationCardView({
       </div>
     </article>
   );
+}
+
+function discountTruth(
+  status: DiscountCodeVerificationStatus,
+  expiresAt: string | null,
+): string {
+  const verification =
+    status === 'merchant_verified'
+      ? 'Merchant verified'
+      : status === 'staff_confirmed'
+        ? 'VibesHub confirmed'
+        : status === 'creator_confirmed'
+          ? 'Creator confirmed'
+          : status === 'stale'
+            ? 'Needs reconfirmation'
+            : 'Unverified';
+  return expiresAt
+    ? `${verification} · expires ${new Intl.DateTimeFormat('en-IL', {
+        dateStyle: 'medium',
+      }).format(new Date(expiresAt))}`
+    : verification;
 }
 
 function initials(name: string): string {

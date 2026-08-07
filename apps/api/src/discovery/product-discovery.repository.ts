@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   DiscoveryRecommendationCard,
   DiscoveryRecommendationQuery,
+  DiscountCodeVerificationStatus,
   GlobalSearchQuery,
   GlobalSearchResults,
   RecommendationCard,
@@ -27,7 +28,10 @@ interface DiscoveryRecommendationRow {
   creatorId: string;
   creatorIsVerified: boolean;
   discountCode: string | null;
+  discountExpiresAt: string | null;
   discountLabel: string | null;
+  discountLastVerifiedAt: string | null;
+  discountVerificationStatus: DiscountCodeVerificationStatus | null;
   id: string;
   imageAssetId: string | null;
   imageUrl: string;
@@ -73,8 +77,11 @@ export class ProductDiscoveryRepository {
           coalesce(media.public_url, recommendation.image_url) as "imageUrl",
           recommendation.review_he as "reviewHe",
           recommendation.video_url as "videoUrl",
-          recommendation.discount_code as "discountCode",
-          recommendation.discount_label as "discountLabel",
+          placed_discount.code::text as "discountCode",
+          placed_discount.label as "discountLabel",
+          placed_discount.expires_at as "discountExpiresAt",
+          placed_discount.last_verified_at as "discountLastVerifiedAt",
+          placed_discount.verification_status as "discountVerificationStatus",
           recommendation.commercial_relationship as "commercialRelationship",
           recommendation.lifecycle,
           recommendation.created_at as "createdAt",
@@ -111,6 +118,35 @@ export class ProductDiscoveryRepository {
         join app.merchant_domains merchant_domain
           on merchant_domain.id = affiliate_link.merchant_domain_id
         left join app.media_assets media on media.id = recommendation.image_asset_id
+        left join lateral (
+          select
+            discount.code,
+            discount.label,
+            discount.expires_at,
+            discount.last_verified_at,
+            case
+              when discount.verification_status = 'creator_confirmed'
+                and discount.last_verified_at < statement_timestamp() - interval '30 days'
+                then 'stale'
+              else discount.verification_status
+            end as verification_status
+          from app.recommendation_discount_codes placement
+          join app.discount_codes discount on discount.id = placement.code_id
+          where placement.recommendation_id = recommendation.id
+            and discount.lifecycle_status = 'published'
+            and discount.deleted_at is null
+            and (
+              discount.verification_status in ('staff_confirmed', 'merchant_verified')
+              or (
+                discount.verification_status = 'creator_confirmed'
+                and discount.last_verified_at >= statement_timestamp() - interval '30 days'
+              )
+            )
+            and (discount.starts_at is null or discount.starts_at <= statement_timestamp())
+            and (discount.expires_at is null or discount.expires_at > statement_timestamp())
+          order by placement.position, discount.id
+          limit 1
+        ) placed_discount on true
         left join lateral (
           select
             count(*)::integer as total,
@@ -199,8 +235,11 @@ export class ProductDiscoveryRepository {
             coalesce(media.public_url, recommendation.image_url) as "imageUrl",
             recommendation.review_he as "reviewHe",
             recommendation.video_url as "videoUrl",
-            recommendation.discount_code as "discountCode",
-            recommendation.discount_label as "discountLabel",
+            placed_discount.code::text as "discountCode",
+            placed_discount.label as "discountLabel",
+            placed_discount.expires_at as "discountExpiresAt",
+            placed_discount.last_verified_at as "discountLastVerifiedAt",
+            placed_discount.verification_status as "discountVerificationStatus",
             recommendation.commercial_relationship as "commercialRelationship",
             recommendation.lifecycle,
             recommendation.created_at as "createdAt",
@@ -247,6 +286,35 @@ export class ProductDiscoveryRepository {
           join app.merchant_domains merchant_domain
             on merchant_domain.id = affiliate_link.merchant_domain_id
           left join app.media_assets media on media.id = recommendation.image_asset_id
+          left join lateral (
+            select
+              discount.code,
+              discount.label,
+              discount.expires_at,
+              discount.last_verified_at,
+              case
+                when discount.verification_status = 'creator_confirmed'
+                  and discount.last_verified_at < statement_timestamp() - interval '30 days'
+                  then 'stale'
+                else discount.verification_status
+              end as verification_status
+            from app.recommendation_discount_codes placement
+            join app.discount_codes discount on discount.id = placement.code_id
+            where placement.recommendation_id = recommendation.id
+              and discount.lifecycle_status = 'published'
+              and discount.deleted_at is null
+              and (
+                discount.verification_status in ('staff_confirmed', 'merchant_verified')
+                or (
+                  discount.verification_status = 'creator_confirmed'
+                  and discount.last_verified_at >= statement_timestamp() - interval '30 days'
+                )
+              )
+              and (discount.starts_at is null or discount.starts_at <= statement_timestamp())
+              and (discount.expires_at is null or discount.expires_at > statement_timestamp())
+            order by placement.position, discount.id
+            limit 1
+          ) placed_discount on true
           left join lateral (
             select
               count(*)::integer as total,
@@ -311,7 +379,13 @@ function mapDiscoveryRecommendation(
       verificationStatus: row.creatorIsVerified ? 'verified' : 'unverified',
     },
     discount: row.discountCode
-      ? { code: row.discountCode, label: row.discountLabel }
+      ? {
+          code: row.discountCode,
+          expiresAt: row.discountExpiresAt,
+          label: row.discountLabel,
+          lastVerifiedAt: row.discountLastVerifiedAt,
+          verificationStatus: row.discountVerificationStatus ?? undefined,
+        }
       : null,
     id: row.id,
     imageAssetId: row.imageAssetId,

@@ -66,6 +66,7 @@ docker/
 - [Background jobs](docs/architecture/05-background-jobs.md)
 - [Analytics event contracts](docs/architecture/06-analytics-events.md)
 - [Security boundaries](docs/architecture/07-security-boundaries.md)
+- [Normalized discount-code management](docs/architecture/14-normalized-discount-codes.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
 - [Production identity deployment runbook](docs/operations/production-identity-slice.md)
 
@@ -79,4 +80,4 @@ docker/
 6. Implement identity, creator applications, and moderation. **Complete**
 7. Deliver public discovery, creator recommendations, image media, tracked shopping, and merchant review. **Phase 1 complete**
 8. Deliver shopper saves and creator follows. **Complete**
-9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases. Creator recommendation ordering and recoverable archiving are now complete.
+9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases. **Normalized discount codes, recommendation ordering, and recoverable archiving are complete.**

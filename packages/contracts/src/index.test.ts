@@ -6,6 +6,7 @@ import {
   creatorCardSchema,
   creatorApplicationInputSchema,
   creatorDirectoryQuerySchema,
+  creatorDiscountCodeInputSchema,
   discoveryRecommendationQuerySchema,
   directionalTextSchema,
   engagementStateInputSchema,
@@ -144,6 +145,30 @@ describe('shared API contracts', () => {
     ).toThrow();
     expect(() =>
       creatorRecommendationMoveInputSchema.parse({ direction: 'down', id: 'extra' }),
+    ).toThrow();
+  });
+
+  it('normalizes discount codes and enforces Hebrew details and validity windows', () => {
+    expect(
+      creatorDiscountCodeInputSchema.parse({
+        code: ' noa10 ',
+        detailsHe: 'עשרה אחוזי הנחה באתר',
+        expiresAt: '2026-09-01T00:00:00.000Z',
+        label: '10% off',
+        merchantUrl: 'https://shop.example.com',
+        startsAt: '2026-08-01T00:00:00.000Z',
+      }).code,
+    ).toBe('NOA10');
+
+    expect(() =>
+      creatorDiscountCodeInputSchema.parse({
+        code: 'NOA 10',
+        detailsHe: '10% off',
+        expiresAt: '2026-08-01T00:00:00.000Z',
+        label: null,
+        merchantUrl: 'http://shop.example.com',
+        startsAt: '2026-09-01T00:00:00.000Z',
+      }),
     ).toThrow();
   });
 

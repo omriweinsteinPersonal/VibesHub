@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { CreatorRecommendationInput, RecommendationCard } from '@vibeshub/contracts';
+import type {
+  CreatorRecommendationInput,
+  DiscountCodeVerificationStatus,
+  RecommendationCard,
+} from '@vibeshub/contracts';
 
 import { parseApiConfig } from '../config.js';
 import { Database, type DatabaseClient } from '../database.js';
@@ -28,6 +32,7 @@ interface OfferIdRow {
 }
 
 interface CatalogIdentity {
+  brandId: string;
   destinationUrl: string;
   merchantDomainId: string;
   merchantId: string;
@@ -48,7 +53,10 @@ interface RecommendationRow {
   commercialRelationship: RecommendationCard['commercialRelationship'];
   createdAt: string;
   discountCode: string | null;
+  discountExpiresAt: string | null;
   discountLabel: string | null;
+  discountLastVerifiedAt: string | null;
+  discountVerificationStatus: DiscountCodeVerificationStatus | null;
   id: string;
   imageAssetId: string | null;
   imageUrl: string;
@@ -135,6 +143,14 @@ export class RecommendationRepository {
       `;
       if (!inserted) return null;
       await this.insertAffiliateLink(sql, inserted.id, catalog);
+      await this.syncDiscountPlacement(
+        sql,
+        inserted.id,
+        creator.id,
+        catalog,
+        input.discountCode ?? null,
+        input.discountLabel ?? null,
+      );
       return this.findOwnedWithSql(sql, inserted.id, userId);
     });
   }
@@ -184,7 +200,7 @@ export class RecommendationRepository {
     cursor: RecommendationCursor | null,
   ): Promise<RecommendationPage> {
     const rows = await this.database.sql<RecommendationRow[]>`
-      ${this.recommendationSelect()}
+      ${this.recommendationSelect(true)}
       where recommendation.creator_id = ${creatorId}
         and recommendation.lifecycle = 'published'
         and recommendation.deleted_at is null
@@ -276,6 +292,14 @@ export class RecommendationRepository {
         `;
         if (!active) throw new Error('MERCHANT_DOMAIN_NOT_APPROVED');
       }
+      await this.syncDiscountPlacement(
+        sql,
+        updated.id,
+        creator.id,
+        catalog,
+        input.discountCode ?? null,
+        input.discountLabel ?? null,
+      );
       return this.findOwnedWithSql(sql, updated.id, userId);
     });
   }
@@ -329,6 +353,47 @@ export class RecommendationRepository {
         returning id
       `;
       if (!updated) return null;
+
+      if (lifecycle === 'published') {
+        const confirmedCodes = await sql<{ id: string }[]>`
+          update app.discount_codes discount
+          set
+            lifecycle_status = 'published',
+            verification_status = 'creator_confirmed',
+            last_verified_at = statement_timestamp(),
+            version = discount.version + 1
+          from app.recommendation_discount_codes placement
+          where placement.recommendation_id = ${id}
+            and discount.id = placement.code_id
+            and discount.lifecycle_status <> 'archived'
+            and discount.verification_status in ('unverified', 'failed', 'stale')
+            and (discount.expires_at is null or discount.expires_at > statement_timestamp())
+          returning discount.id
+        `;
+        for (const confirmedCode of confirmedCodes) {
+          await sql`
+            insert into app.discount_code_verifications (
+              code_id,
+              method,
+              result,
+              checked_by_user_id,
+              evidence
+            )
+            select
+              ${confirmedCode.id},
+              'creator_confirmation',
+              'valid',
+              creator.user_id,
+              jsonb_build_object('source', 'recommendation_publish')
+            from app.creator_profiles creator
+            where creator.id = (
+              select recommendation.creator_id
+              from app.recommendations recommendation
+              where recommendation.id = ${id}
+            )
+          `;
+        }
+      }
 
       if (lifecycle === 'draft') {
         await sql`
@@ -523,7 +588,7 @@ export class RecommendationRepository {
     return row ? mapCreatorRecommendation(row, this.redirectBaseUrl) : null;
   }
 
-  private recommendationSelect() {
+  private recommendationSelect(publicProjection = false) {
     return this.database.sql`
       select
         recommendation.id,
@@ -531,8 +596,17 @@ export class RecommendationRepository {
         coalesce(media.public_url, recommendation.image_url) as "imageUrl",
         recommendation.review_he as "reviewHe",
         recommendation.video_url as "videoUrl",
-        recommendation.discount_code as "discountCode",
-        recommendation.discount_label as "discountLabel",
+        case
+          when ${publicProjection} then placed_discount.code::text
+          else coalesce(placed_discount.code::text, recommendation.discount_code)
+        end as "discountCode",
+        case
+          when ${publicProjection} then placed_discount.label
+          else coalesce(placed_discount.label, recommendation.discount_label)
+        end as "discountLabel",
+        placed_discount.expires_at as "discountExpiresAt",
+        placed_discount.last_verified_at as "discountLastVerifiedAt",
+        placed_discount.verification_status as "discountVerificationStatus",
         recommendation.commercial_relationship as "commercialRelationship",
         recommendation.lifecycle,
         recommendation.position,
@@ -562,6 +636,40 @@ export class RecommendationRepository {
         on merchant_domain.id = affiliate_link.merchant_domain_id
        and merchant_domain.merchant_id = affiliate_link.merchant_id
       left join app.media_assets media on media.id = recommendation.image_asset_id
+      left join lateral (
+        select
+          discount.code,
+          discount.label,
+          discount.expires_at,
+          discount.last_verified_at,
+          case
+            when discount.verification_status = 'creator_confirmed'
+              and discount.last_verified_at < statement_timestamp() - interval '30 days'
+              then 'stale'
+            else discount.verification_status
+          end as verification_status
+        from app.recommendation_discount_codes placement
+        join app.discount_codes discount on discount.id = placement.code_id
+        where placement.recommendation_id = recommendation.id
+          and discount.deleted_at is null
+          and (
+            ${publicProjection} = false
+            or (
+              discount.lifecycle_status = 'published'
+              and (
+                discount.verification_status in ('staff_confirmed', 'merchant_verified')
+                or (
+                  discount.verification_status = 'creator_confirmed'
+                  and discount.last_verified_at >= statement_timestamp() - interval '30 days'
+                )
+              )
+              and (discount.starts_at is null or discount.starts_at <= statement_timestamp())
+              and (discount.expires_at is null or discount.expires_at > statement_timestamp())
+            )
+          )
+        order by placement.position, discount.id
+        limit 1
+      ) placed_discount on true
     `;
   }
 
@@ -668,12 +776,60 @@ export class RecommendationRepository {
     `;
     if (!merchantDomain) throw new Error('MERCHANT_DOMAIN_CONFLICT');
     return {
+      brandId: brand.id,
       destinationUrl,
       merchantDomainId: merchantDomain.id,
       merchantId: merchant.id,
       offerId: offer.id,
       productId: product.id,
     };
+  }
+
+  private async syncDiscountPlacement(
+    sql: DatabaseClient,
+    recommendationId: string,
+    creatorId: string,
+    catalog: CatalogIdentity,
+    discountCode: string | null,
+    discountLabel: string | null,
+  ): Promise<void> {
+    await sql`
+      delete from app.recommendation_discount_codes
+      where recommendation_id = ${recommendationId}
+    `;
+    if (!discountCode) return;
+
+    const [code] = await sql<{ id: string }[]>`
+      insert into app.discount_codes (
+        creator_id,
+        merchant_id,
+        brand_id,
+        code,
+        label,
+        lifecycle_status
+      ) values (
+        ${creatorId},
+        ${catalog.merchantId},
+        ${catalog.brandId},
+        ${discountCode.toUpperCase()},
+        ${discountLabel},
+        'draft'
+      )
+      on conflict (creator_id, merchant_id, code)
+        where deleted_at is null and lifecycle_status <> 'archived'
+      do update set
+        brand_id = excluded.brand_id,
+        label = excluded.label
+      returning id
+    `;
+    if (!code) throw new Error('Discount code upsert did not return an identity');
+    await sql`
+      insert into app.recommendation_discount_codes (
+        recommendation_id,
+        code_id,
+        position
+      ) values (${recommendationId}, ${code.id}, 0)
+    `;
   }
 
   private async insertAffiliateLink(
@@ -792,7 +948,13 @@ function mapRecommendationCard(
     commercialRelationship: row.commercialRelationship,
     createdAt: row.createdAt,
     discount: row.discountCode
-      ? { code: row.discountCode, label: row.discountLabel }
+      ? {
+          code: row.discountCode,
+          expiresAt: row.discountExpiresAt,
+          label: row.discountLabel,
+          lastVerifiedAt: row.discountLastVerifiedAt,
+          verificationStatus: row.discountVerificationStatus ?? undefined,
+        }
       : null,
     id: row.id,
     imageAssetId: row.imageAssetId,

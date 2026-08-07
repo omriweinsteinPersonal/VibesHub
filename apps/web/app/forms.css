@@ -505,6 +505,71 @@ textarea:disabled {
   flex: 1;
 }
 
+.discountStudio {
+  max-width: 1180px;
+}
+
+.discountCodeForm {
+  margin-top: 54px;
+}
+
+.discountCodeGrid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 28px;
+}
+
+.discountCodeCard h3 {
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
+  letter-spacing: -0.04em;
+  margin: 14px 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.discountCodeLabel {
+  color: var(--vh-accent);
+  font-weight: 700;
+}
+
+.discountCodeDetails {
+  color: var(--vh-muted);
+  line-height: 1.7;
+  min-height: 3.4em;
+}
+
+.discountCodeFacts {
+  border-block: 1px solid var(--vh-border);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 24px 0 18px;
+  padding: 18px 0;
+}
+
+.discountCodeFacts div {
+  display: grid;
+  gap: 5px;
+}
+
+.discountCodeFacts dt {
+  color: var(--vh-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.discountCodeFacts dd {
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.statusPill.hidden,
+.statusPill.expired {
+  background: #fff0df;
+  color: #865316;
+}
+
 .applicationForm {
   margin-top: 40px;
   padding: 36px;
@@ -708,7 +773,8 @@ textarea:disabled {
   }
 
   .workspaceGrid,
-  .fieldGrid {
+  .fieldGrid,
+  .discountCodeGrid {
     grid-template-columns: 1fr;
   }
 

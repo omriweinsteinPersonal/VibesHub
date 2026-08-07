@@ -8,6 +8,7 @@ import type { FastifyRequest } from 'fastify';
 import { problem } from '../api-problem.js';
 import { Public } from '../auth/auth.decorators.js';
 import { collectionResponse, singleResponse } from '../http-response.js';
+import { DiscountCodeRepository } from '../discounts/discount-code.repository.js';
 import { decodeRecommendationCursor } from '../recommendations/recommendation.js';
 import { RecommendationRepository } from '../recommendations/recommendation.repository.js';
 import {
@@ -22,6 +23,7 @@ export class CreatorsController {
   constructor(
     private readonly creators: CreatorDirectoryRepository,
     private readonly recommendations: RecommendationRepository,
+    private readonly discountCodes: DiscountCodeRepository,
   ) {}
 
   @Get()
@@ -30,6 +32,21 @@ export class CreatorsController {
     const cursor = decodeCreatorDirectoryCursor(query.cursor, query);
     const page = await this.creators.list(query, cursor);
     return collectionResponse(page.items, page.nextCursor, request.id);
+  }
+
+  @Get(':handle/discount-codes')
+  async listDiscountCodes(
+    @Param('handle') rawHandle: string,
+    @Req() request: FastifyRequest,
+  ) {
+    const handle = creatorCardSchema.shape.handle.parse(rawHandle);
+    const storefront = await this.creators.findPublishedByHandle(handle);
+    if (!storefront) throw this.notFound();
+    return collectionResponse(
+      await this.discountCodes.listPublished(storefront.id),
+      null,
+      request.id,
+    );
   }
 
   @Get(':handle/recommendations')

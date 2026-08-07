@@ -294,6 +294,7 @@ export default function CreatorRecommendationsPage() {
           <Link aria-current="page" href="/creator/recommendations">
             Recommendations
           </Link>
+          <Link href="/creator/discount-codes">Discount codes</Link>
           <Link href="/creators">Storefronts</Link>
         </nav>
       </header>

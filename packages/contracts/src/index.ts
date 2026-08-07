@@ -170,7 +170,107 @@ export const creatorRecommendationMoveInputSchema = z
 export const recommendationDiscountSchema = z
   .object({
     code: z.string().trim().min(1).max(50),
+    expiresAt: z.iso.datetime().nullable().optional(),
     label: z.string().trim().min(1).max(100).nullable(),
+    lastVerifiedAt: z.iso.datetime().nullable().optional(),
+    verificationStatus: z
+      .enum([
+        'unverified',
+        'creator_confirmed',
+        'staff_confirmed',
+        'merchant_verified',
+        'failed',
+        'stale',
+      ])
+      .optional(),
+  })
+  .strict();
+
+export const discountCodeVerificationStatusSchema = z.enum([
+  'unverified',
+  'creator_confirmed',
+  'staff_confirmed',
+  'merchant_verified',
+  'failed',
+  'stale',
+]);
+
+export const discountCodeLifecycleSchema = z.enum([
+  'draft',
+  'submitted',
+  'published',
+  'hidden',
+  'expired',
+  'archived',
+]);
+
+const discountCodeInputFieldsSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .min(1)
+      .max(50)
+      .regex(/^\S+$/, 'Discount codes cannot contain spaces')
+      .transform((value) => value.toUpperCase()),
+    detailsHe: z
+      .string()
+      .trim()
+      .min(1)
+      .max(1_000)
+      .refine((value) => /[א-ת]/u.test(value), 'Hebrew details are required')
+      .nullable(),
+    expiresAt: z.iso.datetime().nullable(),
+    label: z.string().trim().min(1).max(100).nullable(),
+    merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    startsAt: z.iso.datetime().nullable(),
+  })
+  .strict();
+
+function validDiscountWindow(value: {
+  expiresAt?: string | null | undefined;
+  startsAt?: string | null | undefined;
+}) {
+  return !value.expiresAt || !value.startsAt || value.expiresAt > value.startsAt;
+}
+
+export const creatorDiscountCodeInputSchema = discountCodeInputFieldsSchema.refine(
+  validDiscountWindow,
+  {
+    message: 'Expiration must be after the start date',
+    path: ['expiresAt'],
+  },
+);
+
+export const creatorDiscountCodePatchSchema = discountCodeInputFieldsSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, 'At least one field is required')
+  .refine(validDiscountWindow, {
+    message: 'Expiration must be after the start date',
+    path: ['expiresAt'],
+  });
+
+export const publicDiscountCodeSchema = z
+  .object({
+    code: z.string().trim().min(1).max(50),
+    details: directionalTextSchema.nullable(),
+    expiresAt: z.iso.datetime().nullable(),
+    id: idSchema,
+    label: z.string().trim().min(1).max(100).nullable(),
+    lastVerifiedAt: z.iso.datetime().nullable(),
+    merchantHostname: z.string().trim().min(4).max(253),
+    merchantName: z.string().trim().min(1).max(160),
+    startsAt: z.iso.datetime().nullable(),
+    verificationStatus: discountCodeVerificationStatusSchema,
+  })
+  .strict();
+
+export const creatorDiscountCodeSchema = publicDiscountCodeSchema
+  .extend({
+    lifecycle: discountCodeLifecycleSchema,
+    merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    updatedAt: z.iso.datetime(),
+    version: z.int().positive(),
   })
   .strict();
 
@@ -502,6 +602,14 @@ export type CreatorRecommendationMoveInput = z.infer<
   typeof creatorRecommendationMoveInputSchema
 >;
 export type CreatorRecommendation = z.infer<typeof creatorRecommendationSchema>;
+export type CreatorDiscountCodeInput = z.infer<typeof creatorDiscountCodeInputSchema>;
+export type CreatorDiscountCodePatch = z.infer<typeof creatorDiscountCodePatchSchema>;
+export type CreatorDiscountCode = z.infer<typeof creatorDiscountCodeSchema>;
+export type PublicDiscountCode = z.infer<typeof publicDiscountCodeSchema>;
+export type DiscountCodeLifecycle = z.infer<typeof discountCodeLifecycleSchema>;
+export type DiscountCodeVerificationStatus = z.infer<
+  typeof discountCodeVerificationStatusSchema
+>;
 export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<

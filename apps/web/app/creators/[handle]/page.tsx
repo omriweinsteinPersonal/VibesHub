@@ -1,4 +1,8 @@
-import type { CreatorStorefront, RecommendationCard } from '@vibeshub/contracts';
+import type {
+  CreatorStorefront,
+  PublicDiscountCode,
+  RecommendationCard,
+} from '@vibeshub/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -31,16 +35,22 @@ export default async function CreatorStorefrontPage({
 
   let storefront: CreatorStorefront;
   let recommendations: RecommendationCard[] = [];
+  let discountCodes: PublicDiscountCode[] = [];
   let nextCursor: string | null = null;
   try {
-    const [creatorResponse, recommendationResponse] = await Promise.all([
-      publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
-      publicApiCollectionRequest<RecommendationCard>(
-        `/creators/${encodeURIComponent(handle)}/recommendations?${query.toString()}`,
-      ),
-    ]);
+    const [creatorResponse, recommendationResponse, discountCodeResponse] =
+      await Promise.all([
+        publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
+        publicApiCollectionRequest<RecommendationCard>(
+          `/creators/${encodeURIComponent(handle)}/recommendations?${query.toString()}`,
+        ),
+        publicApiCollectionRequest<PublicDiscountCode>(
+          `/creators/${encodeURIComponent(handle)}/discount-codes`,
+        ),
+      ]);
     storefront = creatorResponse;
     recommendations = recommendationResponse.data;
+    discountCodes = discountCodeResponse.data;
     nextCursor = recommendationResponse.page.nextCursor;
   } catch (cause) {
     if (cause instanceof ApiError && cause.status === 404) notFound();
@@ -82,6 +92,40 @@ export default async function CreatorStorefrontPage({
             <FollowCreatorButton creatorId={storefront.id} />
           </div>
         </section>
+
+        {discountCodes.length > 0 ? (
+          <section className="storefrontCodes" aria-labelledby="storefront-codes-title">
+            <div className="directoryHeading">
+              <div>
+                <p className="eyebrow">DISCOUNT CODES</p>
+                <h2 id="storefront-codes-title">Current offers</h2>
+              </div>
+              <p>Validity and confirmation dates are shown transparently.</p>
+            </div>
+            <div className="publicCodeGrid">
+              {discountCodes.map((code) => (
+                <article className="publicCodeCard" key={code.id}>
+                  <p className="productBrand">{code.merchantName}</p>
+                  <h3>{code.code}</h3>
+                  {code.label ? <p className="publicCodeLabel">{code.label}</p> : null}
+                  {code.details ? (
+                    <p dir="rtl" lang="he">
+                      {code.details.value}
+                    </p>
+                  ) : null}
+                  <div className="publicCodeTruth">
+                    <span>{verificationLabel(code.verificationStatus)}</span>
+                    <span>
+                      {code.expiresAt
+                        ? `Expires ${formatCodeDate(code.expiresAt)}`
+                        : 'No expiry supplied'}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section
           className="storefrontProducts"
@@ -155,4 +199,21 @@ function initials(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('');
+}
+
+function formatCodeDate(value: string): string {
+  return new Intl.DateTimeFormat('en-IL', { dateStyle: 'medium' }).format(
+    new Date(value),
+  );
+}
+
+function verificationLabel(status: PublicDiscountCode['verificationStatus']): string {
+  return {
+    creator_confirmed: 'Creator confirmed',
+    failed: 'Verification failed',
+    merchant_verified: 'Merchant verified',
+    staff_confirmed: 'Staff confirmed',
+    stale: 'Confirmation is older than 30 days',
+    unverified: 'Not verified',
+  }[status];
 }

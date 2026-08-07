@@ -68,6 +68,9 @@ export default function AccountPage() {
                     <Link className="button primary" href="/creator/recommendations">
                       Open Creator Studio
                     </Link>
+                    <Link className="button secondary" href="/creator/discount-codes">
+                      Manage discount codes
+                    </Link>
                     <Link
                       className="button secondary"
                       href={`/creators/${account.creator.handle}`}

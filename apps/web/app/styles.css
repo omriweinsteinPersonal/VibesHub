@@ -1081,6 +1081,56 @@ h1 em {
   font-size: 0.67rem;
 }
 
+.storefrontCodes {
+  background: var(--vh-surface);
+  border-block: 1px solid var(--vh-border);
+  padding: 70px 5vw;
+}
+
+.publicCodeGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 34px;
+}
+
+.publicCodeCard {
+  background: var(--vh-white);
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  box-shadow: var(--vh-shadow-card);
+  padding: 28px;
+}
+
+.publicCodeCard h3 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: -0.04em;
+  margin: 16px 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.publicCodeCard > p:not(.productBrand) {
+  color: var(--vh-muted);
+  line-height: 1.65;
+}
+
+.publicCodeCard .publicCodeLabel {
+  color: var(--vh-accent);
+  font-weight: 700;
+}
+
+.publicCodeTruth {
+  border-top: 1px solid var(--vh-border);
+  color: var(--vh-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  gap: 8px 18px;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding-top: 16px;
+}
+
 .recommendedBy {
   align-items: center;
   color: var(--vh-muted);
@@ -1171,7 +1221,8 @@ h1 em {
   .trustGrid,
   .creatorGrid,
   .storeProductGrid,
-  .studioRecommendationGrid {
+  .studioRecommendationGrid,
+  .publicCodeGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1295,5 +1346,9 @@ h1 em {
 
   .storefrontProducts {
     padding: 28px 20px 90px;
+  }
+
+  .storefrontCodes {
+    padding: 54px 20px;
   }
 }

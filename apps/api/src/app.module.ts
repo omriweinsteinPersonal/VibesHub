@@ -33,6 +33,9 @@ import { CreatorDirectoryRepository } from './discovery/creator-directory.reposi
 import { CreatorsController } from './discovery/creators.controller.js';
 import { DiscoverController, SearchController } from './discovery/discover.controller.js';
 import { ProductDiscoveryRepository } from './discovery/product-discovery.repository.js';
+import { CreatorDiscountCodesController } from './discounts/creator-discount-codes.controller.js';
+import { DiscountCodeRepository } from './discounts/discount-code.repository.js';
+import { DiscountCodeService } from './discounts/discount-code.service.js';
 import { CreatorRecommendationsController } from './recommendations/creator-recommendations.controller.js';
 import { RecommendationRepository } from './recommendations/recommendation.repository.js';
 import { RecommendationService } from './recommendations/recommendation.service.js';
@@ -44,6 +47,7 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CreatorsController,
     DiscoverController,
     SearchController,
+    CreatorDiscountCodesController,
     CreatorRecommendationsController,
     CreatorMediaController,
     AccountController,
@@ -63,6 +67,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     ApplicationService,
     CreatorDirectoryRepository,
     ProductDiscoveryRepository,
+    DiscountCodeRepository,
+    DiscountCodeService,
     RecommendationRepository,
     RecommendationService,
     MediaRepository,
