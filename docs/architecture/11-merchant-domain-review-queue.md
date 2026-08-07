@@ -53,6 +53,6 @@ filter the four states, inspect affected recommendation and creator counts, reco
 internal evidence, grant the separate import permission, and make version-checked
 decisions.
 
-The interface retains the existing clear unavailable state while the standalone API
-has not yet been deployed. No Next.js Route Handler, worker, or Google Cloud resource
-was introduced by this slice.
+The interface calls the standalone NestJS API deployed independently from the web
+application. No Next.js Route Handler, worker, or Google Cloud resource owns the
+review workflow.

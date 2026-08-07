@@ -6,7 +6,7 @@ describe('API configuration', () => {
   it('provides safe local defaults', () => {
     expect(parseApiConfig({})).toMatchObject({
       corsOrigins: ['http://localhost:3000'],
-      databasePoolMax: 5,
+      databasePoolMax: 2,
       host: '0.0.0.0',
       nodeEnv: 'development',
       port: 4000,

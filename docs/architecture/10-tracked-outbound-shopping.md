@@ -72,4 +72,4 @@ Malformed, missing, blocked, unhealthy, unapproved, suspended, unpublished, or m
 
 ## Deployment boundary
 
-`REDIRECT_BASE_URL` is server-only and defaults to `http://localhost:4000` in development. Production requires an HTTPS origin. Until the user deploys the NestJS API, the production web app continues its existing unavailable-state behavior and no Cloud Run or worker resources are created.
+`REDIRECT_BASE_URL` is server-only and defaults to `http://localhost:4000` in development. Production requires the standalone NestJS API's stable HTTPS origin. The API deploys independently from the web application in Vercel `fra1`; no Next.js Route Handler, worker, or Google Cloud resource owns this route.

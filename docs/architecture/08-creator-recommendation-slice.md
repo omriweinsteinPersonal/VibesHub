@@ -28,7 +28,7 @@ It adds canonical brands, merchants, products, merchant offers, and creator reco
 
 ADR-005 remains accepted. The temporary image-URL input has been superseded for new Creator Studio content by the controlled upload flow in `09-recommendation-image-media.md`; legacy fixture URLs remain compatible during migration. Mux video processing, media moderation, and controlled renditions remain required before broad creator onboarding.
 
-ADR-006 remains accepted. The API is still a separate NestJS service intended for Cloud Run in `europe-west3`; it has not been moved into Next.js Route Handlers. Production API and worker deployment are intentionally deferred while Google Cloud billing is disabled. Until the API is deployed and `NEXT_PUBLIC_API_URL` is configured, the production web app must display its existing unavailable state rather than access private Supabase tables directly.
+ADR-006 remains accepted as amended. The API is a separate NestJS Vercel project in `fra1`, shared by web and mobile, and has not been moved into Next.js Route Handlers. Runtime traffic uses the Supavisor transaction pooler with prepared statements disabled. The worker remains intentionally undeployed.
 
 ## Verification
 

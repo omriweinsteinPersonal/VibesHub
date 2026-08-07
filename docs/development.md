@@ -24,7 +24,7 @@ Do not commit real credentials. Variables prefixed with `NEXT_PUBLIC_` or `EXPO_
 
 ## Environment separation
 
-Local development uses the checked-in Supabase configuration. Preview, staging, and production use separate Supabase and Google Cloud projects. Never connect preview deployments to production data, buckets, queues, OAuth callbacks, or signing keys.
+Local development uses the checked-in Supabase configuration. Preview, staging, and production use separate Supabase and deployment-provider environments. Never connect preview deployments to production data, buckets, queues, OAuth callbacks, or signing keys. Until a staging Supabase project exists, Vercel Preview deployments receive no production Supabase credentials.
 
 ## Identity and creator onboarding
 

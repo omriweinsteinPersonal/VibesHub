@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const environmentSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
-  DATABASE_POOL_MAX: z.coerce.number().int().positive().max(20).default(5),
+  DATABASE_POOL_MAX: z.coerce.number().int().positive().max(20).default(2),
   DATABASE_URL: z.string().trim().min(1).optional(),
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),

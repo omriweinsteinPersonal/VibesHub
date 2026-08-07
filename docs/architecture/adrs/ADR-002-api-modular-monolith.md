@@ -15,7 +15,7 @@ Implementing core writes inside the Next.js application would couple the backend
 - Build a versioned REST API in TypeScript using NestJS with the Fastify adapter.
 - Publish an OpenAPI specification and generate client types for web and native.
 - Organize the backend as a modular monolith with explicit module ownership.
-- Deploy stateless API containers to Google Cloud Run.
+- Deploy the stateless API as a separate Vercel Node.js Function project, independent of the Next.js web project's lifecycle and shared by web and mobile clients.
 - Run asynchronous handlers in a separately scalable worker application.
 - Keep domain rules independent of HTTP, database, queue, and vendor SDKs where practical.
 

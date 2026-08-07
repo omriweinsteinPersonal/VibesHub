@@ -300,15 +300,13 @@ Algolia is introduced only when measured requirements exceed the PostgreSQL impl
 ## 15. Deployment topology
 
 ```text
-Vercel, Frankfurt compute
+Vercel
   Next.js web application
+  separate NestJS API project, fra1 Function compute
 
-Google Cloud Run, Frankfurt
-  API service
-  worker service
-
-Google Cloud Tasks, European region
-  asynchronous job delivery
+Deferred asynchronous infrastructure
+  Google Cloud Run worker target
+  Google Cloud Tasks delivery target
 
 Supabase, eu-central-1 Frankfurt
   PostgreSQL
@@ -322,7 +320,7 @@ Expo EAS
   iOS and Android build and submission
 ```
 
-The API runs near the primary database. Moving the API to Tel Aviv without moving the primary database would add cross-region latency to every database round trip and is not the initial design.
+The API runs as a separate Vercel project near the primary database and uses the Supavisor transaction pooler. Moving the API to Tel Aviv without moving the primary database would add cross-region latency to every database round trip and is not the initial design. The accepted Cloud Run worker and Cloud Tasks delivery target remain intentionally undeployed until their workload and operating budget are approved.
 
 ## 16. Environments
 
