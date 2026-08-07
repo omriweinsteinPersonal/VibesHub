@@ -14,7 +14,7 @@ export class Database implements OnApplicationShutdown {
     this.client = config.databaseUrl
       ? postgres(config.databaseUrl, {
           idle_timeout: 20,
-          max: 10,
+          max: config.databasePoolMax,
           prepare: true,
           ssl: config.nodeEnv === 'production' ? 'require' : false,
         })

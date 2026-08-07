@@ -6,10 +6,16 @@ describe('API configuration', () => {
   it('provides safe local defaults', () => {
     expect(parseApiConfig({})).toMatchObject({
       corsOrigins: ['http://localhost:3000'],
+      databasePoolMax: 5,
       host: '0.0.0.0',
       nodeEnv: 'development',
       port: 4000,
     });
+  });
+
+  it('caps the configured database pool size', () => {
+    expect(parseApiConfig({ DATABASE_POOL_MAX: '4' }).databasePoolMax).toBe(4);
+    expect(() => parseApiConfig({ DATABASE_POOL_MAX: '21' })).toThrow();
   });
 
   it('parses a comma-separated CORS allow list', () => {

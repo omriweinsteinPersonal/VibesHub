@@ -109,13 +109,15 @@ gcloud run deploy vibeshub-api \
   --port=8080 \
   --region=europe-west3 \
   --service-account=vibeshub-api-runtime@YOUR_GOOGLE_CLOUD_PROJECT_ID.iam.gserviceaccount.com \
-  --set-env-vars="NODE_ENV=production,LOG_LEVEL=info,CORS_ORIGINS=https://vibes-hub-web.vercel.app,SUPABASE_URL=https://jelugsfwttolvtrduefo.supabase.co,SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY" \
+  --set-env-vars="NODE_ENV=production,LOG_LEVEL=info,DATABASE_POOL_MAX=5,CORS_ORIGINS=https://vibes-hub-web.vercel.app,SUPABASE_URL=https://jelugsfwttolvtrduefo.supabase.co,SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY" \
   --set-secrets="DATABASE_URL=vibeshub-database-url:1"
 ```
 
 The Cloud Run service is publicly invokable because authentication is enforced
 inside the API with verified Supabase bearer tokens. Creator and moderator
-authorization remains database-owned.
+authorization remains database-owned. The per-instance database pool is capped
+at five connections so the three-instance Cloud Run ceiling cannot request more
+than fifteen Supavisor session-mode clients.
 
 ## Deployment smoke tests
 

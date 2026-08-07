@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const environmentSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  DATABASE_POOL_MAX: z.coerce.number().int().positive().max(20).default(5),
   DATABASE_URL: z.string().trim().min(1).optional(),
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
@@ -13,6 +14,7 @@ const environmentSchema = z.object({
 
 export interface ApiConfig {
   corsOrigins: string[];
+  databasePoolMax: number;
   databaseUrl?: string;
   host: string;
   logLevel: 'debug' | 'info' | 'warn' | 'error';
@@ -29,6 +31,7 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
     corsOrigins: parsed.CORS_ORIGINS.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),
+    databasePoolMax: parsed.DATABASE_POOL_MAX,
     host: parsed.HOST,
     logLevel: parsed.LOG_LEVEL,
     nodeEnv: parsed.NODE_ENV,

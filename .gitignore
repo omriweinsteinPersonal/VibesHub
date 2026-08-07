@@ -15,6 +15,7 @@ web-build/
 !**/.env.example
 
 # Local services
+.vercel/
 .supabase/
 supabase/.branches/
 supabase/.temp/
