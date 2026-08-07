@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../../lib/api';
 import { RecommendationCardView } from '../../_components/recommendation-card';
+import { EngagementProvider, FollowCreatorButton } from '../../_components/engagement';
 import { SiteHeader } from '../../_components/site-header';
 
 export const dynamic = 'force-dynamic';
@@ -49,68 +50,78 @@ export default async function CreatorStorefrontPage({
   return (
     <main>
       <SiteHeader />
-      <section className="storefrontHero">
-        <div className="storefrontAvatar" aria-hidden="true">
-          {initials(storefront.displayName)}
-        </div>
-        <div className="storefrontIdentity">
-          <p className="eyebrow">CREATOR STOREFRONT</p>
-          <div className="storefrontName">
-            <h1>{storefront.displayName}</h1>
-            {storefront.verificationStatus === 'verified' ? (
-              <span className="verifiedBadge" aria-label="Verified creator">
-                ✓
-              </span>
-            ) : null}
+      <EngagementProvider
+        creatorIds={[storefront.id]}
+        productIds={recommendations.map(({ productId }) => productId)}
+      >
+        <section className="storefrontHero">
+          <div className="storefrontAvatar" aria-hidden="true">
+            {initials(storefront.displayName)}
           </div>
-          <p className="storefrontMeta">
-            @{storefront.handle} · {storefront.primaryCategory.name} creator ·{' '}
-            {compactNumber(storefront.followerCount)} followers
-          </p>
-          <p className="storefrontBio" dir="rtl" lang="he">
-            {storefront.bio.value}
-          </p>
-          <div className="storefrontMetrics">
-            <span>{storefront.recommendationCount} recommendations</span>
-            <span>Verified by VibesHub</span>
+          <div className="storefrontIdentity">
+            <p className="eyebrow">CREATOR STOREFRONT</p>
+            <div className="storefrontName">
+              <h1>{storefront.displayName}</h1>
+              {storefront.verificationStatus === 'verified' ? (
+                <span className="verifiedBadge" aria-label="Verified creator">
+                  ✓
+                </span>
+              ) : null}
+            </div>
+            <p className="storefrontMeta">
+              @{storefront.handle} · {storefront.primaryCategory.name} creator ·{' '}
+              {compactNumber(storefront.followerCount)} followers
+            </p>
+            <p className="storefrontBio" dir="rtl" lang="he">
+              {storefront.bio.value}
+            </p>
+            <div className="storefrontMetrics">
+              <span>{storefront.recommendationCount} recommendations</span>
+              <span>Verified by VibesHub</span>
+            </div>
+            <FollowCreatorButton creatorId={storefront.id} />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="storefrontProducts" aria-labelledby="storefront-products-title">
-        <div className="directoryHeading">
-          <div>
-            <p className="eyebrow">RECOMMENDATIONS</p>
-            <h2 id="storefront-products-title">Products I stand behind</h2>
+        <section
+          className="storefrontProducts"
+          aria-labelledby="storefront-products-title"
+        >
+          <div className="directoryHeading">
+            <div>
+              <p className="eyebrow">RECOMMENDATIONS</p>
+              <h2 id="storefront-products-title">Products I stand behind</h2>
+            </div>
+            <p>Image first · details below</p>
           </div>
-          <p>Image first · details below</p>
-        </div>
 
-        {recommendations.length === 0 ? (
-          <div className="directoryState">
-            <h3>No published recommendations yet</h3>
-            <p>This creator is preparing their storefront. Check back soon.</p>
-          </div>
-        ) : (
-          <div className="storeProductGrid">
-            {recommendations.map((recommendation) => (
-              <RecommendationCardView
-                key={recommendation.id}
-                recommendation={recommendation}
-              />
-            ))}
-          </div>
-        )}
+          {recommendations.length === 0 ? (
+            <div className="directoryState">
+              <h3>No published recommendations yet</h3>
+              <p>This creator is preparing their storefront. Check back soon.</p>
+            </div>
+          ) : (
+            <div className="storeProductGrid">
+              {recommendations.map((recommendation) => (
+                <RecommendationCardView
+                  key={recommendation.id}
+                  recommendation={recommendation}
+                  showSave
+                />
+              ))}
+            </div>
+          )}
 
-        {nextCursor ? (
-          <Link
-            className="button secondary loadMore"
-            href={`/creators/${encodeURIComponent(handle)}?cursor=${encodeURIComponent(nextCursor)}`}
-          >
-            Show more recommendations
-          </Link>
-        ) : null}
-      </section>
+          {nextCursor ? (
+            <Link
+              className="button secondary loadMore"
+              href={`/creators/${encodeURIComponent(handle)}?cursor=${encodeURIComponent(nextCursor)}`}
+            >
+              Show more recommendations
+            </Link>
+          ) : null}
+        </section>
+      </EngagementProvider>
     </main>
   );
 }

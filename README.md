@@ -77,4 +77,6 @@ docker/
 4. Define API contracts, events, background jobs, and security boundaries.
 5. Scaffold the monorepo and local/CI environments. **Complete**
 6. Implement identity, creator applications, and moderation. **Complete**
-7. Deliver public discovery, creator studio, media, analytics, and native applications in phased releases.
+7. Deliver public discovery, creator recommendations, image media, tracked shopping, and merchant review. **Phase 1 complete**
+8. Deliver shopper saves and creator follows. **Complete**
+9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases.

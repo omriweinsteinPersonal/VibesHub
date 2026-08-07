@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { apiRequest } from '../../lib/api';
-import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
+import { WorkspaceHeader } from '../_components/workspace-header';
 
 interface AccountSummary {
   application: { id: string; status: string } | null;
@@ -16,7 +15,6 @@ interface AccountSummary {
 }
 
 export default function AccountPage() {
-  const router = useRouter();
   const [account, setAccount] = useState<AccountSummary | null>(null);
   const [error, setError] = useState('');
 
@@ -28,22 +26,9 @@ export default function AccountPage() {
       );
   }, []);
 
-  async function signOut() {
-    await getSupabaseBrowserClient().auth.signOut();
-    router.replace('/');
-    router.refresh();
-  }
-
   return (
     <main className="workspacePage">
-      <header className="workspaceHeader">
-        <Link className="logo" href="/">
-          <span>✣</span> VibesHub
-        </Link>
-        <button className="button secondary" type="button" onClick={signOut}>
-          Sign out
-        </button>
-      </header>
+      <WorkspaceHeader />
       <section className="workspaceContent">
         <p className="eyebrow">YOUR ACCOUNT</p>
         <h1>
@@ -52,6 +37,20 @@ export default function AccountPage() {
         {error ? <p className="formError">{error}</p> : null}
         {account ? (
           <div className="workspaceGrid">
+            <article className="workspaceCard">
+              <h2>Saved products</h2>
+              <p>Return to the recommendations you want to remember.</p>
+              <Link className="button primary" href="/account/saved">
+                View saved products
+              </Link>
+            </article>
+            <article className="workspaceCard">
+              <h2>Following</h2>
+              <p>Keep up with creators whose taste matches yours.</p>
+              <Link className="button secondary" href="/account/following">
+                View followed creators
+              </Link>
+            </article>
             <article className="workspaceCard">
               <h2>Shopper profile</h2>
               <p>{account.email}</p>

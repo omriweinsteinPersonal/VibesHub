@@ -324,6 +324,7 @@ This endpoint is intentionally outside the JSON `/v1` surface.
 | --------- | ------------------------------------------- | -------------------------------------------------- |
 | GET       | `/me`                                       | Account, capabilities, creator/application summary |
 | GET/PATCH | `/me/profile`                               | Shopper display profile                            |
+| POST      | `/me/engagement-state`                      | Batched save/follow state for one rendered page    |
 | GET       | `/me/saved-products`                        | Cursor-paginated saves                             |
 | PUT       | `/me/saved-products/{productId}`            | Idempotently save product                          |
 | DELETE    | `/me/saved-products/{productId}`            | Idempotently remove save                           |

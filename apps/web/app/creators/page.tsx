@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { publicApiCollectionRequest } from '../../lib/api';
+import { CreatorCardView } from '../_components/creator-card';
 import { SiteHeader } from '../_components/site-header';
 
 export const dynamic = 'force-dynamic';
@@ -113,37 +114,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
         ) : (
           <div className="creatorGrid">
             {creators.map((creator) => (
-              <article className="creatorCard" key={creator.id}>
-                <div className="creatorPortrait" aria-hidden="true">
-                  {initials(creator.displayName)}
-                </div>
-                <div className="creatorDetails">
-                  <div className="creatorTitle">
-                    <div>
-                      <h3>{creator.displayName}</h3>
-                      <p>@{creator.handle}</p>
-                    </div>
-                    {creator.verificationStatus === 'verified' ? (
-                      <span className="verifiedBadge" aria-label="Verified creator">
-                        ✓
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="creatorCategory">
-                    {creator.primaryCategory.name} creator ·{' '}
-                    {compactNumber(creator.followerCount)} followers
-                  </p>
-                  <p className="creatorBio" dir="rtl" lang="he">
-                    {creator.bio.value}
-                  </p>
-                  <footer>
-                    <span>{creator.recommendationCount} recommendations</span>
-                    <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
-                      View storefront →
-                    </Link>
-                  </footer>
-                </div>
-              </article>
+              <CreatorCardView creator={creator} key={creator.id} />
             ))}
           </div>
         )}
@@ -161,13 +132,6 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
   );
 }
 
-function compactNumber(value: number): string {
-  return new Intl.NumberFormat('en', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
 function creatorPageUrl(
   filters: { category?: string; q?: string },
   cursor: string,
@@ -176,12 +140,4 @@ function creatorPageUrl(
   if (filters.category) query.set('category', filters.category);
   if (filters.q) query.set('q', filters.q);
   return `/creators?${query.toString()}`;
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('');
 }

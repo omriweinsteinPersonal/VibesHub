@@ -574,6 +574,19 @@ h1 em {
   padding-top: 22px;
 }
 
+.engagementAction {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.engagementAction > span {
+  color: #9b3d30;
+  font-size: 0.78rem;
+}
+
 .storefrontProducts {
   padding: 50px max(5vw, 24px) 120px;
 }
@@ -650,6 +663,46 @@ h1 em {
 
 .storeProductDetails {
   padding: 27px;
+}
+
+.saveProductButton {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-control);
+  color: var(--vh-ink);
+  cursor: pointer;
+  display: inline-flex;
+  float: right;
+  font: inherit;
+  font-size: 0.76rem;
+  gap: 7px;
+  margin: -5px 0 12px 12px;
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.saveProductButton span {
+  color: var(--vh-accent);
+  font-size: 1rem;
+}
+
+.saveProductButton.saved {
+  background: var(--vh-surface);
+  border-color: var(--vh-accent);
+}
+
+.saveProductButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.creatorCardActions {
+  margin-top: 18px;
+}
+
+.creatorCardActions .engagementAction {
+  margin-top: 0;
 }
 
 .productBrand {

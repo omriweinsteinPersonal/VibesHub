@@ -9,6 +9,11 @@ import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const requestedNext = searchParams.get('next');
+  const next =
+    requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
+      ? requestedNext
+      : '/account';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(
@@ -29,7 +34,7 @@ function LoginForm() {
           password,
         });
       if (authError) throw authError;
-      router.replace('/account');
+      router.replace(next);
       router.refresh();
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : 'Login failed.');
@@ -42,7 +47,9 @@ function LoginForm() {
     setError('');
     const { error: authError } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
     if (authError) setError(authError.message);
   }

@@ -203,6 +203,22 @@ textarea:disabled {
   padding: 0 5vw;
 }
 
+.workspaceHeader nav {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+  margin-right: 28px;
+}
+
+.workspaceHeader nav a {
+  color: var(--vh-muted);
+  font-size: 0.85rem;
+}
+
+.workspaceHeader nav a:hover {
+  color: var(--vh-accent);
+}
+
 .workspaceContent {
   margin: 0 auto;
   max-width: 1280px;
@@ -211,6 +227,14 @@ textarea:disabled {
 
 .workspaceContent.narrow {
   max-width: 1000px;
+}
+
+.shopperCollection > .lede {
+  margin-bottom: 42px;
+}
+
+.shopperCollection > .directoryState {
+  margin-top: 36px;
 }
 
 .workspaceGrid {
@@ -618,6 +642,10 @@ textarea:disabled {
 
   .workspaceContent {
     padding: 60px 20px 90px;
+  }
+
+  .workspaceHeader nav {
+    display: none;
   }
 
   .applicationForm,

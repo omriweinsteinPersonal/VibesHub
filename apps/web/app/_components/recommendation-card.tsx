@@ -1,11 +1,19 @@
 import type { RecommendationCard } from '@vibeshub/contracts';
 import Image from 'next/image';
 
+import { SaveProductButton } from './engagement';
+
 interface RecommendationCardViewProps {
+  onSaveChange?: (saved: boolean) => void;
   recommendation: RecommendationCard;
+  showSave?: boolean;
 }
 
-export function RecommendationCardView({ recommendation }: RecommendationCardViewProps) {
+export function RecommendationCardView({
+  onSaveChange,
+  recommendation,
+  showSave = false,
+}: RecommendationCardViewProps) {
   return (
     <article className="storeProductCard">
       <div className="storeProductImage">
@@ -34,6 +42,13 @@ export function RecommendationCardView({ recommendation }: RecommendationCardVie
       </div>
 
       <div className="storeProductDetails">
+        {showSave ? (
+          <SaveProductButton
+            onChange={onSaveChange}
+            productId={recommendation.productId}
+            recommendationId={recommendation.id}
+          />
+        ) : null}
         <p className="productBrand">{recommendation.brandName}</p>
         <h3>{recommendation.productName}</h3>
         <p className="storePrice">{formatIls(recommendation.price.amountMinor)}</p>

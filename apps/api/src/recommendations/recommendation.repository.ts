@@ -56,6 +56,7 @@ interface RecommendationRow {
   merchantHostname: string;
   publishedAt: string | null;
   priceAmountMinor: string;
+  productId: string;
   productName: string;
   productUrl: string;
   reviewHe: string;
@@ -374,6 +375,7 @@ export class RecommendationRepository {
         recommendation.created_at as "createdAt",
         recommendation.updated_at as "updatedAt",
         product.name as "productName",
+        product.id as "productId",
         brand.name as "brandName",
         category.id as "categoryId",
         category.slug::text as "categorySlug",
@@ -629,6 +631,7 @@ function mapRecommendationCard(
     lifecycle: row.lifecycle,
     merchantHostname: row.merchantHostname,
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },
+    productId: row.productId,
     productName: row.productName,
     review: { direction: 'rtl', language: 'he', value: row.reviewHe },
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),

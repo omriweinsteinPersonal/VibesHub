@@ -181,6 +181,7 @@ export const recommendationCardSchema = z
     lifecycle: recommendationLifecycleSchema,
     merchantHostname: z.string().trim().min(4).max(253),
     price: moneySchema,
+    productId: idSchema,
     productName: z.string().trim().min(1).max(200),
     review: directionalTextSchema,
     shopUrl: z
@@ -220,6 +221,51 @@ export const recommendationDirectoryQuerySchema = z
   .object({
     cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
     limit: z.coerce.number().int().min(1).max(48).default(12),
+  })
+  .strict();
+
+export const engagementListQuerySchema = z
+  .object({
+    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
+    limit: z.coerce.number().int().min(1).max(48).default(24),
+  })
+  .strict();
+
+export const engagementStateInputSchema = z
+  .object({
+    creatorIds: z.array(idSchema).max(48).default([]),
+    productIds: z.array(idSchema).max(48).default([]),
+  })
+  .strict()
+  .refine((value) => value.creatorIds.length > 0 || value.productIds.length > 0, {
+    message: 'At least one creator or product is required',
+  });
+
+export const engagementStateSchema = z
+  .object({
+    followedCreatorIds: z.array(idSchema),
+    savedProductIds: z.array(idSchema),
+  })
+  .strict();
+
+export const saveProductInputSchema = z
+  .object({
+    sourceRecommendationId: idSchema.nullable().optional(),
+  })
+  .strict();
+
+export const savedProductSchema = z
+  .object({
+    productId: idSchema,
+    recommendation: recommendationCardSchema,
+    savedAt: z.iso.datetime(),
+  })
+  .strict();
+
+export const followedCreatorSchema = z
+  .object({
+    creator: creatorCardSchema,
+    followedAt: z.iso.datetime(),
   })
   .strict();
 
@@ -403,6 +449,12 @@ export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
 >;
+export type EngagementListQuery = z.infer<typeof engagementListQuerySchema>;
+export type EngagementStateInput = z.infer<typeof engagementStateInputSchema>;
+export type EngagementState = z.infer<typeof engagementStateSchema>;
+export type SaveProductInput = z.infer<typeof saveProductInputSchema>;
+export type SavedProduct = z.infer<typeof savedProductSchema>;
+export type FollowedCreator = z.infer<typeof followedCreatorSchema>;
 export type MerchantDomainApprovalInput = z.infer<
   typeof merchantDomainApprovalInputSchema
 >;
