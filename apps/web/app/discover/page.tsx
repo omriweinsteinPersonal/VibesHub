@@ -201,7 +201,7 @@ function sortLabel(sort: DiscoverySort): string {
 }
 
 function discoverUrl(
-  current: { category?: string; q?: string },
+  current: { category?: string | undefined; q?: string | undefined },
   update: {
     category?: string | null;
     cursor?: string | null;
