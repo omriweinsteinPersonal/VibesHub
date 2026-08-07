@@ -35,6 +35,27 @@ export function publicApiRequest<T>(path: string): Promise<T> {
   return request<T>(path);
 }
 
+export async function publicApiCollectionRequest<T>(path: string): Promise<{
+  data: T[];
+  page: { hasMore: boolean; nextCursor: string | null };
+}> {
+  const response = await fetch(`${getApiUrl()}/v1${path}`);
+  const body = (await response.json()) as {
+    data?: T[];
+    page?: { hasMore: boolean; nextCursor: string | null };
+  } & ProblemDetails;
+  if (!response.ok) {
+    throw new ApiError(
+      body.detail ?? body.title ?? 'The request failed.',
+      response.status,
+    );
+  }
+  return {
+    data: body.data ?? [],
+    page: body.page ?? { hasMore: false, nextCursor: null },
+  };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${getApiUrl()}/v1${path}`, init);
   const body = (await response.json()) as { data?: T } & ProblemDetails;

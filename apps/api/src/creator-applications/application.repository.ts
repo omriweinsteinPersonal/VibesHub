@@ -291,11 +291,11 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
       const [creator] = await transaction<{ id: string }[]>`
         insert into app.creator_profiles (
           user_id, application_id, handle, display_name, bio_he, bio_locale,
-          primary_category_id, status
+          primary_category_id, status, published_at
         ) values (
           ${application.userId}, ${id}, ${application.requestedHandle},
           ${application.displayName}, ${application.bioText}, 'he',
-          ${application.primaryCategoryId}, 'approved'
+          ${application.primaryCategoryId}, 'approved', statement_timestamp()
         )
         returning id
       `;

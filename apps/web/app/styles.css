@@ -319,10 +319,198 @@ h1 em {
   display: -webkit-box;
   line-height: 1.8;
   margin: 0;
-  min-height: 5.4em;
+  min-height: 9em;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 5;
+}
+
+.directoryHero {
+  border-bottom: 1px solid var(--vh-border);
+  padding: 90px max(5vw, 24px) 70px;
+}
+
+.directoryHero h1 {
+  font-size: clamp(3.2rem, 6vw, 6rem);
+  max-width: 900px;
+}
+
+.directorySearch {
+  margin-top: 42px;
+  max-width: 720px;
+}
+
+.directorySearch label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.directorySearch > div {
+  display: flex;
+  gap: 10px;
+}
+
+.directorySearch input {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-control);
+  flex: 1;
+  font: inherit;
+  min-height: 50px;
+  padding: 0 20px;
+}
+
+.directoryContent {
+  padding: 34px max(5vw, 24px) 110px;
+}
+
+.categoryFilters {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+}
+
+.categoryFilters a {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-control);
+  flex: 0 0 auto;
+  padding: 11px 18px;
+}
+
+.categoryFilters a.active {
+  background: var(--vh-accent);
+  border-color: var(--vh-accent);
+  color: white;
+}
+
+.directoryHeading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  margin: 58px 0 28px;
+}
+
+.directoryHeading h2 {
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  margin: 10px 0 0;
+}
+
+.directoryHeading > p,
+.creatorTitle p,
+.creatorCategory,
+.creatorCard footer,
+.directoryState p {
+  color: var(--vh-muted);
+}
+
+.creatorGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.creatorCard {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  box-shadow: var(--vh-shadow-card);
+  overflow: hidden;
+}
+
+.creatorPortrait {
+  align-items: center;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(145deg, #f2d7c2, #b77150);
+  color: rgb(255 255 255 / 82%);
+  display: flex;
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    serif;
+  font-size: 4.5rem;
+  justify-content: center;
+}
+
+.creatorDetails {
+  padding: 25px;
+}
+
+.creatorTitle {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.creatorTitle h3 {
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+.creatorTitle p,
+.creatorCategory {
+  font-size: 0.78rem;
+  margin: 5px 0 0;
+}
+
+.verifiedBadge {
+  align-items: center;
+  background: var(--vh-accent);
+  border-radius: 50%;
+  color: white;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.creatorCategory {
+  letter-spacing: 0.08em;
+  margin-top: 18px;
+  text-transform: uppercase;
+}
+
+.creatorBio {
+  display: -webkit-box;
+  line-height: 1.8;
+  min-height: 7.2em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.creatorCard footer {
+  border-top: 1px solid var(--vh-border);
+  display: flex;
+  font-size: 0.75rem;
+  justify-content: space-between;
+  padding-top: 18px;
+}
+
+.creatorHandle {
+  color: var(--vh-accent);
+}
+
+.directoryState {
+  background: var(--vh-surface);
+  border: 1px dashed var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  padding: 48px;
+  text-align: center;
+}
+
+.directoryState h3 {
+  font-size: 1.6rem;
+  margin: 0 0 10px;
+}
+
+.loadMore {
+  margin: 36px auto 0;
+  width: fit-content;
 }
 
 .recommendedBy {
@@ -412,7 +600,8 @@ h1 em {
   }
 
   .productGrid,
-  .trustGrid {
+  .trustGrid,
+  .creatorGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -465,5 +654,21 @@ h1 em {
   .section,
   .trust {
     padding: 70px 20px;
+  }
+
+  .directoryHero,
+  .directoryContent {
+    padding-inline: 20px;
+  }
+
+  .directorySearch > div {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .directoryHeading {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
   }
 }

@@ -164,6 +164,9 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.112.2
         version: 2.112.2
+      '@vibeshub/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@vibeshub/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens

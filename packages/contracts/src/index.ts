@@ -13,6 +13,57 @@ export const directionalTextSchema = z.object({
   value: z.string().trim().min(1),
 });
 
+export const categoryCardSchema = z
+  .object({
+    descriptionHe: z.string().nullable(),
+    id: idSchema,
+    name: z.string().trim().min(1).max(100),
+    slug: z
+      .string()
+      .trim()
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  })
+  .strict();
+
+export const creatorCardSchema = z
+  .object({
+    bio: directionalTextSchema,
+    displayName: z.string().trim().min(1).max(100),
+    followerCount: z.int().nonnegative(),
+    handle: z
+      .string()
+      .trim()
+      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/),
+    id: idSchema,
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    recommendationCount: z.int().nonnegative(),
+    verificationStatus: z.enum(['unverified', 'verified']),
+  })
+  .strict();
+
+const emptyStringToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
+
+export const creatorDirectoryQuerySchema = z
+  .object({
+    category: z.preprocess(
+      emptyStringToUndefined,
+      z
+        .string()
+        .trim()
+        .toLowerCase()
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        .optional(),
+    ),
+    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
+    limit: z.coerce.number().int().min(1).max(48).default(12),
+    q: z.preprocess(
+      emptyStringToUndefined,
+      z.string().trim().toLowerCase().min(2).max(80).optional(),
+    ),
+  })
+  .strict();
+
 export const cursorPageSchema = <T extends z.ZodType>(itemSchema: T) =>
   z.object({
     data: z.array(itemSchema),
@@ -120,6 +171,9 @@ export type CursorPage<T> = {
   nextCursor: string | null;
 };
 export type DirectionalText = z.infer<typeof directionalTextSchema>;
+export type CategoryCard = z.infer<typeof categoryCardSchema>;
+export type CreatorCard = z.infer<typeof creatorCardSchema>;
+export type CreatorDirectoryQuery = z.infer<typeof creatorDirectoryQuerySchema>;
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
 export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;

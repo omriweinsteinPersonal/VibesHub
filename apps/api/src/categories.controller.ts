@@ -1,16 +1,10 @@
 import { Controller, Get, Req } from '@nestjs/common';
+import type { CategoryCard } from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { Public } from './auth/auth.decorators.js';
 import { Database } from './database.js';
-import { singleResponse } from './http-response.js';
-
-interface CategoryRow {
-  descriptionHe: string | null;
-  id: string;
-  name: string;
-  slug: string;
-}
+import { collectionResponse } from './http-response.js';
 
 @Controller('categories')
 @Public()
@@ -19,7 +13,7 @@ export class CategoriesController {
 
   @Get()
   async list(@Req() request: FastifyRequest) {
-    const categories = await this.database.sql<CategoryRow[]>`
+    const categories = await this.database.sql<CategoryCard[]>`
       select
         id,
         slug::text as slug,
@@ -29,6 +23,6 @@ export class CategoriesController {
       where is_active = true
       order by sort_order, id
     `;
-    return singleResponse(categories, request.id);
+    return collectionResponse(categories, null, request.id);
   }
 }

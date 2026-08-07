@@ -1,3 +1,5 @@
+import { SiteHeader } from './_components/site-header';
+
 const categories = [
   'Fashion',
   'Beauty',
@@ -38,24 +40,7 @@ const recommendations = [
 export default function HomePage() {
   return (
     <main>
-      <header className="siteHeader">
-        <a className="logo" href="#top" aria-label="VibesHub home">
-          <span aria-hidden="true">✣</span> VibesHub
-        </a>
-        <nav aria-label="Primary navigation">
-          <a href="#creators">Creators</a>
-          <a href="#products">Shoppers</a>
-          <a href="#categories">Categories</a>
-          <a href="#products">Trending</a>
-          <a href="#about">About</a>
-        </nav>
-        <div className="actions">
-          <a href="/login">Login</a>
-          <a className="button primary" href="/join">
-            Join as Creator
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="hero" id="top">
         <div className="heroCopy">
@@ -68,7 +53,7 @@ export default function HomePage() {
             Israeli creators.
           </p>
           <div className="heroButtons">
-            <a className="button primary" href="#creators">
+            <a className="button primary" href="/creators">
               Explore Creators
             </a>
             <a className="button secondary" href="#products">
@@ -103,7 +88,7 @@ export default function HomePage() {
 
       <section className="categoryBand" id="categories" aria-label="Categories">
         {categories.map((category) => (
-          <a href={`/categories/${category.toLowerCase()}`} key={category}>
+          <a href={`/creators?category=${category.toLowerCase()}`} key={category}>
             {category} <span>✦</span>
           </a>
         ))}

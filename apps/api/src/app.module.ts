@@ -16,11 +16,14 @@ import { Database } from './database.js';
 import { HealthController } from './health.controller.js';
 import { IdempotencyService } from './idempotency.service.js';
 import { ProblemDetailsFilter } from './problem-details.filter.js';
+import { CreatorDirectoryRepository } from './discovery/creator-directory.repository.js';
+import { CreatorsController } from './discovery/creators.controller.js';
 
 @Module({
   controllers: [
     HealthController,
     CategoriesController,
+    CreatorsController,
     AccountController,
     ApplicationController,
     AdminApplicationController,
@@ -32,6 +35,7 @@ import { ProblemDetailsFilter } from './problem-details.filter.js';
     AccountRepository,
     ApplicationRepository,
     ApplicationService,
+    CreatorDirectoryRepository,
     IdempotencyService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },
