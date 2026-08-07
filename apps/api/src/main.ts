@@ -16,7 +16,12 @@ async function bootstrap(): Promise<void> {
     { bufferLogs: true },
   );
 
-  app.enableCors({ credentials: true, origin: config.corsOrigins });
+  app.enableCors({
+    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'If-Match'],
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    origin: config.corsOrigins,
+  });
   app.setGlobalPrefix('v1', {
     exclude: [
       { method: RequestMethod.GET, path: 'health' },
