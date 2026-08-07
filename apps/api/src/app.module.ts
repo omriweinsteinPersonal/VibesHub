@@ -31,6 +31,8 @@ import { RedirectRepository } from './redirects/redirect.repository.js';
 import { RedirectService } from './redirects/redirect.service.js';
 import { CreatorDirectoryRepository } from './discovery/creator-directory.repository.js';
 import { CreatorsController } from './discovery/creators.controller.js';
+import { DiscoverController, SearchController } from './discovery/discover.controller.js';
+import { ProductDiscoveryRepository } from './discovery/product-discovery.repository.js';
 import { CreatorRecommendationsController } from './recommendations/creator-recommendations.controller.js';
 import { RecommendationRepository } from './recommendations/recommendation.repository.js';
 import { RecommendationService } from './recommendations/recommendation.service.js';
@@ -40,6 +42,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     HealthController,
     CategoriesController,
     CreatorsController,
+    DiscoverController,
+    SearchController,
     CreatorRecommendationsController,
     CreatorMediaController,
     AccountController,
@@ -58,6 +62,7 @@ import { RecommendationService } from './recommendations/recommendation.service.
     ApplicationRepository,
     ApplicationService,
     CreatorDirectoryRepository,
+    ProductDiscoveryRepository,
     RecommendationRepository,
     RecommendationService,
     MediaRepository,

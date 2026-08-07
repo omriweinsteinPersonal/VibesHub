@@ -266,26 +266,27 @@ Trending and most-saved feeds return a canonical product, a lead recommendation,
 
 ## 8. Public discovery endpoints
 
-| Method | Path                                    | Authentication | Purpose                                            |
-| ------ | --------------------------------------- | -------------- | -------------------------------------------------- |
-| GET    | `/configuration`                        | None           | Public client configuration and supported versions |
-| GET    | `/categories`                           | None           | Active category cards                              |
-| GET    | `/categories/{slug}`                    | None           | Category detail                                    |
-| GET    | `/categories/{slug}/creators`           | None           | Cursor-paginated creators                          |
-| GET    | `/categories/{slug}/products`           | None           | Cursor-paginated product aggregates                |
-| GET    | `/creators`                             | None           | Creator directory with category/search filters     |
-| GET    | `/creators/{handle}`                    | None           | Public creator storefront header                   |
-| GET    | `/creators/{handle}/recommendations`    | None           | Published creator recommendations                  |
-| GET    | `/creators/{handle}/discount-codes`     | None           | Visible current codes                              |
-| GET    | `/creators/{handle}/videos`             | None           | Published standalone videos                        |
-| GET    | `/products/{productId}`                 | None           | Canonical product detail                           |
-| GET    | `/products/{productId}/recommendations` | None           | Recommending creators/reviews                      |
-| GET    | `/recommendations/{recommendationId}`   | None           | Full recommendation detail                         |
-| GET    | `/trending/products`                    | None           | Precomputed trending product feed                  |
-| GET    | `/selected/most-saved`                  | None           | Editorial/aggregate most-saved feed                |
-| GET    | `/search`                               | None           | Unified creator/product/brand/category search      |
-| POST   | `/analytics/client-events`              | Optional       | Allowlisted low-trust client event batch           |
-| POST   | `/reports`                              | Shopper        | Report public content                              |
+| Method | Path                                    | Authentication | Purpose                                             |
+| ------ | --------------------------------------- | -------------- | --------------------------------------------------- |
+| GET    | `/configuration`                        | None           | Public client configuration and supported versions  |
+| GET    | `/categories`                           | None           | Active category cards                               |
+| GET    | `/categories/{slug}`                    | None           | Category detail                                     |
+| GET    | `/categories/{slug}/creators`           | None           | Cursor-paginated creators                           |
+| GET    | `/categories/{slug}/products`           | None           | Cursor-paginated product aggregates                 |
+| GET    | `/creators`                             | None           | Creator directory with category/search filters      |
+| GET    | `/creators/{handle}`                    | None           | Public creator storefront header                    |
+| GET    | `/creators/{handle}/recommendations`    | None           | Published creator recommendations                   |
+| GET    | `/creators/{handle}/discount-codes`     | None           | Visible current codes                               |
+| GET    | `/creators/{handle}/videos`             | None           | Published standalone videos                         |
+| GET    | `/discover/recommendations`             | None           | Product discovery with search/category/sort filters |
+| GET    | `/products/{productId}`                 | None           | Canonical product detail                            |
+| GET    | `/products/{productId}/recommendations` | None           | Recommending creators/reviews                       |
+| GET    | `/recommendations/{recommendationId}`   | None           | Full recommendation detail                          |
+| GET    | `/trending/products`                    | None           | Precomputed trending product feed                   |
+| GET    | `/selected/most-saved`                  | None           | Editorial/aggregate most-saved feed                 |
+| GET    | `/search`                               | None           | Unified creator/product/brand/category search       |
+| POST   | `/analytics/client-events`              | Optional       | Allowlisted low-trust client event batch            |
+| POST   | `/reports`                              | Shopper        | Report public content                               |
 
 Public endpoints return published and approved fields only. A suspended or hidden object is returned as not found unless a staff endpoint is used.
 
@@ -301,6 +302,13 @@ Rules:
 - `type`, category, and limit use allowlisted values.
 - cursors bind to the query/filter fingerprint and cannot be reused for a different query.
 - search results contain typed cards and server-computed result URLs.
+
+The first executable `/search` slice returns bounded `creators` and `products`
+groups for the global typeahead. Brand and category result groups remain part of
+the stable future contract. `GET /discover/recommendations` supports `q`,
+`category`, `sort=trending|most-saved|newest`, `limit`, and a cursor bound to all
+active filters. Product results include the creator whose recommendation supplies
+the displayed review and outbound link.
 
 ## 9. Redirect endpoint
 

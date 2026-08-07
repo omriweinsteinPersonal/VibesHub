@@ -1,15 +1,18 @@
-import type { RecommendationCard } from '@vibeshub/contracts';
+import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { SaveProductButton } from './engagement';
 
 interface RecommendationCardViewProps {
+  creator?: RecommendationCreator;
   onSaveChange?: (saved: boolean) => void;
   recommendation: RecommendationCard;
   showSave?: boolean;
 }
 
 export function RecommendationCardView({
+  creator,
   onSaveChange,
   recommendation,
   showSave = false,
@@ -56,6 +59,16 @@ export function RecommendationCardView({
           {recommendation.review.value}
         </p>
 
+        {creator ? (
+          <Link className="discoveryCreator" href={`/creators/${creator.handle}`}>
+            <span aria-hidden="true">{initials(creator.displayName)}</span>
+            <small>
+              Recommended by <strong>{creator.displayName}</strong>
+              {creator.verificationStatus === 'verified' ? ' ✓' : ''}
+            </small>
+          </Link>
+        ) : null}
+
         {recommendation.commercialRelationship !== 'organic' ? (
           <p className="commercialDisclosure">
             {relationshipLabel(recommendation.commercialRelationship)}
@@ -85,6 +98,14 @@ export function RecommendationCardView({
       </div>
     </article>
   );
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
 }
 
 function formatIls(amountMinor: number): string {

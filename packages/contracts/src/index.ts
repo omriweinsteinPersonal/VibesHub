@@ -231,6 +231,54 @@ export const recommendationDirectoryQuerySchema = z
   })
   .strict();
 
+export const discoverySortSchema = z.enum(['trending', 'most-saved', 'newest']);
+
+export const discoveryRecommendationQuerySchema = z
+  .object({
+    category: z.preprocess(
+      emptyStringToUndefined,
+      z
+        .string()
+        .trim()
+        .toLowerCase()
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        .optional(),
+    ),
+    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
+    limit: z.coerce.number().int().min(1).max(48).default(24),
+    q: z.preprocess(
+      emptyStringToUndefined,
+      z.string().trim().toLowerCase().min(2).max(80).optional(),
+    ),
+    sort: discoverySortSchema.default('trending'),
+  })
+  .strict();
+
+export const globalSearchQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(8).default(5),
+    q: z.string().trim().toLowerCase().min(2).max(80),
+  })
+  .strict();
+
+export const recommendationCreatorSchema = creatorCardSchema
+  .pick({ displayName: true, handle: true, id: true, verificationStatus: true })
+  .strict();
+
+export const discoveryRecommendationCardSchema = recommendationCardSchema
+  .extend({
+    creator: recommendationCreatorSchema,
+    savedCount: z.int().nonnegative(),
+  })
+  .strict();
+
+export const globalSearchResultsSchema = z
+  .object({
+    creators: z.array(creatorCardSchema),
+    products: z.array(discoveryRecommendationCardSchema),
+  })
+  .strict();
+
 export const engagementListQuerySchema = z
   .object({
     cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
@@ -459,6 +507,16 @@ export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
 >;
+export type DiscoverySort = z.infer<typeof discoverySortSchema>;
+export type DiscoveryRecommendationQuery = z.infer<
+  typeof discoveryRecommendationQuerySchema
+>;
+export type DiscoveryRecommendationCard = z.infer<
+  typeof discoveryRecommendationCardSchema
+>;
+export type GlobalSearchQuery = z.infer<typeof globalSearchQuerySchema>;
+export type GlobalSearchResults = z.infer<typeof globalSearchResultsSchema>;
+export type RecommendationCreator = z.infer<typeof recommendationCreatorSchema>;
 export type EngagementListQuery = z.infer<typeof engagementListQuerySchema>;
 export type EngagementStateInput = z.infer<typeof engagementStateInputSchema>;
 export type EngagementState = z.infer<typeof engagementStateSchema>;

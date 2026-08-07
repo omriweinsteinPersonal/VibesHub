@@ -6,6 +6,7 @@ import {
   creatorCardSchema,
   creatorApplicationInputSchema,
   creatorDirectoryQuerySchema,
+  discoveryRecommendationQuerySchema,
   directionalTextSchema,
   engagementStateInputSchema,
   engagementListQuerySchema,
@@ -13,6 +14,7 @@ import {
   merchantDomainApprovalInputSchema,
   merchantDomainQueueQuerySchema,
   merchantDomainReasonInputSchema,
+  globalSearchQuerySchema,
   recommendationCardSchema,
   recommendationImageUploadInputSchema,
 } from './index.js';
@@ -172,6 +174,28 @@ describe('shared API contracts', () => {
         videoUrl: 'https://video.example.com/blush.mp4',
       }).review.direction,
     ).toBe('rtl');
+  });
+
+  it('normalizes bounded product discovery and global search filters', () => {
+    expect(
+      discoveryRecommendationQuerySchema.parse({
+        category: ' Beauty ',
+        limit: '12',
+        q: ' BLUSH ',
+        sort: 'most-saved',
+      }),
+    ).toEqual({
+      category: 'beauty',
+      limit: 12,
+      q: 'blush',
+      sort: 'most-saved',
+    });
+    expect(globalSearchQuerySchema.parse({ q: ' Noa ' })).toEqual({
+      limit: 5,
+      q: 'noa',
+    });
+    expect(() => discoveryRecommendationQuerySchema.parse({ sort: 'price' })).toThrow();
+    expect(() => globalSearchQuerySchema.parse({ q: 'a' })).toThrow();
   });
 
   it('bounds shopper engagement batches and pagination', () => {

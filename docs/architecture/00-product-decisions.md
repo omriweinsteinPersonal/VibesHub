@@ -187,6 +187,17 @@ Following and saving are private by default.
 
 ## 13. Search, feeds, and ranking
 
+The primary public navigation has two discovery paths:
+
+- **Creators** browses people and enters their storefronts.
+- **Discover** browses recommendations by product search, category, trending,
+  most-saved, or newest order.
+
+Global creator/product search is available from the navigation search control.
+Categories and Trending are filters within Discover rather than separate top-level
+destinations. A standalone Shoppers marketing page is not part of the current
+navigation.
+
 - Search covers creators, products, brands, and categories in English and Hebrew.
 - Public lists use cursor pagination.
 - Trending is calculated from privacy-conscious engagement signals and recency decay.

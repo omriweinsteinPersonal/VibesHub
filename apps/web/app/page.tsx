@@ -58,9 +58,9 @@ export default function HomePage() {
             <Link className="button primary" href="/creators">
               Explore Creators
             </Link>
-            <a className="button secondary" href="#products">
+            <Link className="button secondary" href="/discover">
               Discover Products
-            </a>
+            </Link>
           </div>
           <dl className="metrics">
             <div>
@@ -90,9 +90,9 @@ export default function HomePage() {
 
       <section className="categoryBand" id="categories" aria-label="Categories">
         {categories.map((category) => (
-          <a href={`/creators?category=${category.toLowerCase()}`} key={category}>
+          <Link href={`/discover?category=${category.toLowerCase()}`} key={category}>
             {category} <span>✦</span>
-          </a>
+          </Link>
         ))}
       </section>
 
