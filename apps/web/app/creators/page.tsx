@@ -138,7 +138,9 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
                   </p>
                   <footer>
                     <span>{creator.recommendationCount} recommendations</span>
-                    <span className="creatorHandle">Storefront next</span>
+                    <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
+                      View storefront →
+                    </Link>
                   </footer>
                 </div>
               </article>

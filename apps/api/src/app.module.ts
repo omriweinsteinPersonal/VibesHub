@@ -18,12 +18,16 @@ import { IdempotencyService } from './idempotency.service.js';
 import { ProblemDetailsFilter } from './problem-details.filter.js';
 import { CreatorDirectoryRepository } from './discovery/creator-directory.repository.js';
 import { CreatorsController } from './discovery/creators.controller.js';
+import { CreatorRecommendationsController } from './recommendations/creator-recommendations.controller.js';
+import { RecommendationRepository } from './recommendations/recommendation.repository.js';
+import { RecommendationService } from './recommendations/recommendation.service.js';
 
 @Module({
   controllers: [
     HealthController,
     CategoriesController,
     CreatorsController,
+    CreatorRecommendationsController,
     AccountController,
     ApplicationController,
     AdminApplicationController,
@@ -36,6 +40,8 @@ import { CreatorsController } from './discovery/creators.controller.js';
     ApplicationRepository,
     ApplicationService,
     CreatorDirectoryRepository,
+    RecommendationRepository,
+    RecommendationService,
     IdempotencyService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },

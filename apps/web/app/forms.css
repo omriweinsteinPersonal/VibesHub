@@ -232,6 +232,99 @@ textarea:disabled {
   margin-top: 14px;
 }
 
+.accountActions,
+.studioActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.creatorStudioHeader nav {
+  display: flex;
+  gap: 28px;
+}
+
+.creatorStudioHeader nav a[aria-current='page'] {
+  color: var(--vh-accent);
+}
+
+.creatorStudio {
+  max-width: 1440px;
+}
+
+.studioIntro,
+.formHeading,
+.studioStatusRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.studioIntro h1 {
+  margin-bottom: 22px;
+}
+
+.recommendationForm {
+  gap: 24px;
+}
+
+.formHeading h2 {
+  font-size: 2rem;
+  margin: 10px 0 0;
+}
+
+.fieldHint {
+  color: var(--vh-muted);
+  font-size: 0.72rem;
+}
+
+.studioSave {
+  justify-self: start;
+  min-width: 180px;
+}
+
+.studioCollection {
+  margin-top: 80px;
+}
+
+.studioRecommendation {
+  min-width: 0;
+}
+
+.studioStatusRow {
+  color: var(--vh-muted);
+  font-size: 0.72rem;
+  margin-bottom: 10px;
+  padding-inline: 6px;
+}
+
+.statusPill {
+  border-radius: var(--vh-radius-control);
+  padding: 6px 11px;
+  text-transform: capitalize;
+}
+
+.statusPill.draft {
+  background: #f2ede6;
+}
+
+.statusPill.published {
+  background: #e6f4e9;
+  color: #27613a;
+}
+
+.statusPill.archived {
+  background: #eee;
+}
+
+.studioActions {
+  margin-top: 12px;
+}
+
+.studioActions .button {
+  flex: 1;
+}
+
 .applicationForm {
   margin-top: 40px;
   padding: 36px;
@@ -291,5 +384,16 @@ textarea:disabled {
   .applicationForm,
   .authCard {
     padding: 24px;
+  }
+
+  .creatorStudioHeader nav {
+    display: none;
+  }
+
+  .studioIntro,
+  .formHeading {
+    align-items: start;
+    flex-direction: column;
+    gap: 20px;
   }
 }

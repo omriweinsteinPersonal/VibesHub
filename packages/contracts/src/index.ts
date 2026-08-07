@@ -64,6 +64,102 @@ export const creatorDirectoryQuerySchema = z
   })
   .strict();
 
+const optionalHttpsUrlSchema = z
+  .url({ protocol: /^https$/ })
+  .max(2_048)
+  .nullable();
+const optionalTrimmedStringSchema = (maximumLength: number) =>
+  z.string().trim().min(1).max(maximumLength).nullable();
+
+export const commercialRelationshipSchema = z.enum([
+  'organic',
+  'affiliate',
+  'sponsored',
+  'gifted',
+]);
+
+export const recommendationLifecycleSchema = z.enum(['draft', 'published', 'archived']);
+
+export const hebrewRecommendationSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(1_000)
+  .refine((value) => /[א-ת]/u.test(value), 'A Hebrew recommendation is required');
+
+export const creatorRecommendationInputSchema = z
+  .object({
+    brandName: z.string().trim().min(1).max(120),
+    categoryId: idSchema,
+    commercialRelationship: commercialRelationshipSchema.default('organic'),
+    discountCode: optionalTrimmedStringSchema(50).optional(),
+    discountLabel: optionalTrimmedStringSchema(100).optional(),
+    imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    priceAmountMinor: z.int().nonnegative(),
+    productName: z.string().trim().min(1).max(200),
+    productUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    reviewHe: hebrewRecommendationSchema,
+    videoUrl: optionalHttpsUrlSchema.optional(),
+  })
+  .strict();
+
+export const creatorRecommendationPatchSchema = creatorRecommendationInputSchema
+  .partial()
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    'At least one recommendation field is required',
+  );
+
+export const recommendationDiscountSchema = z
+  .object({
+    code: z.string().trim().min(1).max(50),
+    label: z.string().trim().min(1).max(100).nullable(),
+  })
+  .strict();
+
+export const recommendationCardSchema = z
+  .object({
+    brandName: z.string().trim().min(1).max(120),
+    category: categoryCardSchema.pick({ name: true, slug: true }),
+    commercialRelationship: commercialRelationshipSchema,
+    createdAt: z.iso.datetime(),
+    discount: recommendationDiscountSchema.nullable(),
+    id: idSchema,
+    imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    lifecycle: recommendationLifecycleSchema,
+    price: moneySchema,
+    productName: z.string().trim().min(1).max(200),
+    review: directionalTextSchema,
+    shopUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    updatedAt: z.iso.datetime(),
+    version: z.int().positive(),
+    videoUrl: optionalHttpsUrlSchema,
+  })
+  .strict();
+
+export const creatorStorefrontSchema = z
+  .object({
+    bio: directionalTextSchema,
+    displayName: z.string().trim().min(1).max(100),
+    followerCount: z.int().nonnegative(),
+    handle: z
+      .string()
+      .trim()
+      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/),
+    id: idSchema,
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    recommendationCount: z.int().nonnegative(),
+    verificationStatus: z.enum(['unverified', 'verified']),
+  })
+  .strict();
+
+export const recommendationDirectoryQuerySchema = z
+  .object({
+    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
+    limit: z.coerce.number().int().min(1).max(48).default(12),
+  })
+  .strict();
+
 export const cursorPageSchema = <T extends z.ZodType>(itemSchema: T) =>
   z.object({
     data: z.array(itemSchema),
@@ -174,6 +270,15 @@ export type DirectionalText = z.infer<typeof directionalTextSchema>;
 export type CategoryCard = z.infer<typeof categoryCardSchema>;
 export type CreatorCard = z.infer<typeof creatorCardSchema>;
 export type CreatorDirectoryQuery = z.infer<typeof creatorDirectoryQuerySchema>;
+export type CommercialRelationship = z.infer<typeof commercialRelationshipSchema>;
+export type CreatorRecommendationInput = z.infer<typeof creatorRecommendationInputSchema>;
+export type CreatorRecommendationPatch = z.infer<typeof creatorRecommendationPatchSchema>;
+export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
+export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
+export type RecommendationDirectoryQuery = z.infer<
+  typeof recommendationDirectoryQuerySchema
+>;
+export type RecommendationLifecycle = z.infer<typeof recommendationLifecycleSchema>;
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
 export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;

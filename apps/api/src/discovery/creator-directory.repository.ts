@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { CreatorCard, CreatorDirectoryQuery } from '@vibeshub/contracts';
+import type {
+  CreatorCard,
+  CreatorDirectoryQuery,
+  CreatorStorefront,
+} from '@vibeshub/contracts';
 
 import { Database } from '../database.js';
 import {
@@ -16,6 +20,7 @@ interface CreatorCardRow {
   handle: string;
   id: string;
   isVerified: boolean;
+  recommendationCount: number;
 }
 
 export interface CreatorDirectoryPage {
@@ -41,7 +46,14 @@ export class CreatorDirectoryRepository {
         creator.follower_count as "followerCount",
         creator.is_verified as "isVerified",
         category.slug::text as "categorySlug",
-        category.name_en as "categoryName"
+        category.name_en as "categoryName",
+        (
+          select count(*)::integer
+          from app.recommendations recommendation
+          where recommendation.creator_id = creator.id
+            and recommendation.lifecycle = 'published'
+            and recommendation.deleted_at is null
+        ) as "recommendationCount"
       from app.creator_profiles creator
       join app.categories category on category.id = creator.primary_category_id
       where creator.status = 'approved'
@@ -81,6 +93,34 @@ export class CreatorDirectoryRepository {
           : null,
     };
   }
+
+  async findPublishedByHandle(handle: string): Promise<CreatorStorefront | null> {
+    const [row] = await this.database.sql<CreatorCardRow[]>`
+      select
+        creator.id,
+        creator.handle::text as handle,
+        creator.display_name as "displayName",
+        creator.bio_he as "bioText",
+        creator.follower_count as "followerCount",
+        creator.is_verified as "isVerified",
+        category.slug::text as "categorySlug",
+        category.name_en as "categoryName",
+        (
+          select count(*)::integer
+          from app.recommendations recommendation
+          where recommendation.creator_id = creator.id
+            and recommendation.lifecycle = 'published'
+            and recommendation.deleted_at is null
+        ) as "recommendationCount"
+      from app.creator_profiles creator
+      join app.categories category on category.id = creator.primary_category_id
+      where creator.handle = ${handle}
+        and creator.status = 'approved'
+        and creator.published_at is not null
+        and category.is_active = true
+    `;
+    return row ? mapCreatorCard(row) : null;
+  }
 }
 
 function mapCreatorCard(row: CreatorCardRow): CreatorCard {
@@ -91,7 +131,7 @@ function mapCreatorCard(row: CreatorCardRow): CreatorCard {
     handle: row.handle,
     id: row.id,
     primaryCategory: { name: row.categoryName, slug: row.categorySlug },
-    recommendationCount: 0,
+    recommendationCount: row.recommendationCount,
     verificationStatus: row.isVerified ? 'verified' : 'unverified',
   };
 }

@@ -513,6 +513,203 @@ h1 em {
   width: fit-content;
 }
 
+.storefrontHero {
+  align-items: center;
+  border-bottom: 1px solid var(--vh-border);
+  display: grid;
+  gap: clamp(32px, 6vw, 90px);
+  grid-template-columns: minmax(180px, 280px) minmax(0, 760px);
+  padding: 80px max(5vw, 24px);
+}
+
+.storefrontAvatar {
+  align-items: center;
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #f2d7c2, #9f5d42);
+  border: 9px solid white;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--vh-accent),
+    var(--vh-shadow-card);
+  color: rgb(255 255 255 / 86%);
+  display: flex;
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    serif;
+  font-size: clamp(4rem, 8vw, 7rem);
+  justify-content: center;
+}
+
+.storefrontName {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+}
+
+.storefrontName h1 {
+  font-size: clamp(3.6rem, 7vw, 6.7rem);
+  margin: 18px 0;
+}
+
+.storefrontMeta {
+  color: var(--vh-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.storefrontBio {
+  font-size: 1.15rem;
+  line-height: 1.9;
+  margin: 26px 0;
+  max-width: 680px;
+}
+
+.storefrontMetrics {
+  border-top: 1px solid var(--vh-border);
+  color: var(--vh-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  padding-top: 22px;
+}
+
+.storefrontProducts {
+  padding: 50px max(5vw, 24px) 120px;
+}
+
+.storeProductGrid,
+.studioRecommendationGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.storeProductCard {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  box-shadow: var(--vh-shadow-card);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.storeProductImage {
+  aspect-ratio: 4 / 5;
+  background: var(--vh-surface);
+  overflow: hidden;
+  position: relative;
+}
+
+.storeProductImage img {
+  object-fit: cover;
+  transition: transform 450ms ease;
+}
+
+.storeProductCard:hover .storeProductImage img {
+  transform: scale(1.025);
+}
+
+.storyPreview {
+  align-items: center;
+  background: rgb(255 255 255 / 94%);
+  border: 3px solid var(--vh-accent);
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgb(43 33 28 / 16%);
+  color: var(--vh-ink);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.58rem;
+  gap: 1px;
+  height: 58px;
+  justify-content: center;
+  left: 18px;
+  position: absolute;
+  top: 18px;
+  width: 58px;
+  z-index: 1;
+}
+
+.storyPreview span {
+  color: var(--vh-accent);
+  font-size: 0.8rem;
+}
+
+.storeCodeBadge {
+  background: var(--vh-accent);
+  border-radius: var(--vh-radius-control);
+  color: white;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  padding: 8px 13px;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  z-index: 1;
+}
+
+.storeProductDetails {
+  padding: 27px;
+}
+
+.productBrand {
+  color: var(--vh-muted);
+  font-size: 0.69rem;
+  letter-spacing: 0.25em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.storeProductDetails h3 {
+  font-size: 1.65rem;
+  margin: 10px 0 7px;
+}
+
+.storePrice {
+  font-size: 1.2rem;
+  margin: 0 0 22px;
+}
+
+.storeReview {
+  color: var(--vh-muted);
+  display: -webkit-box;
+  line-height: 1.8;
+  margin: 0;
+  min-height: 9em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.commercialDisclosure {
+  color: var(--vh-muted);
+  font-size: 0.68rem;
+  margin: 18px 0 0;
+  text-transform: uppercase;
+}
+
+.storeProductDetails footer {
+  align-items: end;
+  border-top: 1px solid var(--vh-border);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding-top: 18px;
+}
+
+.discountLine {
+  display: grid;
+  font-size: 0.72rem;
+  gap: 4px;
+}
+
+.discountLine small,
+.merchantDomain {
+  color: var(--vh-muted);
+  font-size: 0.67rem;
+}
+
 .recommendedBy {
   align-items: center;
   color: var(--vh-muted);
@@ -601,8 +798,14 @@ h1 em {
 
   .productGrid,
   .trustGrid,
-  .creatorGrid {
+  .creatorGrid,
+  .storeProductGrid,
+  .studioRecommendationGrid {
     grid-template-columns: 1fr;
+  }
+
+  .storefrontHero {
+    grid-template-columns: 180px minmax(0, 1fr);
   }
 }
 
@@ -670,5 +873,19 @@ h1 em {
     align-items: start;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .storefrontHero {
+    align-items: start;
+    grid-template-columns: 1fr;
+    padding: 54px 20px;
+  }
+
+  .storefrontAvatar {
+    max-width: 150px;
+  }
+
+  .storefrontProducts {
+    padding: 28px 20px 90px;
   }
 }

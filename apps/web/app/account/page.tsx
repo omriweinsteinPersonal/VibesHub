@@ -60,9 +60,23 @@ export default function AccountPage() {
             <article className="workspaceCard">
               <h2>Creator journey</h2>
               {account.creator ? (
-                <p>
-                  Your creator profile @{account.creator.handle} is ready for the studio.
-                </p>
+                <>
+                  <p>
+                    Your creator profile @{account.creator.handle} is ready for the
+                    studio.
+                  </p>
+                  <div className="accountActions">
+                    <Link className="button primary" href="/creator/recommendations">
+                      Open Creator Studio
+                    </Link>
+                    <Link
+                      className="button secondary"
+                      href={`/creators/${account.creator.handle}`}
+                    >
+                      View storefront
+                    </Link>
+                  </div>
+                </>
               ) : account.application ? (
                 <p>
                   Your creator application is currently{' '}

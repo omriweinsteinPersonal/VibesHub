@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { SiteHeader } from './_components/site-header';
 
 const categories = [
@@ -53,9 +55,9 @@ export default function HomePage() {
             Israeli creators.
           </p>
           <div className="heroButtons">
-            <a className="button primary" href="/creators">
+            <Link className="button primary" href="/creators">
               Explore Creators
-            </a>
+            </Link>
             <a className="button secondary" href="#products">
               Discover Products
             </a>
