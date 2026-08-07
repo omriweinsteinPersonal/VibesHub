@@ -75,5 +75,5 @@ docker/
 3. Design the ERD and database migrations.
 4. Define API contracts, events, background jobs, and security boundaries.
 5. Scaffold the monorepo and local/CI environments. **Complete**
-6. Implement identity, creator applications, and moderation.
+6. Implement identity, creator applications, and moderation. **Complete**
 7. Deliver public discovery, creator studio, media, analytics, and native applications in phased releases.

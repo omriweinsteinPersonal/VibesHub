@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { directionalTextSchema, moneySchema } from './index.js';
+import {
+  creatorApplicationInputSchema,
+  directionalTextSchema,
+  moneySchema,
+} from './index.js';
 
 describe('shared API contracts', () => {
   it('accepts an ILS amount represented in minor units', () => {
@@ -14,5 +18,20 @@ describe('shared API contracts', () => {
     expect(
       directionalTextSchema.parse({ direction: 'rtl', language: 'he', value: 'מומלץ' }),
     ).toMatchObject({ direction: 'rtl', language: 'he' });
+  });
+
+  it('normalizes creator handles and rejects insecure social links', () => {
+    expect(
+      creatorApplicationInputSchema.parse({
+        requestedHandle: ' Noa_Levi ',
+        socialLinks: [{ platform: 'instagram', url: 'https://instagram.com/noa' }],
+      }).requestedHandle,
+    ).toBe('noa_levi');
+
+    expect(() =>
+      creatorApplicationInputSchema.parse({
+        socialLinks: [{ platform: 'website', url: 'http://example.com' }],
+      }),
+    ).toThrow();
   });
 });

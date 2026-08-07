@@ -1,4 +1,5 @@
 import '@vibeshub/design-tokens/tokens.css';
+import './forms.css';
 import './styles.css';
 
 import type { Metadata } from 'next';

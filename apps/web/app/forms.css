@@ -1,0 +1,295 @@
+.authPage {
+  align-items: center;
+  display: grid;
+  gap: 8vw;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  min-height: 100vh;
+  padding: 7vw 10vw;
+}
+
+.authIntro h1,
+.workspaceContent h1 {
+  font-size: clamp(3rem, 5vw, 5.4rem);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  margin: 20px 0 30px;
+}
+
+.authIntro > p:not(.eyebrow),
+.workspaceLead {
+  color: var(--vh-muted);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 620px;
+}
+
+.hebrewIntro {
+  border-top: 1px solid var(--vh-border);
+  margin-top: 34px;
+  padding-top: 28px;
+}
+
+.authCard,
+.applicationForm,
+.workspaceCard,
+.statusBanner {
+  background: var(--vh-white);
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  box-shadow: var(--vh-shadow-card);
+}
+
+.authCard {
+  padding: 34px;
+}
+
+.authCard h2,
+.workspaceCard h2 {
+  font-size: 2rem;
+  margin: 0 0 25px;
+}
+
+.oauthButton,
+.segmented button,
+.reviewActions button {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-control);
+  color: var(--vh-ink);
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 20px;
+}
+
+.oauthButton {
+  width: 100%;
+}
+
+.separator {
+  align-items: center;
+  color: var(--vh-muted);
+  display: flex;
+  font-size: 0.7rem;
+  gap: 15px;
+  justify-content: center;
+  letter-spacing: 0.18em;
+  margin: 24px 0;
+}
+
+.separator::before,
+.separator::after {
+  background: var(--vh-border);
+  content: '';
+  height: 1px;
+  width: 40%;
+}
+
+.authCard form,
+.applicationForm {
+  display: grid;
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  font-size: 0.9rem;
+  gap: 7px;
+}
+
+input,
+select,
+textarea {
+  background: white;
+  border: 1px solid var(--vh-border);
+  border-radius: 14px;
+  color: var(--vh-ink);
+  font: inherit;
+  min-height: 46px;
+  padding: 11px 14px;
+  width: 100%;
+}
+
+textarea {
+  line-height: 1.6;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--vh-accent);
+  outline: 3px solid rgb(199 118 82 / 13%);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: var(--vh-surface);
+}
+
+.formSubmit {
+  border: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.formSubmit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.formError,
+.formSuccess {
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.formError {
+  background: #fff0ed;
+  color: #8a3028;
+}
+
+.formSuccess {
+  background: #edf8f0;
+  color: #27613a;
+}
+
+.authSwitch {
+  color: var(--vh-muted);
+  font-size: 0.85rem;
+  margin: 24px 0 0;
+  text-align: center;
+}
+
+.authSwitch a {
+  color: var(--vh-accent);
+  font-weight: 600;
+}
+
+.segmented {
+  background: var(--vh-surface);
+  border-radius: var(--vh-radius-control);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 24px;
+  padding: 4px;
+}
+
+.segmented button {
+  background: transparent;
+  border-color: transparent;
+}
+
+.segmented button.active {
+  background: white;
+  border-color: var(--vh-border);
+  box-shadow: 0 2px 5px rgb(43 33 28 / 8%);
+}
+
+.workspacePage {
+  min-height: 100vh;
+}
+
+.workspaceHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--vh-border);
+  display: flex;
+  justify-content: space-between;
+  min-height: 74px;
+  padding: 0 5vw;
+}
+
+.workspaceContent {
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 80px 5vw 120px;
+}
+
+.workspaceContent.narrow {
+  max-width: 1000px;
+}
+
+.workspaceGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workspaceCard {
+  padding: 32px;
+}
+
+.workspaceCard p {
+  color: var(--vh-muted);
+  line-height: 1.6;
+}
+
+.workspaceCard .button {
+  margin-top: 14px;
+}
+
+.applicationForm {
+  margin-top: 40px;
+  padding: 36px;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.statusBanner {
+  background: var(--vh-surface);
+  margin: 30px 0;
+  padding: 20px 24px;
+}
+
+.reviewList {
+  display: grid;
+  gap: 22px;
+  margin-top: 40px;
+}
+
+.reviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.reviewActions button.approve {
+  background: var(--vh-accent);
+  border-color: var(--vh-accent);
+  color: white;
+}
+
+@media (max-width: 800px) {
+  .authPage {
+    grid-template-columns: 1fr;
+    padding: 60px 20px;
+  }
+
+  .authIntro h1,
+  .workspaceContent h1 {
+    font-size: 3.5rem;
+  }
+
+  .workspaceGrid,
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspaceContent {
+    padding: 60px 20px 90px;
+  }
+
+  .applicationForm,
+  .authCard {
+    padding: 24px;
+  }
+}

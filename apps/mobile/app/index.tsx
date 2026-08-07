@@ -1,4 +1,5 @@
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   Pressable,
@@ -12,6 +13,8 @@ import {
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -21,7 +24,11 @@ export default function HomeScreen() {
             <Text style={styles.logoMarkText}>✣</Text>
           </View>
           <Text style={styles.logo}>VibesHub</Text>
-          <Pressable accessibilityRole="button" style={styles.profileButton}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/login')}
+            style={styles.profileButton}
+          >
             <Text style={styles.profileButtonText}>Join</Text>
           </Pressable>
         </View>

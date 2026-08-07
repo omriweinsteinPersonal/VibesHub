@@ -17,7 +17,7 @@
     "clean": "rm -rf dist",
     "dev": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint src --max-warnings=0",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run src",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
