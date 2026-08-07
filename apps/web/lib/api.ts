@@ -58,6 +58,7 @@ export async function publicApiCollectionRequest<T>(path: string): Promise<{
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${getApiUrl()}/v1${path}`, init);
+  if (response.status === 204) return undefined as T;
   const body = (await response.json()) as { data?: T } & ProblemDetails;
   if (!response.ok) {
     throw new ApiError(

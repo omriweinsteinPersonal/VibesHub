@@ -9,6 +9,7 @@ const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().max(65_535).default(4000),
   SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1).optional(),
   SUPABASE_URL: z.url().optional(),
 });
 
@@ -21,6 +22,7 @@ export interface ApiConfig {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   supabasePublishableKey?: string;
+  supabaseServiceRoleKey?: string;
   supabaseUrl?: string;
 }
 
@@ -41,14 +43,19 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
   if (parsed.DATABASE_URL) config.databaseUrl = parsed.DATABASE_URL;
   if (parsed.SUPABASE_PUBLISHABLE_KEY)
     config.supabasePublishableKey = parsed.SUPABASE_PUBLISHABLE_KEY;
+  if (parsed.SUPABASE_SERVICE_ROLE_KEY)
+    config.supabaseServiceRoleKey = parsed.SUPABASE_SERVICE_ROLE_KEY;
   if (parsed.SUPABASE_URL) config.supabaseUrl = parsed.SUPABASE_URL;
 
   if (
     parsed.NODE_ENV === 'production' &&
-    (!config.databaseUrl || !config.supabasePublishableKey || !config.supabaseUrl)
+    (!config.databaseUrl ||
+      !config.supabasePublishableKey ||
+      !config.supabaseServiceRoleKey ||
+      !config.supabaseUrl)
   ) {
     throw new Error(
-      'DATABASE_URL, SUPABASE_URL, and SUPABASE_PUBLISHABLE_KEY are required in production',
+      'DATABASE_URL, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, and SUPABASE_SERVICE_ROLE_KEY are required in production',
     );
   }
 

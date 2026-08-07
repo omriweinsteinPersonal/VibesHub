@@ -22,6 +22,11 @@ interface OfferIdRow {
   productId: string;
 }
 
+interface RecommendationImageSource {
+  assetId: string | null;
+  publicUrl: string;
+}
+
 interface RecommendationRow {
   brandName: string;
   categoryId: string;
@@ -32,6 +37,7 @@ interface RecommendationRow {
   discountCode: string | null;
   discountLabel: string | null;
   id: string;
+  imageAssetId: string | null;
   imageUrl: string;
   lifecycle: RecommendationCard['lifecycle'];
   publishedAt: string | null;
@@ -65,12 +71,14 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
-      const catalog = await this.upsertCatalog(sql, userId, input);
+      const image = await this.resolveImageSource(sql, userId, input);
+      const catalog = await this.upsertCatalog(sql, userId, input, image);
       const [inserted] = await sql<{ id: string }[]>`
         insert into app.recommendations (
           creator_id,
           product_id,
           offer_id,
+          image_asset_id,
           image_url,
           review_he,
           video_url,
@@ -81,7 +89,8 @@ export class RecommendationRepository {
           ${creator.id},
           ${catalog.productId},
           ${catalog.offerId},
-          ${input.imageUrl},
+          ${image.assetId},
+          ${image.assetId ? null : image.publicUrl},
           ${input.reviewHe},
           ${input.videoUrl ?? null},
           ${input.discountCode?.toUpperCase() ?? null},
@@ -140,6 +149,10 @@ export class RecommendationRepository {
         and product.status = 'active'
         and offer.status = 'active'
         and (
+          recommendation.image_asset_id is null
+          or media.status = 'ready'
+        )
+        and (
           ${cursor?.id ?? null}::uuid is null
           or recommendation.published_at < ${cursor?.timestamp ?? null}::timestamptz
           or (
@@ -163,13 +176,15 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
-      const catalog = await this.upsertCatalog(sql, userId, input);
+      const image = await this.resolveImageSource(sql, userId, input);
+      const catalog = await this.upsertCatalog(sql, userId, input, image);
       const [updated] = await sql<{ id: string }[]>`
         update app.recommendations
         set
           product_id = ${catalog.productId},
           offer_id = ${catalog.offerId},
-          image_url = ${input.imageUrl},
+          image_asset_id = ${image.assetId},
+          image_url = ${image.assetId ? null : image.publicUrl},
           review_he = ${input.reviewHe},
           video_url = ${input.videoUrl ?? null},
           discount_code = ${input.discountCode?.toUpperCase() ?? null},
@@ -247,7 +262,8 @@ export class RecommendationRepository {
     return this.database.sql`
       select
         recommendation.id,
-        recommendation.image_url as "imageUrl",
+        recommendation.image_asset_id as "imageAssetId",
+        coalesce(media.public_url, recommendation.image_url) as "imageUrl",
         recommendation.review_he as "reviewHe",
         recommendation.video_url as "videoUrl",
         recommendation.discount_code as "discountCode",
@@ -271,6 +287,7 @@ export class RecommendationRepository {
       join app.categories category on category.id = product.primary_category_id
       join app.product_offers offer on offer.id = recommendation.offer_id
       join app.merchants merchant on merchant.id = offer.merchant_id
+      left join app.media_assets media on media.id = recommendation.image_asset_id
     `;
   }
 
@@ -278,6 +295,7 @@ export class RecommendationRepository {
     sql: DatabaseClient,
     userId: string,
     input: CreatorRecommendationInput,
+    image: RecommendationImageSource,
   ): Promise<{ offerId: string; productId: string }> {
     const brandIdentity = normalizeCatalogName(input.brandName);
     const [brand] = await sql<CatalogIdRow[]>`
@@ -306,6 +324,7 @@ export class RecommendationRepository {
         primary_category_id,
         name,
         normalized_name,
+        primary_image_asset_id,
         primary_image_url,
         created_by_user_id
       ) values (
@@ -314,7 +333,8 @@ export class RecommendationRepository {
         ${input.categoryId},
         ${input.productName},
         ${productIdentity},
-        ${input.imageUrl},
+        ${image.assetId},
+        ${image.assetId ? null : image.publicUrl},
         ${userId}
       )
       on conflict (brand_id, normalized_name) do update
@@ -365,6 +385,28 @@ export class RecommendationRepository {
     }
     return { offerId: offer.id, productId: product.id };
   }
+
+  private async resolveImageSource(
+    sql: DatabaseClient,
+    userId: string,
+    input: CreatorRecommendationInput,
+  ): Promise<RecommendationImageSource> {
+    if (!input.imageAssetId) {
+      if (!input.imageUrl) throw new Error('RECOMMENDATION_IMAGE_REQUIRED');
+      return { assetId: null, publicUrl: input.imageUrl };
+    }
+    const [asset] = await sql<{ id: string; publicUrl: string }[]>`
+      select id, public_url as "publicUrl"
+      from app.media_assets
+      where id = ${input.imageAssetId}
+        and owner_user_id = ${userId}
+        and media_kind = 'recommendation_image'
+        and status = 'ready'
+        and deleted_at is null
+    `;
+    if (!asset) throw new Error('MEDIA_ASSET_NOT_READY_OR_OWNED');
+    return { assetId: asset.id, publicUrl: asset.publicUrl };
+  }
 }
 
 function mapPage(
@@ -397,6 +439,7 @@ function mapRecommendation(row: RecommendationRow): RecommendationRecord {
       ? { code: row.discountCode, label: row.discountLabel }
       : null,
     id: row.id,
+    imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,
     lifecycle: row.lifecycle,
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },

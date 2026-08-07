@@ -8,6 +8,7 @@ import {
   directionalTextSchema,
   moneySchema,
   recommendationCardSchema,
+  recommendationImageUploadInputSchema,
 } from './index.js';
 
 describe('shared API contracts', () => {
@@ -92,6 +93,40 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 
+  it('accepts one owned image asset and rejects oversized uploads', () => {
+    expect(
+      creatorRecommendationInputSchema.parse({
+        brandName: 'Rare Beauty',
+        categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        imageAssetId: '01989f72-07e4-7f32-9b42-1ba55d4ca011',
+        priceAmountMinor: 12_000,
+        productName: 'Soft Pinch Liquid Blush',
+        productUrl: 'https://shop.example.com/blush',
+        reviewHe: 'המוצר האהוב עליי למראה טבעי וזוהר',
+      }).imageAssetId,
+    ).toBe('01989f72-07e4-7f32-9b42-1ba55d4ca011');
+
+    expect(() =>
+      creatorRecommendationInputSchema.parse({
+        brandName: 'Rare Beauty',
+        categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        imageAssetId: '01989f72-07e4-7f32-9b42-1ba55d4ca011',
+        imageUrl: 'https://images.example.com/blush.jpg',
+        priceAmountMinor: 12_000,
+        productName: 'Soft Pinch Liquid Blush',
+        productUrl: 'https://shop.example.com/blush',
+        reviewHe: 'המוצר האהוב עליי למראה טבעי וזוהר',
+      }),
+    ).toThrow();
+
+    expect(() =>
+      recommendationImageUploadInputSchema.parse({
+        contentType: 'image/jpeg',
+        fileSizeBytes: 5 * 1_024 * 1_024 + 1,
+      }),
+    ).toThrow();
+  });
+
   it('keeps the public recommendation card image-first contract explicit', () => {
     expect(
       recommendationCardSchema.parse({
@@ -101,6 +136,7 @@ describe('shared API contracts', () => {
         createdAt: '2026-08-07T10:00:00.000Z',
         discount: { code: 'NOA10', label: '10% off' },
         id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        imageAssetId: null,
         imageUrl: 'https://images.example.com/blush.jpg',
         lifecycle: 'published',
         price: { amountMinor: 12_000, currency: 'ILS' },

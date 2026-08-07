@@ -6,6 +6,7 @@ import {
 } from '@vibeshub/contracts';
 
 import { problem } from '../api-problem.js';
+import { DeferredVideoPreviewProvider } from '../media/video-provider.js';
 import type { RecommendationCursor } from './recommendation.js';
 import {
   RecommendationRepository,
@@ -15,14 +16,20 @@ import {
 
 @Injectable()
 export class RecommendationService {
-  constructor(private readonly recommendations: RecommendationRepository) {}
+  constructor(
+    private readonly recommendations: RecommendationRepository,
+    private readonly videos: DeferredVideoPreviewProvider,
+  ) {}
 
   async create(
     userId: string,
     input: CreatorRecommendationInput,
   ): Promise<RecommendationRecord> {
     try {
-      const created = await this.recommendations.create(userId, input);
+      const created = await this.recommendations.create(userId, {
+        ...input,
+        videoUrl: this.videos.normalizeExternalPreviewUrl(input.videoUrl ?? null),
+      });
       if (!created) throw this.creatorAccessRequired();
       return created;
     } catch (error) {
@@ -55,26 +62,33 @@ export class RecommendationService {
     patch: CreatorRecommendationPatch,
   ): Promise<RecommendationRecord> {
     const current = await this.requireCurrentVersion(id, userId, expectedVersion);
+    const imagePatch = this.normalizeImagePatch(patch);
     const input = creatorRecommendationInputSchema.parse({
       brandName: current.brandName,
       categoryId: current.categoryId,
       commercialRelationship: current.commercialRelationship,
       discountCode: current.discount?.code ?? null,
       discountLabel: current.discount?.label ?? null,
-      imageUrl: current.imageUrl,
+      imageAssetId: current.imageAssetId,
+      imageUrl: current.imageAssetId ? null : current.imageUrl,
       priceAmountMinor: current.price.amountMinor,
       productName: current.productName,
       productUrl: current.shopUrl,
       reviewHe: current.review.value,
       videoUrl: current.videoUrl,
       ...patch,
+      ...imagePatch,
     });
+    const normalizedInput = {
+      ...input,
+      videoUrl: this.videos.normalizeExternalPreviewUrl(input.videoUrl ?? null),
+    };
     try {
       const updated = await this.recommendations.replaceOwned(
         id,
         userId,
         expectedVersion,
-        input,
+        normalizedInput,
       );
       if (!updated) throw this.preconditionFailed();
       return updated;
@@ -153,6 +167,17 @@ export class RecommendationService {
   }
 
   private translateCatalogError(error: unknown): never {
+    if (
+      error instanceof Error &&
+      (error.message === 'MEDIA_ASSET_NOT_READY_OR_OWNED' ||
+        error.message === 'RECOMMENDATION_IMAGE_REQUIRED')
+    ) {
+      throw problem(
+        422,
+        'MEDIA_NOT_READY',
+        'Choose an image that finished uploading to your media library',
+      );
+    }
     if (error instanceof Error && error.message === 'OFFER_PRODUCT_IDENTITY_CONFLICT') {
       throw problem(
         409,
@@ -168,6 +193,15 @@ export class RecommendationService {
       );
     }
     throw error;
+  }
+
+  private normalizeImagePatch(patch: CreatorRecommendationPatch): {
+    imageAssetId?: string | null;
+    imageUrl?: string | null;
+  } {
+    if (patch.imageAssetId) return { imageAssetId: patch.imageAssetId, imageUrl: null };
+    if (patch.imageUrl) return { imageAssetId: null, imageUrl: patch.imageUrl };
+    return {};
   }
 }
 

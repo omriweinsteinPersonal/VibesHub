@@ -22,8 +22,9 @@ deploy the worker and does not move API routes into Next.js.
 2. Authenticate `gcloud` with an authorized individual account.
 3. Set the Google Cloud project ID explicitly and verify it before every
    mutating command.
-4. Obtain the current Supabase database password and publishable key without
-   placing either value in source control, terminal history, or chat.
+4. Obtain the current Supabase database password, publishable key, and
+   service-role key without placing any secret in source control, terminal
+   history, or chat.
 
 ## Google Cloud foundation
 
@@ -81,6 +82,20 @@ gcloud secrets add-iam-policy-binding vibeshub-database-url \
   --role="roles/secretmanager.secretAccessor"
 ```
 
+Create a separate server-only secret for Storage upload authorization:
+
+```bash
+gcloud secrets create vibeshub-supabase-service-role-key \
+  --data-file=- \
+  --replication-policy=automatic
+
+gcloud secrets add-iam-policy-binding vibeshub-supabase-service-role-key \
+  --member="serviceAccount:vibeshub-api-runtime@YOUR_GOOGLE_CLOUD_PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+Never place this value in Vercel or a public client environment variable.
+
 ## Build the API image
 
 Run from the repository root and replace `GIT_SHA` with the deployed commit:
@@ -110,7 +125,7 @@ gcloud run deploy vibeshub-api \
   --region=europe-west3 \
   --service-account=vibeshub-api-runtime@YOUR_GOOGLE_CLOUD_PROJECT_ID.iam.gserviceaccount.com \
   --set-env-vars="NODE_ENV=production,LOG_LEVEL=info,DATABASE_POOL_MAX=5,CORS_ORIGINS=https://vibes-hub-web.vercel.app,SUPABASE_URL=https://jelugsfwttolvtrduefo.supabase.co,SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY" \
-  --set-secrets="DATABASE_URL=vibeshub-database-url:1"
+  --set-secrets="DATABASE_URL=vibeshub-database-url:1,SUPABASE_SERVICE_ROLE_KEY=vibeshub-supabase-service-role-key:1"
 ```
 
 The Cloud Run service is publicly invokable because authentication is enforced

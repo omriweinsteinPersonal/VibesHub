@@ -5,10 +5,21 @@ import type {
   CommercialRelationship,
   RecommendationCard,
 } from '@vibeshub/contracts';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from 'react';
 
 import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
+import {
+  recommendationImageAccept,
+  uploadRecommendationImage,
+} from '../../../lib/recommendation-media';
 import { RecommendationCardView } from '../../_components/recommendation-card';
 
 interface EditorState {
@@ -17,6 +28,7 @@ interface EditorState {
   commercialRelationship: CommercialRelationship;
   discountCode: string;
   discountLabel: string;
+  imageAssetId: string;
   imageUrl: string;
   priceIls: string;
   productName: string;
@@ -31,6 +43,7 @@ const emptyEditor: EditorState = {
   commercialRelationship: 'organic',
   discountCode: '',
   discountLabel: '',
+  imageAssetId: '',
   imageUrl: '',
   priceIls: '',
   productName: '',
@@ -48,6 +61,9 @@ export default function CreatorRecommendationsPage() {
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadStage, setUploadStage] = useState<
+    'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready'
+  >('idle');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,13 +113,17 @@ export default function CreatorRecommendationsPage() {
       if (!Number.isFinite(amount) || amount < 0) {
         throw new Error('Enter a valid product price.');
       }
+      if (!editor.imageAssetId && !editor.imageUrl) {
+        throw new Error('Upload a product image before saving.');
+      }
       const body = JSON.stringify({
         brandName: editor.brandName,
         categoryId: editor.categoryId,
         commercialRelationship: editor.commercialRelationship,
         discountCode: editor.discountCode.trim() || null,
         discountLabel: editor.discountLabel.trim() || null,
-        imageUrl: editor.imageUrl,
+        imageAssetId: editor.imageAssetId || null,
+        imageUrl: editor.imageAssetId ? null : editor.imageUrl || null,
         priceAmountMinor: Math.round(amount * 100),
         productName: editor.productName,
         productUrl: editor.productUrl,
@@ -171,6 +191,7 @@ export default function CreatorRecommendationsPage() {
       commercialRelationship: recommendation.commercialRelationship,
       discountCode: recommendation.discount?.code ?? '',
       discountLabel: recommendation.discount?.label ?? '',
+      imageAssetId: recommendation.imageAssetId ?? '',
       imageUrl: recommendation.imageUrl,
       priceIls: String(recommendation.price.amountMinor / 100),
       productName: recommendation.productName,
@@ -178,17 +199,51 @@ export default function CreatorRecommendationsPage() {
       reviewHe: recommendation.review.value,
       videoUrl: recommendation.videoUrl ?? '',
     });
+    setUploadStage(recommendation.imageAssetId ? 'ready' : 'idle');
     window.scrollTo({ behavior: 'smooth', top: 0 });
   }
 
   function cancelEditing() {
     setEditing(null);
     setEditor(emptyEditor);
+    setUploadStage('idle');
   }
 
   function update<K extends keyof EditorState>(key: K, value: EditorState[K]) {
     setEditor((current) => ({ ...current, [key]: value }));
   }
+
+  async function selectImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const previous = { imageAssetId: editor.imageAssetId, imageUrl: editor.imageUrl };
+    const previewUrl = URL.createObjectURL(file);
+    setEditor((current) => ({ ...current, imageAssetId: '', imageUrl: previewUrl }));
+    setError('');
+    setNotice('');
+    try {
+      const asset = await uploadRecommendationImage(file, setUploadStage);
+      setEditor((current) => ({
+        ...current,
+        imageAssetId: asset.id,
+        imageUrl: asset.publicUrl,
+      }));
+      setUploadStage('ready');
+      setNotice('Image uploaded and validated.');
+    } catch (cause) {
+      setEditor((current) => ({ ...current, ...previous }));
+      setUploadStage(previous.imageAssetId ? 'ready' : 'idle');
+      setError(messageFor(cause));
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      event.target.value = '';
+    }
+  }
+
+  const imageIsUploading =
+    uploadStage === 'authorizing' ||
+    uploadStage === 'uploading' ||
+    uploadStage === 'validating';
 
   return (
     <main className="workspacePage">
@@ -236,6 +291,49 @@ export default function CreatorRecommendationsPage() {
             ) : null}
           </div>
 
+          <div className="recommendationImageUploader">
+            <div className="recommendationImagePreview">
+              {editor.imageUrl ? (
+                <Image
+                  alt="Product image preview"
+                  fill
+                  sizes="(max-width: 800px) 100vw, 420px"
+                  src={editor.imageUrl}
+                  unoptimized
+                />
+              ) : (
+                <div className="imageUploadPlaceholder" aria-hidden="true">
+                  <span>＋</span>
+                  Product image
+                </div>
+              )}
+            </div>
+            <div className="recommendationImageControls">
+              <label>
+                Product image
+                <input
+                  accept={recommendationImageAccept}
+                  disabled={imageIsUploading || saving}
+                  required={!editor.imageUrl}
+                  type="file"
+                  onChange={selectImage}
+                />
+              </label>
+              <p className="fieldHint">
+                JPEG, PNG or WebP, up to 5 MB. Use a clear portrait or square product
+                photo.
+              </p>
+              {uploadStage !== 'idle' ? (
+                <div className={`imageUploadProgress ${uploadStage}`} role="status">
+                  {imageIsUploading ? (
+                    <progress aria-label="Image upload progress" />
+                  ) : null}
+                  <span>{uploadStageLabel(uploadStage)}</span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
           <div className="fieldGrid">
             <label>
               Product name
@@ -263,16 +361,6 @@ export default function CreatorRecommendationsPage() {
                 type="url"
                 value={editor.productUrl}
                 onChange={(event) => update('productUrl', event.target.value)}
-              />
-            </label>
-            <label>
-              Product image URL
-              <input
-                placeholder="https://images.example.com/product.jpg"
-                required
-                type="url"
-                value={editor.imageUrl}
-                onChange={(event) => update('imageUrl', event.target.value)}
               />
             </label>
             <label>
@@ -365,7 +453,11 @@ export default function CreatorRecommendationsPage() {
             </small>
           </label>
 
-          <button className="button primary studioSave" disabled={saving} type="submit">
+          <button
+            className="button primary studioSave"
+            disabled={saving || imageIsUploading}
+            type="submit"
+          >
             {saving ? 'Saving…' : editing ? 'Save recommendation' : 'Create draft'}
           </button>
         </form>
@@ -433,6 +525,18 @@ export default function CreatorRecommendationsPage() {
       </section>
     </main>
   );
+}
+
+function uploadStageLabel(
+  stage: 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready',
+): string {
+  return {
+    authorizing: 'Preparing secure upload…',
+    idle: '',
+    ready: 'Image ready',
+    uploading: 'Uploading image…',
+    validating: 'Checking image type and size…',
+  }[stage];
 }
 
 function messageFor(cause: unknown): string {

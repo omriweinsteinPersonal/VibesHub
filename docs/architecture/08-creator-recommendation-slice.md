@@ -26,7 +26,7 @@ It adds canonical brands, merchants, products, merchant offers, and creator reco
 
 ## Deliberate boundaries
 
-ADR-005 remains accepted. Phase 1 accepts HTTPS media URLs so the publishing and storefront domain can be exercised without committing to incomplete upload plumbing. Direct signed image uploads, Mux video processing, media moderation, renditions, and provider-owned asset identifiers must replace these inputs before broad creator onboarding.
+ADR-005 remains accepted. The temporary image-URL input has been superseded for new Creator Studio content by the controlled upload flow in `09-recommendation-image-media.md`; legacy fixture URLs remain compatible during migration. Mux video processing, media moderation, and controlled renditions remain required before broad creator onboarding.
 
 ADR-006 remains accepted. The API is still a separate NestJS service intended for Cloud Run in `europe-west3`; it has not been moved into Next.js Route Handlers. Production API and worker deployment are intentionally deferred while Google Cloud billing is disabled. Until the API is deployed and `NEXT_PUBLIC_API_URL` is configured, the production web app must display its existing unavailable state rather than access private Supabase tables directly.
 

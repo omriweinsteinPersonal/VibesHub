@@ -15,6 +15,11 @@ import { ApplicationService } from './creator-applications/application.service.j
 import { Database } from './database.js';
 import { HealthController } from './health.controller.js';
 import { IdempotencyService } from './idempotency.service.js';
+import { CreatorMediaController } from './media/creator-media.controller.js';
+import { MediaRepository } from './media/media.repository.js';
+import { MediaService } from './media/media.service.js';
+import { MediaStorageGateway } from './media/media-storage.gateway.js';
+import { DeferredVideoPreviewProvider } from './media/video-provider.js';
 import { ProblemDetailsFilter } from './problem-details.filter.js';
 import { CreatorDirectoryRepository } from './discovery/creator-directory.repository.js';
 import { CreatorsController } from './discovery/creators.controller.js';
@@ -28,6 +33,7 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CategoriesController,
     CreatorsController,
     CreatorRecommendationsController,
+    CreatorMediaController,
     AccountController,
     ApplicationController,
     AdminApplicationController,
@@ -42,6 +48,10 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CreatorDirectoryRepository,
     RecommendationRepository,
     RecommendationService,
+    MediaRepository,
+    MediaStorageGateway,
+    MediaService,
+    DeferredVideoPreviewProvider,
     IdempotencyService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },

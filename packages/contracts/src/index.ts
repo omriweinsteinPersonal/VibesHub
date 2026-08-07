@@ -87,14 +87,55 @@ export const hebrewRecommendationSchema = z
   .max(1_000)
   .refine((value) => /[א-ת]/u.test(value), 'A Hebrew recommendation is required');
 
-export const creatorRecommendationInputSchema = z
+export const recommendationImageContentTypeSchema = z.enum([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
+export const recommendationImageUploadInputSchema = z
+  .object({
+    contentType: recommendationImageContentTypeSchema,
+    fileSizeBytes: z
+      .int()
+      .min(1)
+      .max(5 * 1_024 * 1_024),
+  })
+  .strict();
+
+export const recommendationImageUploadSchema = z
+  .object({
+    assetId: idSchema,
+    bucket: z.literal('recommendation-image-uploads'),
+    contentType: recommendationImageContentTypeSchema,
+    expiresAt: z.iso.datetime(),
+    objectPath: z.string().trim().min(1).max(512),
+    token: z.string().trim().min(1),
+  })
+  .strict();
+
+export const recommendationImageAssetSchema = z
+  .object({
+    contentType: recommendationImageContentTypeSchema,
+    id: idSchema,
+    publicUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    sizeBytes: z
+      .int()
+      .min(1)
+      .max(5 * 1_024 * 1_024),
+    status: z.literal('ready'),
+  })
+  .strict();
+
+const creatorRecommendationInputFieldsSchema = z
   .object({
     brandName: z.string().trim().min(1).max(120),
     categoryId: idSchema,
     commercialRelationship: commercialRelationshipSchema.default('organic'),
     discountCode: optionalTrimmedStringSchema(50).optional(),
     discountLabel: optionalTrimmedStringSchema(100).optional(),
-    imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    imageAssetId: idSchema.nullable().optional(),
+    imageUrl: optionalHttpsUrlSchema.optional(),
     priceAmountMinor: z.int().nonnegative(),
     productName: z.string().trim().min(1).max(200),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
@@ -103,7 +144,17 @@ export const creatorRecommendationInputSchema = z
   })
   .strict();
 
-export const creatorRecommendationPatchSchema = creatorRecommendationInputSchema
+export const creatorRecommendationInputSchema =
+  creatorRecommendationInputFieldsSchema.refine(
+    (value) =>
+      Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) === 1,
+    {
+      message: 'Choose exactly one recommendation image source',
+      path: ['imageAssetId'],
+    },
+  );
+
+export const creatorRecommendationPatchSchema = creatorRecommendationInputFieldsSchema
   .partial()
   .refine(
     (value) => Object.keys(value).length > 0,
@@ -125,6 +176,7 @@ export const recommendationCardSchema = z
     createdAt: z.iso.datetime(),
     discount: recommendationDiscountSchema.nullable(),
     id: idSchema,
+    imageAssetId: idSchema.nullable(),
     imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
     lifecycle: recommendationLifecycleSchema,
     price: moneySchema,
@@ -279,6 +331,14 @@ export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
 >;
 export type RecommendationLifecycle = z.infer<typeof recommendationLifecycleSchema>;
+export type RecommendationImageAsset = z.infer<typeof recommendationImageAssetSchema>;
+export type RecommendationImageContentType = z.infer<
+  typeof recommendationImageContentTypeSchema
+>;
+export type RecommendationImageUpload = z.infer<typeof recommendationImageUploadSchema>;
+export type RecommendationImageUploadInput = z.infer<
+  typeof recommendationImageUploadInputSchema
+>;
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
 export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;
