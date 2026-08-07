@@ -440,6 +440,161 @@ textarea:disabled {
   color: white;
 }
 
+.adminWorkspaceHeader nav {
+  align-items: center;
+  display: flex;
+  gap: 26px;
+}
+
+.merchantDomainWorkspace {
+  max-width: 1120px;
+}
+
+.domainQueueTabs {
+  background: var(--vh-surface);
+  border-radius: var(--vh-radius-control);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 38px 0 28px;
+  padding: 5px;
+}
+
+.domainQueueTabs button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--vh-radius-control);
+  color: var(--vh-muted);
+  cursor: pointer;
+  min-height: 44px;
+  text-transform: capitalize;
+}
+
+.domainQueueTabs button.active {
+  background: var(--vh-white);
+  border-color: var(--vh-border);
+  box-shadow: 0 2px 5px rgb(43 33 28 / 8%);
+  color: var(--vh-ink);
+}
+
+.domainReviewList {
+  margin-top: 28px;
+}
+
+.domainReviewCard {
+  display: grid;
+  gap: 24px;
+}
+
+.domainReviewHeading {
+  align-items: start;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.domainReviewHeading h2 {
+  margin: 12px 0 4px;
+  overflow-wrap: anywhere;
+}
+
+.domainReviewHeading p {
+  margin: 0;
+}
+
+.domainReviewHeading .statusPill {
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.domain-pending {
+  background: #f3ede4;
+  color: #765737;
+}
+
+.domain-approved {
+  background: #e6f4e9;
+  color: #27613a;
+}
+
+.domain-rejected,
+.domain-disabled {
+  background: #fff0ed;
+  color: #8a3028;
+}
+
+.domainReviewFacts {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+
+.domainReviewFacts div {
+  background: var(--vh-surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.domainReviewFacts dt {
+  color: var(--vh-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.domainReviewFacts dd {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.domainPreviousNote {
+  background: var(--vh-surface);
+  border-left: 3px solid var(--vh-accent);
+  border-radius: 8px;
+  margin: 0;
+  padding: 14px 16px;
+}
+
+.domainPermissionToggle {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.domainPermissionToggle input {
+  min-height: auto;
+  width: auto;
+}
+
+.domainQueueEmpty {
+  background: var(--vh-surface);
+  border: 1px dashed var(--vh-border);
+  border-radius: var(--vh-radius-card);
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.domainQueueEmpty h2 {
+  font-size: 2rem;
+  margin: 12px 0;
+}
+
+.queueLoading {
+  color: var(--vh-muted);
+  margin-top: 28px;
+  text-align: center;
+}
+
+.queueMore {
+  display: flex;
+  margin: 28px auto 0;
+}
+
 @media (max-width: 800px) {
   .authPage {
     grid-template-columns: 1fr;
@@ -479,5 +634,22 @@ textarea:disabled {
     align-items: start;
     flex-direction: column;
     gap: 20px;
+  }
+
+  .adminWorkspaceHeader nav {
+    font-size: 0.78rem;
+    gap: 12px;
+  }
+
+  .domainQueueTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .domainReviewHeading {
+    flex-direction: column;
+  }
+
+  .domainReviewFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

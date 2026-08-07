@@ -1,6 +1,6 @@
 # Tracked outbound shopping slice
 
-**Status:** Implemented phase 1
+**Status:** Implemented phase 2
 
 **Date:** 2026-08-07
 
@@ -29,20 +29,36 @@ The worker is not deployed or required for this synchronous path. Click events a
 
 ## Administration
 
-An authenticated administrator manages a merchant hostname through:
+An authenticated administrator discovers merchant hostnames through the paginated
+review queue:
 
 ```text
-POST /v1/admin/merchants/{merchantId}/domains
+GET /v1/admin/merchant-domains?status=pending&limit=20
+```
+
+Decisions use explicit commands with both an idempotency key and the row version:
+
+```text
+POST /v1/admin/merchant-domains/{domainId}/approve
+POST /v1/admin/merchant-domains/{domainId}/reject
+POST /v1/admin/merchant-domains/{domainId}/disable
+
+If-Match: 3
 Idempotency-Key: <unique command key>
 
+// approval
 {
-  "hostname": "shop.example.com",
   "allowImport": false,
-  "allowRedirect": true
+  "allowRedirect": true,
+  "note": "Verified against the merchant homepage"
 }
 ```
 
-The endpoint requires `admin:manage_platform`, normalizes the hostname, prevents a hostname from belonging to two merchants, and writes an immutable audit entry. The first admin UI for this endpoint remains a later operations slice.
+All endpoints require `admin:manage_platform`. Rejection and disabling require an
+internal reason. Stale decisions fail with `412`, invalid lifecycle changes fail
+with `409`, and every successful decision writes an immutable audit entry. The
+administrator interface lives at `/admin/merchant-domains` and shows the merchant,
+affected recommendation and creator counts, prior notes, and all four review states.
 
 ## Client contract
 

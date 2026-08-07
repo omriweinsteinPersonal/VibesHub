@@ -146,17 +146,24 @@ Credentials and secrets are stored in managed secret infrastructure, never in th
 
 Normalized domains used by import and redirect allowlists.
 
-| Column                     | Type                 | Notes                               |
-| -------------------------- | -------------------- | ----------------------------------- |
-| `id`                       | uuid                 | Primary key                         |
-| `merchant_id`              | uuid                 | Merchant foreign key                |
-| `hostname`                 | citext               | ASCII-normalized hostname           |
-| `allow_import`             | boolean              | Product importer permission         |
-| `allow_redirect`           | boolean              | Outbound-link permission            |
-| `verified_at`              | timestamptz nullable | Domain ownership/relationship check |
-| `created_at`, `updated_at` | timestamptz          | Audit timestamps                    |
+| Column                     | Type                 | Notes                                         |
+| -------------------------- | -------------------- | --------------------------------------------- |
+| `id`                       | uuid                 | Primary key                                   |
+| `merchant_id`              | uuid                 | Merchant foreign key                          |
+| `hostname`                 | citext               | ASCII-normalized hostname                     |
+| `allow_import`             | boolean              | Product importer permission                   |
+| `allow_redirect`           | boolean              | Outbound-link permission                      |
+| `review_status`            | text                 | `pending`, `approved`, `rejected`, `disabled` |
+| `verified_at`              | timestamptz nullable | Domain ownership/relationship check           |
+| `reviewed_by_user_id`      | uuid nullable        | Administrator who made the latest decision    |
+| `reviewed_at`              | timestamptz nullable | Latest decision time                          |
+| `review_note`              | text nullable        | Private bounded verification or denial note   |
+| `created_at`, `updated_at` | timestamptz          | Audit timestamps                              |
+| `version`                  | integer              | Optimistic concurrency                        |
 
-Unique normalized `hostname`; redirects are checked after every redirect hop.
+Unique normalized `hostname`; redirects are checked after every redirect hop. A
+creator can only create a pending row. Approval, rejection, reapproval, and
+disabling are administrator decisions recorded in `audit.entries`.
 
 ### 4.5 `app.products`
 

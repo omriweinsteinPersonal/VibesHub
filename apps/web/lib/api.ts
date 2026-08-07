@@ -31,6 +31,19 @@ export async function apiRequest<T>(
   return request<T>(path, { ...init, headers });
 }
 
+export async function apiCollectionRequest<T>(path: string): Promise<{
+  data: T[];
+  page: { hasMore: boolean; nextCursor: string | null };
+}> {
+  const supabase = getSupabaseBrowserClient();
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new ApiError('Please log in to continue.', 401);
+
+  return collectionRequest<T>(path, {
+    headers: { authorization: `Bearer ${data.session.access_token}` },
+  });
+}
+
 export function publicApiRequest<T>(path: string): Promise<T> {
   return request<T>(path);
 }
@@ -39,7 +52,17 @@ export async function publicApiCollectionRequest<T>(path: string): Promise<{
   data: T[];
   page: { hasMore: boolean; nextCursor: string | null };
 }> {
-  const response = await fetch(`${getApiUrl()}/v1${path}`);
+  return collectionRequest<T>(path);
+}
+
+async function collectionRequest<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<{
+  data: T[];
+  page: { hasMore: boolean; nextCursor: string | null };
+}> {
+  const response = await fetch(`${getApiUrl()}/v1${path}`, init);
   const body = (await response.json()) as {
     data?: T[];
     page?: { hasMore: boolean; nextCursor: string | null };

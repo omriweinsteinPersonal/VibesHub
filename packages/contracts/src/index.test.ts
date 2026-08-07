@@ -7,6 +7,9 @@ import {
   creatorDirectoryQuerySchema,
   directionalTextSchema,
   moneySchema,
+  merchantDomainApprovalInputSchema,
+  merchantDomainQueueQuerySchema,
+  merchantDomainReasonInputSchema,
   recommendationCardSchema,
   recommendationImageUploadInputSchema,
 } from './index.js';
@@ -153,5 +156,29 @@ describe('shared API contracts', () => {
         videoUrl: 'https://video.example.com/blush.mp4',
       }).review.direction,
     ).toBe('rtl');
+  });
+
+  it('normalizes bounded merchant-domain queue filters', () => {
+    expect(
+      merchantDomainQueueQuerySchema.parse({ limit: '25', status: 'rejected' }),
+    ).toEqual({ limit: 25, status: 'rejected' });
+
+    expect(() =>
+      merchantDomainQueueQuerySchema.parse({ limit: '100', status: 'unknown' }),
+    ).toThrow();
+  });
+
+  it('requires an explicit permission for approval and a reason for denial', () => {
+    expect(merchantDomainApprovalInputSchema.parse({})).toEqual({
+      allowImport: false,
+      allowRedirect: true,
+    });
+    expect(() =>
+      merchantDomainApprovalInputSchema.parse({
+        allowImport: false,
+        allowRedirect: false,
+      }),
+    ).toThrow();
+    expect(() => merchantDomainReasonInputSchema.parse({ note: '  ' })).toThrow();
   });
 });

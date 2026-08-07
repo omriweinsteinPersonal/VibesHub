@@ -474,16 +474,19 @@ Admin routes require staff capability, stronger rate limits, audit recording, an
 
 ### Catalog and operations
 
-| Method   | Path                                | Capability    | Purpose                            |
-| -------- | ----------------------------------- | ------------- | ---------------------------------- |
-| GET/POST | `/admin/merchants`                  | Administrator | Manage merchant registry           |
-| POST     | `/admin/merchants/{id}/domains`     | Administrator | Manage importer/redirect allowlist |
-| GET      | `/admin/products/candidates`        | Moderator     | Product candidate queue            |
-| POST     | `/admin/products/{id}/merge`        | Administrator | Merge duplicate product            |
-| POST     | `/admin/brands/{id}/merge`          | Administrator | Merge duplicate brand              |
-| POST     | `/admin/discount-codes/{id}/verify` | Moderator     | Staff/merchant verification        |
-| GET      | `/admin/imports/{id}`               | Moderator     | Import diagnostics, redacted       |
-| GET      | `/admin/audit`                      | Administrator | Filtered immutable audit query     |
+| Method   | Path                                   | Capability    | Purpose                             |
+| -------- | -------------------------------------- | ------------- | ----------------------------------- |
+| GET/POST | `/admin/merchants`                     | Administrator | Manage merchant registry            |
+| GET      | `/admin/merchant-domains`              | Administrator | Paginated domain review queue       |
+| POST     | `/admin/merchant-domains/{id}/approve` | Administrator | Grant explicit domain permissions   |
+| POST     | `/admin/merchant-domains/{id}/reject`  | Administrator | Reject a pending domain with reason |
+| POST     | `/admin/merchant-domains/{id}/disable` | Administrator | Revoke and block domain access      |
+| GET      | `/admin/products/candidates`           | Moderator     | Product candidate queue             |
+| POST     | `/admin/products/{id}/merge`           | Administrator | Merge duplicate product             |
+| POST     | `/admin/brands/{id}/merge`             | Administrator | Merge duplicate brand               |
+| POST     | `/admin/discount-codes/{id}/verify`    | Moderator     | Staff/merchant verification         |
+| GET      | `/admin/imports/{id}`                  | Moderator     | Import diagnostics, redacted        |
+| GET      | `/admin/audit`                         | Administrator | Filtered immutable audit query      |
 
 Staff actions use command-specific DTOs. No endpoint accepts arbitrary table names, field maps, SQL-like filters, or unrestricted status assignment.
 

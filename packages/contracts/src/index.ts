@@ -223,6 +223,67 @@ export const recommendationDirectoryQuerySchema = z
   })
   .strict();
 
+export const merchantDomainReviewStatusSchema = z.enum([
+  'pending',
+  'approved',
+  'rejected',
+  'disabled',
+]);
+
+export const merchantDomainQueueQuerySchema = z
+  .object({
+    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    status: merchantDomainReviewStatusSchema.default('pending'),
+  })
+  .strict();
+
+export const merchantDomainApprovalInputSchema = z
+  .object({
+    allowImport: z.boolean().default(false),
+    allowRedirect: z.boolean().default(true),
+    note: z.string().trim().min(1).max(2_000).nullable().optional(),
+  })
+  .strict()
+  .refine((value) => value.allowImport || value.allowRedirect, {
+    message: 'Approve at least one merchant-domain permission',
+    path: ['allowRedirect'],
+  });
+
+export const merchantDomainReasonInputSchema = z
+  .object({
+    note: z.string().trim().min(1).max(2_000),
+  })
+  .strict();
+
+export const merchantDomainReviewItemSchema = z
+  .object({
+    allowImport: z.boolean(),
+    allowRedirect: z.boolean(),
+    createdAt: z.iso.datetime(),
+    creatorCount: z.int().nonnegative(),
+    hostname: z.string().trim().min(4).max(253),
+    id: idSchema,
+    latestRecommendationAt: z.iso.datetime().nullable(),
+    merchant: z
+      .object({
+        homepageUrl: z.url({ protocol: /^https$/ }).max(2_048),
+        id: idSchema,
+        name: z.string().trim().min(1).max(160),
+        status: z.enum(['active', 'inactive']),
+      })
+      .strict(),
+    recommendationCount: z.int().nonnegative(),
+    reviewedAt: z.iso.datetime().nullable(),
+    reviewedByUserId: idSchema.nullable(),
+    reviewNote: z.string().trim().min(1).max(2_000).nullable(),
+    reviewStatus: merchantDomainReviewStatusSchema,
+    updatedAt: z.iso.datetime(),
+    verifiedAt: z.iso.datetime().nullable(),
+    version: z.int().positive(),
+  })
+  .strict();
+
 export const cursorPageSchema = <T extends z.ZodType>(itemSchema: T) =>
   z.object({
     data: z.array(itemSchema),
@@ -342,6 +403,13 @@ export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
 >;
+export type MerchantDomainApprovalInput = z.infer<
+  typeof merchantDomainApprovalInputSchema
+>;
+export type MerchantDomainQueueQuery = z.infer<typeof merchantDomainQueueQuerySchema>;
+export type MerchantDomainReasonInput = z.infer<typeof merchantDomainReasonInputSchema>;
+export type MerchantDomainReviewItem = z.infer<typeof merchantDomainReviewItemSchema>;
+export type MerchantDomainReviewStatus = z.infer<typeof merchantDomainReviewStatusSchema>;
 
 function isProductionOrLocalUrl(value: string): boolean {
   const url = new URL(value);

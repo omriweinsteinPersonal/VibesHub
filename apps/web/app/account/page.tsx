@@ -91,6 +91,31 @@ export default function AccountPage() {
                 </Link>
               ) : null}
             </article>
+            {account.capabilities.includes('admin:manage_platform') ? (
+              <article className="workspaceCard">
+                <p className="eyebrow">PLATFORM OPERATIONS</p>
+                <h2>Merchant-domain reviews</h2>
+                <p>
+                  Approve exact shopping domains before creator recommendations can send
+                  shoppers to them.
+                </p>
+                <Link className="button primary" href="/admin/merchant-domains">
+                  Open domain queue
+                </Link>
+              </article>
+            ) : null}
+            {account.capabilities.some((capability) =>
+              ['admin:manage_platform', 'moderator:review_content'].includes(capability),
+            ) ? (
+              <article className="workspaceCard">
+                <p className="eyebrow">MODERATION</p>
+                <h2>Creator applications</h2>
+                <p>Review creator identities before their storefronts are published.</p>
+                <Link className="button secondary" href="/admin/applications">
+                  Open application queue
+                </Link>
+              </article>
+            ) : null}
           </div>
         ) : null}
       </section>
