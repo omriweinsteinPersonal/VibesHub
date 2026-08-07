@@ -50,6 +50,12 @@ export class CreatorDirectoryRepository {
         (
           select count(*)::integer
           from app.recommendations recommendation
+          join app.affiliate_links affiliate_link
+            on affiliate_link.recommendation_id = recommendation.id
+           and affiliate_link.status = 'active'
+          join app.merchant_domains merchant_domain
+            on merchant_domain.id = affiliate_link.merchant_domain_id
+           and merchant_domain.allow_redirect = true
           where recommendation.creator_id = creator.id
             and recommendation.lifecycle = 'published'
             and recommendation.deleted_at is null
@@ -108,6 +114,12 @@ export class CreatorDirectoryRepository {
         (
           select count(*)::integer
           from app.recommendations recommendation
+          join app.affiliate_links affiliate_link
+            on affiliate_link.recommendation_id = recommendation.id
+           and affiliate_link.status = 'active'
+          join app.merchant_domains merchant_domain
+            on merchant_domain.id = affiliate_link.merchant_domain_id
+           and merchant_domain.allow_redirect = true
           where recommendation.creator_id = creator.id
             and recommendation.lifecycle = 'published'
             and recommendation.deleted_at is null

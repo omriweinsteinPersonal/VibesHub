@@ -32,11 +32,11 @@ The clients authenticate directly with Supabase Auth. Every protected API reques
 
 Configure these public client variables from the local Supabase output:
 
-| Surface | Variables                                                                                 |
-| ------- | ----------------------------------------------------------------------------------------- |
-| Web     | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_API_URL` |
-| Mobile  | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_API_URL` |
-| API     | `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`   |
+| Surface | Variables                                                                                                    |
+| ------- | ------------------------------------------------------------------------------------------------------------ |
+| Web     | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_API_URL`                    |
+| Mobile  | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_API_URL`                    |
+| API     | `DATABASE_URL`, `REDIRECT_BASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
 
 New accounts receive shopper capabilities from the `app.handle_new_auth_user()` database trigger. Creator capabilities are granted only by the transactional approval workflow. For local moderation testing, first create a normal account and then grant the review capability in Supabase Studio's SQL editor:
 

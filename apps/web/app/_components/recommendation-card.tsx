@@ -56,7 +56,7 @@ export function RecommendationCardView({ recommendation }: RecommendationCardVie
               ) : null}
             </div>
           ) : (
-            <span className="merchantDomain">{domainFor(recommendation.shopUrl)}</span>
+            <span className="merchantDomain">{recommendation.merchantHostname}</span>
           )}
           <a
             className="button primary small"
@@ -70,14 +70,6 @@ export function RecommendationCardView({ recommendation }: RecommendationCardVie
       </div>
     </article>
   );
-}
-
-function domainFor(value: string): string {
-  try {
-    return new URL(value).hostname.replace(/^www\./, '');
-  } catch {
-    return 'Shop product';
-  }
 }
 
 function formatIls(amountMinor: number): string {

@@ -21,6 +21,7 @@ async function bootstrap(): Promise<void> {
     exclude: [
       { method: RequestMethod.GET, path: 'health' },
       { method: RequestMethod.GET, path: 'health/ready' },
+      { method: RequestMethod.GET, path: 'go/:publicId' },
     ],
   });
   app.enableShutdownHooks();

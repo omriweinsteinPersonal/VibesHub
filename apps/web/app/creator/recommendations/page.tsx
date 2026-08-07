@@ -3,7 +3,7 @@
 import type {
   CategoryCard,
   CommercialRelationship,
-  RecommendationCard,
+  CreatorRecommendation,
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -54,9 +54,9 @@ const emptyEditor: EditorState = {
 
 export default function CreatorRecommendationsPage() {
   const [categories, setCategories] = useState<CategoryCard[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationCard[]>([]);
+  const [recommendations, setRecommendations] = useState<CreatorRecommendation[]>([]);
   const [editor, setEditor] = useState<EditorState>(emptyEditor);
-  const [editing, setEditing] = useState<RecommendationCard | null>(null);
+  const [editing, setEditing] = useState<CreatorRecommendation | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(true);
@@ -71,7 +71,7 @@ export default function CreatorRecommendationsPage() {
     try {
       const [categoryPage, recommendationPage] = await Promise.all([
         publicApiCollectionRequest<CategoryCard>('/categories'),
-        apiRequest<RecommendationCard[]>('/creator/recommendations?limit=48'),
+        apiRequest<CreatorRecommendation[]>('/creator/recommendations?limit=48'),
       ]);
       setCategories(categoryPage.data);
       setRecommendations(recommendationPage);
@@ -131,14 +131,17 @@ export default function CreatorRecommendationsPage() {
         videoUrl: editor.videoUrl.trim() || null,
       });
       if (editing) {
-        await apiRequest<RecommendationCard>(`/creator/recommendations/${editing.id}`, {
-          body,
-          headers: { 'if-match': `"${editing.version}"` },
-          method: 'PATCH',
-        });
+        await apiRequest<CreatorRecommendation>(
+          `/creator/recommendations/${editing.id}`,
+          {
+            body,
+            headers: { 'if-match': `"${editing.version}"` },
+            method: 'PATCH',
+          },
+        );
         setNotice('Recommendation updated.');
       } else {
-        await apiRequest<RecommendationCard>('/creator/recommendations', {
+        await apiRequest<CreatorRecommendation>('/creator/recommendations', {
           body,
           idempotent: true,
           method: 'POST',
@@ -155,13 +158,13 @@ export default function CreatorRecommendationsPage() {
   }
 
   async function transition(
-    recommendation: RecommendationCard,
+    recommendation: CreatorRecommendation,
     command: 'publish' | 'unpublish',
   ) {
     setError('');
     setNotice('');
     try {
-      await apiRequest<RecommendationCard>(
+      await apiRequest<CreatorRecommendation>(
         `/creator/recommendations/${recommendation.id}/${command}`,
         {
           headers: { 'if-match': `"${recommendation.version}"` },
@@ -180,14 +183,11 @@ export default function CreatorRecommendationsPage() {
     }
   }
 
-  function beginEditing(recommendation: RecommendationCard) {
-    const category = categories.find(
-      (candidate) => candidate.slug === recommendation.category.slug,
-    );
+  function beginEditing(recommendation: CreatorRecommendation) {
     setEditing(recommendation);
     setEditor({
       brandName: recommendation.brandName,
-      categoryId: category?.id ?? '',
+      categoryId: recommendation.categoryId,
       commercialRelationship: recommendation.commercialRelationship,
       discountCode: recommendation.discount?.code ?? '',
       discountLabel: recommendation.discount?.label ?? '',
@@ -195,7 +195,7 @@ export default function CreatorRecommendationsPage() {
       imageUrl: recommendation.imageUrl,
       priceIls: String(recommendation.price.amountMinor / 100),
       productName: recommendation.productName,
-      productUrl: recommendation.shopUrl,
+      productUrl: recommendation.productUrl,
       reviewHe: recommendation.review.value,
       videoUrl: recommendation.videoUrl ?? '',
     });
@@ -545,11 +545,11 @@ function messageFor(cause: unknown): string {
 
 async function fetchCreatorContent(): Promise<{
   categories: CategoryCard[];
-  recommendations: RecommendationCard[];
+  recommendations: CreatorRecommendation[];
 }> {
   const [categoryPage, recommendationPage] = await Promise.all([
     publicApiCollectionRequest<CategoryCard>('/categories'),
-    apiRequest<RecommendationCard[]>('/creator/recommendations?limit=48'),
+    apiRequest<CreatorRecommendation[]>('/creator/recommendations?limit=48'),
   ]);
   return {
     categories: categoryPage.data,

@@ -10,8 +10,8 @@ import { DeferredVideoPreviewProvider } from '../media/video-provider.js';
 import type { RecommendationCursor } from './recommendation.js';
 import {
   RecommendationRepository,
-  type RecommendationPage,
-  type RecommendationRecord,
+  type CreatorRecommendationPage,
+  type CreatorRecommendationRecord,
 } from './recommendation.repository.js';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class RecommendationService {
   async create(
     userId: string,
     input: CreatorRecommendationInput,
-  ): Promise<RecommendationRecord> {
+  ): Promise<CreatorRecommendationRecord> {
     try {
       const created = await this.recommendations.create(userId, {
         ...input,
@@ -37,7 +37,7 @@ export class RecommendationService {
     }
   }
 
-  async getOwned(id: string, userId: string): Promise<RecommendationRecord> {
+  async getOwned(id: string, userId: string): Promise<CreatorRecommendationRecord> {
     const recommendation = await this.recommendations.findOwned(id, userId);
     if (!recommendation) {
       throw problem(404, 'RESOURCE_NOT_FOUND', 'Recommendation not found');
@@ -49,7 +49,7 @@ export class RecommendationService {
     userId: string,
     limit: number,
     cursor: RecommendationCursor | null,
-  ): Promise<RecommendationPage> {
+  ): Promise<CreatorRecommendationPage> {
     const page = await this.recommendations.listOwned(userId, limit, cursor);
     if (!page) throw this.creatorAccessRequired();
     return page;
@@ -60,7 +60,7 @@ export class RecommendationService {
     userId: string,
     expectedVersion: number,
     patch: CreatorRecommendationPatch,
-  ): Promise<RecommendationRecord> {
+  ): Promise<CreatorRecommendationRecord> {
     const current = await this.requireCurrentVersion(id, userId, expectedVersion);
     const imagePatch = this.normalizeImagePatch(patch);
     const input = creatorRecommendationInputSchema.parse({
@@ -73,7 +73,7 @@ export class RecommendationService {
       imageUrl: current.imageAssetId ? null : current.imageUrl,
       priceAmountMinor: current.price.amountMinor,
       productName: current.productName,
-      productUrl: current.shopUrl,
+      productUrl: current.productUrl,
       reviewHe: current.review.value,
       videoUrl: current.videoUrl,
       ...patch,
@@ -101,7 +101,7 @@ export class RecommendationService {
     id: string,
     userId: string,
     expectedVersion: number,
-  ): Promise<RecommendationRecord> {
+  ): Promise<CreatorRecommendationRecord> {
     const current = await this.requireCurrentVersion(id, userId, expectedVersion);
     if (current.lifecycle !== 'draft') {
       throw problem(
@@ -110,21 +110,25 @@ export class RecommendationService {
         'Only a draft recommendation can be published',
       );
     }
-    const published = await this.recommendations.transitionOwned(
-      id,
-      userId,
-      expectedVersion,
-      'published',
-    );
-    if (!published) throw this.preconditionFailed();
-    return published;
+    try {
+      const published = await this.recommendations.transitionOwned(
+        id,
+        userId,
+        expectedVersion,
+        'published',
+      );
+      if (!published) throw this.preconditionFailed();
+      return published;
+    } catch (error) {
+      this.translateCatalogError(error);
+    }
   }
 
   async unpublish(
     id: string,
     userId: string,
     expectedVersion: number,
-  ): Promise<RecommendationRecord> {
+  ): Promise<CreatorRecommendationRecord> {
     const current = await this.requireCurrentVersion(id, userId, expectedVersion);
     if (current.lifecycle !== 'published') {
       throw problem(
@@ -147,7 +151,7 @@ export class RecommendationService {
     id: string,
     userId: string,
     expectedVersion: number,
-  ): Promise<RecommendationRecord> {
+  ): Promise<CreatorRecommendationRecord> {
     const current = await this.getOwned(id, userId);
     if (current.version !== expectedVersion) throw this.preconditionFailed();
     return current;
@@ -167,6 +171,29 @@ export class RecommendationService {
   }
 
   private translateCatalogError(error: unknown): never {
+    if (
+      error instanceof Error &&
+      (error.message === 'UNSAFE_REDIRECT_DESTINATION' ||
+        error.message === 'INVALID_MERCHANT_HOSTNAME')
+    ) {
+      throw problem(
+        422,
+        'UNSAFE_REDIRECT_DESTINATION',
+        'Use a public HTTPS product link without credentials or a custom port',
+      );
+    }
+    if (
+      error instanceof Error &&
+      (error.message === 'MERCHANT_DOMAIN_NOT_APPROVED' ||
+        error.message === 'MERCHANT_DOMAIN_CONFLICT')
+    ) {
+      throw problem(
+        422,
+        'MERCHANT_DOMAIN_NOT_APPROVED',
+        'This merchant domain is not approved for VibesHub shopping links yet',
+        'Keep the recommendation as a draft while the merchant domain is reviewed.',
+      );
+    }
     if (
       error instanceof Error &&
       (error.message === 'MEDIA_ASSET_NOT_READY_OR_OWNED' ||

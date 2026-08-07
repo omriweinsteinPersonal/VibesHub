@@ -124,7 +124,7 @@ gcloud run deploy vibeshub-api \
   --port=8080 \
   --region=europe-west3 \
   --service-account=vibeshub-api-runtime@YOUR_GOOGLE_CLOUD_PROJECT_ID.iam.gserviceaccount.com \
-  --set-env-vars="NODE_ENV=production,LOG_LEVEL=info,DATABASE_POOL_MAX=5,CORS_ORIGINS=https://vibes-hub-web.vercel.app,SUPABASE_URL=https://jelugsfwttolvtrduefo.supabase.co,SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY" \
+  --set-env-vars="NODE_ENV=production,LOG_LEVEL=info,DATABASE_POOL_MAX=5,CORS_ORIGINS=https://vibes-hub-web.vercel.app,REDIRECT_BASE_URL=https://YOUR_CLOUD_RUN_URL,SUPABASE_URL=https://jelugsfwttolvtrduefo.supabase.co,SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY" \
   --set-secrets="DATABASE_URL=vibeshub-database-url:1,SUPABASE_SERVICE_ROLE_KEY=vibeshub-supabase-service-role-key:1"
 ```
 
@@ -140,10 +140,12 @@ than fifteen Supavisor session-mode clients.
 curl --fail-with-body https://YOUR_CLOUD_RUN_URL/health
 curl --fail-with-body https://YOUR_CLOUD_RUN_URL/health/ready
 curl --include https://YOUR_CLOUD_RUN_URL/v1/me
+curl --include https://YOUR_CLOUD_RUN_URL/go/00000000-0000-4000-8000-000000000000
 ```
 
 The first two requests must return `200`. The unauthenticated `/v1/me` request
-must return `401` with `application/problem+json`.
+must return `401` with `application/problem+json`. The unknown `/go` identifier must
+return `404`, `text/html`, and `Cache-Control: no-store` without redirecting.
 
 ## Vercel configuration
 

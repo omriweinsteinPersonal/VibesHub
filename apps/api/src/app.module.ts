@@ -20,7 +20,13 @@ import { MediaRepository } from './media/media.repository.js';
 import { MediaService } from './media/media.service.js';
 import { MediaStorageGateway } from './media/media-storage.gateway.js';
 import { DeferredVideoPreviewProvider } from './media/video-provider.js';
+import { AdminMerchantDomainController } from './merchants/admin-merchant-domain.controller.js';
+import { MerchantDomainRepository } from './merchants/merchant-domain.repository.js';
+import { MerchantDomainService } from './merchants/merchant-domain.service.js';
 import { ProblemDetailsFilter } from './problem-details.filter.js';
+import { RedirectController } from './redirects/redirect.controller.js';
+import { RedirectRepository } from './redirects/redirect.repository.js';
+import { RedirectService } from './redirects/redirect.service.js';
 import { CreatorDirectoryRepository } from './discovery/creator-directory.repository.js';
 import { CreatorsController } from './discovery/creators.controller.js';
 import { CreatorRecommendationsController } from './recommendations/creator-recommendations.controller.js';
@@ -37,6 +43,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     AccountController,
     ApplicationController,
     AdminApplicationController,
+    AdminMerchantDomainController,
+    RedirectController,
   ],
   providers: [
     Database,
@@ -52,6 +60,10 @@ import { RecommendationService } from './recommendations/recommendation.service.
     MediaStorageGateway,
     MediaService,
     DeferredVideoPreviewProvider,
+    MerchantDomainRepository,
+    MerchantDomainService,
+    RedirectRepository,
+    RedirectService,
     IdempotencyService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },

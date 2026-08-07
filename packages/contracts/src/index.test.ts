@@ -139,6 +139,7 @@ describe('shared API contracts', () => {
         imageAssetId: null,
         imageUrl: 'https://images.example.com/blush.jpg',
         lifecycle: 'published',
+        merchantHostname: 'shop.example.com',
         price: { amountMinor: 12_000, currency: 'ILS' },
         productName: 'Soft Pinch Liquid Blush',
         review: {

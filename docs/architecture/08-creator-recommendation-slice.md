@@ -22,7 +22,7 @@ It adds canonical brands, merchants, products, merchant offers, and creator reco
 - Recommendation reviews are Hebrew and creator-owned. The UI limits their presentation to five lines without truncating the stored review.
 - Recommendation image, story cover, and story video URLs are presentation fields on the recommendation for this slice.
 - Discount code and label fields are temporarily attached to a recommendation. They will move to the normalized discount-code model when validation, expiry, and many-to-many product scope are implemented.
-- Outbound shopping currently uses the validated HTTPS offer URL. The tracked `/go` redirect and merchant-domain allowlist remain a later security and analytics slice.
+- Outbound shopping now uses the tracked `/go/{publicId}` endpoint and exact merchant-domain allowlist described in `10-tracked-outbound-shopping.md`. Creator management responses retain the original product URL separately so editing cannot turn VibesHub's redirect URL into a merchant offer.
 
 ## Deliberate boundaries
 
@@ -36,3 +36,4 @@ ADR-006 remains accepted. The API is still a separate NestJS service intended fo
 - Desktop and mobile browser checks cover the creator editor and public storefront card, including image-first layout, story treatment, RTL review text, five-line clamp, discount code, disclosure, and outbound shop link.
 - Production migrations were applied without fixture data. Seven active categories and nine reserved handles remain present.
 - The new private tables have RLS enabled and no client-role grants. A transactional draft-to-published smoke test was rolled back after its assertions passed.
+- Merchant domains and tracked links are private, fail closed, and were verified in production with a rolled-back allow/activate/disable acceptance transaction.

@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import type { CreatorRecommendationInput, RecommendationCard } from '@vibeshub/contracts';
 
+import { parseApiConfig } from '../config.js';
 import { Database, type DatabaseClient } from '../database.js';
+import {
+  trackedRedirectUrl,
+  validateRedirectDestination,
+} from '../redirects/redirect-destination.js';
 import {
   catalogSlug,
   encodeRecommendationCursor,
@@ -19,6 +24,14 @@ interface CreatorIdRow {
 
 interface OfferIdRow {
   id: string;
+  productId: string;
+}
+
+interface CatalogIdentity {
+  destinationUrl: string;
+  merchantDomainId: string;
+  merchantId: string;
+  offerId: string;
   productId: string;
 }
 
@@ -40,18 +53,21 @@ interface RecommendationRow {
   imageAssetId: string | null;
   imageUrl: string;
   lifecycle: RecommendationCard['lifecycle'];
+  merchantHostname: string;
   publishedAt: string | null;
   priceAmountMinor: string;
   productName: string;
   productUrl: string;
   reviewHe: string;
+  shopPublicId: string;
   updatedAt: string;
   version: number;
   videoUrl: string | null;
 }
 
-export interface RecommendationRecord extends RecommendationCard {
+export interface CreatorRecommendationRecord extends RecommendationCard {
   categoryId: string;
+  productUrl: string;
 }
 
 export interface RecommendationPage {
@@ -59,14 +75,21 @@ export interface RecommendationPage {
   nextCursor: string | null;
 }
 
+export interface CreatorRecommendationPage {
+  items: CreatorRecommendationRecord[];
+  nextCursor: string | null;
+}
+
 @Injectable()
 export class RecommendationRepository {
+  private readonly redirectBaseUrl = parseApiConfig(process.env).redirectBaseUrl;
+
   constructor(private readonly database: Database) {}
 
   async create(
     userId: string,
     input: CreatorRecommendationInput,
-  ): Promise<RecommendationRecord | null> {
+  ): Promise<CreatorRecommendationRecord | null> {
     return this.database.sql.begin(async (transaction) => {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
@@ -99,11 +122,13 @@ export class RecommendationRepository {
         )
         returning id
       `;
-      return inserted ? this.findOwnedWithSql(sql, inserted.id, userId) : null;
+      if (!inserted) return null;
+      await this.insertAffiliateLink(sql, inserted.id, catalog);
+      return this.findOwnedWithSql(sql, inserted.id, userId);
     });
   }
 
-  findOwned(id: string, userId: string): Promise<RecommendationRecord | null> {
+  findOwned(id: string, userId: string): Promise<CreatorRecommendationRecord | null> {
     return this.findOwnedWithSql(this.database.sql, id, userId);
   }
 
@@ -111,7 +136,7 @@ export class RecommendationRepository {
     userId: string,
     limit: number,
     cursor: RecommendationCursor | null,
-  ): Promise<RecommendationPage | null> {
+  ): Promise<CreatorRecommendationPage | null> {
     const creator = await this.findCreator(this.database.sql, userId);
     if (!creator) return null;
     const rows = await this.database.sql<RecommendationRow[]>`
@@ -129,7 +154,7 @@ export class RecommendationRepository {
       order by recommendation.created_at desc, recommendation.id desc
       limit ${limit + 1}
     `;
-    return mapPage(rows, limit, 'creator', 'createdAt');
+    return mapCreatorPage(rows, limit, 'creator', this.redirectBaseUrl, 'createdAt');
   }
 
   async listPublished(
@@ -148,6 +173,9 @@ export class RecommendationRepository {
         and category.is_active = true
         and product.status = 'active'
         and offer.status = 'active'
+        and affiliate_link.status = 'active'
+        and merchant_domain.allow_redirect = true
+        and merchant_domain.verified_at is not null
         and (
           recommendation.image_asset_id is null
           or media.status = 'ready'
@@ -163,7 +191,13 @@ export class RecommendationRepository {
       order by recommendation.published_at desc, recommendation.id desc
       limit ${limit + 1}
     `;
-    return mapPage(rows, limit, `storefront:${handle}`, 'publishedAt');
+    return mapPublicPage(
+      rows,
+      limit,
+      `storefront:${handle}`,
+      this.redirectBaseUrl,
+      'publishedAt',
+    );
   }
 
   async replaceOwned(
@@ -171,14 +205,14 @@ export class RecommendationRepository {
     userId: string,
     expectedVersion: number,
     input: CreatorRecommendationInput,
-  ): Promise<RecommendationRecord | null> {
+  ): Promise<CreatorRecommendationRecord | null> {
     return this.database.sql.begin(async (transaction) => {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
       const image = await this.resolveImageSource(sql, userId, input);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
-      const [updated] = await sql<{ id: string }[]>`
+      const [updated] = await sql<{ id: string; lifecycle: string }[]>`
         update app.recommendations
         set
           product_id = ${catalog.productId},
@@ -196,9 +230,39 @@ export class RecommendationRepository {
           and version = ${expectedVersion}
           and lifecycle <> 'archived'
           and deleted_at is null
-        returning id
+        returning id, lifecycle
       `;
-      return updated ? this.findOwnedWithSql(sql, updated.id, userId) : null;
+      if (!updated) return null;
+      const [link] = await sql<{ id: string }[]>`
+        update app.affiliate_links affiliate_link
+        set
+          offer_id = ${catalog.offerId},
+          merchant_domain_id = ${catalog.merchantDomainId},
+          merchant_id = ${catalog.merchantId},
+          destination_url = ${catalog.destinationUrl},
+          status = case
+            when ${updated.lifecycle} = 'published'
+              and merchant_domain.allow_redirect = true
+              and merchant_domain.verified_at is not null
+              then 'active'
+            else 'blocked'
+          end,
+          version = affiliate_link.version + 1
+        from app.merchant_domains merchant_domain
+        where affiliate_link.recommendation_id = ${updated.id}
+          and affiliate_link.status <> 'archived'
+          and merchant_domain.id = ${catalog.merchantDomainId}
+        returning affiliate_link.id
+      `;
+      if (!link) throw new Error('AFFILIATE_LINK_MISSING');
+      if (updated.lifecycle === 'published') {
+        const [active] = await sql<{ id: string }[]>`
+          select id from app.affiliate_links
+          where id = ${link.id} and status = 'active'
+        `;
+        if (!active) throw new Error('MERCHANT_DOMAIN_NOT_APPROVED');
+      }
+      return this.findOwnedWithSql(sql, updated.id, userId);
     });
   }
 
@@ -207,26 +271,61 @@ export class RecommendationRepository {
     userId: string,
     expectedVersion: number,
     lifecycle: 'draft' | 'published',
-  ): Promise<RecommendationRecord | null> {
-    const [updated] = await this.database.sql<{ id: string }[]>`
-      update app.recommendations recommendation
-      set
-        lifecycle = ${lifecycle},
-        published_at = case
-          when ${lifecycle} = 'published' then statement_timestamp()
-          else null
-        end,
-        version = recommendation.version + 1
-      from app.creator_profiles creator
-      where recommendation.id = ${id}
-        and recommendation.creator_id = creator.id
-        and creator.user_id = ${userId}
-        and recommendation.version = ${expectedVersion}
-        and recommendation.lifecycle <> 'archived'
-        and recommendation.deleted_at is null
-      returning recommendation.id
-    `;
-    return updated ? this.findOwned(updated.id, userId) : null;
+  ): Promise<CreatorRecommendationRecord | null> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const [target] = await sql<{ id: string }[]>`
+        select recommendation.id
+        from app.recommendations recommendation
+        join app.creator_profiles creator on creator.id = recommendation.creator_id
+        where recommendation.id = ${id}
+          and creator.user_id = ${userId}
+          and recommendation.version = ${expectedVersion}
+          and recommendation.lifecycle <> 'archived'
+          and recommendation.deleted_at is null
+        for update of recommendation
+      `;
+      if (!target) return null;
+
+      if (lifecycle === 'published') {
+        const [link] = await sql<{ id: string }[]>`
+          update app.affiliate_links affiliate_link
+          set status = 'active', version = affiliate_link.version + 1
+          from app.merchant_domains merchant_domain
+          where affiliate_link.recommendation_id = ${id}
+            and affiliate_link.status = 'blocked'
+            and merchant_domain.id = affiliate_link.merchant_domain_id
+            and merchant_domain.allow_redirect = true
+            and merchant_domain.verified_at is not null
+          returning affiliate_link.id
+        `;
+        if (!link) throw new Error('MERCHANT_DOMAIN_NOT_APPROVED');
+      }
+
+      const [updated] = await sql<{ id: string }[]>`
+        update app.recommendations
+        set
+          lifecycle = ${lifecycle},
+          published_at = case
+            when ${lifecycle} = 'published' then statement_timestamp()
+            else null
+          end,
+          version = version + 1
+        where id = ${id}
+        returning id
+      `;
+      if (!updated) return null;
+
+      if (lifecycle === 'draft') {
+        await sql`
+          update app.affiliate_links
+          set status = 'blocked', version = version + 1
+          where recommendation_id = ${id}
+            and status in ('active', 'unhealthy')
+        `;
+      }
+      return this.findOwnedWithSql(sql, updated.id, userId);
+    });
   }
 
   private async findCreator(
@@ -247,7 +346,7 @@ export class RecommendationRepository {
     sql: DatabaseClient,
     id: string,
     userId: string,
-  ): Promise<RecommendationRecord | null> {
+  ): Promise<CreatorRecommendationRecord | null> {
     const [row] = await sql<RecommendationRow[]>`
       ${this.recommendationSelect()}
       join app.creator_profiles creator on creator.id = recommendation.creator_id
@@ -255,7 +354,7 @@ export class RecommendationRepository {
         and creator.user_id = ${userId}
         and recommendation.deleted_at is null
     `;
-    return row ? mapRecommendation(row) : null;
+    return row ? mapCreatorRecommendation(row, this.redirectBaseUrl) : null;
   }
 
   private recommendationSelect() {
@@ -279,7 +378,9 @@ export class RecommendationRepository {
         category.id as "categoryId",
         category.slug::text as "categorySlug",
         category.name_en as "categoryName",
-        offer.destination_url as "productUrl",
+        merchant_domain.hostname::text as "merchantHostname",
+        affiliate_link.public_id::text as "shopPublicId",
+        affiliate_link.destination_url as "productUrl",
         offer.price_amount_minor::text as "priceAmountMinor"
       from app.recommendations recommendation
       join app.products product on product.id = recommendation.product_id
@@ -287,6 +388,12 @@ export class RecommendationRepository {
       join app.categories category on category.id = product.primary_category_id
       join app.product_offers offer on offer.id = recommendation.offer_id
       join app.merchants merchant on merchant.id = offer.merchant_id
+      join app.affiliate_links affiliate_link
+        on affiliate_link.recommendation_id = recommendation.id
+       and affiliate_link.status <> 'archived'
+      join app.merchant_domains merchant_domain
+        on merchant_domain.id = affiliate_link.merchant_domain_id
+       and merchant_domain.merchant_id = affiliate_link.merchant_id
       left join app.media_assets media on media.id = recommendation.image_asset_id
     `;
   }
@@ -296,7 +403,7 @@ export class RecommendationRepository {
     userId: string,
     input: CreatorRecommendationInput,
     image: RecommendationImageSource,
-  ): Promise<{ offerId: string; productId: string }> {
+  ): Promise<CatalogIdentity> {
     const brandIdentity = normalizeCatalogName(input.brandName);
     const [brand] = await sql<CatalogIdRow[]>`
       insert into app.brands (slug, name, normalized_name, created_by_user_id)
@@ -343,15 +450,16 @@ export class RecommendationRepository {
     `;
     if (!product) throw new Error('Product upsert did not return an identity');
 
-    const destination = new URL(input.productUrl);
-    const hostname = destination.hostname.toLocaleLowerCase('en').replace(/^www\./, '');
+    const destination = validateRedirectDestination(input.productUrl);
+    const destinationUrl = destination.destinationUrl;
+    const hostname = destination.hostname;
     const [merchant] = await sql<CatalogIdRow[]>`
       insert into app.merchants (slug, name, hostname, homepage_url)
       values (
         ${catalogSlug(hostname.replaceAll('.', '-'), hostname)},
         ${hostname},
         ${hostname},
-        ${destination.origin}
+        ${new URL(destinationUrl).origin}
       )
       on conflict (hostname) do update
       set homepage_url = excluded.homepage_url
@@ -368,7 +476,7 @@ export class RecommendationRepository {
       ) values (
         ${product.id},
         ${merchant.id},
-        ${input.productUrl},
+        ${destinationUrl},
         ${input.priceAmountMinor}
       )
       on conflict (destination_url_hash) do update
@@ -383,7 +491,46 @@ export class RecommendationRepository {
     if (offer.productId !== product.id) {
       throw new Error('OFFER_PRODUCT_IDENTITY_CONFLICT');
     }
-    return { offerId: offer.id, productId: product.id };
+    const [merchantDomain] = await sql<CatalogIdRow[]>`
+      insert into app.merchant_domains (merchant_id, hostname)
+      values (${merchant.id}, ${hostname})
+      on conflict (hostname) do update
+      set merchant_id = app.merchant_domains.merchant_id
+      where app.merchant_domains.merchant_id = excluded.merchant_id
+      returning id
+    `;
+    if (!merchantDomain) throw new Error('MERCHANT_DOMAIN_CONFLICT');
+    return {
+      destinationUrl,
+      merchantDomainId: merchantDomain.id,
+      merchantId: merchant.id,
+      offerId: offer.id,
+      productId: product.id,
+    };
+  }
+
+  private async insertAffiliateLink(
+    sql: DatabaseClient,
+    recommendationId: string,
+    catalog: CatalogIdentity,
+  ): Promise<void> {
+    await sql`
+      insert into app.affiliate_links (
+        recommendation_id,
+        offer_id,
+        merchant_domain_id,
+        merchant_id,
+        destination_url,
+        status
+      ) values (
+        ${recommendationId},
+        ${catalog.offerId},
+        ${catalog.merchantDomainId},
+        ${catalog.merchantId},
+        ${catalog.destinationUrl},
+        'blocked'
+      )
+    `;
   }
 
   private async resolveImageSource(
@@ -409,18 +556,43 @@ export class RecommendationRepository {
   }
 }
 
-function mapPage(
+function mapCreatorPage(
+  rows: RecommendationRow[],
+  limit: number,
+  scope: string,
+  redirectBaseUrl: string,
+  timestampField: 'createdAt' | 'publishedAt',
+): CreatorRecommendationPage {
+  return mapPage(rows, limit, scope, timestampField, (row) =>
+    mapCreatorRecommendation(row, redirectBaseUrl),
+  );
+}
+
+function mapPublicPage(
+  rows: RecommendationRow[],
+  limit: number,
+  scope: string,
+  redirectBaseUrl: string,
+  timestampField: 'createdAt' | 'publishedAt',
+): RecommendationPage {
+  return mapPage(rows, limit, scope, timestampField, (row) =>
+    mapRecommendationCard(row, redirectBaseUrl),
+  );
+}
+
+function mapPage<T>(
   rows: RecommendationRow[],
   limit: number,
   scope: string,
   timestampField: 'createdAt' | 'publishedAt',
-): RecommendationPage {
+  mapper: (row: RecommendationRow) => T,
+): { items: T[]; nextCursor: string | null } {
   const hasMore = rows.length > limit;
   const visibleRows = hasMore ? rows.slice(0, limit) : rows;
   const last = visibleRows.at(-1);
   const timestamp = last?.[timestampField];
   return {
-    items: visibleRows.map(mapRecommendation),
+    items: visibleRows.map(mapper),
     nextCursor:
       hasMore && last && timestamp
         ? encodeRecommendationCursor({ id: last.id, timestamp }, scope)
@@ -428,11 +600,24 @@ function mapPage(
   };
 }
 
-function mapRecommendation(row: RecommendationRow): RecommendationRecord {
+function mapCreatorRecommendation(
+  row: RecommendationRow,
+  redirectBaseUrl: string,
+): CreatorRecommendationRecord {
+  return {
+    ...mapRecommendationCard(row, redirectBaseUrl),
+    categoryId: row.categoryId,
+    productUrl: row.productUrl,
+  };
+}
+
+function mapRecommendationCard(
+  row: RecommendationRow,
+  redirectBaseUrl: string,
+): RecommendationCard {
   return {
     brandName: row.brandName,
     category: { name: row.categoryName, slug: row.categorySlug },
-    categoryId: row.categoryId,
     commercialRelationship: row.commercialRelationship,
     createdAt: row.createdAt,
     discount: row.discountCode
@@ -442,10 +627,11 @@ function mapRecommendation(row: RecommendationRow): RecommendationRecord {
     imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,
     lifecycle: row.lifecycle,
+    merchantHostname: row.merchantHostname,
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },
     productName: row.productName,
     review: { direction: 'rtl', language: 'he', value: row.reviewHe },
-    shopUrl: row.productUrl,
+    shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,

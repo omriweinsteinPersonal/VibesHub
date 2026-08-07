@@ -179,13 +179,24 @@ export const recommendationCardSchema = z
     imageAssetId: idSchema.nullable(),
     imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
     lifecycle: recommendationLifecycleSchema,
+    merchantHostname: z.string().trim().min(4).max(253),
     price: moneySchema,
     productName: z.string().trim().min(1).max(200),
     review: directionalTextSchema,
-    shopUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    shopUrl: z
+      .url()
+      .max(2_048)
+      .refine(isProductionOrLocalUrl, 'Use HTTPS outside local development'),
     updatedAt: z.iso.datetime(),
     version: z.int().positive(),
     videoUrl: optionalHttpsUrlSchema,
+  })
+  .strict();
+
+export const creatorRecommendationSchema = recommendationCardSchema
+  .extend({
+    categoryId: idSchema,
+    productUrl: z.url({ protocol: /^https$/ }).max(2_048),
   })
   .strict();
 
@@ -325,11 +336,20 @@ export type CreatorDirectoryQuery = z.infer<typeof creatorDirectoryQuerySchema>;
 export type CommercialRelationship = z.infer<typeof commercialRelationshipSchema>;
 export type CreatorRecommendationInput = z.infer<typeof creatorRecommendationInputSchema>;
 export type CreatorRecommendationPatch = z.infer<typeof creatorRecommendationPatchSchema>;
+export type CreatorRecommendation = z.infer<typeof creatorRecommendationSchema>;
 export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
 >;
+
+function isProductionOrLocalUrl(value: string): boolean {
+  const url = new URL(value);
+  return (
+    url.protocol === 'https:' ||
+    (url.protocol === 'http:' && ['127.0.0.1', '::1', 'localhost'].includes(url.hostname))
+  );
+}
 export type RecommendationLifecycle = z.infer<typeof recommendationLifecycleSchema>;
 export type RecommendationImageAsset = z.infer<typeof recommendationImageAssetSchema>;
 export type RecommendationImageContentType = z.infer<
