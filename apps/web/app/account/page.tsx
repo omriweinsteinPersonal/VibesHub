@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { apiRequest } from '../../lib/api';
+import { ApiError, apiRequest } from '../../lib/api';
 import { WorkspaceHeader } from '../_components/workspace-header';
 
 interface AccountSummary {
@@ -16,26 +16,49 @@ interface AccountSummary {
 
 export default function AccountPage() {
   const [account, setAccount] = useState<AccountSummary | null>(null);
-  const [error, setError] = useState('');
+  const [state, setState] = useState<'loading' | 'ready' | 'signedOut' | 'error'>(
+    'loading',
+  );
+  const [error, setError] = useState('We could not open your account right now.');
 
   useEffect(() => {
     void apiRequest<AccountSummary>('/me')
-      .then(setAccount)
-      .catch((cause: unknown) =>
-        setError(cause instanceof Error ? cause.message : 'Could not load account.'),
-      );
+      .then((loadedAccount) => {
+        setAccount(loadedAccount);
+        setState('ready');
+      })
+      .catch((cause: unknown) => {
+        if (cause instanceof ApiError && cause.status === 401) {
+          setState('signedOut');
+          return;
+        }
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : 'We could not open your account right now.',
+        );
+        setState('error');
+      });
   }, []);
 
   return (
     <main className="workspacePage">
-      <WorkspaceHeader />
-      <section className="workspaceContent">
-        <p className="eyebrow">YOUR ACCOUNT</p>
-        <h1>
-          {account ? `Welcome, ${account.profile.displayName}` : 'Loading your account…'}
-        </h1>
-        {error ? <p className="formError">{error}</p> : null}
-        {account ? (
+      <WorkspaceHeader
+        sessionState={
+          state === 'ready'
+            ? 'authenticated'
+            : state === 'signedOut'
+              ? 'anonymous'
+              : 'loading'
+        }
+      />
+      {state === 'loading' ? <AccountSkeleton /> : null}
+      {state === 'signedOut' ? <SignedOutAccount /> : null}
+      {state === 'error' ? <AccountError message={error} /> : null}
+      {state === 'ready' && account ? (
+        <section className="workspaceContent">
+          <p className="eyebrow">YOUR ACCOUNT</p>
+          <h1>Welcome, {account.profile.displayName}</h1>
           <div className="workspaceGrid">
             <article className="workspaceCard">
               <h2>Saved products</h2>
@@ -125,8 +148,67 @@ export default function AccountPage() {
               </article>
             ) : null}
           </div>
-        ) : null}
-      </section>
+        </section>
+      ) : null}
     </main>
+  );
+}
+
+function AccountSkeleton() {
+  return (
+    <section
+      aria-busy="true"
+      aria-label="Loading account"
+      className="workspaceContent accountSkeleton"
+    >
+      <span className="skeletonLine skeletonEyebrow" />
+      <span className="skeletonLine skeletonHeading" />
+      <div className="workspaceGrid" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div className="workspaceCard skeletonCard" key={index}>
+            <span className="skeletonLine skeletonCardTitle" />
+            <span className="skeletonLine skeletonCopy" />
+            <span className="skeletonLine skeletonButton" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SignedOutAccount() {
+  return (
+    <section className="workspaceContent accountGuest">
+      <div className="accountGuestMark" aria-hidden="true">
+        ✣
+      </div>
+      <p className="eyebrow">YOUR VIBESHUB</p>
+      <h1>Keep the things you love close</h1>
+      <p className="workspaceLead">
+        Log in to return to your saved products, followed creators and creator storefront
+        tools.
+      </p>
+      <div className="accountGuestActions">
+        <Link className="button primary" href="/login?next=%2Faccount">
+          Log in to your account
+        </Link>
+        <Link className="button secondary" href="/join">
+          Create an account
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function AccountError({ message }: { message: string }) {
+  return (
+    <section className="workspaceContent accountGuest">
+      <p className="eyebrow">YOUR ACCOUNT</p>
+      <h1>We could not open this page</h1>
+      <p className="workspaceLead">{message}</p>
+      <Link className="button secondary" href="/account">
+        Try again
+      </Link>
+    </section>
   );
 }

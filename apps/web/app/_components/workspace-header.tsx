@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 
-export function WorkspaceHeader() {
+interface WorkspaceHeaderProps {
+  sessionState?: 'anonymous' | 'authenticated' | 'loading';
+}
+
+export function WorkspaceHeader({
+  sessionState = 'authenticated',
+}: WorkspaceHeaderProps) {
   const router = useRouter();
 
   async function signOut() {
@@ -19,14 +25,29 @@ export function WorkspaceHeader() {
       <Link className="logo" href="/">
         <span>✣</span> VibesHub
       </Link>
-      <nav aria-label="Shopper account">
-        <Link href="/account/saved">Saved products</Link>
-        <Link href="/account/following">Following</Link>
-        <Link href="/account">Account</Link>
-      </nav>
-      <button className="button secondary" type="button" onClick={signOut}>
-        Sign out
-      </button>
+      {sessionState === 'anonymous' ? (
+        <nav aria-label="Primary navigation">
+          <Link href="/creators">Creators</Link>
+          <Link href="/discover">Discover</Link>
+        </nav>
+      ) : (
+        <nav aria-label="Shopper account">
+          <Link href="/account/saved">Saved products</Link>
+          <Link href="/account/following">Following</Link>
+          <Link href="/account">Account</Link>
+        </nav>
+      )}
+      {sessionState === 'loading' ? (
+        <span className="workspaceHeaderActionPlaceholder" aria-hidden="true" />
+      ) : sessionState === 'anonymous' ? (
+        <Link className="button secondary" href="/login?next=%2Faccount">
+          Log in
+        </Link>
+      ) : (
+        <button className="button secondary" type="button" onClick={signOut}>
+          Sign out
+        </button>
+      )}
     </header>
   );
 }

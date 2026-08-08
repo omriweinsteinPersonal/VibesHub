@@ -219,6 +219,14 @@ textarea:disabled {
   color: var(--vh-accent);
 }
 
+.workspaceHeaderActionPlaceholder {
+  background: var(--vh-surface);
+  border-radius: var(--vh-radius-control);
+  display: block;
+  height: 42px;
+  width: 92px;
+}
+
 .workspaceContent {
   margin: 0 auto;
   max-width: 1280px;
@@ -261,6 +269,105 @@ textarea:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.accountSkeleton {
+  display: grid;
+  gap: 20px;
+}
+
+.skeletonLine {
+  animation: accountSkeletonPulse 1.4s ease-in-out infinite alternate;
+  background: var(--vh-surface);
+  border-radius: 999px;
+  display: block;
+}
+
+.skeletonEyebrow {
+  height: 11px;
+  width: 96px;
+}
+
+.skeletonHeading {
+  height: clamp(46px, 5vw, 78px);
+  margin: 3px 0 14px;
+  max-width: 650px;
+  width: 58%;
+}
+
+.skeletonCard {
+  display: grid;
+  gap: 18px;
+}
+
+.skeletonCardTitle {
+  height: 28px;
+  width: 44%;
+}
+
+.skeletonCopy {
+  height: 14px;
+  width: 78%;
+}
+
+.skeletonButton {
+  height: 42px;
+  margin-top: 12px;
+  width: 160px;
+}
+
+.accountGuest {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 74px);
+  padding-top: clamp(80px, 12vh, 150px);
+  text-align: center;
+}
+
+.accountGuestMark {
+  align-items: center;
+  background: var(--vh-accent);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  font-size: 1.5rem;
+  height: 54px;
+  justify-content: center;
+  margin-bottom: 28px;
+  width: 54px;
+}
+
+.accountGuest h1 {
+  max-width: 780px;
+}
+
+.accountGuest .workspaceLead {
+  margin: 0 auto;
+}
+
+.accountGuestActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 34px;
+}
+
+@keyframes accountSkeletonPulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonLine {
+    animation: none;
+  }
 }
 
 .creatorStudioHeader nav {
@@ -1053,6 +1160,14 @@ textarea:disabled {
 
   .workspaceContent {
     padding: 60px 20px 90px;
+  }
+
+  .skeletonHeading {
+    width: 85%;
+  }
+
+  .accountGuest {
+    padding-top: 72px;
   }
 
   .workspaceHeader nav {
