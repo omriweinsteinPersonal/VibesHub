@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { logger } from '@vibeshub/observability';
 
+import { AnalyticsRepository } from '../analytics/analytics.repository.js';
 import {
   validateRedirectDestination,
   type ValidatedDestination,
@@ -12,7 +13,10 @@ const publicIdPattern =
 
 @Injectable()
 export class RedirectService {
-  constructor(private readonly redirects: RedirectRepository) {}
+  constructor(
+    private readonly redirects: RedirectRepository,
+    private readonly analytics: AnalyticsRepository,
+  ) {}
 
   async resolve(publicId: string): Promise<string | null> {
     if (!publicIdPattern.test(publicId)) return null;
@@ -43,9 +47,12 @@ export class RedirectService {
     eventType: 'affiliate.redirectBlocked.v1' | 'affiliate.shopClicked.v1',
     reason?: string,
   ): Promise<void> {
-    try {
-      await this.redirects.recordEvent(link, eventType, reason);
-    } catch {
+    const writes = [this.redirects.recordEvent(link, eventType, reason)];
+    if (eventType === 'affiliate.shopClicked.v1') {
+      writes.push(this.analytics.recordShopClick(link));
+    }
+    const results = await Promise.allSettled(writes);
+    if (results.some(({ status }) => status === 'rejected')) {
       logger.warn('Redirect event could not be recorded', {
         affiliateLinkId: link.id,
         eventType,

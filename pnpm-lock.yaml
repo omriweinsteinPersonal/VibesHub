@@ -60,6 +60,9 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.112.2
         version: 2.112.2
+      '@vibeshub/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
       '@vibeshub/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -164,6 +167,9 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.112.2
         version: 2.112.2
+      '@vibeshub/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
       '@vibeshub/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

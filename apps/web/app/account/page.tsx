@@ -71,6 +71,9 @@ export default function AccountPage() {
                     <Link className="button secondary" href="/creator/discount-codes">
                       Manage discount codes
                     </Link>
+                    <Link className="button secondary" href="/creator/analytics">
+                      View analytics
+                    </Link>
                     <Link
                       className="button secondary"
                       href={`/creators/${account.creator.handle}`}

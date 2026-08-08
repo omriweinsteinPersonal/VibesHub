@@ -1,26 +1,69 @@
 import { z } from 'zod';
 
-export const analyticsEventNames = [
-  'storefront_viewed',
-  'creator_followed',
-  'recommendation_saved',
-  'product_clicked',
-  'discount_code_copied',
-  'video_started',
-  'video_completed',
+export const clientAnalyticsEventNames = [
+  'creator.storefrontViewed',
+  'recommendation.impression',
+  'discountCode.copied',
 ] as const;
 
-export const analyticsEventSchema = z.object({
+const clientEventEnvelopeSchema = z.object({
+  anonymousId: z.uuid(),
   eventId: z.uuid(),
   occurredAt: z.iso.datetime(),
-  name: z.enum(analyticsEventNames),
-  anonymousId: z.string().min(1).optional(),
-  actorUserId: z.uuid().optional(),
-  creatorId: z.uuid().optional(),
-  recommendationId: z.uuid().optional(),
-  sessionId: z.string().min(1),
+  schemaVersion: z.literal(1),
+  sessionId: z.uuid(),
   source: z.enum(['web', 'ios', 'android']),
 });
 
-export type AnalyticsEvent = z.infer<typeof analyticsEventSchema>;
-export type AnalyticsEventName = (typeof analyticsEventNames)[number];
+export const clientAnalyticsEventSchema = z.discriminatedUnion('name', [
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      name: z.literal('creator.storefrontViewed'),
+    })
+    .strict(),
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      name: z.literal('recommendation.impression'),
+      productId: z.uuid(),
+      recommendationId: z.uuid(),
+    })
+    .strict(),
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      discountCodeId: z.uuid(),
+      name: z.literal('discountCode.copied'),
+      recommendationId: z.uuid().nullable(),
+    })
+    .strict(),
+]);
+
+export const clientAnalyticsBatchSchema = z
+  .object({
+    batchId: z.uuid(),
+    events: z.array(clientAnalyticsEventSchema).min(1).max(20),
+  })
+  .strict()
+  .refine(
+    ({ events }) => new Set(events.map(({ source }) => source)).size === 1,
+    'Every event in a batch must have the same source',
+  )
+  .refine(
+    ({ events }) => new Set(events.map(({ sessionId }) => sessionId)).size === 1,
+    'Every event in a batch must have the same session',
+  );
+
+export const clientAnalyticsBatchResultSchema = z
+  .object({
+    accepted: z.int().nonnegative(),
+    duplicates: z.int().nonnegative(),
+    rejected: z.int().nonnegative(),
+  })
+  .strict();
+
+export type ClientAnalyticsEvent = z.infer<typeof clientAnalyticsEventSchema>;
+export type ClientAnalyticsBatch = z.infer<typeof clientAnalyticsBatchSchema>;
+export type ClientAnalyticsBatchResult = z.infer<typeof clientAnalyticsBatchResultSchema>;
+export type ClientAnalyticsEventName = (typeof clientAnalyticsEventNames)[number];

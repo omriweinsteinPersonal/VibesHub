@@ -891,6 +891,31 @@ h1 em {
   box-shadow: var(--vh-shadow-card);
   min-width: 0;
   overflow: hidden;
+  position: relative;
+}
+
+.analyticsImpressionTarget {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.copyDiscountCodeButton {
+  background: transparent;
+  border: 1px solid var(--vh-border);
+  border-radius: var(--vh-radius-control);
+  color: var(--vh-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  min-height: 36px;
+  padding: 0 13px;
+}
+
+.copyDiscountCodeButton:hover,
+.copyDiscountCodeButton:focus-visible {
+  border-color: var(--vh-accent);
+  color: var(--vh-accent);
 }
 
 .storeProductImage {

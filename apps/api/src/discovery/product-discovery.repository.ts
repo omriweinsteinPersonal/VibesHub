@@ -28,6 +28,7 @@ interface DiscoveryRecommendationRow {
   creatorId: string;
   creatorIsVerified: boolean;
   discountCode: string | null;
+  discountId: string | null;
   discountExpiresAt: string | null;
   discountLabel: string | null;
   discountLastVerifiedAt: string | null;
@@ -78,6 +79,7 @@ export class ProductDiscoveryRepository {
           recommendation.review_he as "reviewHe",
           recommendation.video_url as "videoUrl",
           placed_discount.code::text as "discountCode",
+          placed_discount.id as "discountId",
           placed_discount.label as "discountLabel",
           placed_discount.expires_at as "discountExpiresAt",
           placed_discount.last_verified_at as "discountLastVerifiedAt",
@@ -120,6 +122,7 @@ export class ProductDiscoveryRepository {
         left join app.media_assets media on media.id = recommendation.image_asset_id
         left join lateral (
           select
+            discount.id,
             discount.code,
             discount.label,
             discount.expires_at,
@@ -236,6 +239,7 @@ export class ProductDiscoveryRepository {
             recommendation.review_he as "reviewHe",
             recommendation.video_url as "videoUrl",
             placed_discount.code::text as "discountCode",
+            placed_discount.id as "discountId",
             placed_discount.label as "discountLabel",
             placed_discount.expires_at as "discountExpiresAt",
             placed_discount.last_verified_at as "discountLastVerifiedAt",
@@ -288,6 +292,7 @@ export class ProductDiscoveryRepository {
           left join app.media_assets media on media.id = recommendation.image_asset_id
           left join lateral (
             select
+              discount.id,
               discount.code,
               discount.label,
               discount.expires_at,
@@ -382,6 +387,7 @@ function mapDiscoveryRecommendation(
       ? {
           code: row.discountCode,
           expiresAt: row.discountExpiresAt,
+          id: row.discountId,
           label: row.discountLabel,
           lastVerifiedAt: row.discountLastVerifiedAt,
           verificationStatus: row.discountVerificationStatus ?? undefined,

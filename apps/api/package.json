@@ -17,6 +17,7 @@
     "@nestjs/core": "11.1.28",
     "@nestjs/platform-fastify": "11.1.28",
     "@supabase/supabase-js": "2.112.2",
+    "@vibeshub/analytics": "workspace:*",
     "@vibeshub/auth": "workspace:*",
     "@vibeshub/contracts": "workspace:*",
     "@vibeshub/domain": "workspace:*",

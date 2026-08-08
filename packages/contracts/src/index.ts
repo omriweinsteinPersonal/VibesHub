@@ -171,6 +171,7 @@ export const recommendationDiscountSchema = z
   .object({
     code: z.string().trim().min(1).max(50),
     expiresAt: z.iso.datetime().nullable().optional(),
+    id: idSchema.nullable(),
     label: z.string().trim().min(1).max(100).nullable(),
     lastVerifiedAt: z.iso.datetime().nullable().optional(),
     verificationStatus: z
@@ -183,6 +184,41 @@ export const recommendationDiscountSchema = z
         'stale',
       ])
       .optional(),
+  })
+  .strict();
+
+export const creatorAnalyticsMetricSchema = z
+  .object({
+    codeCopies: z.int().nonnegative(),
+    recommendationViews: z.int().nonnegative(),
+    shopClicks: z.int().nonnegative(),
+    storefrontViews: z.int().nonnegative(),
+    uniqueVisitors: z.int().nonnegative(),
+  })
+  .strict();
+
+export const creatorAnalyticsDashboardSchema = z
+  .object({
+    range: z
+      .object({
+        days: z.int().min(7).max(90),
+        from: z.iso.date(),
+        to: z.iso.date(),
+      })
+      .strict(),
+    recommendations: z.array(
+      z
+        .object({
+          codeCopies: z.int().nonnegative(),
+          id: idSchema,
+          productName: z.string().trim().min(1).max(200),
+          shopClicks: z.int().nonnegative(),
+          views: z.int().nonnegative(),
+        })
+        .strict(),
+    ),
+    series: z.array(creatorAnalyticsMetricSchema.extend({ date: z.iso.date() }).strict()),
+    summary: creatorAnalyticsMetricSchema,
   })
   .strict();
 
@@ -606,6 +642,7 @@ export type CreatorDiscountCodeInput = z.infer<typeof creatorDiscountCodeInputSc
 export type CreatorDiscountCodePatch = z.infer<typeof creatorDiscountCodePatchSchema>;
 export type CreatorDiscountCode = z.infer<typeof creatorDiscountCodeSchema>;
 export type PublicDiscountCode = z.infer<typeof publicDiscountCodeSchema>;
+export type CreatorAnalyticsDashboard = z.infer<typeof creatorAnalyticsDashboardSchema>;
 export type DiscountCodeLifecycle = z.infer<typeof discountCodeLifecycleSchema>;
 export type DiscountCodeVerificationStatus = z.infer<
   typeof discountCodeVerificationStatusSchema

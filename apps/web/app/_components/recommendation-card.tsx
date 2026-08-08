@@ -7,9 +7,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { SaveProductButton } from './engagement';
+import {
+  CopyDiscountCodeButton,
+  RecommendationImpressionTracker,
+} from './analytics-events';
 
 interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
+  creatorId?: string;
   onSaveChange?: (saved: boolean) => void;
   recommendation: RecommendationCard;
   showSave?: boolean;
@@ -17,12 +22,21 @@ interface RecommendationCardViewProps {
 
 export function RecommendationCardView({
   creator,
+  creatorId,
   onSaveChange,
   recommendation,
   showSave = false,
 }: RecommendationCardViewProps) {
+  const attributedCreatorId = creatorId ?? creator?.id;
   return (
     <article className="storeProductCard">
+      {attributedCreatorId ? (
+        <RecommendationImpressionTracker
+          creatorId={attributedCreatorId}
+          productId={recommendation.productId}
+          recommendationId={recommendation.id}
+        />
+      ) : null}
       <div className="storeProductImage">
         <Image
           alt={`${recommendation.productName} by ${recommendation.brandName}`}
@@ -93,6 +107,14 @@ export function RecommendationCardView({
                     recommendation.discount.expiresAt ?? null,
                   )}
                 </small>
+              ) : null}
+              {recommendation.discount.id && attributedCreatorId ? (
+                <CopyDiscountCodeButton
+                  code={recommendation.discount.code}
+                  creatorId={attributedCreatorId}
+                  discountCodeId={recommendation.discount.id}
+                  recommendationId={recommendation.id}
+                />
               ) : null}
             </div>
           ) : (

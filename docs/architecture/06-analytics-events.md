@@ -204,10 +204,12 @@ Rules:
 - old, future, duplicate, and malformed events rejected or quarantined
 - per-event acceptance response only when needed; otherwise batch summary
 - rate limits by session, account, network, and app version
-- ingestion returns quickly and aggregates asynchronously
+- ingestion returns quickly; the initial low-volume release updates bounded daily projections in the same database transaction
 - SDK queues briefly while offline but respects maximum event age
 
 Analytics failure never blocks navigation, save/follow domain commands, story playback, or outbound shopping.
+
+The stable event and dashboard contracts do not depend on the initial projection strategy. When traffic justifies deploying the worker, ingestion can append events and move projection/reconciliation work to idempotent background jobs without changing web or mobile clients.
 
 ## 11. Search-query privacy
 
@@ -223,11 +225,11 @@ Search text can contain names, health concerns, or other personal information.
 
 ### Storefront visits
 
-Count accepted `creator.storefrontViewed` events. Repeated rapid views from the same session are deduplicated using a configurable window.
+Count accepted `creator.storefrontViewed` events. Retries reuse the event ID and are deduplicated; a later page load is a new visit.
 
 ### Unique visitors
 
-Daily distinct authenticated user ID or pseudonymous anonymous identifier after consent/collection rules. A person using several devices may count more than once; UI copy must not claim exact human identity.
+Daily distinct authenticated user ID or pseudonymous browser-session identifier after consent/collection rules. A person using several devices or sessions may count more than once; UI copy must not claim exact human identity.
 
 ### Recommendation views
 

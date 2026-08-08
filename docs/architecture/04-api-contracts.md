@@ -450,14 +450,11 @@ Upload creation returns provider URL, required method/headers, expiry, maximum b
 
 ### Creator analytics
 
-| Method | Path                                 | Purpose                    |
-| ------ | ------------------------------------ | -------------------------- |
-| GET    | `/creator/analytics/summary`         | Date-range metrics cards   |
-| GET    | `/creator/analytics/timeseries`      | Daily metrics series       |
-| GET    | `/creator/analytics/recommendations` | Per-recommendation metrics |
-| GET    | `/creator/analytics/links`           | Outbound link metrics      |
+| Method | Path                       | Purpose |
+| ------ | -------------------------- | ------- |
+| GET    | `/creator/analytics?days=7 | 30      | 90` | Creator dashboard snapshot |
 
-Maximum range and aggregation granularity are server-controlled. Creator analytics exposes only the creator's own aggregate data, never another visitor's identity.
+The snapshot contains summary cards, a zero-filled daily series, and the creator's top recommendations. Maximum range and aggregation granularity are server-controlled. Creator analytics exposes only the authenticated creator's own aggregate data, never another visitor's identity.
 
 ## 13. Administration and moderation endpoints
 

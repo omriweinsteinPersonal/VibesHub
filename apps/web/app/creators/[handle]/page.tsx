@@ -11,6 +11,10 @@ import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../..
 import { RecommendationCardView } from '../../_components/recommendation-card';
 import { EngagementProvider, FollowCreatorButton } from '../../_components/engagement';
 import { SiteHeader } from '../../_components/site-header';
+import {
+  CopyDiscountCodeButton,
+  StorefrontViewTracker,
+} from '../../_components/analytics-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +68,7 @@ export default async function CreatorStorefrontPage({
         creatorIds={[storefront.id]}
         productIds={recommendations.map(({ productId }) => productId)}
       >
+        <StorefrontViewTracker creatorId={storefront.id} />
         <section className="storefrontHero">
           <div className="storefrontAvatar" aria-hidden="true">
             {initials(storefront.displayName)}
@@ -121,6 +126,12 @@ export default async function CreatorStorefrontPage({
                         : 'No expiry supplied'}
                     </span>
                   </div>
+                  <CopyDiscountCodeButton
+                    code={code.code}
+                    creatorId={storefront.id}
+                    discountCodeId={code.id}
+                    recommendationId={null}
+                  />
                 </article>
               ))}
             </div>
@@ -148,6 +159,7 @@ export default async function CreatorStorefrontPage({
             <div className="storeProductGrid">
               {recommendations.map((recommendation) => (
                 <RecommendationCardView
+                  creatorId={storefront.id}
                   key={recommendation.id}
                   recommendation={recommendation}
                   showSave

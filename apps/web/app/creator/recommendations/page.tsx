@@ -295,6 +295,7 @@ export default function CreatorRecommendationsPage() {
             Recommendations
           </Link>
           <Link href="/creator/discount-codes">Discount codes</Link>
+          <Link href="/creator/analytics">Analytics</Link>
           <Link href="/creators">Storefronts</Link>
         </nav>
       </header>

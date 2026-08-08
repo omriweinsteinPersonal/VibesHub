@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  creatorAnalyticsDashboardSchema,
   creatorRecommendationInputSchema,
   creatorRecommendationMoveInputSchema,
   creatorCardSchema,
@@ -179,7 +180,7 @@ describe('shared API contracts', () => {
         category: { name: 'Beauty', slug: 'beauty' },
         commercialRelationship: 'affiliate',
         createdAt: '2026-08-07T10:00:00.000Z',
-        discount: { code: 'NOA10', label: '10% off' },
+        discount: { code: 'NOA10', id: null, label: '10% off' },
         id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
         imageAssetId: null,
         imageUrl: 'https://images.example.com/blush.jpg',
@@ -260,5 +261,37 @@ describe('shared API contracts', () => {
       }),
     ).toThrow();
     expect(() => merchantDomainReasonInputSchema.parse({ note: '  ' })).toThrow();
+  });
+
+  it('keeps creator analytics totals and daily series nonnegative', () => {
+    const metric = {
+      codeCopies: 2,
+      recommendationViews: 21,
+      shopClicks: 4,
+      storefrontViews: 10,
+      uniqueVisitors: 8,
+    };
+    const dashboard = creatorAnalyticsDashboardSchema.parse({
+      range: { days: 7, from: '2026-08-02', to: '2026-08-08' },
+      recommendations: [
+        {
+          codeCopies: 2,
+          id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+          productName: 'Soft Pinch Liquid Blush',
+          shopClicks: 4,
+          views: 21,
+        },
+      ],
+      series: [{ date: '2026-08-08', ...metric }],
+      summary: metric,
+    });
+
+    expect(dashboard.summary.shopClicks).toBe(4);
+    expect(() =>
+      creatorAnalyticsDashboardSchema.parse({
+        ...dashboard,
+        summary: { ...metric, shopClicks: -1 },
+      }),
+    ).toThrow();
   });
 });

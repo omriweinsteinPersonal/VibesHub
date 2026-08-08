@@ -19,7 +19,8 @@ describe('RedirectService', () => {
       findActive: vi.fn().mockResolvedValue(activeLink),
       recordEvent: vi.fn().mockResolvedValue(undefined),
     };
-    const service = new RedirectService(repository as never);
+    const analytics = { recordShopClick: vi.fn().mockResolvedValue(undefined) };
+    const service = new RedirectService(repository as never, analytics as never);
 
     await expect(service.resolve('01989f72-07e4-7f32-9b42-1ba55d4ca025')).resolves.toBe(
       activeLink.destinationUrl,
@@ -29,6 +30,7 @@ describe('RedirectService', () => {
       'affiliate.shopClicked.v1',
       undefined,
     );
+    expect(analytics.recordShopClick).toHaveBeenCalledWith(activeLink);
   });
 
   it('does not accept malformed public IDs or arbitrary targets', async () => {
@@ -36,7 +38,7 @@ describe('RedirectService', () => {
       findActive: vi.fn(),
       recordEvent: vi.fn(),
     };
-    const service = new RedirectService(repository as never);
+    const service = new RedirectService(repository as never, {} as never);
 
     await expect(service.resolve('https://evil.example')).resolves.toBeNull();
     expect(repository.findActive).not.toHaveBeenCalled();
@@ -50,7 +52,8 @@ describe('RedirectService', () => {
       }),
       recordEvent: vi.fn().mockResolvedValue(undefined),
     };
-    const service = new RedirectService(repository as never);
+    const analytics = { recordShopClick: vi.fn() };
+    const service = new RedirectService(repository as never, analytics as never);
 
     await expect(
       service.resolve('01989f72-07e4-7f32-9b42-1ba55d4ca025'),
@@ -67,7 +70,10 @@ describe('RedirectService', () => {
       findActive: vi.fn().mockResolvedValue(activeLink),
       recordEvent: vi.fn().mockRejectedValue(new Error('database timeout')),
     };
-    const service = new RedirectService(repository as never);
+    const analytics = {
+      recordShopClick: vi.fn().mockRejectedValue(new Error('timeout')),
+    };
+    const service = new RedirectService(repository as never, analytics as never);
 
     await expect(service.resolve('01989f72-07e4-7f32-9b42-1ba55d4ca025')).resolves.toBe(
       activeLink.destinationUrl,

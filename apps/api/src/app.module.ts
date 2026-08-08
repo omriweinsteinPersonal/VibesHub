@@ -3,6 +3,12 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 
 import { AccountController } from './account/account.controller.js';
 import { AccountRepository } from './account/account.repository.js';
+import {
+  AnalyticsController,
+  CreatorAnalyticsController,
+} from './analytics/analytics.controller.js';
+import { AnalyticsRepository } from './analytics/analytics.repository.js';
+import { AnalyticsService } from './analytics/analytics.service.js';
 import { ActorRepository } from './auth/actor.repository.js';
 import { AuthenticationGuard } from './auth/auth.guard.js';
 import { CapabilityGuard } from './auth/capability.guard.js';
@@ -47,6 +53,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CreatorsController,
     DiscoverController,
     SearchController,
+    AnalyticsController,
+    CreatorAnalyticsController,
     CreatorDiscountCodesController,
     CreatorRecommendationsController,
     CreatorMediaController,
@@ -62,6 +70,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     SupabaseTokenVerifier,
     ActorRepository,
     AccountRepository,
+    AnalyticsRepository,
+    AnalyticsService,
     EngagementRepository,
     ApplicationRepository,
     ApplicationService,
