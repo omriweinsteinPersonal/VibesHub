@@ -268,6 +268,8 @@ describe('shared API contracts', () => {
       codeCopies: 2,
       recommendationViews: 21,
       shopClicks: 4,
+      storyCompletions: 3,
+      storyOpens: 5,
       storefrontViews: 10,
       uniqueVisitors: 8,
     };
@@ -279,6 +281,8 @@ describe('shared API contracts', () => {
           id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
           productName: 'Soft Pinch Liquid Blush',
           shopClicks: 4,
+          storyCompletions: 3,
+          storyOpens: 5,
           views: 21,
         },
       ],

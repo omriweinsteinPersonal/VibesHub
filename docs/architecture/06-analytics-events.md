@@ -140,13 +140,16 @@ Public follower/save counters derive from current relation counts or reconciled 
 
 | Event                  | Authority | Required properties                   | Definition                                   |
 | ---------------------- | --------- | ------------------------------------- | -------------------------------------------- |
-| `story.opened`         | Client    | Asset ID, recommendation ID, duration | Story viewer entered                         |
+| `story.opened`         | Client    | Creator, recommendation, product      | Story viewer entered                         |
 | `story.progressed`     | Client    | Asset ID, quartile                    | First crossing of 25/50/75 percent           |
-| `story.completed`      | Client    | Asset ID, watchedMs, durationMs       | At least 90% watched or natural playback end |
+| `story.completed`      | Client    | Recommendation, watchedMs, durationMs | At least 90% watched or natural playback end |
 | `story.closed`         | Client    | Asset ID, watchedMs, closeReason      | Viewer left before/after completion          |
 | `video.playbackFailed` | Client    | Asset ID, stable error code           | Product reliability, not creator performance |
 
 Clients do not send a high-frequency event for every playback second. Progress uses bounded milestones.
+The compatibility viewer binds events to a published recommendation until controlled
+Mux assets provide a durable media asset ID; the API validates the full
+creator/recommendation/product relationship in either case.
 
 ## 8. Discount and commerce events
 

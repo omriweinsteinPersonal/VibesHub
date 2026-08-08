@@ -20,6 +20,8 @@ interface MetricRow {
   date: string;
   recommendationViews: number;
   shopClicks: number;
+  storyCompletions: number;
+  storyOpens: number;
   storefrontViews: number;
   uniqueVisitors: number;
 }
@@ -29,6 +31,8 @@ interface RecommendationMetricRow {
   id: string;
   productName: string;
   shopClicks: number;
+  storyCompletions: number;
+  storyOpens: number;
   views: number;
 }
 
@@ -122,7 +126,14 @@ export class AnalyticsRepository {
           ${'recommendationId' in event ? event.recommendationId : null},
           ${'productId' in event ? event.productId : null},
           ${'discountCodeId' in event ? event.discountCodeId : null},
-          '{}'::jsonb
+          ${
+            event.name === 'story.completed'
+              ? JSON.stringify({
+                  durationMs: event.durationMs,
+                  watchedMs: event.watchedMs,
+                })
+              : '{}'
+          }::jsonb
         )
       `;
 
@@ -130,6 +141,8 @@ export class AnalyticsRepository {
         await this.projectStorefrontView(sql, event, identity);
       } else if (event.name === 'recommendation.impression') {
         await this.projectRecommendationView(sql, event, identity);
+      } else if (event.name === 'story.opened' || event.name === 'story.completed') {
+        await this.projectStoryEvent(sql, event);
       } else {
         await this.projectCodeCopy(sql, event);
       }
@@ -218,6 +231,8 @@ export class AnalyticsRepository {
           coalesce(metric.storefront_views, 0)::integer as "storefrontViews",
           coalesce(metric.unique_visitors, 0)::integer as "uniqueVisitors",
           coalesce(metric.recommendation_views, 0)::integer as "recommendationViews",
+          coalesce(metric.story_opens, 0)::integer as "storyOpens",
+          coalesce(metric.story_completions, 0)::integer as "storyCompletions",
           coalesce(metric.code_copies, 0)::integer as "codeCopies",
           coalesce(metric.shop_clicks, 0)::integer as "shopClicks"
         from generate_series(
@@ -236,6 +251,8 @@ export class AnalyticsRepository {
           product.name as "productName",
           coalesce(sum(metric.views), 0)::integer as views,
           coalesce(sum(metric.code_copies), 0)::integer as "codeCopies",
+          coalesce(sum(metric.story_opens), 0)::integer as "storyOpens",
+          coalesce(sum(metric.story_completions), 0)::integer as "storyCompletions",
           coalesce(sum(metric.shop_clicks), 0)::integer as "shopClicks"
         from app.recommendations recommendation
         join app.products product on product.id = recommendation.product_id
@@ -258,6 +275,8 @@ export class AnalyticsRepository {
         codeCopies: total.codeCopies + metric.codeCopies,
         recommendationViews: total.recommendationViews + metric.recommendationViews,
         shopClicks: total.shopClicks + metric.shopClicks,
+        storyCompletions: total.storyCompletions + metric.storyCompletions,
+        storyOpens: total.storyOpens + metric.storyOpens,
         storefrontViews: total.storefrontViews + metric.storefrontViews,
         uniqueVisitors: total.uniqueVisitors + metric.uniqueVisitors,
       }),
@@ -314,7 +333,11 @@ export class AnalyticsRepository {
       `;
       return creator?.valid ?? false;
     }
-    if (event.name === 'recommendation.impression') {
+    if (
+      event.name === 'recommendation.impression' ||
+      event.name === 'story.opened' ||
+      event.name === 'story.completed'
+    ) {
       const [recommendation] = await sql<{ valid: boolean }[]>`
         select true as valid
         from app.recommendations recommendation
@@ -491,6 +514,60 @@ export class AnalyticsRepository {
       set code_copies = analytics.recommendation_daily_metrics.code_copies + 1
     `;
   }
+
+  private async projectStoryEvent(
+    sql: DatabaseClient,
+    event: Extract<ClientAnalyticsEvent, { name: 'story.opened' | 'story.completed' }>,
+  ): Promise<void> {
+    if (event.name === 'story.opened') {
+      await sql`
+        insert into analytics.creator_daily_metrics (
+          creator_id, metric_date, story_opens
+        ) values (
+          ${event.creatorId},
+          (${event.occurredAt}::timestamptz at time zone 'utc')::date,
+          1
+        )
+        on conflict (creator_id, metric_date) do update
+        set story_opens = analytics.creator_daily_metrics.story_opens + 1
+      `;
+      await sql`
+        insert into analytics.recommendation_daily_metrics (
+          recommendation_id, metric_date, story_opens
+        ) values (
+          ${event.recommendationId},
+          (${event.occurredAt}::timestamptz at time zone 'utc')::date,
+          1
+        )
+        on conflict (recommendation_id, metric_date) do update
+        set story_opens = analytics.recommendation_daily_metrics.story_opens + 1
+      `;
+      return;
+    }
+
+    await sql`
+      insert into analytics.creator_daily_metrics (
+        creator_id, metric_date, story_completions
+      ) values (
+        ${event.creatorId},
+        (${event.occurredAt}::timestamptz at time zone 'utc')::date,
+        1
+      )
+      on conflict (creator_id, metric_date) do update
+      set story_completions = analytics.creator_daily_metrics.story_completions + 1
+    `;
+    await sql`
+      insert into analytics.recommendation_daily_metrics (
+        recommendation_id, metric_date, story_completions
+      ) values (
+        ${event.recommendationId},
+        (${event.occurredAt}::timestamptz at time zone 'utc')::date,
+        1
+      )
+      on conflict (recommendation_id, metric_date) do update
+      set story_completions = analytics.recommendation_daily_metrics.story_completions + 1
+    `;
+  }
 }
 
 function emptyMetric(): CreatorAnalyticsDashboard['summary'] {
@@ -498,6 +575,8 @@ function emptyMetric(): CreatorAnalyticsDashboard['summary'] {
     codeCopies: 0,
     recommendationViews: 0,
     shopClicks: 0,
+    storyCompletions: 0,
+    storyOpens: 0,
     storefrontViews: 0,
     uniqueVisitors: 0,
   };

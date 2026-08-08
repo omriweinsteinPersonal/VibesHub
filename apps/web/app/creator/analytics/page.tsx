@@ -109,6 +109,8 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
     ['Storefront visits', dashboard.summary.storefrontViews],
     ['Unique visitor sessions', dashboard.summary.uniqueVisitors],
     ['Product views', dashboard.summary.recommendationViews],
+    ['Story opens', dashboard.summary.storyOpens],
+    ['Story completions', dashboard.summary.storyCompletions],
     ['Shop clicks', dashboard.summary.shopClicks],
     ['Code copies', dashboard.summary.codeCopies],
   ] as const;
@@ -148,6 +150,8 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
                 <tr>
                   <th>Product</th>
                   <th>Views</th>
+                  <th>Story opens</th>
+                  <th>Completed</th>
                   <th>Shop clicks</th>
                   <th>Code copies</th>
                 </tr>
@@ -157,6 +161,8 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
                   <tr key={recommendation.id}>
                     <th scope="row">{recommendation.productName}</th>
                     <td>{recommendation.views.toLocaleString('en-IL')}</td>
+                    <td>{recommendation.storyOpens.toLocaleString('en-IL')}</td>
+                    <td>{recommendation.storyCompletions.toLocaleString('en-IL')}</td>
                     <td>{recommendation.shopClicks.toLocaleString('en-IL')}</td>
                     <td>{recommendation.codeCopies.toLocaleString('en-IL')}</td>
                   </tr>

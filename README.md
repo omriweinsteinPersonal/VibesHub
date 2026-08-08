@@ -68,6 +68,7 @@ docker/
 - [Security boundaries](docs/architecture/07-security-boundaries.md)
 - [Normalized discount-code management](docs/architecture/14-normalized-discount-codes.md)
 - [First-party creator analytics](docs/architecture/15-first-party-creator-analytics.md)
+- [Recommendation story viewer and analytics](docs/architecture/16-story-viewer-analytics.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
 - [Production identity deployment runbook](docs/operations/production-identity-slice.md)
 
@@ -81,4 +82,4 @@ docker/
 6. Implement identity, creator applications, and moderation. **Complete**
 7. Deliver public discovery, creator recommendations, image media, tracked shopping, and merchant review. **Phase 1 complete**
 8. Deliver shopper saves and creator follows. **Complete**
-9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases. **Normalized discount codes, recommendation ordering, recoverable archiving, and first-party creator analytics are complete.**
+9. Deliver normalized discounts, controlled video, analytics, and native feature parity in phased releases. **Normalized discount codes, recommendation ordering, recoverable archiving, first-party creator analytics, and the in-app story viewer are complete; controlled video upload and native parity remain.**

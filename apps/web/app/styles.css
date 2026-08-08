@@ -941,8 +941,10 @@ h1 em {
   border-radius: 50%;
   box-shadow: 0 8px 24px rgb(43 33 28 / 16%);
   color: var(--vh-ink);
+  cursor: pointer;
   display: flex;
   flex-direction: column;
+  font-family: inherit;
   font-size: 0.58rem;
   gap: 1px;
   height: 58px;
@@ -954,9 +956,132 @@ h1 em {
   z-index: 1;
 }
 
+.storyPreview:hover,
+.storyPreview:focus-visible {
+  background: var(--vh-white);
+  box-shadow: 0 10px 30px rgb(43 33 28 / 24%);
+  transform: scale(1.04);
+}
+
 .storyPreview span {
   color: var(--vh-accent);
   font-size: 0.8rem;
+}
+
+.storyViewerBackdrop {
+  align-items: center;
+  background: rgb(25 19 16 / 88%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 1000;
+}
+
+.storyViewer {
+  aspect-ratio: 9 / 16;
+  background: #16110f;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 26px;
+  box-shadow: 0 32px 90px rgb(0 0 0 / 45%);
+  max-height: min(820px, calc(100dvh - 40px));
+  max-width: calc(100vw - 40px);
+  overflow: hidden;
+  position: relative;
+  width: min(460px, calc((100dvh - 40px) * 0.5625));
+}
+
+.storyViewer video {
+  background: #16110f;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.storyViewerHeader {
+  align-items: center;
+  color: var(--vh-white);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  left: 0;
+  padding: 24px 20px 18px;
+  position: absolute;
+  right: 0;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 70%);
+  top: 5px;
+  z-index: 2;
+}
+
+.storyViewerHeader p,
+.storyViewerHeader strong {
+  display: block;
+  margin: 0;
+}
+
+.storyViewerHeader p {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.storyViewerHeader strong {
+  font-size: 0.9rem;
+  margin-top: 3px;
+}
+
+.storyViewerClose {
+  align-items: center;
+  background: rgb(0 0 0 / 35%);
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font: 300 1.55rem/1 sans-serif;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.storyViewerClose:hover,
+.storyViewerClose:focus-visible {
+  background: rgb(255 255 255 / 18%);
+}
+
+.storyViewerProgress {
+  background: rgb(255 255 255 / 28%);
+  height: 3px;
+  left: 18px;
+  overflow: hidden;
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  z-index: 3;
+}
+
+.storyViewerProgress span {
+  background: white;
+  display: block;
+  height: 100%;
+}
+
+.storyViewerError {
+  align-items: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.storyViewerError a {
+  color: white;
+  text-decoration: underline;
 }
 
 .storeCodeBadge {

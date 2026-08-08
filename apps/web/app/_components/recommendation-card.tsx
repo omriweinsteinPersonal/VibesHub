@@ -11,6 +11,7 @@ import {
   CopyDiscountCodeButton,
   RecommendationImpressionTracker,
 } from './analytics-events';
+import { StoryVideo } from './story-video';
 
 interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
@@ -46,16 +47,14 @@ export function RecommendationCardView({
           unoptimized
         />
         {recommendation.videoUrl ? (
-          <a
-            aria-label={`Watch video preview for ${recommendation.productName}`}
-            className="storyPreview"
-            href={recommendation.videoUrl}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <span aria-hidden="true">▶</span>
-            Video
-          </a>
+          <StoryVideo
+            creatorId={attributedCreatorId}
+            posterUrl={recommendation.imageUrl}
+            productId={recommendation.productId}
+            productName={recommendation.productName}
+            recommendationId={recommendation.id}
+            videoUrl={recommendation.videoUrl}
+          />
         ) : null}
         {recommendation.discount ? (
           <span className="storeCodeBadge">{recommendation.discount.code}</span>

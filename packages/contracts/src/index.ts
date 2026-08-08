@@ -192,6 +192,8 @@ export const creatorAnalyticsMetricSchema = z
     codeCopies: z.int().nonnegative(),
     recommendationViews: z.int().nonnegative(),
     shopClicks: z.int().nonnegative(),
+    storyCompletions: z.int().nonnegative(),
+    storyOpens: z.int().nonnegative(),
     storefrontViews: z.int().nonnegative(),
     uniqueVisitors: z.int().nonnegative(),
   })
@@ -213,6 +215,8 @@ export const creatorAnalyticsDashboardSchema = z
           id: idSchema,
           productName: z.string().trim().min(1).max(200),
           shopClicks: z.int().nonnegative(),
+          storyCompletions: z.int().nonnegative(),
+          storyOpens: z.int().nonnegative(),
           views: z.int().nonnegative(),
         })
         .strict(),

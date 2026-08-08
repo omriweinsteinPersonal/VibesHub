@@ -13,6 +13,9 @@ VibesHub now measures the first creator commerce funnel without a third-party an
 3. successful discount-code copy;
 4. valid outbound shop redirect.
 
+The recommendation story viewer extends this funnel with intentional story opens and
+90%-complete playback events while keeping the same privacy and validation model.
+
 The NestJS API remains the shared backend for web and future native clients. The worker remains undeployed.
 
 ## Data flow
@@ -31,6 +34,7 @@ The NestJS API remains the shared backend for web and future native clients. The
 - storefront visits;
 - privacy-conscious unique visitor sessions;
 - qualified recommendation views;
+- story opens and completions;
 - server-authoritative shop clicks;
 - successful code copies;
 - a daily series and the creator's top recommendations.

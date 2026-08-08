@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const clientAnalyticsEventNames = [
   'creator.storefrontViewed',
   'recommendation.impression',
+  'story.opened',
+  'story.completed',
   'discountCode.copied',
 ] as const;
 
@@ -30,6 +32,34 @@ export const clientAnalyticsEventSchema = z.discriminatedUnion('name', [
       recommendationId: z.uuid(),
     })
     .strict(),
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      name: z.literal('story.opened'),
+      productId: z.uuid(),
+      recommendationId: z.uuid(),
+    })
+    .strict(),
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      durationMs: z
+        .int()
+        .positive()
+        .max(15 * 60 * 1_000),
+      name: z.literal('story.completed'),
+      productId: z.uuid(),
+      recommendationId: z.uuid(),
+      watchedMs: z
+        .int()
+        .nonnegative()
+        .max(15 * 60 * 1_000),
+    })
+    .strict()
+    .refine((event) => event.watchedMs <= event.durationMs + 2_000, {
+      message: 'Watched time cannot materially exceed video duration',
+      path: ['watchedMs'],
+    }),
   clientEventEnvelopeSchema
     .extend({
       creatorId: z.uuid(),

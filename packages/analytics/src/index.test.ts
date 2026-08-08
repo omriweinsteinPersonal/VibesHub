@@ -51,4 +51,28 @@ describe('client analytics contracts', () => {
       }),
     ).toThrow();
   });
+
+  it('bounds story completion telemetry to the media duration', () => {
+    const story = {
+      ...storefrontEvent(),
+      creatorId: '018f47e2-1f6b-7d5a-b209-5f469f300002',
+      durationMs: 30_000,
+      name: 'story.completed' as const,
+      productId: '018f47e2-1f6b-7d5a-b209-5f469f300003',
+      recommendationId: '018f47e2-1f6b-7d5a-b209-5f469f300004',
+      watchedMs: 29_500,
+    };
+    expect(
+      clientAnalyticsBatchSchema.parse({
+        batchId: crypto.randomUUID(),
+        events: [story],
+      }).events[0]?.name,
+    ).toBe('story.completed');
+    expect(() =>
+      clientAnalyticsBatchSchema.parse({
+        batchId: crypto.randomUUID(),
+        events: [{ ...story, watchedMs: 40_000 }],
+      }),
+    ).toThrow(/watched time/i);
+  });
 });
