@@ -5,6 +5,8 @@ import {
   creatorRecommendationInputSchema,
   creatorRecommendationMoveInputSchema,
   creatorCardSchema,
+  creatorProfilePatchSchema,
+  creatorProfileSettingsSchema,
   creatorApplicationInputSchema,
   creatorDirectoryQuerySchema,
   creatorDiscountCodeInputSchema,
@@ -65,6 +67,7 @@ describe('shared API contracts', () => {
   it('keeps Hebrew creator copy directional and public fields explicit', () => {
     expect(
       creatorCardSchema.parse({
+        avatarUrl: null,
         bio: { direction: 'rtl', language: 'he', value: 'המלצות אמיתיות' },
         displayName: 'Noa Levi',
         followerCount: 124_000,
@@ -75,6 +78,34 @@ describe('shared API contracts', () => {
         verificationStatus: 'verified',
       }).verificationStatus,
     ).toBe('verified');
+  });
+
+  it('validates creator profile settings and unique social platforms', () => {
+    expect(
+      creatorProfileSettingsSchema.parse({
+        avatar: null,
+        bioHe: 'המלצות אמיתיות על טיפוח ויופי',
+        displayName: 'Noa Levi',
+        handle: 'noa-levi',
+        id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        primaryCategory: {
+          id: '01989f72-07e4-7f32-9b42-1ba55d4ca011',
+          name: 'Beauty',
+          slug: 'beauty',
+        },
+        socialLinks: [],
+        version: 1,
+      }).handle,
+    ).toBe('noa-levi');
+
+    expect(() =>
+      creatorProfilePatchSchema.parse({
+        socialLinks: [
+          { platform: 'instagram', url: 'https://instagram.com/noa' },
+          { platform: 'instagram', url: 'https://instagram.com/noa-beauty' },
+        ],
+      }),
+    ).toThrow();
   });
 
   it('requires HTTPS commerce links and a Hebrew creator review', () => {

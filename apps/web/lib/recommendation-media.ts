@@ -9,6 +9,7 @@ import { getSupabaseBrowserClient } from './supabase-browser';
 
 export const recommendationImageAccept = 'image/jpeg,image/png,image/webp';
 export const recommendationImageMaxBytes = 5 * 1_024 * 1_024;
+export const creatorImageAccept = recommendationImageAccept;
 
 const supportedTypes = new Set<RecommendationImageContentType>([
   'image/jpeg',
@@ -57,6 +58,8 @@ export async function uploadRecommendationImage(
     throw error;
   }
 }
+
+export const uploadCreatorImage = uploadRecommendationImage;
 
 export async function deleteRecommendationImage(assetId: string): Promise<void> {
   await apiRequest<void>(`/creator/media/images/${assetId}`, { method: 'DELETE' });

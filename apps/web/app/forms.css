@@ -353,6 +353,89 @@ textarea:disabled {
   padding: 0 18px;
 }
 
+.creatorProfileSettings {
+  max-width: 1120px;
+}
+
+.profileSettingsForm {
+  gap: 28px;
+}
+
+.profilePhotoEditor {
+  align-items: center;
+  background: var(--vh-surface);
+  border: 1px solid var(--vh-border);
+  border-radius: 20px;
+  display: flex;
+  gap: 28px;
+  padding: 24px;
+}
+
+.profilePhotoPreview {
+  align-items: center;
+  aspect-ratio: 1;
+  background: var(--vh-soft);
+  border: 1px solid var(--vh-border);
+  border-radius: 50%;
+  color: var(--vh-accent);
+  display: flex;
+  flex: 0 0 160px;
+  font-family: var(--vh-font-display);
+  font-size: 2.2rem;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.profilePhotoPreview img {
+  object-fit: cover;
+}
+
+.profilePhotoControls {
+  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profilePhotoControls h2 {
+  margin: 0 0 4px;
+}
+
+.profileUploadButton {
+  cursor: pointer;
+  margin-top: 0;
+}
+
+.profileUploadButton input {
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+
+.textButton {
+  background: transparent;
+  border: 0;
+  color: var(--vh-muted);
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+.profileSocialFields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.profileSocialFields legend {
+  font-family: var(--vh-font-display);
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+}
+
 .imageUploadProgress {
   align-items: center;
   color: var(--vh-muted);
@@ -956,6 +1039,16 @@ textarea:disabled {
   .recommendationImageUploader {
     align-items: stretch;
     grid-template-columns: 1fr;
+  }
+
+  .profilePhotoEditor {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .profilePhotoPreview {
+    flex-basis: 132px;
+    width: 132px;
   }
 
   .workspaceContent {

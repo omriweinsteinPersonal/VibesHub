@@ -15,6 +15,9 @@ import { CapabilityGuard } from './auth/capability.guard.js';
 import { SupabaseTokenVerifier } from './auth/token-verifier.js';
 import { CategoriesController } from './categories.controller.js';
 import { AdminApplicationController } from './creator-applications/admin-application.controller.js';
+import { CreatorProfileController } from './creator-profile/creator-profile.controller.js';
+import { CreatorProfileRepository } from './creator-profile/creator-profile.repository.js';
+import { CreatorProfileService } from './creator-profile/creator-profile.service.js';
 import { ApplicationController } from './creator-applications/application.controller.js';
 import { ApplicationRepository } from './creator-applications/application.repository.js';
 import { ApplicationService } from './creator-applications/application.service.js';
@@ -58,6 +61,7 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CreatorDiscountCodesController,
     CreatorRecommendationsController,
     CreatorMediaController,
+    CreatorProfileController,
     AccountController,
     EngagementController,
     ApplicationController,
@@ -75,6 +79,8 @@ import { RecommendationService } from './recommendations/recommendation.service.
     EngagementRepository,
     ApplicationRepository,
     ApplicationService,
+    CreatorProfileRepository,
+    CreatorProfileService,
     CreatorDirectoryRepository,
     ProductDiscoveryRepository,
     DiscountCodeRepository,

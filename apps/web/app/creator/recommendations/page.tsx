@@ -291,6 +291,7 @@ export default function CreatorRecommendationsPage() {
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>
+          <Link href="/creator/profile">Profile</Link>
           <Link aria-current="page" href="/creator/recommendations">
             Recommendations
           </Link>

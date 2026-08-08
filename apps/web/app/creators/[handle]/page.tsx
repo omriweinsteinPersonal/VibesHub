@@ -4,6 +4,7 @@ import type {
   RecommendationCard,
 } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -70,8 +71,18 @@ export default async function CreatorStorefrontPage({
       >
         <StorefrontViewTracker creatorId={storefront.id} />
         <section className="storefrontHero">
-          <div className="storefrontAvatar" aria-hidden="true">
-            {initials(storefront.displayName)}
+          <div className="storefrontAvatar">
+            {storefront.avatarUrl ? (
+              <Image
+                alt={`${storefront.displayName} profile photo`}
+                fill
+                sizes="160px"
+                src={storefront.avatarUrl}
+                unoptimized
+              />
+            ) : (
+              <span aria-hidden="true">{initials(storefront.displayName)}</span>
+            )}
           </div>
           <div className="storefrontIdentity">
             <p className="eyebrow">CREATOR STOREFRONT</p>
@@ -95,6 +106,20 @@ export default async function CreatorStorefrontPage({
               <span>Verified by VibesHub</span>
             </div>
             <FollowCreatorButton creatorId={storefront.id} />
+            {storefront.socialLinks.length > 0 ? (
+              <nav className="storefrontSocialLinks" aria-label="Creator social links">
+                {storefront.socialLinks.map((link) => (
+                  <a
+                    href={link.url}
+                    key={`${link.platform}:${link.url}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {socialLabel(link.platform)}
+                  </a>
+                ))}
+              </nav>
+            ) : null}
           </div>
         </section>
 
@@ -217,6 +242,13 @@ function formatCodeDate(value: string): string {
   return new Intl.DateTimeFormat('en-IL', { dateStyle: 'medium' }).format(
     new Date(value),
   );
+}
+
+function socialLabel(
+  platform: CreatorStorefront['socialLinks'][number]['platform'],
+): string {
+  if (platform === 'website') return 'Website ↗';
+  return `${platform[0]?.toUpperCase()}${platform.slice(1)} ↗`;
 }
 
 function verificationLabel(status: PublicDiscountCode['verificationStatus']): string {

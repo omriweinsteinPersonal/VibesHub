@@ -16,6 +16,7 @@ import { trackedRedirectUrl } from '../redirects/redirect-destination.js';
 import { encodeEngagementCursor, type EngagementCursor } from './engagement.js';
 
 interface CreatorRow {
+  avatarUrl: string | null;
   bioText: string;
   categoryName: string;
   categorySlug: string;
@@ -174,6 +175,7 @@ export class EngagementRepository {
     const rows = await this.database.sql<CreatorRow[]>`
       select
         creator.id,
+        avatar.public_url as "avatarUrl",
         creator.handle::text as handle,
         creator.display_name as "displayName",
         creator.bio_he as "bioText",
@@ -199,6 +201,9 @@ export class EngagementRepository {
       from app.creator_follows follow
       join app.creator_profiles creator on creator.id = follow.creator_id
       join app.categories category on category.id = creator.primary_category_id
+      left join app.media_assets avatar
+        on avatar.id = creator.avatar_media_asset_id
+       and avatar.status = 'ready'
       where follow.user_id = ${userId}
         and creator.status = 'approved'
         and creator.published_at is not null
@@ -363,6 +368,7 @@ export class EngagementRepository {
 
 function mapCreator(row: CreatorRow): CreatorCard {
   return {
+    avatarUrl: row.avatarUrl,
     bio: { direction: 'rtl', language: 'he', value: row.bioText },
     displayName: row.displayName,
     followerCount: row.followerCount,

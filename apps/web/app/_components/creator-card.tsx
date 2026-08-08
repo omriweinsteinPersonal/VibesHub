@@ -1,4 +1,5 @@
 import type { CreatorCard } from '@vibeshub/contracts';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -11,7 +12,17 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
   return (
     <article className="creatorCard">
       <div className="creatorPortrait" aria-hidden="true">
-        {initials(creator.displayName)}
+        {creator.avatarUrl ? (
+          <Image
+            alt=""
+            fill
+            sizes="(max-width: 800px) 100vw, 380px"
+            src={creator.avatarUrl}
+            unoptimized
+          />
+        ) : (
+          initials(creator.displayName)
+        )}
       </div>
       <div className="creatorDetails">
         <div className="creatorTitle">

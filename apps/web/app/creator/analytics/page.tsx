@@ -54,6 +54,7 @@ export default function CreatorAnalyticsPage() {
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>
+          <Link href="/creator/profile">Profile</Link>
           <Link href="/creator/recommendations">Recommendations</Link>
           <Link href="/creator/discount-codes">Discount codes</Link>
           <Link aria-current="page" href="/creator/analytics">

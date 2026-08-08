@@ -12,6 +12,7 @@ import {
 } from './creator-directory.js';
 
 interface CreatorCardRow {
+  avatarUrl: string | null;
   bioText: string;
   categoryName: string;
   categorySlug: string;
@@ -21,6 +22,7 @@ interface CreatorCardRow {
   id: string;
   isVerified: boolean;
   recommendationCount: number;
+  socialLinks?: CreatorStorefront['socialLinks'];
 }
 
 export interface CreatorDirectoryPage {
@@ -40,6 +42,7 @@ export class CreatorDirectoryRepository {
     const rows = await this.database.sql<CreatorCardRow[]>`
       select
         creator.id,
+        avatar.public_url as "avatarUrl",
         creator.handle::text as handle,
         creator.display_name as "displayName",
         creator.bio_he as "bioText",
@@ -62,6 +65,9 @@ export class CreatorDirectoryRepository {
         ) as "recommendationCount"
       from app.creator_profiles creator
       join app.categories category on category.id = creator.primary_category_id
+      left join app.media_assets avatar
+        on avatar.id = creator.avatar_media_asset_id
+       and avatar.status = 'ready'
       where creator.status = 'approved'
         and creator.published_at is not null
         and category.is_active = true
@@ -104,6 +110,7 @@ export class CreatorDirectoryRepository {
     const [row] = await this.database.sql<CreatorCardRow[]>`
       select
         creator.id,
+        avatar.public_url as "avatarUrl",
         creator.handle::text as handle,
         creator.display_name as "displayName",
         creator.bio_he as "bioText",
@@ -111,6 +118,20 @@ export class CreatorDirectoryRepository {
         creator.is_verified as "isVerified",
         category.slug::text as "categorySlug",
         category.name_en as "categoryName",
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'platform', link.platform,
+                'url', link.url,
+                'handle', link.handle
+              ) order by link.sort_order, link.id
+            )
+            from app.creator_social_links link
+            where link.creator_id = creator.id
+          ),
+          '[]'::jsonb
+        ) as "socialLinks",
         (
           select count(*)::integer
           from app.recommendations recommendation
@@ -126,17 +147,21 @@ export class CreatorDirectoryRepository {
         ) as "recommendationCount"
       from app.creator_profiles creator
       join app.categories category on category.id = creator.primary_category_id
+      left join app.media_assets avatar
+        on avatar.id = creator.avatar_media_asset_id
+       and avatar.status = 'ready'
       where creator.handle = ${handle}
         and creator.status = 'approved'
         and creator.published_at is not null
         and category.is_active = true
     `;
-    return row ? mapCreatorCard(row) : null;
+    return row ? { ...mapCreatorCard(row), socialLinks: row.socialLinks ?? [] } : null;
   }
 }
 
 function mapCreatorCard(row: CreatorCardRow): CreatorCard {
   return {
+    avatarUrl: row.avatarUrl,
     bio: { direction: 'rtl', language: 'he', value: row.bioText },
     displayName: row.displayName,
     followerCount: row.followerCount,

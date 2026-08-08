@@ -27,6 +27,10 @@ export const categoryCardSchema = z
 
 export const creatorCardSchema = z
   .object({
+    avatarUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .nullable(),
     bio: directionalTextSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
@@ -350,6 +354,10 @@ export const creatorRecommendationSchema = recommendationCardSchema
 
 export const creatorStorefrontSchema = z
   .object({
+    avatarUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .nullable(),
     bio: directionalTextSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
@@ -360,6 +368,15 @@ export const creatorStorefrontSchema = z
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
+    socialLinks: z.array(
+      z
+        .object({
+          handle: z.string().trim().max(100).nullable(),
+          platform: z.enum(['instagram', 'tiktok', 'youtube', 'website']),
+          url: z.url({ protocol: /^https$/ }).max(2_048),
+        })
+        .strict(),
+    ),
     verificationStatus: z.enum(['unverified', 'verified']),
   })
   .strict();
@@ -625,6 +642,60 @@ export const creatorApplicationReviewInputSchema = z
   })
   .strict();
 
+export const creatorProfileSocialLinkSchema = z
+  .object({
+    handle: z.string().trim().min(1).max(100).nullable().optional(),
+    platform: socialPlatformSchema,
+    url: z.url({ protocol: /^https$/ }).max(2_048),
+  })
+  .strict();
+
+export const creatorProfileSettingsSchema = z
+  .object({
+    avatar: z
+      .object({
+        assetId: idSchema,
+        url: z.url({ protocol: /^https$/ }).max(2_048),
+      })
+      .strict()
+      .nullable(),
+    bioHe: z.string().trim().min(1).max(1_000),
+    displayName: z.string().trim().min(1).max(100),
+    handle: creatorCardSchema.shape.handle,
+    id: idSchema,
+    primaryCategory: categoryCardSchema.pick({ id: true, name: true, slug: true }),
+    socialLinks: z.array(creatorProfileSocialLinkSchema).max(4),
+    version: z.int().positive(),
+  })
+  .strict();
+
+export const creatorProfilePatchSchema = z
+  .object({
+    avatarAssetId: idSchema.nullable().optional(),
+    bioHe: z
+      .string()
+      .trim()
+      .min(1)
+      .max(1_000)
+      .refine((value) => /[א-ת]/u.test(value), 'A Hebrew creator bio is required')
+      .optional(),
+    displayName: z.string().trim().min(1).max(100).optional(),
+    primaryCategoryId: idSchema.optional(),
+    socialLinks: z
+      .array(creatorProfileSocialLinkSchema)
+      .max(4)
+      .refine(
+        (links) => new Set(links.map(({ platform }) => platform)).size === links.length,
+        'Use each social platform at most once',
+      )
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    'At least one profile field is required',
+  );
+
 export const idempotencyKeySchema = z.string().trim().min(8).max(200);
 
 export type CursorPage<T> = {
@@ -708,6 +779,9 @@ export type CreatorApplicationSocialLink = z.infer<
   typeof creatorApplicationSocialLinkSchema
 >;
 export type CreatorApplicationStatus = z.infer<typeof creatorApplicationStatusSchema>;
+export type CreatorProfilePatch = z.infer<typeof creatorProfilePatchSchema>;
+export type CreatorProfileSettings = z.infer<typeof creatorProfileSettingsSchema>;
+export type CreatorProfileSocialLink = z.infer<typeof creatorProfileSocialLinkSchema>;
 export type Money = z.infer<typeof moneySchema>;
 export type Operation = z.infer<typeof operationSchema>;
 export type ProblemDetails = z.infer<typeof problemDetailsSchema>;

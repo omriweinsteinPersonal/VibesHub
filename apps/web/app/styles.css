@@ -722,6 +722,37 @@ h1 em {
   justify-content: center;
 }
 
+.creatorPortrait img,
+.storefrontAvatar img {
+  object-fit: cover;
+}
+
+.creatorPortrait,
+.storefrontAvatar {
+  overflow: hidden;
+  position: relative;
+}
+
+.storefrontSocialLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.storefrontSocialLinks a {
+  border: 1px solid var(--vh-border);
+  border-radius: 999px;
+  color: var(--vh-muted);
+  font-size: 0.8rem;
+  padding: 8px 13px;
+}
+
+.storefrontSocialLinks a:hover {
+  border-color: var(--vh-accent);
+  color: var(--vh-accent);
+}
+
 .creatorDetails {
   padding: 25px;
 }

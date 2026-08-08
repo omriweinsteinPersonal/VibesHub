@@ -168,6 +168,7 @@ export default function CreatorDiscountCodesPage() {
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>
+          <Link href="/creator/profile">Profile</Link>
           <Link href="/creator/recommendations">Recommendations</Link>
           <Link aria-current="page" href="/creator/discount-codes">
             Discount codes
