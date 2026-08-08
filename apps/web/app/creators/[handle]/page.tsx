@@ -103,7 +103,11 @@ export default async function CreatorStorefrontPage({
             </p>
             <div className="storefrontMetrics">
               <span>{storefront.recommendationCount} recommendations</span>
-              <span>Verified by VibesHub</span>
+              <span>
+                {storefront.verificationStatus === 'verified'
+                  ? 'Verified by VibesHub'
+                  : 'Approved creator storefront'}
+              </span>
             </div>
             <FollowCreatorButton creatorId={storefront.id} />
             {storefront.socialLinks.length > 0 ? (
