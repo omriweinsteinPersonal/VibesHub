@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
@@ -185,7 +186,7 @@ function SignedOutAccount() {
   return (
     <section className="workspaceContent accountGuest">
       <div className="accountGuestMark" aria-hidden="true">
-        ✣
+        <Sparkles size={20} />
       </div>
       <p className="eyebrow">YOUR VIBESHUB</p>
       <h1>Keep the things you love close</h1>

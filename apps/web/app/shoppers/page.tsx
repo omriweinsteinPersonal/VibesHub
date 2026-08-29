@@ -1,6 +1,7 @@
 import type { DiscoveryRecommendationCard } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ArrowRight, Bookmark, Search, Tag, type LucideIcon } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
 import { EngagementProvider } from '../_components/engagement';
@@ -20,21 +21,21 @@ const steps = [
   {
     description:
       'Browse by category or search a creator you already follow on Instagram or TikTok.',
-    icon: '⌕',
+    icon: Search,
     number: '01',
     title: 'Find your taste',
   },
   {
     description:
       'Build a wishlist across creators and get notified when a product drops in price.',
-    icon: '▯',
+    icon: Bookmark,
     number: '02',
     title: 'Save what you love',
   },
   {
     description:
       "Every storefront carries the creator's own codes, checked weekly by our team.",
-    icon: '◇',
+    icon: Tag,
     number: '03',
     title: 'Shop with a code',
   },
@@ -74,16 +75,19 @@ export default async function ShoppersPage() {
           </div>
 
           <div className="shopperSteps">
-            {steps.map((step) => (
-              <article className="shopperStep" key={step.number}>
-                <span className="shopperStepNumber">{step.number}</span>
-                <span className="shopperStepIcon" aria-hidden="true">
-                  {step.icon}
-                </span>
-                <h2>{step.title}</h2>
-                <p>{step.description}</p>
-              </article>
-            ))}
+            {steps.map((step) => {
+              const Icon = step.icon as LucideIcon;
+              return (
+                <article className="shopperStep" key={step.number}>
+                  <span className="shopperStepNumber">{step.number}</span>
+                  <span className="shopperStepIcon" aria-hidden="true">
+                    <Icon size={18} />
+                  </span>
+                  <h2>{step.title}</h2>
+                  <p>{step.description}</p>
+                </article>
+              );
+            })}
           </div>
         </section>
 
@@ -93,7 +97,9 @@ export default async function ShoppersPage() {
               <p className="eyebrow">SHOPPER FAVORITES</p>
               <h2 id="shopper-favorites-title">Most saved this month</h2>
             </div>
-            <Link href="/discover?sort=most-saved">See everything →</Link>
+            <Link href="/discover?sort=most-saved">
+              See everything <ArrowRight aria-hidden="true" size={16} />
+            </Link>
           </div>
 
           {unavailable ? (

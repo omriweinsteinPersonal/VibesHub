@@ -1,6 +1,7 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
 import { CreatorCardView } from '../_components/creator-card';
@@ -52,6 +53,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
         <form className="directorySearch" action="/creators" method="get" role="search">
           <label htmlFor="creator-search">Search creators</label>
           <div>
+            <Search aria-hidden="true" className="fieldSearchIcon" size={16} />
             <input
               defaultValue={filters.q}
               id="creator-search"

@@ -8,6 +8,7 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { apiRequest, publicApiCollectionRequest } from '../../lib/api';
@@ -273,7 +274,8 @@ export function CreatorAccount({ email }: { email?: string }) {
                 <strong>Profile photo</strong>
                 <div className="creatorPhotoActions">
                   <label className="button secondary">
-                    ↥ {imageIsUploading ? 'Uploading…' : 'Change photo'}
+                    <Upload aria-hidden="true" size={16} />
+                    {imageIsUploading ? 'Uploading…' : 'Change photo'}
                     <input
                       accept={creatorImageAccept}
                       disabled={imageIsUploading || savingProfile}

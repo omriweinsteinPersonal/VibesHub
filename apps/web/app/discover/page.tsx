@@ -5,6 +5,7 @@ import type {
 } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Bookmark, Clock, Flame, Search } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
 import { EngagementProvider } from '../_components/engagement';
@@ -34,6 +35,12 @@ const sorts: ReadonlyArray<{ label: string; value: DiscoverySort }> = [
   { label: 'Most saved', value: 'most-saved' },
   { label: 'Newest', value: 'newest' },
 ];
+
+const sortIcons = {
+  newest: Clock,
+  'most-saved': Bookmark,
+  trending: Flame,
+} as const;
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const filters = await searchParams;
@@ -81,6 +88,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           <input name="sort" type="hidden" value={sort} />
           <label htmlFor="product-search">Search products</label>
           <div>
+            <Search aria-hidden="true" className="fieldSearchIcon" size={20} />
             <input
               defaultValue={filters.q}
               id="product-search"
@@ -118,16 +126,23 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
         <div className="discoverSortRow">
           <div className="sortFilters" aria-label="Sort products">
-            {sorts.map((option) => (
-              <Link
-                aria-current={sort === option.value ? 'page' : undefined}
-                className={sort === option.value ? 'active' : undefined}
-                href={discoverUrl(activeFilters, { cursor: null, sort: option.value })}
-                key={option.value}
-              >
-                {option.label}
-              </Link>
-            ))}
+            {sorts.map((option) => {
+              const Icon = sortIcons[option.value];
+              return (
+                <Link
+                  aria-current={sort === option.value ? 'page' : undefined}
+                  className={sort === option.value ? 'active' : undefined}
+                  href={discoverUrl(activeFilters, {
+                    cursor: null,
+                    sort: option.value,
+                  })}
+                  key={option.value}
+                >
+                  <Icon aria-hidden="true" size={14} />
+                  {option.label}
+                </Link>
+              );
+            })}
           </div>
           <p className="resultCount">{recommendations.length} products</p>
         </div>

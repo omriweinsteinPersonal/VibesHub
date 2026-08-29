@@ -11,6 +11,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { Heart } from 'lucide-react';
 
 import { ApiError, apiRequest } from '../../lib/api';
 
@@ -232,7 +233,9 @@ export function SaveProductButton({
           );
       }}
     >
-      <span aria-hidden="true">{busy ? '…' : saved ? '♥' : '♡'}</span>
+      <span aria-hidden="true">
+        {busy ? '…' : <Heart fill={saved ? 'currentColor' : 'none'} size={16} />}
+      </span>
       {saved ? 'Saved' : 'Save'}
     </button>
   );

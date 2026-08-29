@@ -3,6 +3,7 @@
 import type { GlobalSearchResults } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowRight, Search, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { getApiUrl } from '../../lib/config';
@@ -85,7 +86,7 @@ export function GlobalSearch() {
           if (query.trim().length >= 2) setStatus('loading');
         }}
       >
-        <SearchIcon />
+        <Search aria-hidden="true" size={18} />
       </button>
 
       {open ? (
@@ -113,12 +114,12 @@ export function GlobalSearch() {
                 type="button"
                 onClick={close}
               >
-                ×
+                <X aria-hidden="true" size={16} />
               </button>
             </header>
 
             <label className="searchModalInput" htmlFor={`${resultsId}-input`}>
-              <SearchIcon />
+              <Search aria-hidden="true" size={20} />
               <input
                 aria-controls={resultsId}
                 aria-expanded={normalizedQuery.length >= 2}
@@ -223,27 +224,13 @@ export function GlobalSearch() {
                 href={`/discover?q=${encodeURIComponent(normalizedQuery)}`}
                 onClick={close}
               >
-                See all product results <span aria-hidden="true">→</span>
+                See all product results <ArrowRight aria-hidden="true" size={16} />
               </Link>
             ) : null}
           </section>
         </div>
       ) : null}
     </>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20">
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7" />
-      <path
-        d="m16 16 4 4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.7"
-      />
-    </svg>
   );
 }
 

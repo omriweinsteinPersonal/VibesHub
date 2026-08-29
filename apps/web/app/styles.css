@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+svg.lucide {
+  flex: 0 0 auto;
+}
+
 /* Creator studio reference experience */
 .creatorShellPage {
   background: #fffefa;
@@ -43,6 +47,12 @@
 
 .creatorShellActions {
   justify-content: flex-end;
+}
+
+.creatorShellActions a[href='/account'] {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
 }
 
 .creatorShellActions .button {
@@ -176,8 +186,10 @@
 }
 
 .creatorHomeCard > a {
+  align-items: center;
   color: var(--vh-accent);
-  display: inline-block;
+  display: inline-flex;
+  gap: 5px;
   margin-top: 20px;
 }
 
@@ -206,8 +218,14 @@
 }
 
 .creatorQuickTip > span {
+  align-items: center;
+  background: white;
+  border-radius: 50%;
   color: var(--vh-accent);
-  font-size: 1.6rem;
+  display: inline-flex;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
 }
 
 .creatorQuickTip p {
@@ -286,10 +304,12 @@
   margin: 0;
 }
 .creatorComposerHeader > button {
+  align-items: center;
   background: none;
   border: 0;
   color: #796e66;
   cursor: pointer;
+  display: inline-flex;
   font-size: 24px;
   line-height: 1;
   padding: 4px;
@@ -298,10 +318,13 @@
   padding: 32px;
 }
 .creatorBack {
+  align-items: center;
   background: none;
   border: 0;
   color: #766b63;
   cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
   border-radius: 999px;
   font: inherit;
   font-size: 14px;
@@ -501,14 +524,19 @@
   width: 100%;
 }
 .creatorStoryThumbs button {
+  align-items: center;
   background: #30251f;
   border: 0;
   border-radius: 50%;
   color: white;
   cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
   position: absolute;
   right: 3px;
   top: 3px;
+  width: 24px;
 }
 .creatorFormActions {
   align-items: center;
@@ -580,8 +608,11 @@
   -webkit-line-clamp: 3;
 }
 .creatorManageCopy > a {
+  align-items: center;
   color: #8a7e75;
+  display: inline-flex;
   font-size: 0.9rem;
+  gap: 4px;
 }
 .creatorManageActions {
   align-items: center;
@@ -590,10 +621,12 @@
   gap: 18px;
 }
 .creatorManageActions > button {
+  align-items: center;
   background: none;
   border: 0;
   color: #72665e;
   cursor: pointer;
+  display: inline-flex;
   font-size: 1.35rem;
 }
 .creatorLiveToggle {
@@ -640,10 +673,12 @@
   grid-template-columns: 1fr auto;
 }
 .creatorCodePill {
+  align-items: center;
   background: #f4eadb;
   border-radius: 999px;
-  display: inline-block;
+  display: inline-flex;
   font-size: 0.8rem;
+  gap: 5px;
   padding: 6px 12px;
 }
 .creatorEmpty {
@@ -921,11 +956,13 @@
   max-width: 650px;
 }
 .authEyebrow {
+  align-items: center;
   background: #f5f0e8;
   border-radius: 999px;
   color: #74685f;
-  display: inline-block;
+  display: inline-flex;
   font-size: 0.74rem;
+  gap: 7px;
   letter-spacing: 0.2em;
   padding: 8px 14px;
 }
@@ -1060,14 +1097,12 @@
 }
 .referenceStorefrontName > div:first-child > span {
   align-items: center;
-  border: 2px solid var(--vh-accent);
-  border-radius: 50%;
+  border: 0;
   color: var(--vh-accent);
   display: inline-flex;
-  font-size: 0.75rem;
-  height: 27px;
+  height: 24px;
   justify-content: center;
-  width: 27px;
+  width: 24px;
 }
 .referenceStorefrontName > p {
   color: #776c64;
@@ -1146,9 +1181,11 @@
   border-radius: 50%;
   box-shadow: 0 2px 6px rgb(54 38 27 / 8%);
   cursor: pointer;
+  display: inline-grid;
   font-size: 1.5rem;
   height: 46px;
   margin-left: 8px;
+  place-items: center;
   width: 46px;
 }
 .referenceStorefrontScroller {
@@ -1207,7 +1244,9 @@
   position: absolute;
 }
 .storyPreviewThumb b {
+  align-items: center;
   color: white;
+  display: inline-flex;
   font-size: 0.75rem;
   position: relative;
   z-index: 1;
@@ -1357,6 +1396,10 @@
   }
   .creatorShellActions a[href='/account'] span {
     font-size: 1rem;
+  }
+  .creatorShellActions a[href='/account'] svg {
+    height: 16px;
+    width: 16px;
   }
   .creatorWelcomeTitle {
     align-items: flex-start;
@@ -3007,12 +3050,12 @@ dd {
 }
 
 .logoMark svg {
-  height: 22px;
+  height: 16px;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 1.45;
-  width: 22px;
+  stroke-width: 2;
+  width: 16px;
 }
 
 .logo > span:last-child {
@@ -3149,30 +3192,21 @@ dt {
 
 .directorySearch > div::before,
 .discoverSearch > div::before {
-  border: 1.6px solid var(--vh-muted);
-  border-radius: 50%;
-  content: '';
-  height: 13px;
-  left: 21px;
-  pointer-events: none;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-58%);
-  width: 13px;
-  z-index: 1;
+  content: none;
 }
 
 .directorySearch > div::after,
 .discoverSearch > div::after {
-  background: var(--vh-muted);
-  content: '';
-  height: 1.5px;
-  left: 33px;
+  content: none;
+}
+
+.fieldSearchIcon {
+  color: var(--vh-muted);
+  left: 20px;
   pointer-events: none;
   position: absolute;
-  top: calc(50% + 5px);
-  transform: rotate(45deg);
-  width: 7px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 1;
 }
 
@@ -3286,11 +3320,23 @@ dt {
 
 .verifiedBadge {
   background: transparent;
-  border: 1px solid var(--vh-accent);
+  border: 0;
   color: var(--vh-accent);
-  font-size: 0.66rem;
+  display: inline-flex;
   height: 16px;
   width: 16px;
+}
+
+.creatorTitle > p,
+.creatorUpdate strong,
+.heroCreatorCount,
+.categoryBand a,
+.storyBadge,
+.productDetails footer > span,
+.discountLine > span {
+  align-items: center;
+  display: flex;
+  gap: 6px;
 }
 
 .creatorCategory {
@@ -3379,10 +3425,13 @@ dt {
 }
 
 .sortFilters a {
+  align-items: center;
   background: var(--vh-white);
   border: 1px solid var(--vh-border);
   color: var(--vh-muted);
+  display: inline-flex;
   font-size: 0.78rem;
+  gap: 6px;
   padding: 9px 15px;
 }
 
@@ -3817,8 +3866,11 @@ dt {
 }
 
 .shopperFavoritesHeading > a {
+  align-items: center;
   color: var(--vh-ink);
+  display: inline-flex;
   font-size: 0.82rem;
+  gap: 5px;
 }
 
 .shopperFavorites .storeProductGrid {

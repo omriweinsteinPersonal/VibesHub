@@ -2,6 +2,7 @@
 
 import type { CreatorDiscountCode } from '@vibeshub/contracts';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
 import { apiCollectionRequest, apiRequest } from '../../../lib/api';
@@ -164,7 +165,10 @@ export default function CreatorDiscountCodesPage() {
     <main className="workspacePage">
       <header className="workspaceHeader creatorStudioHeader">
         <Link className="logo" href="/">
-          <span>✣</span> VibesHub
+          <span>
+            <Sparkles aria-hidden="true" size={16} />
+          </span>{' '}
+          VibesHub
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>

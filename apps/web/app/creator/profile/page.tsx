@@ -7,6 +7,7 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
 
 import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
@@ -173,7 +174,10 @@ export default function CreatorProfilePage() {
     <main className="workspacePage">
       <header className="workspaceHeader creatorStudioHeader">
         <Link className="logo" href="/">
-          <span>✣</span> VibesHub
+          <span>
+            <Sparkles aria-hidden="true" size={16} />
+          </span>{' '}
+          VibesHub
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>

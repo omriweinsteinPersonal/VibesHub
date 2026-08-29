@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { Suspense, useState, type FormEvent } from 'react';
 
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
@@ -87,7 +88,10 @@ function AuthExperience() {
       <SiteHeader />
       <main className="referenceAuthMain">
         <section className="referenceAuthIntro">
-          <p className="authEyebrow">✣&nbsp; COMMUNITY FIRST</p>
+          <p className="authEyebrow">
+            <Sparkles aria-hidden="true" size={14} />
+            COMMUNITY FIRST
+          </p>
           <h1>Join the Israeli creator marketplace</h1>
           <p>
             Shoppers save the products they trust and unlock verified discount codes.

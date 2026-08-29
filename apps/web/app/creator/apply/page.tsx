@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { apiRequest, publicApiRequest } from '../../../lib/api';
@@ -118,7 +119,10 @@ export default function CreatorApplicationPage() {
     <main className="workspacePage">
       <header className="workspaceHeader">
         <Link className="logo" href="/">
-          <span>✣</span> VibesHub
+          <span>
+            <Sparkles aria-hidden="true" size={16} />
+          </span>{' '}
+          VibesHub
         </Link>
         <Link href="/account">Account</Link>
       </header>

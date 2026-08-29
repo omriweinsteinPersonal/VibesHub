@@ -5,6 +5,7 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ExternalLink, Tag } from 'lucide-react';
 
 import { SaveProductButton } from './engagement';
 import {
@@ -101,7 +102,10 @@ export function RecommendationCardView({
         <footer>
           {recommendation.discount ? (
             <div className="discountLine">
-              <span>CODE: {recommendation.discount.code}</span>
+              <span>
+                <Tag aria-hidden="true" size={14} />
+                CODE: {recommendation.discount.code}
+              </span>
               {recommendation.discount.label ? (
                 <small>{recommendation.discount.label}</small>
               ) : null}
@@ -132,6 +136,7 @@ export function RecommendationCardView({
             target="_blank"
           >
             Shop now
+            <ExternalLink aria-hidden="true" size={14} />
           </a>
         </footer>
       </div>

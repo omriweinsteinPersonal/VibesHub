@@ -3,6 +3,15 @@
 import type { CreatorStudioSummary } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  ArrowUpRight,
+  ChartColumn,
+  LayoutDashboard,
+  Settings,
+  Store,
+  WandSparkles,
+  type LucideIcon,
+} from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -49,7 +58,7 @@ export default function CreatorHomePage() {
 
             <section className="creatorHomeGrid">
               <HomeCard
-                icon="▦"
+                icon={LayoutDashboard}
                 title="Dashboard"
                 href="/dashboard"
                 action="Open dashboard"
@@ -57,7 +66,7 @@ export default function CreatorHomePage() {
                 Add and edit product recommendations, brand discounts and story clips.
               </HomeCard>
               <HomeCard
-                icon="▥"
+                icon={ChartColumn}
                 title="Analytics"
                 href="/analytics"
                 action="View analytics"
@@ -65,20 +74,27 @@ export default function CreatorHomePage() {
                 Storefront visits, product clicks and Instagram taps — updated live.
               </HomeCard>
               <HomeCard
-                icon="▣"
+                icon={Store}
                 title="Your storefront"
                 href={`/creator/${summary.handle}`}
                 action="View storefront"
               >
                 See your page exactly as shoppers see it, and share the link.
               </HomeCard>
-              <HomeCard icon="⚙" title="Account" href="/account" action="Edit profile">
+              <HomeCard
+                icon={Settings}
+                title="Account"
+                href="/account"
+                action="Edit profile"
+              >
                 Profile photo, bio, category, media kit and your Instagram link.
               </HomeCard>
             </section>
 
             <section className="creatorQuickTip">
-              <span aria-hidden="true">✣</span>
+              <span aria-hidden="true">
+                <WandSparkles size={20} />
+              </span>
               <p>
                 <strong>Quick tip:</strong> paste a product link in the dashboard and
                 we&apos;ll pull the photo, brand and price for you — then attach a story
@@ -106,17 +122,21 @@ function HomeCard({
   action: string;
   children: ReactNode;
   href: string;
-  icon: string;
+  icon: LucideIcon;
   title: string;
 }) {
+  const Icon = icon;
   return (
     <article className="creatorHomeCard">
       <span className="creatorHomeIcon" aria-hidden="true">
-        {icon}
+        <Icon size={20} />
       </span>
       <h2>{title}</h2>
       <p>{children}</p>
-      <Link href={href}>{action} ↗</Link>
+      <Link href={href}>
+        {action}
+        <ArrowUpRight aria-hidden="true" size={16} />
+      </Link>
     </article>
   );
 }

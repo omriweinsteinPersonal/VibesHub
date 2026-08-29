@@ -1,6 +1,7 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BadgeCheck, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface CreatorCardViewProps {
@@ -34,11 +35,14 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
             <h3>{creator.displayName}</h3>
             {creator.verificationStatus === 'verified' ? (
               <span className="verifiedBadge" aria-label="Verified creator">
-                ✓
+                <BadgeCheck aria-hidden="true" size={16} />
               </span>
             ) : null}
           </div>
-          <p>{compactNumber(creator.followerCount)} followers</p>
+          <p>
+            <Users aria-hidden="true" size={14} />
+            {compactNumber(creator.followerCount)} followers
+          </p>
         </div>
         <p className="creatorCategory">{creator.primaryCategory.name} creator</p>
         <p className="creatorBio" dir="rtl" lang="he">

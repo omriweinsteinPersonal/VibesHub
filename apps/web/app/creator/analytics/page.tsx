@@ -5,11 +5,44 @@ import type {
   CreatorStudioSummary,
 } from '@vibeshub/contracts';
 import Link from 'next/link';
+import { createLucideIcon, Eye, MousePointerClick, Tag, Users } from 'lucide-react';
 import { useEffect, useMemo, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
 import { CreatorShellHeader } from '../../_components/creator-shell-header';
 import { SiteFooter } from '../../_components/site-footer';
+
+const Instagram = createLucideIcon('Instagram', [
+  [
+    'rect',
+    {
+      height: '20',
+      key: 'instagram-frame',
+      rx: '5',
+      ry: '5',
+      width: '20',
+      x: '2',
+      y: '2',
+    },
+  ],
+  [
+    'path',
+    {
+      d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z',
+      key: 'instagram-lens',
+    },
+  ],
+  [
+    'line',
+    {
+      key: 'instagram-highlight',
+      x1: '17.5',
+      x2: '17.51',
+      y1: '6.5',
+      y2: '6.5',
+    },
+  ],
+]);
 
 export default function CreatorAnalyticsPage() {
   const [dashboard, setDashboard] = useState<CreatorAnalyticsDashboard | null>(null);
@@ -58,19 +91,19 @@ export default function CreatorAnalyticsPage() {
 
 function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboard }) {
   const metrics = [
-    ['◉', 'Storefront visits', dashboard.summary.storefrontViews],
-    ['♙', 'Unique visitors', dashboard.summary.uniqueVisitors],
-    ['✣', 'Product clicks', dashboard.summary.shopClicks],
-    ['◇', 'Code clicks', dashboard.summary.codeCopies],
-    ['▣', 'Instagram taps', dashboard.summary.instagramTaps],
+    [Eye, 'Storefront visits', dashboard.summary.storefrontViews],
+    [Users, 'Unique visitors', dashboard.summary.uniqueVisitors],
+    [MousePointerClick, 'Product clicks', dashboard.summary.shopClicks],
+    [Tag, 'Code clicks', dashboard.summary.codeCopies],
+    [Instagram, 'Instagram taps', dashboard.summary.instagramTaps],
   ] as const;
   return (
     <>
       <section className="creatorAnalyticsMetrics">
-        {metrics.map(([icon, label, value]) => (
+        {metrics.map(([Icon, label, value]) => (
           <article key={label}>
             <p>
-              <span aria-hidden="true">{icon}</span>
+              <Icon aria-hidden="true" size={14} />
               {label}
             </p>
             <strong>{value.toLocaleString('en-IL')}</strong>

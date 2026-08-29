@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Play, X } from 'lucide-react';
 
 import { trackClientAnalytics } from '../../lib/analytics';
 
@@ -136,7 +137,9 @@ export function StoryVideo({
           style={{ backgroundImage: `url(${posterUrl})` }}
           aria-hidden="true"
         >
-          <b>▶</b>
+          <b>
+            <Play aria-hidden="true" size={14} />
+          </b>
         </span>
       </button>
       {open
@@ -177,7 +180,7 @@ export function StoryVideo({
                     ref={closeButton}
                     type="button"
                   >
-                    ×
+                    <X aria-hidden="true" size={16} />
                   </button>
                 </div>
                 {playbackError ? (

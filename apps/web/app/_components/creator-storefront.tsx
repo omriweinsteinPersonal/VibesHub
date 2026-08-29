@@ -6,6 +6,13 @@ import type {
   RecommendationCard,
 } from '@vibeshub/contracts';
 import Image from 'next/image';
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Search,
+} from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 import {
@@ -69,7 +76,9 @@ export function CreatorStorefrontView({
             <div>
               <h1>{storefront.displayName}</h1>
               {storefront.verificationStatus === 'verified' ? (
-                <span aria-label="Verified creator">✓</span>
+                <span aria-label="Verified creator">
+                  <BadgeCheck aria-hidden="true" size={24} />
+                </span>
               ) : null}
             </div>
             <p>
@@ -83,7 +92,8 @@ export function CreatorStorefrontView({
                   creatorId={storefront.id}
                   href={instagram.url}
                 >
-                  Instagram ↗
+                  Instagram
+                  <ExternalLink aria-hidden="true" size={14} />
                 </TrackedInstagramLink>
               ) : null}
             </div>
@@ -101,7 +111,7 @@ export function CreatorStorefrontView({
         <header>
           <h2>Recommendations</h2>
           <label>
-            <span aria-hidden="true">⌕</span>
+            <Search aria-hidden="true" size={16} />
             <input
               aria-label="Search this store"
               onChange={(event) => setQuery(event.target.value)}
@@ -187,10 +197,10 @@ function StorefrontRow({
             onClick={() => scroll(-1)}
             type="button"
           >
-            ‹
+            <ChevronLeft aria-hidden="true" size={16} />
           </button>
           <button aria-label={`Next ${title}`} onClick={() => scroll(1)} type="button">
-            ›
+            <ChevronRight aria-hidden="true" size={16} />
           </button>
         </div>
       </header>

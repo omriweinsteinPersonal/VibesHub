@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
@@ -42,7 +43,8 @@ export function CreatorShellHeader() {
             aria-current={pathname === '/account' ? 'page' : undefined}
             href="/account"
           >
-            <span aria-hidden="true">♙</span> Account
+            <User aria-hidden="true" size={16} />
+            Account
           </Link>
           <button className="button secondary" onClick={signOut} type="button">
             Sign out

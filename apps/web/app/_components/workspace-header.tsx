@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
+import { Brand } from './brand';
 
 interface WorkspaceHeaderProps {
   sessionState?: 'anonymous' | 'authenticated' | 'loading';
@@ -22,9 +23,7 @@ export function WorkspaceHeader({
 
   return (
     <header className="workspaceHeader">
-      <Link className="logo" href="/">
-        <span>✣</span> VibesHub
-      </Link>
+      <Brand />
       {sessionState === 'anonymous' ? (
         <nav aria-label="Primary navigation">
           <Link href="/creators">Creators</Link>

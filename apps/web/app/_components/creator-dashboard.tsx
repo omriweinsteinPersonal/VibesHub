@@ -12,6 +12,18 @@ import type {
 import Image from 'next/image';
 import Link from 'next/link';
 import {
+  ArrowLeft,
+  ExternalLink,
+  Link2,
+  Pencil,
+  Plus,
+  Sparkles,
+  Tag,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
+import {
   useCallback,
   useEffect,
   useRef,
@@ -459,7 +471,8 @@ export function CreatorDashboard() {
           <div className="creatorDashboardLinks">
             {profile ? (
               <Link className="button secondary" href={`/creator/${profile.handle}`}>
-                View storefront ↗
+                View storefront
+                <ExternalLink aria-hidden="true" size={14} />
               </Link>
             ) : null}
             <Link href="/account">Edit profile</Link>
@@ -491,7 +504,7 @@ export function CreatorDashboard() {
               onClick={() => showComposer('choose')}
               type="button"
             >
-              <span aria-hidden="true">＋</span>
+              <Plus aria-hidden="true" size={16} />
               <span>Add recommendation</span>
             </button>
           </div>
@@ -505,7 +518,9 @@ export function CreatorDashboard() {
                   </ComposerHeader>
                   <div className="creatorTypeGrid">
                     <button onClick={() => setComposer('product')} type="button">
-                      <span>◇</span>
+                      <span aria-hidden="true">
+                        <Tag size={16} />
+                      </span>
                       <strong>Product</strong>
                       <small>
                         Recommend one specific product with its price, details and story
@@ -513,7 +528,9 @@ export function CreatorDashboard() {
                       </small>
                     </button>
                     <button onClick={() => setComposer('discount')} type="button">
-                      <span>✣</span>
+                      <span aria-hidden="true">
+                        <Sparkles size={16} />
+                      </span>
                       <strong>Brand Discount</strong>
                       <small>
                         Share a store-wide offer, discount code and expiry date.
@@ -618,7 +635,7 @@ function ComposerHeader({
         <p>{children}</p>
       </div>
       <button aria-label="Close" onClick={onClose} type="button">
-        ×
+        <X aria-hidden="true" size={16} />
       </button>
     </header>
   );
@@ -678,7 +695,8 @@ function ProductForm({
       </ComposerHeader>
       <div className="creatorComposerBody">
         <button className="creatorBack" onClick={onChangeType} type="button">
-          ← Change type
+          <ArrowLeft aria-hidden="true" size={16} />
+          Change type
         </button>
         <label className="creatorFullField">
           Product link
@@ -700,7 +718,8 @@ function ProductForm({
               }}
               type="button"
             >
-              ✣ {fetching ? 'Fetching…' : 'Fetch details'}
+              <Sparkles aria-hidden="true" size={16} />
+              {fetching ? 'Fetching…' : 'Fetch details'}
             </button>
           </span>
           <small>
@@ -805,7 +824,8 @@ function ProductForm({
             recommendation card in order.
           </p>
           <label className="creatorStoryUpload">
-            ↥<input accept={storyVideoAccept} multiple onChange={onStory} type="file" />
+            <Upload aria-hidden="true" size={16} />
+            <input accept={storyVideoAccept} multiple onChange={onStory} type="file" />
           </label>
           {editor.storyClips.length ? (
             <div className="creatorStoryThumbs">
@@ -822,7 +842,7 @@ function ProductForm({
                     }
                     type="button"
                   >
-                    ×
+                    <Trash2 aria-hidden="true" size={12} />
                   </button>
                 </span>
               ))}
@@ -836,7 +856,8 @@ function ProductForm({
               placeholder="…or paste a video link (https://)"
             />
             <button className="button secondary" onClick={onAddStoryLink} type="button">
-              ↗ Add link
+              <Link2 aria-hidden="true" size={16} />
+              Add link
             </button>
           </span>
         </fieldset>
@@ -970,7 +991,8 @@ function RecommendationManageCard({
           {item.review.value}
         </p>
         <a href={item.productUrl} rel="noreferrer" target="_blank">
-          Product link ↗
+          Product link
+          <ExternalLink aria-hidden="true" size={12} />
         </a>
         {item.storyClips.length ? (
           <div className="creatorStoryThumbs">
@@ -992,10 +1014,10 @@ function RecommendationManageCard({
           <span /> Live
         </label>
         <button aria-label="Edit recommendation" onClick={onEdit} type="button">
-          ✎
+          <Pencil aria-hidden="true" size={16} />
         </button>
         <button aria-label="Archive recommendation" onClick={onArchive} type="button">
-          ♧
+          <Trash2 aria-hidden="true" size={16} />
         </button>
       </div>
     </article>
@@ -1018,12 +1040,18 @@ function DiscountManageCard({
       <div className="creatorManageCopy">
         <p className="productBrand">{item.merchantHostname}</p>
         <h3>{item.code}</h3>
-        {item.label ? <span className="creatorCodePill">◇ {item.label}</span> : null}
+        {item.label ? (
+          <span className="creatorCodePill">
+            <Tag aria-hidden="true" size={12} />
+            {item.label}
+          </span>
+        ) : null}
         <p dir="rtl" lang="he">
           {item.details?.value}
         </p>
         <a href={item.merchantUrl} rel="noreferrer" target="_blank">
-          Brand link ↗
+          Brand link
+          <ExternalLink aria-hidden="true" size={12} />
         </a>
       </div>
       <div className="creatorManageActions">
@@ -1036,10 +1064,10 @@ function DiscountManageCard({
           <span /> Live
         </label>
         <button aria-label="Edit discount" onClick={onEdit} type="button">
-          ✎
+          <Pencil aria-hidden="true" size={16} />
         </button>
         <button aria-label="Archive discount" onClick={onArchive} type="button">
-          ♧
+          <Trash2 aria-hidden="true" size={16} />
         </button>
       </div>
     </article>
@@ -1090,10 +1118,11 @@ function StorefrontSections({
                   ↓
                 </button>
                 <button
+                  aria-label={`Remove ${category.name} section`}
                   onClick={() => onChange(selected.filter((id) => id !== category.id))}
                   type="button"
                 >
-                  ×
+                  <X aria-hidden="true" size={14} />
                 </button>
               </span>
             </li>

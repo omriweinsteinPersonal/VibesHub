@@ -7,6 +7,7 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Plus, Sparkles } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -287,7 +288,10 @@ export default function CreatorRecommendationsPage() {
     <main className="workspacePage">
       <header className="workspaceHeader creatorStudioHeader">
         <Link className="logo" href="/">
-          <span>✣</span> VibesHub
+          <span>
+            <Sparkles aria-hidden="true" size={16} />
+          </span>{' '}
+          VibesHub
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>
@@ -344,7 +348,9 @@ export default function CreatorRecommendationsPage() {
                 />
               ) : (
                 <div className="imageUploadPlaceholder" aria-hidden="true">
-                  <span>＋</span>
+                  <span>
+                    <Plus size={20} />
+                  </span>
                   Product image
                 </div>
               )}

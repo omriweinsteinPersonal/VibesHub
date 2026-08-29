@@ -5,6 +5,7 @@ import type {
   MerchantDomainReviewStatus,
 } from '@vibeshub/contracts';
 import Link from 'next/link';
+import { ExternalLink, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { apiCollectionRequest, apiRequest } from '../../../lib/api';
@@ -126,7 +127,10 @@ export default function AdminMerchantDomainsPage() {
     <main className="workspacePage">
       <header className="workspaceHeader adminWorkspaceHeader">
         <Link className="logo" href="/">
-          <span>✣</span> VibesHub
+          <span>
+            <Sparkles aria-hidden="true" size={16} />
+          </span>{' '}
+          VibesHub
         </Link>
         <nav aria-label="Administration">
           <Link href="/admin/applications">Creator applications</Link>
@@ -179,7 +183,8 @@ export default function AdminMerchantDomainsPage() {
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  Visit merchant ↗
+                  Visit merchant
+                  <ExternalLink aria-hidden="true" size={14} />
                 </a>
               </div>
 

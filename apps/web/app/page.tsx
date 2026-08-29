@@ -1,5 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  ArrowRight,
+  BadgeCheck,
+  CirclePlay,
+  Heart,
+  ShieldCheck,
+  Sparkles,
+  Tag,
+} from 'lucide-react';
 
 import { SiteFooter } from './_components/site-footer';
 import { SiteHeader } from './_components/site-header';
@@ -48,7 +57,10 @@ export default function HomePage() {
       <main>
         <section className="hero" id="top">
           <div className="heroCopy">
-            <p className="eyebrow">4,200+ ISRAELI CREATORS</p>
+            <p className="eyebrow heroCreatorCount">
+              <Sparkles aria-hidden="true" size={14} />
+              4,200+ ISRAELI CREATORS
+            </p>
             <h1>
               Discover what your favorite creators <em>recommend</em>
             </h1>
@@ -59,6 +71,7 @@ export default function HomePage() {
             <div className="heroButtons">
               <Link className="button primary" href="/creators">
                 Explore Creators
+                <ArrowRight aria-hidden="true" size={16} />
               </Link>
               <Link className="button secondary" href="/discover">
                 Discover Products
@@ -93,7 +106,9 @@ export default function HomePage() {
             <div className="creatorUpdate">
               <span className="storyRing">NL</span>
               <span>
-                <strong>Noa Levi ✓</strong>
+                <strong>
+                  Noa Levi <BadgeCheck aria-hidden="true" size={14} />
+                </strong>
                 <small dir="rtl" lang="he">
                   שיתפה 3 המלצות חדשות
                 </small>
@@ -105,7 +120,8 @@ export default function HomePage() {
         <section className="categoryBand" id="categories" aria-label="Categories">
           {categories.map((category) => (
             <Link href={`/discover?category=${category.toLowerCase()}`} key={category}>
-              {category} <span>✦</span>
+              {category}
+              <Sparkles aria-hidden="true" size={12} />
             </Link>
           ))}
         </section>
@@ -120,7 +136,10 @@ export default function HomePage() {
             {recommendations.map((item) => (
               <article className="productCard" key={item.name}>
                 <div className={`productImage ${item.className}`}>
-                  <span className="storyBadge">◉ Video</span>
+                  <span className="storyBadge">
+                    <CirclePlay aria-hidden="true" size={14} />
+                    Video
+                  </span>
                   <span className="codeBadge">{item.code}</span>
                 </div>
                 <div className="productDetails">
@@ -135,7 +154,10 @@ export default function HomePage() {
                     Recommended by Noa Levi
                   </div>
                   <footer>
-                    <span>CODE: {item.code}</span>
+                    <span>
+                      <Tag aria-hidden="true" size={14} />
+                      CODE: {item.code}
+                    </span>
                     <a className="button primary small" href="#shop">
                       Shop now
                     </a>
@@ -151,17 +173,23 @@ export default function HomePage() {
           <h2>Built on trust, not on ad budgets</h2>
           <div className="trustGrid">
             <article>
-              <span>✓</span>
+              <span aria-hidden="true">
+                <ShieldCheck size={18} />
+              </span>
               <h3>Verified creators only</h3>
               <p>Every storefront is reviewed before it goes live.</p>
             </article>
             <article>
-              <span>♡</span>
+              <span aria-hidden="true">
+                <Heart size={18} />
+              </span>
               <h3>Written by hand</h3>
               <p>Creators write each review in their own words, in Hebrew.</p>
             </article>
             <article>
-              <span>◇</span>
+              <span aria-hidden="true">
+                <Tag size={18} />
+              </span>
               <h3>Codes that work</h3>
               <p>Discount codes are checked so the price you see is the price you pay.</p>
             </article>
