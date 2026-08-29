@@ -156,7 +156,8 @@ export function parseProductMetadata(
 ): CreatorProductMetadata {
   const meta = new Map<string, string>();
   for (const tag of html.match(/<meta\s+[^>]*>/giu) ?? []) {
-    const property = attribute(tag, 'property') ?? attribute(tag, 'name');
+    const property =
+      attribute(tag, 'property') ?? attribute(tag, 'name') ?? attribute(tag, 'itemprop');
     const content = attribute(tag, 'content');
     if (property && content) meta.set(property.toLowerCase(), decodeEntities(content));
   }
@@ -169,10 +170,15 @@ export function parseProductMetadata(
     null;
   return {
     brandName:
-      firstString(objectValue(jsonLd?.brand)?.name) ??
-      firstString(jsonLd?.brand) ??
+      namedEntity(jsonLd?.brand) ??
+      namedEntity(jsonLd?.manufacturer) ??
+      namedEntity(jsonLd?.vendor) ??
       meta.get('product:brand') ??
-      null,
+      meta.get('og:brand') ??
+      meta.get('brand') ??
+      meta.get('manufacturer') ??
+      meta.get('og:site_name') ??
+      brandFromProductUrl(productUrl),
     imageUrl: absoluteImage,
     priceAmountMinor:
       price && Number.isFinite(Number(price)) ? Math.round(Number(price) * 100) : null,
@@ -225,6 +231,44 @@ function firstString(value: unknown): string | null {
   if (typeof value === 'string' && value.trim()) return value.trim();
   if (Array.isArray(value)) return value.map(firstString).find(Boolean) ?? null;
   return null;
+}
+
+function namedEntity(value: unknown): string | null {
+  const direct = firstString(value);
+  if (direct) return direct;
+  if (Array.isArray(value)) {
+    return value.map(namedEntity).find(Boolean) ?? null;
+  }
+  const record = objectValue(value);
+  return record
+    ? (firstString(record.name) ??
+        firstString(record.legalName) ??
+        firstString(record.alternateName))
+    : null;
+}
+
+function brandFromProductUrl(productUrl: string): string | null {
+  try {
+    const labels = new URL(productUrl).hostname.replace(/^www\./iu, '').split('.');
+    const publicSuffix = labels.at(-1) ?? '';
+    const secondLevelDomain = labels.at(-2) ?? '';
+    const usesCountryCodeSecondLevelDomain =
+      publicSuffix.length === 2 &&
+      ['ac', 'co', 'com', 'gov', 'net', 'org'].includes(secondLevelDomain);
+    const brand = usesCountryCodeSecondLevelDomain
+      ? labels.at(-3)
+      : labels.length > 1
+        ? secondLevelDomain
+        : labels[0];
+    if (!brand) return null;
+    return brand
+      .split(/[-_]/u)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  } catch {
+    return null;
+  }
 }
 
 function safeAbsoluteHttpsUrl(value: string, base: string): string | null {

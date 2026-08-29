@@ -14,6 +14,7 @@ import Link from 'next/link';
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -107,6 +108,7 @@ export function CreatorDashboard() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const productFetchRequest = useRef(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -166,34 +168,46 @@ export function CreatorDashboard() {
     setDiscount(emptyDiscount);
   }
 
-  async function fetchProductDetails() {
-    if (!product.productUrl) return;
+  const fetchProductDetails = useCallback(async (rawUrl: string) => {
+    const requestedUrl = normalizedProductUrl(rawUrl);
+    if (!requestedUrl) return;
+    const requestId = ++productFetchRequest.current;
     setFetching(true);
     setError('');
     try {
       const metadata = await apiRequest<CreatorProductMetadata>(
         '/creator/recommendations/fetch-details',
-        { body: JSON.stringify({ url: product.productUrl }), method: 'POST' },
+        { body: JSON.stringify({ url: requestedUrl }), method: 'POST' },
       );
-      setProduct((current) => ({
-        ...current,
-        brandName: metadata.brandName ?? current.brandName,
-        imageAssetId: metadata.imageUrl ? '' : current.imageAssetId,
-        imageUrl: metadata.imageUrl ?? current.imageUrl,
-        priceIls:
-          metadata.priceAmountMinor === null
-            ? current.priceIls
-            : String(metadata.priceAmountMinor / 100),
-        productName: metadata.productName ?? current.productName,
-        productUrl: metadata.productUrl,
-      }));
-      setNotice('Available product details were filled in. Everything stays editable.');
+      setProduct((current) =>
+        normalizedProductUrl(current.productUrl) === requestedUrl
+          ? {
+              ...current,
+              brandName: metadata.brandName ?? current.brandName,
+              imageAssetId: metadata.imageUrl ? '' : current.imageAssetId,
+              imageUrl: metadata.imageUrl ?? current.imageUrl,
+              priceIls:
+                metadata.priceAmountMinor === null
+                  ? current.priceIls
+                  : String(metadata.priceAmountMinor / 100),
+              productName: metadata.productName ?? current.productName,
+              productUrl: metadata.productUrl,
+            }
+          : current,
+      );
+      if (productFetchRequest.current === requestId) {
+        setNotice('Available product details were filled in. Everything stays editable.');
+      }
     } catch (cause) {
-      setError(messageFor(cause));
+      if (productFetchRequest.current === requestId) {
+        setError(messageFor(cause));
+      }
     } finally {
-      setFetching(false);
+      if (productFetchRequest.current === requestId) {
+        setFetching(false);
+      }
     }
-  }
+  }, []);
 
   async function selectProductImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -659,14 +673,32 @@ function ProductForm({
   onChange: (value: ProductEditor) => void;
   onClose: () => void;
   onChangeType: () => void;
-  onFetch: () => void;
+  onFetch: (url: string) => void;
   onImage: (event: ChangeEvent<HTMLInputElement>) => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   onStory: (event: ChangeEvent<HTMLInputElement>) => void;
   saving: boolean;
 }) {
+  const lastAutomaticallyFetchedUrl = useRef(
+    editing ? normalizedProductUrl(editor.productUrl) : null,
+  );
   const update = <K extends keyof ProductEditor>(key: K, value: ProductEditor[K]) =>
     onChange({ ...editor, [key]: value });
+
+  useEffect(() => {
+    const url = normalizedProductUrl(editor.productUrl);
+    if (!url) {
+      lastAutomaticallyFetchedUrl.current = null;
+      return;
+    }
+    if (url === lastAutomaticallyFetchedUrl.current) return;
+    const timer = window.setTimeout(() => {
+      lastAutomaticallyFetchedUrl.current = url;
+      onFetch(url);
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [editor.productUrl, onFetch]);
+
   return (
     <form onSubmit={onSave}>
       <ComposerHeader title={editing ? 'Edit product' : 'Add product'} onClose={onClose}>
@@ -689,7 +721,11 @@ function ProductForm({
             <button
               className="button secondary"
               disabled={fetching}
-              onClick={() => void onFetch()}
+              onClick={() => {
+                const url = normalizedProductUrl(editor.productUrl);
+                lastAutomaticallyFetchedUrl.current = url;
+                if (url) onFetch(url);
+              }}
               type="button"
             >
               ✣ {fetching ? 'Fetching…' : 'Fetch details'}
@@ -856,6 +892,15 @@ function ProductForm({
       </div>
     </form>
   );
+}
+
+function normalizedProductUrl(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' && url.hostname ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function DiscountForm({
