@@ -554,7 +554,8 @@ svg.lucide {
   padding: 0 16px;
 }
 .creatorInlineField .button {
-  padding: 0 21px;
+  gap: 8px;
+  padding: 0 16px;
 }
 .creatorFormActions > button:not(.button) {
   background: none;
