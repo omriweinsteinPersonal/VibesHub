@@ -26,12 +26,7 @@ import {
   apiRequest,
   publicApiCollectionRequest,
 } from '../../lib/api';
-import {
-  recommendationImageAccept,
-  storyVideoAccept,
-  uploadRecommendationImage,
-  uploadStoryVideo,
-} from '../../lib/recommendation-media';
+import { storyVideoAccept, uploadStoryVideo } from '../../lib/recommendation-media';
 import { CreatorShellHeader } from './creator-shell-header';
 import { SiteFooter } from './site-footer';
 
@@ -208,27 +203,6 @@ export function CreatorDashboard() {
       }
     }
   }, []);
-
-  async function selectProductImage(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setError('');
-    try {
-      const asset = await uploadRecommendationImage(file, () => undefined);
-      setProduct((current) => ({
-        ...current,
-        imageAssetId: asset.id,
-        imageUrl: asset.publicUrl,
-      }));
-      setNotice('Product image uploaded and verified.');
-    } catch (cause) {
-      setError(messageFor(cause));
-    } finally {
-      setUploading(false);
-      event.target.value = '';
-    }
-  }
 
   async function selectStoryClip(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -558,7 +532,6 @@ export function CreatorDashboard() {
                   onChangeType={() => setComposer('choose')}
                   onClose={closeComposer}
                   onFetch={fetchProductDetails}
-                  onImage={selectProductImage}
                   onSave={saveProduct}
                   onStory={selectStoryClip}
                   saving={saving || uploading}
@@ -660,7 +633,6 @@ function ProductForm({
   onChangeType,
   onClose,
   onFetch,
-  onImage,
   onSave,
   onStory,
   saving,
@@ -674,7 +646,6 @@ function ProductForm({
   onClose: () => void;
   onChangeType: () => void;
   onFetch: (url: string) => void;
-  onImage: (event: ChangeEvent<HTMLInputElement>) => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   onStory: (event: ChangeEvent<HTMLInputElement>) => void;
   saving: boolean;
@@ -814,21 +785,6 @@ function ProductForm({
             />
           </label>
         </div>
-        <label className="creatorUploadLabel">
-          Or upload a product image
-          <input accept={recommendationImageAccept} onChange={onImage} type="file" />
-        </label>
-        {editor.imageUrl ? (
-          <span className="creatorImagePreview">
-            <Image
-              alt="Product preview"
-              fill
-              sizes="120px"
-              src={editor.imageUrl}
-              unoptimized
-            />
-          </span>
-        ) : null}
         <label className="creatorFullField">
           Review (Hebrew)
           <textarea

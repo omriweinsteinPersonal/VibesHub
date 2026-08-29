@@ -11,7 +11,7 @@
 .creatorShellHeader {
   background: rgb(255 254 251 / 96%);
   border-bottom: 1px solid #e9e0d6;
-  min-height: 76px;
+  min-height: 69px;
   position: sticky;
   top: 0;
   z-index: 30;
@@ -20,19 +20,20 @@
 .creatorShellHeaderInner {
   align-items: center;
   display: grid;
+  column-gap: 16px;
   grid-template-columns: 1fr auto 1fr;
   margin: 0 auto;
-  max-width: 1660px;
-  min-height: 76px;
-  padding: 0 5vw;
+  max-width: 1280px;
+  min-height: 68px;
+  padding: 0 32px;
 }
 
 .creatorShellHeader nav,
 .creatorShellActions {
   align-items: center;
   display: flex;
-  font-size: 0.94rem;
-  gap: 34px;
+  font-size: 0.875rem;
+  gap: 32px;
 }
 
 .creatorShellHeader a[aria-current='page'] {
@@ -45,7 +46,8 @@
 }
 
 .creatorShellActions .button {
-  padding: 10px 22px;
+  min-height: 36px;
+  padding: 0 18px;
 }
 
 .creatorHomeMain,
@@ -53,13 +55,13 @@
 .creatorAnalyticsMain,
 .creatorAccountMain {
   margin: 0 auto;
-  max-width: 1420px;
-  padding: 100px 5vw 80px;
+  max-width: 1024px;
+  padding: 80px 32px;
 }
 
 .creatorWelcome,
 .creatorDashboardIntro {
-  margin-bottom: 48px;
+  margin-bottom: 0;
 }
 
 .creatorWelcomeTitle {
@@ -72,10 +74,10 @@
 .creatorDashboardIntro h1,
 .creatorAnalyticsHeading h1,
 .creatorAccountHeading h1 {
-  font-size: clamp(2.5rem, 4.4vw, 4.2rem);
-  letter-spacing: -0.045em;
-  line-height: 1.02;
-  margin: 14px 0 22px;
+  font-size: 36px;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 8px 0;
 }
 
 .creatorWelcome > p:last-of-type,
@@ -83,7 +85,9 @@
 .creatorAnalyticsHeading p,
 .creatorAccountHeading p {
   color: #7c7068;
-  font-size: 1.08rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .creatorWelcomeAvatar,
@@ -214,25 +218,36 @@
 .creatorAccountHeadingActions {
   align-items: center;
   display: flex;
-  gap: 28px;
+  gap: 24px;
 }
 
 .creatorRecommendationSection {
-  margin-top: 42px;
+  margin-top: 32px;
 }
 .creatorSectionHeading {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 .creatorSectionHeading h2 {
-  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  line-height: 32px;
+  margin: 0;
 }
 .creatorSectionHeading p {
   color: #7d7168;
+  font-size: 14px;
+  line-height: 20px;
   margin: 0;
+}
+.creatorSectionHeading .button,
+.creatorDashboardLinks .button {
+  min-height: 36px;
+  padding: 0 16px;
 }
 
 .creatorComposer {
-  margin: 0 0 32px;
+  border-radius: 28px;
+  margin: 0 0 24px;
   overflow: hidden;
 }
 .creatorComposerHeader {
@@ -240,14 +255,18 @@
   border-bottom: 1px solid #e9e0d6;
   display: flex;
   justify-content: space-between;
-  padding: 34px 42px 30px;
+  padding: 24px 32px;
 }
 .creatorComposerHeader h2 {
-  font-size: 2.3rem;
-  margin: 0 0 8px;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  line-height: 36px;
+  margin: 0 0 4px;
 }
 .creatorComposerHeader p {
   color: #7d7168;
+  font-size: 14px;
+  line-height: 20px;
   margin: 0;
 }
 .creatorComposerHeader > button {
@@ -255,36 +274,43 @@
   border: 0;
   color: #796e66;
   cursor: pointer;
-  font-size: 1.8rem;
+  font-size: 24px;
+  line-height: 1;
+  padding: 4px;
 }
 .creatorComposerBody {
-  padding: 36px 42px 40px;
+  padding: 32px;
 }
 .creatorBack {
   background: none;
   border: 0;
   color: #766b63;
   cursor: pointer;
+  border-radius: 999px;
   font: inherit;
-  margin: 0 0 32px;
-  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 20px -12px;
+  min-height: 36px;
+  padding: 0 16px;
 }
 
 .creatorTypeGrid {
   display: grid;
-  gap: 22px;
+  gap: 16px;
   grid-template-columns: 1fr 1fr;
-  padding: 42px;
+  padding: 32px;
 }
 .creatorTypeGrid button {
   background: white;
   border: 1px solid #e6ddd2;
-  border-radius: 26px;
+  border-radius: 24px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  min-height: 220px;
-  padding: 30px;
+  min-height: 176px;
+  padding: 24px;
   text-align: left;
 }
 .creatorTypeGrid button:hover {
@@ -296,9 +322,9 @@
   background: #f5ead9;
   border-radius: 50%;
   display: inline-flex;
-  height: 50px;
+  height: 42px;
   justify-content: center;
-  width: 50px;
+  width: 42px;
 }
 .creatorTypeGrid strong {
   font-family:
@@ -306,13 +332,13 @@
     Baskerville,
     'Times New Roman',
     serif;
-  font-size: 1.9rem;
+  font-size: 1.5rem;
   font-weight: 400;
-  margin: 28px 0 10px;
+  margin: 20px 0 6px;
 }
 .creatorTypeGrid small {
   color: #7d7168;
-  font-size: 1rem;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -321,8 +347,9 @@
 .creatorFormGrid label {
   display: flex;
   flex-direction: column;
-  font-weight: 600;
-  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 4px;
 }
 
 .creatorComposer input,
@@ -333,36 +360,47 @@
 .creatorAccountCard textarea {
   background: #fff;
   border: 1px solid #ded5ca;
-  border-radius: 15px;
+  border-radius: 14px;
   box-shadow: 0 2px 4px rgb(70 48 34 / 8%);
   color: var(--vh-ink);
-  font: inherit;
-  padding: 13px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  height: 36px;
+  line-height: 20px;
+  min-height: 36px;
+  padding: 4px 12px;
   width: 100%;
 }
 
 .creatorComposer textarea,
 .creatorAccountCard textarea {
+  height: auto;
+  min-height: 100px;
+  padding-block: 10px;
   resize: vertical;
 }
 .creatorComposer small,
 .creatorAccountCard small {
   color: #8b8078;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 20px;
 }
 .creatorFormGrid {
   display: grid;
-  gap: 22px 26px;
+  gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .creatorFullField {
-  margin: 0 0 24px;
+  margin: 0 0 20px;
+}
+.creatorFormGrid + .creatorFullField {
+  margin-top: 20px;
 }
 .creatorInlineField {
   align-items: center;
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 .creatorInlineField > input {
   flex: 1;
@@ -398,26 +436,33 @@
 
 .creatorStoryFields {
   border: 0;
-  margin: 26px 0 0;
+  margin: 0;
   padding: 0;
 }
 .creatorStoryFields legend {
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 .creatorStoryFields > p {
   color: #7d7168;
-  margin: 6px 0 18px;
+  font-size: 12px;
+  line-height: 20px;
+  margin: 0 0 12px;
 }
 .creatorStoryUpload {
   align-items: center;
   border: 1px dashed #ddcfc1;
-  border-radius: 20px;
+  border-radius: 16px;
   cursor: pointer;
   display: inline-flex;
-  font-size: 1.5rem;
-  height: 110px;
+  font-size: 1.25rem;
+  height: 96px;
   justify-content: center;
-  width: 84px;
+  width: 64px;
+}
+.creatorStoryFields > .creatorInlineField {
+  margin-top: 16px;
 }
 .creatorStoryThumbs {
   display: flex;
@@ -451,15 +496,30 @@
   align-items: center;
   border-top: 1px solid #eee5db;
   display: flex;
-  gap: 28px;
-  margin-top: 26px;
-  padding-top: 24px;
+  gap: 24px;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.creatorFormActions .button,
+.creatorInlineField .button {
+  min-height: 36px;
+  padding: 0 16px;
 }
 .creatorFormActions > button:not(.button) {
   background: none;
   border: 0;
   cursor: pointer;
   font: inherit;
+}
+
+.creatorDashboardMain > .formError,
+.creatorDashboardMain > .formSuccess {
+  box-shadow: 0 10px 30px rgb(43 33 28 / 12%);
+  max-width: min(420px, calc(100vw - 32px));
+  position: fixed;
+  right: 24px;
+  top: 84px;
+  z-index: 60;
 }
 
 .creatorManageList {
