@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { publicApiCollectionRequest } from '../../lib/api';
 import { EngagementProvider } from '../_components/engagement';
 import { RecommendationCardView } from '../_components/recommendation-card';
+import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
 
 export const dynamic = 'force-dynamic';
@@ -64,14 +65,13 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   }
 
   return (
-    <main>
+    <div className="editorialPage">
       <SiteHeader />
       <section className="discoverHero">
         <p className="eyebrow">DISCOVER</p>
-        <h1>Find products worth knowing about</h1>
+        <h1>Every recommendation in one place</h1>
         <p className="lede">
-          Browse real recommendations from Israeli creators, then filter by what matters
-          to you.
+          Search a product, filter by category, and sort by what shoppers love most.
         </p>
 
         <form action="/discover" className="discoverSearch" method="get" role="search">
@@ -86,7 +86,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
               id="product-search"
               minLength={2}
               name="q"
-              placeholder="Search by product or brand"
+              placeholder="Try 'Nike', 'serum' or a creator's name…"
               type="search"
             />
             <button className="button primary" type="submit">
@@ -97,53 +97,46 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
       </section>
 
       <section className="discoverControls" aria-label="Product discovery filters">
-        <div className="categoryFilters" aria-label="Filter products by category">
-          <Link
-            className={!filters.category ? 'active' : undefined}
-            href={discoverUrl(activeFilters, { category: null, cursor: null, sort })}
-          >
-            All
-          </Link>
-          {categories.map((category) => (
-            <Link
-              className={filters.category === category.slug ? 'active' : undefined}
-              href={discoverUrl(activeFilters, {
-                category: category.slug,
-                cursor: null,
-                sort,
-              })}
-              key={category.id}
-            >
-              {category.name}
-            </Link>
-          ))}
+        <div className="filterRow">
+          <span className="filterLabel">Categories</span>
+          <div className="categoryFilters" aria-label="Filter products by category">
+            {categories.map((category) => (
+              <Link
+                className={filters.category === category.slug ? 'active' : undefined}
+                href={discoverUrl(activeFilters, {
+                  category: filters.category === category.slug ? null : category.slug,
+                  cursor: null,
+                  sort,
+                })}
+                key={category.id}
+              >
+                {category.name}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="sortFilters" aria-label="Sort products">
-          <span>Sort by</span>
-          {sorts.map((option) => (
-            <Link
-              aria-current={sort === option.value ? 'page' : undefined}
-              className={sort === option.value ? 'active' : undefined}
-              href={discoverUrl(activeFilters, { cursor: null, sort: option.value })}
-              key={option.value}
-            >
-              {option.label}
-            </Link>
-          ))}
+        <div className="discoverSortRow">
+          <div className="sortFilters" aria-label="Sort products">
+            {sorts.map((option) => (
+              <Link
+                aria-current={sort === option.value ? 'page' : undefined}
+                className={sort === option.value ? 'active' : undefined}
+                href={discoverUrl(activeFilters, { cursor: null, sort: option.value })}
+                key={option.value}
+              >
+                {option.label}
+              </Link>
+            ))}
+          </div>
+          <p className="resultCount">{recommendations.length} products</p>
         </div>
       </section>
 
       <section className="discoverProducts" aria-labelledby="discover-products-title">
-        <div className="directoryHeading">
-          <div>
-            <p className="eyebrow">CREATOR PICKS</p>
-            <h2 id="discover-products-title">
-              {searchQuery ? `Results for “${searchQuery}”` : sortLabel(sort)}
-            </h2>
-          </div>
-          <p>{recommendations.length} shown</p>
-        </div>
+        <h2 className="srOnly" id="discover-products-title">
+          {searchQuery ? `Results for “${searchQuery}”` : sortLabel(sort)}
+        </h2>
 
         {unavailable ? (
           <div className="directoryState" role="status">
@@ -179,7 +172,8 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           </Link>
         ) : null}
       </section>
-    </main>
+      <SiteFooter />
+    </div>
   );
 }
 

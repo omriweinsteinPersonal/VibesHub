@@ -11,10 +11,14 @@ interface CreatorCardViewProps {
 export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
   return (
     <article className="creatorCard">
-      <div className="creatorPortrait" aria-hidden="true">
+      <Link
+        className="creatorPortrait"
+        href={`/creators/${creator.handle}`}
+        aria-label={`View ${creator.displayName}'s storefront`}
+      >
         {creator.avatarUrl ? (
           <Image
-            alt=""
+            alt={creator.displayName}
             fill
             sizes="(max-width: 800px) 100vw, 380px"
             src={creator.avatarUrl}
@@ -23,30 +27,27 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
         ) : (
           initials(creator.displayName)
         )}
-      </div>
+      </Link>
       <div className="creatorDetails">
         <div className="creatorTitle">
-          <div>
+          <div className="creatorNameLine">
             <h3>{creator.displayName}</h3>
-            <p>@{creator.handle}</p>
+            {creator.verificationStatus === 'verified' ? (
+              <span className="verifiedBadge" aria-label="Verified creator">
+                ✓
+              </span>
+            ) : null}
           </div>
-          {creator.verificationStatus === 'verified' ? (
-            <span className="verifiedBadge" aria-label="Verified creator">
-              ✓
-            </span>
-          ) : null}
+          <p>{compactNumber(creator.followerCount)} followers</p>
         </div>
-        <p className="creatorCategory">
-          {creator.primaryCategory.name} creator · {compactNumber(creator.followerCount)}{' '}
-          followers
-        </p>
+        <p className="creatorCategory">{creator.primaryCategory.name} creator</p>
         <p className="creatorBio" dir="rtl" lang="he">
           {creator.bio.value}
         </p>
         <footer>
           <span>{creator.recommendationCount} recommendations</span>
           <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
-            View storefront →
+            View Profile
           </Link>
         </footer>
         {actions ? <div className="creatorCardActions">{actions}</div> : null}

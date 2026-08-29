@@ -1,12 +1,12 @@
 :root {
-  --vh-accent: #c77652;
-  --vh-background: #fffdf9;
-  --vh-border: #e7ded4;
-  --vh-ink: #2b211c;
-  --vh-muted: #756b64;
-  --vh-surface: #f8f1e8;
-  --vh-white: #ffffff;
+  --vh-accent: oklch(63.2% 0.104 45);
+  --vh-background: oklch(99.5% 0.003 84);
+  --vh-border: oklch(91.2% 0.013 80);
+  --vh-ink: oklch(23.8% 0.019 55);
+  --vh-muted: oklch(53% 0.021 62);
+  --vh-surface: oklch(97.6% 0.012 86);
+  --vh-white: oklch(100% 0 0);
   --vh-radius-card: 28px;
   --vh-radius-control: 999px;
-  --vh-shadow-card: 0 18px 60px rgb(43 33 28 / 8%);
+  --vh-shadow-card: 0 12px 38px rgb(43 33 28 / 6%);
 }

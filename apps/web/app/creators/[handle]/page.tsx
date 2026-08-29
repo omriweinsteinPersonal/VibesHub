@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation';
 import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../../lib/api';
 import { RecommendationCardView } from '../../_components/recommendation-card';
 import { EngagementProvider, FollowCreatorButton } from '../../_components/engagement';
+import { SiteFooter } from '../../_components/site-footer';
 import { SiteHeader } from '../../_components/site-header';
 import {
   CopyDiscountCodeButton,
@@ -63,167 +64,175 @@ export default async function CreatorStorefrontPage({
   }
 
   return (
-    <main>
+    <div className="editorialPage">
       <SiteHeader />
-      <EngagementProvider
-        creatorIds={[storefront.id]}
-        productIds={recommendations.map(({ productId }) => productId)}
-      >
-        <StorefrontViewTracker creatorId={storefront.id} />
-        <section className="storefrontHero">
-          <div className="storefrontAvatar">
-            {storefront.avatarUrl ? (
-              <Image
-                alt={`${storefront.displayName} profile photo`}
-                fill
-                sizes="160px"
-                src={storefront.avatarUrl}
-                unoptimized
-              />
-            ) : (
-              <span aria-hidden="true">{initials(storefront.displayName)}</span>
-            )}
-          </div>
-          <div className="storefrontIdentity">
-            <p className="eyebrow">CREATOR STOREFRONT</p>
-            <div className="storefrontName">
-              <h1>{storefront.displayName}</h1>
-              {storefront.verificationStatus === 'verified' ? (
-                <span className="verifiedBadge" aria-label="Verified creator">
-                  ✓
+      <main>
+        <EngagementProvider
+          creatorIds={[storefront.id]}
+          productIds={recommendations.map(({ productId }) => productId)}
+        >
+          <StorefrontViewTracker creatorId={storefront.id} />
+          <section className="storefrontHero">
+            <div className="storefrontAvatar">
+              {storefront.avatarUrl ? (
+                <Image
+                  alt={`${storefront.displayName} profile photo`}
+                  fill
+                  sizes="160px"
+                  src={storefront.avatarUrl}
+                  unoptimized
+                />
+              ) : (
+                <span aria-hidden="true">{initials(storefront.displayName)}</span>
+              )}
+            </div>
+            <div className="storefrontIdentity">
+              <p className="eyebrow">CREATOR STOREFRONT</p>
+              <div className="storefrontName">
+                <h1>{storefront.displayName}</h1>
+                {storefront.verificationStatus === 'verified' ? (
+                  <span className="verifiedBadge" aria-label="Verified creator">
+                    ✓
+                  </span>
+                ) : null}
+              </div>
+              <p className="storefrontMeta">
+                @{storefront.handle} · {storefront.primaryCategory.name} creator ·{' '}
+                {compactNumber(storefront.followerCount)} followers
+              </p>
+              <p className="storefrontBio" dir="rtl" lang="he">
+                {storefront.bio.value}
+              </p>
+              <div className="storefrontMetrics">
+                <span>{storefront.recommendationCount} recommendations</span>
+                <span>
+                  {storefront.verificationStatus === 'verified'
+                    ? 'Verified by VibesHub'
+                    : 'Approved creator storefront'}
                 </span>
+              </div>
+              <FollowCreatorButton creatorId={storefront.id} />
+              {storefront.socialLinks.length > 0 ? (
+                <nav className="storefrontSocialLinks" aria-label="Creator social links">
+                  {storefront.socialLinks.map((link) => (
+                    <a
+                      href={link.url}
+                      key={`${link.platform}:${link.url}`}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {socialLabel(link.platform)}
+                    </a>
+                  ))}
+                </nav>
               ) : null}
             </div>
-            <p className="storefrontMeta">
-              @{storefront.handle} · {storefront.primaryCategory.name} creator ·{' '}
-              {compactNumber(storefront.followerCount)} followers
-            </p>
-            <p className="storefrontBio" dir="rtl" lang="he">
-              {storefront.bio.value}
-            </p>
-            <div className="storefrontMetrics">
-              <span>{storefront.recommendationCount} recommendations</span>
-              <span>
-                {storefront.verificationStatus === 'verified'
-                  ? 'Verified by VibesHub'
-                  : 'Approved creator storefront'}
-              </span>
-            </div>
-            <FollowCreatorButton creatorId={storefront.id} />
-            {storefront.socialLinks.length > 0 ? (
-              <nav className="storefrontSocialLinks" aria-label="Creator social links">
-                {storefront.socialLinks.map((link) => (
-                  <a
-                    href={link.url}
-                    key={`${link.platform}:${link.url}`}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {socialLabel(link.platform)}
-                  </a>
-                ))}
-              </nav>
-            ) : null}
-          </div>
-        </section>
+          </section>
 
-        {discountCodes.length > 0 ? (
-          <section className="storefrontCodes" aria-labelledby="storefront-codes-title">
+          {discountCodes.length > 0 ? (
+            <section className="storefrontCodes" aria-labelledby="storefront-codes-title">
+              <div className="directoryHeading">
+                <div>
+                  <p className="eyebrow">DISCOUNT CODES</p>
+                  <h2 id="storefront-codes-title">Current offers</h2>
+                </div>
+                <p>Validity and confirmation dates are shown transparently.</p>
+              </div>
+              <div className="publicCodeGrid">
+                {discountCodes.map((code) => (
+                  <article className="publicCodeCard" key={code.id}>
+                    <p className="productBrand">{code.merchantName}</p>
+                    <h3>{code.code}</h3>
+                    {code.label ? <p className="publicCodeLabel">{code.label}</p> : null}
+                    {code.details ? (
+                      <p dir="rtl" lang="he">
+                        {code.details.value}
+                      </p>
+                    ) : null}
+                    <div className="publicCodeTruth">
+                      <span>{verificationLabel(code.verificationStatus)}</span>
+                      <span>
+                        {code.expiresAt
+                          ? `Expires ${formatCodeDate(code.expiresAt)}`
+                          : 'No expiry supplied'}
+                      </span>
+                    </div>
+                    <CopyDiscountCodeButton
+                      code={code.code}
+                      creatorId={storefront.id}
+                      discountCodeId={code.id}
+                      recommendationId={null}
+                    />
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section
+            className="storefrontProducts"
+            aria-labelledby="storefront-products-title"
+          >
             <div className="directoryHeading">
               <div>
-                <p className="eyebrow">DISCOUNT CODES</p>
-                <h2 id="storefront-codes-title">Current offers</h2>
+                <p className="eyebrow">RECOMMENDATIONS</p>
+                <h2 id="storefront-products-title">Products I stand behind</h2>
               </div>
-              <p>Validity and confirmation dates are shown transparently.</p>
+              <p>Image first · details below</p>
             </div>
-            <div className="publicCodeGrid">
-              {discountCodes.map((code) => (
-                <article className="publicCodeCard" key={code.id}>
-                  <p className="productBrand">{code.merchantName}</p>
-                  <h3>{code.code}</h3>
-                  {code.label ? <p className="publicCodeLabel">{code.label}</p> : null}
-                  {code.details ? (
-                    <p dir="rtl" lang="he">
-                      {code.details.value}
-                    </p>
-                  ) : null}
-                  <div className="publicCodeTruth">
-                    <span>{verificationLabel(code.verificationStatus)}</span>
-                    <span>
-                      {code.expiresAt
-                        ? `Expires ${formatCodeDate(code.expiresAt)}`
-                        : 'No expiry supplied'}
-                    </span>
-                  </div>
-                  <CopyDiscountCodeButton
-                    code={code.code}
+
+            {recommendations.length === 0 ? (
+              <div className="directoryState">
+                <h3>No published recommendations yet</h3>
+                <p>This creator is preparing their storefront. Check back soon.</p>
+              </div>
+            ) : (
+              <div className="storeProductGrid">
+                {recommendations.map((recommendation) => (
+                  <RecommendationCardView
                     creatorId={storefront.id}
-                    discountCodeId={code.id}
-                    recommendationId={null}
+                    key={recommendation.id}
+                    recommendation={recommendation}
+                    showSave
                   />
-                </article>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {nextCursor ? (
+              <Link
+                className="button secondary loadMore"
+                href={`/creators/${encodeURIComponent(handle)}?cursor=${encodeURIComponent(nextCursor)}`}
+              >
+                Show more recommendations
+              </Link>
+            ) : null}
           </section>
-        ) : null}
-
-        <section
-          className="storefrontProducts"
-          aria-labelledby="storefront-products-title"
-        >
-          <div className="directoryHeading">
-            <div>
-              <p className="eyebrow">RECOMMENDATIONS</p>
-              <h2 id="storefront-products-title">Products I stand behind</h2>
-            </div>
-            <p>Image first · details below</p>
-          </div>
-
-          {recommendations.length === 0 ? (
-            <div className="directoryState">
-              <h3>No published recommendations yet</h3>
-              <p>This creator is preparing their storefront. Check back soon.</p>
-            </div>
-          ) : (
-            <div className="storeProductGrid">
-              {recommendations.map((recommendation) => (
-                <RecommendationCardView
-                  creatorId={storefront.id}
-                  key={recommendation.id}
-                  recommendation={recommendation}
-                  showSave
-                />
-              ))}
-            </div>
-          )}
-
-          {nextCursor ? (
-            <Link
-              className="button secondary loadMore"
-              href={`/creators/${encodeURIComponent(handle)}?cursor=${encodeURIComponent(nextCursor)}`}
-            >
-              Show more recommendations
-            </Link>
-          ) : null}
-        </section>
-      </EngagementProvider>
-    </main>
+        </EngagementProvider>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 
 function UnavailableStorefront() {
   return (
-    <main>
+    <div className="editorialPage">
       <SiteHeader />
-      <section className="directoryHero">
-        <p className="eyebrow">CREATOR STOREFRONT</p>
-        <h1>This storefront is temporarily unavailable</h1>
-        <p className="lede">The VibesHub API is not connected in this environment yet.</p>
-        <Link className="button secondary" href="/creators">
-          Browse creators
-        </Link>
-      </section>
-    </main>
+      <main>
+        <section className="directoryHero">
+          <p className="eyebrow">CREATOR STOREFRONT</p>
+          <h1>This storefront is temporarily unavailable</h1>
+          <p className="lede">
+            The VibesHub API is not connected in this environment yet.
+          </p>
+          <Link className="button secondary" href="/creators">
+            Browse creators
+          </Link>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 
