@@ -90,6 +90,20 @@
   margin: 0;
 }
 
+.creatorDashboardIntro .eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2.42px;
+  line-height: 16.5px;
+  margin: 0 0 8px;
+}
+
+.creatorDashboardIntro > div > p:last-child {
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 8px;
+}
+
 .creatorWelcomeAvatar,
 .creatorAccountAvatar {
   border: 4px solid white;
@@ -237,10 +251,12 @@
   color: #7d7168;
   font-size: 14px;
   line-height: 20px;
-  margin: 0;
+  margin: 4px 0 0;
 }
 .creatorSectionHeading .button,
 .creatorDashboardLinks .button {
+  gap: 8px;
+  line-height: 20px;
   min-height: 36px;
   padding: 0 16px;
 }
@@ -293,7 +309,7 @@
   line-height: 20px;
   margin: 0 0 20px -12px;
   min-height: 36px;
-  padding: 0 16px;
+  padding: 0 19px;
 }
 
 .creatorTypeGrid {
@@ -350,6 +366,7 @@
   font-size: 14px;
   font-weight: 500;
   gap: 4px;
+  line-height: 20px;
 }
 
 .creatorComposer input,
@@ -375,8 +392,8 @@
 .creatorComposer textarea,
 .creatorAccountCard textarea {
   height: auto;
-  min-height: 100px;
-  padding-block: 10px;
+  min-height: 78px;
+  padding-block: 8px;
   resize: vertical;
 }
 .creatorComposer small,
@@ -395,6 +412,7 @@
   margin: 0 0 20px;
 }
 .creatorFormGrid + .creatorFullField {
+  gap: 8px;
   margin-top: 20px;
 }
 .creatorInlineField {
@@ -447,8 +465,8 @@
 .creatorStoryFields > p {
   color: #7d7168;
   font-size: 12px;
-  line-height: 20px;
-  margin: 0 0 12px;
+  line-height: 16px;
+  margin: 4px 0 12px;
 }
 .creatorStoryUpload {
   align-items: center;
@@ -462,7 +480,7 @@
   width: 64px;
 }
 .creatorStoryFields > .creatorInlineField {
-  margin-top: 16px;
+  margin-top: 12px;
 }
 .creatorStoryThumbs {
   display: flex;
@@ -503,7 +521,12 @@
 .creatorFormActions .button,
 .creatorInlineField .button {
   min-height: 36px;
+}
+.creatorFormActions .button {
   padding: 0 16px;
+}
+.creatorInlineField .button {
+  padding: 0 21px;
 }
 .creatorFormActions > button:not(.button) {
   background: none;

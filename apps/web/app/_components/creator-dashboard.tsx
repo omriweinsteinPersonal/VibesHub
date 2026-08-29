@@ -491,7 +491,8 @@ export function CreatorDashboard() {
               onClick={() => showComposer('choose')}
               type="button"
             >
-              ＋ Add recommendation
+              <span aria-hidden="true">＋</span>
+              <span>Add recommendation</span>
             </button>
           </div>
 
@@ -792,7 +793,7 @@ function ProductForm({
             lang="he"
             maxLength={1000}
             required
-            rows={4}
+            rows={3}
             value={editor.reviewHe}
             onChange={(event) => update('reviewHe', event.target.value)}
           />
@@ -806,25 +807,27 @@ function ProductForm({
           <label className="creatorStoryUpload">
             ↥<input accept={storyVideoAccept} multiple onChange={onStory} type="file" />
           </label>
-          <div className="creatorStoryThumbs">
-            {editor.storyClips.map((clip, index) => (
-              <span key={`${clip.url}:${index}`}>
-                <video muted playsInline src={clip.url} />
-                <button
-                  aria-label="Remove clip"
-                  onClick={() =>
-                    update(
-                      'storyClips',
-                      editor.storyClips.filter((_, clipIndex) => clipIndex !== index),
-                    )
-                  }
-                  type="button"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
+          {editor.storyClips.length ? (
+            <div className="creatorStoryThumbs">
+              {editor.storyClips.map((clip, index) => (
+                <span key={`${clip.url}:${index}`}>
+                  <video muted playsInline src={clip.url} />
+                  <button
+                    aria-label="Remove clip"
+                    onClick={() =>
+                      update(
+                        'storyClips',
+                        editor.storyClips.filter((_, clipIndex) => clipIndex !== index),
+                      )
+                    }
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : null}
           <span className="creatorInlineField">
             <input
               type="url"
