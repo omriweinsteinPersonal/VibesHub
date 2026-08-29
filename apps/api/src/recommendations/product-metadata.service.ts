@@ -8,19 +8,29 @@ import { problem } from '../api-problem.js';
 const maxRedirects = 3;
 const maxHtmlBytes = 512 * 1_024;
 
+// Vercel's Node function compiler does not include the DOM Response shape even
+// though Node exposes fetch at runtime. Keep the boundary structural so the API
+// compiles consistently in both the workspace and Vercel's function builder.
+interface ProductFetchResponse {
+  headers: { get(name: string): string | null };
+  ok: boolean;
+  status: number;
+  text(): Promise<string>;
+}
+
 @Injectable()
 export class ProductMetadataService {
   async fetch(rawUrl: string): Promise<CreatorProductMetadata> {
     let url = await requirePublicHttpsUrl(rawUrl);
     for (let redirects = 0; redirects <= maxRedirects; redirects += 1) {
-      const response = await fetch(url, {
+      const response = (await fetch(url, {
         headers: {
           accept: 'text/html,application/xhtml+xml',
           'user-agent': 'VibesHubProductPreview/1.0',
         },
         redirect: 'manual',
         signal: AbortSignal.timeout(8_000),
-      }).catch(() => null);
+      }).catch(() => null)) as ProductFetchResponse | null;
       if (!response) {
         throw problem(
           422,
