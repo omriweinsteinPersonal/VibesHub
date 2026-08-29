@@ -29,6 +29,7 @@ export class RecommendationService {
     try {
       const created = await this.recommendations.create(userId, {
         ...input,
+        storyClips: this.normalizeStoryClips(input),
         videoUrl: this.videos.normalizeExternalPreviewUrl(input.videoUrl ?? null),
       });
       if (!created) throw this.creatorAccessRequired();
@@ -69,6 +70,7 @@ export class RecommendationService {
       categoryId: current.categoryId,
       commercialRelationship: current.commercialRelationship,
       discountCode: current.discount?.code ?? null,
+      discountExpiresAt: current.discount?.expiresAt ?? null,
       discountLabel: current.discount?.label ?? null,
       imageAssetId: current.imageAssetId,
       imageUrl: current.imageAssetId ? null : current.imageUrl,
@@ -76,12 +78,16 @@ export class RecommendationService {
       productName: current.productName,
       productUrl: current.productUrl,
       reviewHe: current.review.value,
+      storyClips: current.storyClips.map((clip) =>
+        clip.mediaAssetId ? { mediaAssetId: clip.mediaAssetId } : { videoUrl: clip.url },
+      ),
       videoUrl: current.videoUrl,
       ...patch,
       ...imagePatch,
     });
     const normalizedInput = {
       ...input,
+      storyClips: this.normalizeStoryClips(input),
       videoUrl: this.videos.normalizeExternalPreviewUrl(input.videoUrl ?? null),
     };
     try {
@@ -266,6 +272,7 @@ export class RecommendationService {
     if (
       error instanceof Error &&
       (error.message === 'MEDIA_ASSET_NOT_READY_OR_OWNED' ||
+        error.message === 'STORY_MEDIA_ASSET_NOT_READY_OR_OWNED' ||
         error.message === 'RECOMMENDATION_IMAGE_REQUIRED')
     ) {
       throw problem(
@@ -298,6 +305,20 @@ export class RecommendationService {
     if (patch.imageAssetId) return { imageAssetId: patch.imageAssetId, imageUrl: null };
     if (patch.imageUrl) return { imageAssetId: null, imageUrl: patch.imageUrl };
     return {};
+  }
+
+  private normalizeStoryClips(
+    input: Pick<CreatorRecommendationInput, 'storyClips' | 'videoUrl'>,
+  ): CreatorRecommendationInput['storyClips'] {
+    if (!input.storyClips)
+      return input.videoUrl
+        ? [{ videoUrl: this.videos.normalizeExternalPreviewUrl(input.videoUrl) }]
+        : [];
+    return input.storyClips.map((clip) =>
+      clip.mediaAssetId
+        ? { mediaAssetId: clip.mediaAssetId }
+        : { videoUrl: this.videos.normalizeExternalPreviewUrl(clip.videoUrl ?? null) },
+    );
   }
 }
 

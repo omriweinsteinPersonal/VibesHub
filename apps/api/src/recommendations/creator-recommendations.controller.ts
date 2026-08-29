@@ -13,10 +13,12 @@ import {
   creatorRecommendationInputSchema,
   creatorRecommendationMoveInputSchema,
   creatorRecommendationPatchSchema,
+  creatorProductMetadataInputSchema,
   recommendationDirectoryQuerySchema,
   type CreatorRecommendationInput,
   type CreatorRecommendationMoveInput,
   type CreatorRecommendationPatch,
+  type CreatorProductMetadataInput,
 } from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
 
@@ -26,6 +28,7 @@ import { collectionResponse, singleResponse } from '../http-response.js';
 import { IdempotencyService } from '../idempotency.service.js';
 import { decodeRecommendationCursor, parseIfMatch } from './recommendation.js';
 import { RecommendationService } from './recommendation.service.js';
+import { ProductMetadataService } from './product-metadata.service.js';
 
 @Controller('creator/recommendations')
 @RequireCapabilities('creator:manage_content')
@@ -33,7 +36,17 @@ export class CreatorRecommendationsController {
   constructor(
     private readonly recommendations: RecommendationService,
     private readonly idempotency: IdempotencyService,
+    private readonly productMetadata: ProductMetadataService,
   ) {}
+
+  @Post('fetch-details')
+  async fetchDetails(
+    @Body() body: CreatorProductMetadataInput,
+    @Req() request: FastifyRequest,
+  ) {
+    const input = creatorProductMetadataInputSchema.parse(body);
+    return singleResponse(await this.productMetadata.fetch(input.url), request.id);
+  }
 
   @Post()
   async create(

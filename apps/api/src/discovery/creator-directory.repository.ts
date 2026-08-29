@@ -23,6 +23,7 @@ interface CreatorCardRow {
   isVerified: boolean;
   recommendationCount: number;
   socialLinks?: CreatorStorefront['socialLinks'];
+  storefrontSections?: CreatorStorefront['storefrontSections'];
 }
 
 export interface CreatorDirectoryPage {
@@ -132,6 +133,23 @@ export class CreatorDirectoryRepository {
           ),
           '[]'::jsonb
         ) as "socialLinks",
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'id', section_category.id,
+                'slug', section_category.slug::text,
+                'name', section_category.name_en
+              ) order by section.position, section.category_id
+            )
+            from app.creator_storefront_sections section
+            join app.categories section_category
+              on section_category.id = section.category_id
+             and section_category.is_active = true
+            where section.creator_id = creator.id
+          ),
+          '[]'::jsonb
+        ) as "storefrontSections",
         (
           select count(*)::integer
           from app.recommendations recommendation
@@ -155,7 +173,13 @@ export class CreatorDirectoryRepository {
         and creator.published_at is not null
         and category.is_active = true
     `;
-    return row ? { ...mapCreatorCard(row), socialLinks: row.socialLinks ?? [] } : null;
+    return row
+      ? {
+          ...mapCreatorCard(row),
+          socialLinks: row.socialLinks ?? [],
+          storefrontSections: row.storefrontSections ?? [],
+        }
+      : null;
   }
 }
 

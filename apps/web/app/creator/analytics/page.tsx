@@ -1,222 +1,225 @@
 'use client';
 
-import type { CreatorAnalyticsDashboard } from '@vibeshub/contracts';
+import type {
+  CreatorAnalyticsDashboard,
+  CreatorStudioSummary,
+} from '@vibeshub/contracts';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
-
-const ranges = [7, 30, 90] as const;
+import { CreatorShellHeader } from '../../_components/creator-shell-header';
+import { SiteFooter } from '../../_components/site-footer';
 
 export default function CreatorAnalyticsPage() {
-  const [days, setDays] = useState<(typeof ranges)[number]>(30);
   const [dashboard, setDashboard] = useState<CreatorAnalyticsDashboard | null>(null);
+  const [studio, setStudio] = useState<CreatorStudioSummary | null>(null);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
-    let active = true;
-    void apiRequest<CreatorAnalyticsDashboard>(`/creator/analytics?days=${days}`)
-      .then((result) => {
-        if (active) setDashboard(result);
+    void Promise.all([
+      apiRequest<CreatorAnalyticsDashboard>('/creator/analytics?days=30'),
+      apiRequest<CreatorStudioSummary>('/creator/studio'),
+    ])
+      .then(([loadedDashboard, loadedStudio]) => {
+        setDashboard(loadedDashboard);
+        setStudio(loadedStudio);
       })
-      .catch((cause: unknown) => {
-        if (active) setError(messageFor(cause));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [days, revision]);
-
-  function selectRange(range: (typeof ranges)[number]) {
-    setDays(range);
-    setDashboard(null);
-    setError('');
-    setLoading(true);
-  }
-
-  function retry() {
-    setDashboard(null);
-    setError('');
-    setLoading(true);
-    setRevision((current) => current + 1);
-  }
+      .catch((cause: unknown) => setError(messageFor(cause)));
+  }, []);
 
   return (
-    <main className="workspacePage">
-      <header className="workspaceHeader creatorStudioHeader">
-        <Link className="logo" href="/">
-          <span>✣</span> VibesHub
-        </Link>
-        <nav aria-label="Creator studio navigation">
-          <Link href="/account">Account</Link>
-          <Link href="/creator/profile">Profile</Link>
-          <Link href="/creator/recommendations">Recommendations</Link>
-          <Link href="/creator/discount-codes">Discount codes</Link>
-          <Link aria-current="page" href="/creator/analytics">
-            Analytics
-          </Link>
-          <Link href="/creators">Storefronts</Link>
-        </nav>
-      </header>
-
-      <section className="workspaceContent creatorStudio analyticsStudio">
-        <div className="analyticsHeading">
+    <div className="creatorShellPage">
+      <CreatorShellHeader />
+      <main className="creatorAnalyticsMain">
+        <header className="creatorAnalyticsHeading">
           <div>
-            <p className="eyebrow">CREATOR INSIGHTS</p>
+            <p className="eyebrow">INSIGHTS</p>
             <h1>Analytics</h1>
-            <p className="workspaceLead">
-              Understand how shoppers discover and act on your recommendations.
-            </p>
+            <p>How shoppers interact with your storefront — last 30 days.</p>
           </div>
-          <div className="analyticsRanges" aria-label="Analytics date range">
-            {ranges.map((range) => (
-              <button
-                aria-pressed={days === range}
-                className={days === range ? 'active' : ''}
-                key={range}
-                onClick={() => selectRange(range)}
-                type="button"
-              >
-                {range} days
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {error ? (
-          <div className="analyticsState" role="alert">
-            <p>{error}</p>
-            <button className="button secondary" onClick={retry} type="button">
-              Try again
-            </button>
-          </div>
+          <Link
+            className="button secondary"
+            href={studio ? `/creator/${studio.handle}` : '/dashboard'}
+          >
+            View storefront
+          </Link>
+        </header>
+        {error ? <p className="formError">{error}</p> : null}
+        {!dashboard && !error ? (
+          <div className="creatorLoading">Loading your insights…</div>
         ) : null}
-
-        {loading ? <p className="analyticsState">Loading your insights…</p> : null}
-
         {dashboard ? <AnalyticsDashboard dashboard={dashboard} /> : null}
-      </section>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 
 function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboard }) {
   const metrics = [
-    ['Storefront visits', dashboard.summary.storefrontViews],
-    ['Unique visitor sessions', dashboard.summary.uniqueVisitors],
-    ['Product views', dashboard.summary.recommendationViews],
-    ['Story opens', dashboard.summary.storyOpens],
-    ['Story completions', dashboard.summary.storyCompletions],
-    ['Shop clicks', dashboard.summary.shopClicks],
-    ['Code copies', dashboard.summary.codeCopies],
+    ['◉', 'Storefront visits', dashboard.summary.storefrontViews],
+    ['♙', 'Unique visitors', dashboard.summary.uniqueVisitors],
+    ['✣', 'Product clicks', dashboard.summary.shopClicks],
+    ['◇', 'Code clicks', dashboard.summary.codeCopies],
+    ['▣', 'Instagram taps', dashboard.summary.instagramTaps],
   ] as const;
-
   return (
     <>
-      <div className="analyticsMetricGrid">
-        {metrics.map(([label, value]) => (
-          <article className="analyticsMetric" key={label}>
-            <p>{label}</p>
+      <section className="creatorAnalyticsMetrics">
+        {metrics.map(([icon, label, value]) => (
+          <article key={label}>
+            <p>
+              <span aria-hidden="true">{icon}</span>
+              {label}
+            </p>
             <strong>{value.toLocaleString('en-IL')}</strong>
           </article>
         ))}
-      </div>
-
-      <section className="workspaceCard analyticsChartCard">
-        <div>
-          <p className="eyebrow">DAILY ACTIVITY</p>
-          <h2>Storefront visits</h2>
-        </div>
-        <LineChart series={dashboard.series} />
-        <div className="analyticsChartLegend" aria-hidden="true">
-          <span>{formatDate(dashboard.range.from)}</span>
-          <span>{formatDate(dashboard.range.to)}</span>
-        </div>
       </section>
-
-      <section className="workspaceCard analyticsTableCard">
-        <div>
-          <p className="eyebrow">PRODUCT PERFORMANCE</p>
-          <h2>Top recommendations</h2>
-        </div>
-        {dashboard.recommendations.length ? (
-          <div className="analyticsTableScroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Views</th>
-                  <th>Story opens</th>
-                  <th>Completed</th>
-                  <th>Shop clicks</th>
-                  <th>Code copies</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboard.recommendations.map((recommendation) => (
-                  <tr key={recommendation.id}>
-                    <th scope="row">{recommendation.productName}</th>
-                    <td>{recommendation.views.toLocaleString('en-IL')}</td>
-                    <td>{recommendation.storyOpens.toLocaleString('en-IL')}</td>
-                    <td>{recommendation.storyCompletions.toLocaleString('en-IL')}</td>
-                    <td>{recommendation.shopClicks.toLocaleString('en-IL')}</td>
-                    <td>{recommendation.codeCopies.toLocaleString('en-IL')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <section className="creatorAnalyticsCard">
+        <h2>Traffic — last 30 days</h2>
+        <TrafficChart series={dashboard.series} />
+      </section>
+      <section className="creatorAnalyticsCard productTrafficCard">
+        <h2>Product traffic</h2>
+        <p>Taps on “Shop now”, per product.</p>
+        {dashboard.recommendations.some(({ shopClicks }) => shopClicks > 0) ? (
+          <div className="productTrafficRows">
+            {dashboard.recommendations.map((item) => (
+              <div key={item.id}>
+                <span>{item.productName}</span>
+                <strong>{item.shopClicks.toLocaleString('en-IL')}</strong>
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="analyticsEmpty">
-            Publish your first recommendation to start seeing product performance.
-          </p>
+          <div className="creatorAnalyticsEmpty">
+            No product clicks yet — clicks show up here as soon as shoppers tap “Shop
+            now”.
+          </div>
         )}
       </section>
     </>
   );
 }
 
-function LineChart({ series }: { series: CreatorAnalyticsDashboard['series'] }) {
+function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
   const geometry = useMemo(() => {
     const width = 1000;
-    const height = 250;
-    const padding = 16;
-    const maximum = Math.max(1, ...series.map((metric) => metric.storefrontViews));
-    const points = series.map((metric, index) => {
-      const x =
-        padding + (index / Math.max(series.length - 1, 1)) * (width - padding * 2);
-      const y =
-        height - padding - (metric.storefrontViews / maximum) * (height - padding * 2);
-      return `${x},${y}`;
+    const height = 300;
+    const left = 42;
+    const top = 20;
+    const bottom = 34;
+    const maximum = Math.max(
+      1,
+      ...series.flatMap((item) => [item.storefrontViews, item.shopClicks]),
+    );
+    const yMax = Math.max(4, Math.ceil(maximum / 2) * 2);
+    const point = (value: number, index: number) => ({
+      x: left + (index / Math.max(1, series.length - 1)) * (width - left - 16),
+      y: top + (1 - value / yMax) * (height - top - bottom),
     });
-    return { height, points: points.join(' '), width };
+    const visits = series.map((item, index) => point(item.storefrontViews, index));
+    const clicks = series.map((item, index) => point(item.shopClicks, index));
+    const path = (points: Array<{ x: number; y: number }>) =>
+      points.map((item, index) => `${index ? 'L' : 'M'} ${item.x} ${item.y}`).join(' ');
+    return { bottom, clicks, height, left, path, top, visits, width, yMax };
   }, [series]);
 
+  function move(event: PointerEvent<SVGSVGElement>) {
+    if (!series.length) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * geometry.width;
+    const ratio = (x - geometry.left) / (geometry.width - geometry.left - 16);
+    setHovered(
+      Math.max(0, Math.min(series.length - 1, Math.round(ratio * (series.length - 1)))),
+    );
+  }
+
+  const active = hovered === null ? null : series[hovered];
+  const activePoint = hovered === null ? null : geometry.visits[hovered];
   return (
-    <svg
-      aria-label="Daily storefront visits line chart"
-      className="analyticsChart"
-      preserveAspectRatio="none"
-      role="img"
-      viewBox={`0 0 ${geometry.width} ${geometry.height}`}
-    >
-      <line x1="16" x2="984" y1="234" y2="234" />
-      <polyline points={geometry.points} />
-    </svg>
+    <div className="creatorTrafficChart">
+      <svg
+        aria-label="Storefront visits and product clicks for the last 30 days"
+        onPointerLeave={() => setHovered(null)}
+        onPointerMove={move}
+        role="img"
+        viewBox={`0 0 ${geometry.width} ${geometry.height}`}
+      >
+        {[0, 1, 2, 3, 4].map((row) => {
+          const value = Math.round(geometry.yMax - (row * geometry.yMax) / 4);
+          const y =
+            geometry.top + (row * (geometry.height - geometry.top - geometry.bottom)) / 4;
+          return (
+            <g key={row}>
+              <line
+                className="grid"
+                x1={geometry.left}
+                x2={geometry.width - 16}
+                y1={y}
+                y2={y}
+              />
+              <text x="8" y={y + 4}>
+                {value}
+              </text>
+            </g>
+          );
+        })}
+        <path
+          className="visitsArea"
+          d={`${geometry.path(geometry.visits)} L ${geometry.visits.at(-1)?.x ?? 0} ${geometry.height - geometry.bottom} L ${geometry.left} ${geometry.height - geometry.bottom} Z`}
+        />
+        <path className="visitsLine" d={geometry.path(geometry.visits)} />
+        <path className="clicksLine" d={geometry.path(geometry.clicks)} />
+        {activePoint ? (
+          <>
+            <line
+              className="hoverLine"
+              x1={activePoint.x}
+              x2={activePoint.x}
+              y1={geometry.top}
+              y2={geometry.height - geometry.bottom}
+            />
+            <circle className="hoverDot" cx={activePoint.x} cy={activePoint.y} r="4" />
+          </>
+        ) : null}
+        {series.map((item, index) =>
+          index % 5 === 0 || index === series.length - 1 ? (
+            <text
+              className="dateLabel"
+              key={item.date}
+              textAnchor="middle"
+              x={geometry.visits[index]?.x}
+              y={geometry.height - 8}
+            >
+              {shortDate(item.date)}
+            </text>
+          ) : null,
+        )}
+      </svg>
+      {active && activePoint ? (
+        <div
+          className="creatorChartTooltip"
+          style={{
+            left: `${(activePoint.x / geometry.width) * 100}%`,
+            top: `${(activePoint.y / geometry.height) * 100}%`,
+          }}
+        >
+          <strong>{shortDate(active.date)}</strong>
+          <span>Storefront visits: {active.storefrontViews}</span>
+          <span>Clicks: {active.shopClicks}</span>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat('en-IL', {
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  }).format(new Date(`${date}T00:00:00Z`));
+function shortDate(value: string): string {
+  const date = new Date(`${value}T00:00:00Z`);
+  return `${date.getUTCDate()}/${date.getUTCMonth() + 1}`;
 }
 
 function messageFor(cause: unknown): string {

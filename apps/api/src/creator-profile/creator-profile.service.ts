@@ -40,6 +40,9 @@ export class CreatorProfileService {
     if (result.kind === 'invalid_avatar') {
       throw problem(422, 'VALIDATION_FAILED', 'Choose an image uploaded by this account');
     }
+    if (result.kind === 'invalid_handle') {
+      throw problem(409, 'RESOURCE_CONFLICT', 'That storefront handle is unavailable');
+    }
     throw problem(
       412,
       'PRECONDITION_FAILED',

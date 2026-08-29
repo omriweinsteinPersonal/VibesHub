@@ -131,12 +131,74 @@ export const recommendationImageAssetSchema = z
   })
   .strict();
 
+export const storyVideoContentTypeSchema = z.enum([
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+]);
+
+export const storyVideoUploadInputSchema = z
+  .object({
+    contentType: storyVideoContentTypeSchema,
+    fileSizeBytes: z
+      .int()
+      .min(1)
+      .max(50 * 1_024 * 1_024),
+  })
+  .strict();
+
+export const storyVideoUploadSchema = z
+  .object({
+    assetId: idSchema,
+    bucket: z.literal('story-video-uploads'),
+    contentType: storyVideoContentTypeSchema,
+    expiresAt: z.iso.datetime(),
+    objectPath: z.string().trim().min(1).max(512),
+    token: z.string().trim().min(1),
+  })
+  .strict();
+
+export const storyVideoAssetSchema = z
+  .object({
+    contentType: storyVideoContentTypeSchema,
+    id: idSchema,
+    publicUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    sizeBytes: z
+      .int()
+      .min(1)
+      .max(50 * 1_024 * 1_024),
+    status: z.literal('ready'),
+  })
+  .strict();
+
+export const storyClipInputSchema = z
+  .object({
+    mediaAssetId: idSchema.nullable().optional(),
+    videoUrl: optionalHttpsUrlSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      Number(Boolean(value.mediaAssetId)) + Number(Boolean(value.videoUrl)) === 1,
+    'Choose exactly one story clip source',
+  );
+
+export const storyClipSchema = z
+  .object({
+    id: idSchema,
+    mediaAssetId: idSchema.nullable(),
+    position: z.int().nonnegative(),
+    url: z.url({ protocol: /^https$/ }).max(2_048),
+  })
+  .strict();
+
 const creatorRecommendationInputFieldsSchema = z
   .object({
     brandName: z.string().trim().min(1).max(120),
     categoryId: idSchema,
     commercialRelationship: commercialRelationshipSchema.default('organic'),
     discountCode: optionalTrimmedStringSchema(50).optional(),
+    discountExpiresAt: z.iso.datetime().nullable().optional(),
     discountLabel: optionalTrimmedStringSchema(100).optional(),
     imageAssetId: idSchema.nullable().optional(),
     imageUrl: optionalHttpsUrlSchema.optional(),
@@ -144,6 +206,7 @@ const creatorRecommendationInputFieldsSchema = z
     productName: z.string().trim().min(1).max(200),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
     reviewHe: hebrewRecommendationSchema,
+    storyClips: z.array(storyClipInputSchema).max(10).optional(),
     videoUrl: optionalHttpsUrlSchema.optional(),
   })
   .strict();
@@ -164,6 +227,25 @@ export const creatorRecommendationPatchSchema = creatorRecommendationInputFields
     (value) => Object.keys(value).length > 0,
     'At least one recommendation field is required',
   );
+
+export const creatorProductMetadataInputSchema = z
+  .object({
+    url: z.url({ protocol: /^https$/ }).max(2_048),
+  })
+  .strict();
+
+export const creatorProductMetadataSchema = z
+  .object({
+    brandName: z.string().trim().max(120).nullable(),
+    imageUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .nullable(),
+    priceAmountMinor: z.int().nonnegative().nullable(),
+    productName: z.string().trim().max(200).nullable(),
+    productUrl: z.url({ protocol: /^https$/ }).max(2_048),
+  })
+  .strict();
 
 export const creatorRecommendationMoveInputSchema = z
   .object({
@@ -194,6 +276,7 @@ export const recommendationDiscountSchema = z
 export const creatorAnalyticsMetricSchema = z
   .object({
     codeCopies: z.int().nonnegative(),
+    instagramTaps: z.int().nonnegative(),
     recommendationViews: z.int().nonnegative(),
     shopClicks: z.int().nonnegative(),
     storyCompletions: z.int().nonnegative(),
@@ -340,6 +423,7 @@ export const recommendationCardSchema = z
       .refine(isProductionOrLocalUrl, 'Use HTTPS outside local development'),
     updatedAt: z.iso.datetime(),
     version: z.int().positive(),
+    storyClips: z.array(storyClipSchema).max(10).default([]),
     videoUrl: optionalHttpsUrlSchema,
   })
   .strict();
@@ -368,6 +452,10 @@ export const creatorStorefrontSchema = z
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
+    storefrontSections: z
+      .array(categoryCardSchema.pick({ id: true, name: true, slug: true }))
+      .max(24)
+      .default([]),
     socialLinks: z.array(
       z
         .object({
@@ -680,6 +768,7 @@ export const creatorProfilePatchSchema = z
       .refine((value) => /[א-ת]/u.test(value), 'A Hebrew creator bio is required')
       .optional(),
     displayName: z.string().trim().min(1).max(100).optional(),
+    handle: creatorCardSchema.shape.handle.optional(),
     primaryCategoryId: idSchema.optional(),
     socialLinks: z
       .array(creatorProfileSocialLinkSchema)
@@ -695,6 +784,94 @@ export const creatorProfilePatchSchema = z
     (value) => Object.keys(value).length > 0,
     'At least one profile field is required',
   );
+
+export const storefrontSectionSchema = z
+  .object({
+    category: categoryCardSchema.pick({ id: true, name: true, slug: true }),
+    position: z.int().nonnegative(),
+  })
+  .strict();
+
+export const creatorStorefrontConfigurationSchema = z
+  .object({
+    sections: z.array(storefrontSectionSchema).max(24),
+    version: z.int().positive(),
+  })
+  .strict();
+
+export const creatorStorefrontConfigurationInputSchema = z
+  .object({
+    categoryIds: z
+      .array(idSchema)
+      .max(24)
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        'Each storefront section can be selected once',
+      ),
+  })
+  .strict();
+
+const nullableNonnegativeInteger = z.int().nonnegative().nullable();
+
+const creatorMediaKitFieldsSchema = z
+  .object({
+    agentAgencyName: z.string().trim().max(160).nullable(),
+    agentEmail: z.email().max(320).nullable(),
+    agentPhone: z.string().trim().max(40).nullable(),
+    audienceAgeFrom: z.int().min(13).max(100).nullable(),
+    audienceAgeTo: z.int().min(13).max(100).nullable(),
+    audienceGender: z.enum(['female', 'male', 'mixed', 'not_specified']).nullable(),
+    audienceLocation: z.string().trim().max(120).nullable(),
+    averageReelViews: nullableNonnegativeInteger,
+    averageStoryViews: nullableNonnegativeInteger,
+    bookingEmail: z.email().max(320).nullable(),
+    contentTypes: z.array(z.enum(['stories', 'reels', 'posts'])).max(3),
+    engagementRate: z.number().min(0).max(100).nullable(),
+    followers: nullableNonnegativeInteger,
+    platforms: z.array(z.enum(['instagram', 'tiktok', 'youtube'])).max(3),
+    ratePerPostMinor: nullableNonnegativeInteger,
+    ratePerStoryMinor: nullableNonnegativeInteger,
+    version: z.int().positive(),
+  })
+  .strict();
+
+export const creatorMediaKitSchema = creatorMediaKitFieldsSchema.refine(
+  (value) =>
+    value.audienceAgeFrom === null ||
+    value.audienceAgeTo === null ||
+    value.audienceAgeTo >= value.audienceAgeFrom,
+  { message: 'Audience maximum age must be at least the minimum age' },
+);
+
+export const creatorMediaKitInputSchema = creatorMediaKitFieldsSchema
+  .omit({ version: true })
+  .refine(
+    (value) => new Set(value.platforms).size === value.platforms.length,
+    'Use each platform once',
+  )
+  .refine(
+    (value) => new Set(value.contentTypes).size === value.contentTypes.length,
+    'Use each content type once',
+  );
+
+export const creatorStudioSummarySchema = z
+  .object({
+    avatarUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .nullable(),
+    counts: z
+      .object({
+        brandDiscounts: z.int().nonnegative(),
+        recommendations: z.int().nonnegative(),
+        storyClips: z.int().nonnegative(),
+      })
+      .strict(),
+    displayName: z.string().trim().min(1).max(100),
+    handle: creatorCardSchema.shape.handle,
+    id: idSchema,
+  })
+  .strict();
 
 export const idempotencyKeySchema = z.string().trim().min(8).max(200);
 
@@ -713,6 +890,10 @@ export type CreatorRecommendationMoveInput = z.infer<
   typeof creatorRecommendationMoveInputSchema
 >;
 export type CreatorRecommendation = z.infer<typeof creatorRecommendationSchema>;
+export type CreatorProductMetadata = z.infer<typeof creatorProductMetadataSchema>;
+export type CreatorProductMetadataInput = z.infer<
+  typeof creatorProductMetadataInputSchema
+>;
 export type CreatorDiscountCodeInput = z.infer<typeof creatorDiscountCodeInputSchema>;
 export type CreatorDiscountCodePatch = z.infer<typeof creatorDiscountCodePatchSchema>;
 export type CreatorDiscountCode = z.infer<typeof creatorDiscountCodeSchema>;
@@ -767,6 +948,12 @@ export type RecommendationImageUpload = z.infer<typeof recommendationImageUpload
 export type RecommendationImageUploadInput = z.infer<
   typeof recommendationImageUploadInputSchema
 >;
+export type StoryVideoAsset = z.infer<typeof storyVideoAssetSchema>;
+export type StoryVideoContentType = z.infer<typeof storyVideoContentTypeSchema>;
+export type StoryVideoUpload = z.infer<typeof storyVideoUploadSchema>;
+export type StoryVideoUploadInput = z.infer<typeof storyVideoUploadInputSchema>;
+export type StoryClip = z.infer<typeof storyClipSchema>;
+export type StoryClipInput = z.infer<typeof storyClipInputSchema>;
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
 export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;
@@ -782,6 +969,15 @@ export type CreatorApplicationStatus = z.infer<typeof creatorApplicationStatusSc
 export type CreatorProfilePatch = z.infer<typeof creatorProfilePatchSchema>;
 export type CreatorProfileSettings = z.infer<typeof creatorProfileSettingsSchema>;
 export type CreatorProfileSocialLink = z.infer<typeof creatorProfileSocialLinkSchema>;
+export type CreatorMediaKit = z.infer<typeof creatorMediaKitSchema>;
+export type CreatorMediaKitInput = z.infer<typeof creatorMediaKitInputSchema>;
+export type CreatorStorefrontConfiguration = z.infer<
+  typeof creatorStorefrontConfigurationSchema
+>;
+export type CreatorStorefrontConfigurationInput = z.infer<
+  typeof creatorStorefrontConfigurationInputSchema
+>;
+export type CreatorStudioSummary = z.infer<typeof creatorStudioSummarySchema>;
 export type Money = z.infer<typeof moneySchema>;
 export type Operation = z.infer<typeof operationSchema>;
 export type ProblemDetails = z.infer<typeof problemDetailsSchema>;

@@ -404,6 +404,7 @@ function mapDiscoveryRecommendation(
     review: { direction: 'rtl', language: 'he', value: row.reviewHe },
     savedCount: row.savedCount,
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
+    storyClips: [],
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,

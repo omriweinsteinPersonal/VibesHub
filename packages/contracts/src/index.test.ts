@@ -297,6 +297,7 @@ describe('shared API contracts', () => {
   it('keeps creator analytics totals and daily series nonnegative', () => {
     const metric = {
       codeCopies: 2,
+      instagramTaps: 4,
       recommendationViews: 21,
       shopClicks: 4,
       storyCompletions: 3,

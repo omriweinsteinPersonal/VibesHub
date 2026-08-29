@@ -15,10 +15,13 @@ export function SiteHeader() {
         </nav>
         <div className="actions">
           <GlobalSearch />
-          <Link className="loginLink" href="/login">
+          <Link className="loginLink" href="/auth?mode=login">
             Login
           </Link>
-          <Link className="button primary joinCreatorLink" href="/join">
+          <Link
+            className="button primary joinCreatorLink"
+            href="/auth?mode=signup&amp;role=creator"
+          >
             Join as Creator
           </Link>
         </div>

@@ -26,6 +26,7 @@ export type CreatorProfileUpdateResult =
   | { actualVersion: number; kind: 'version_conflict' }
   | { kind: 'invalid_category' }
   | { kind: 'invalid_avatar' }
+  | { kind: 'invalid_handle' }
   | { kind: 'updated'; profile: CreatorProfileSettings };
 
 @Injectable()
@@ -81,6 +82,7 @@ export class CreatorProfileRepository {
           avatarAssetId: string | null;
           bioHe: string;
           displayName: string;
+          handle: string;
           id: string;
           primaryCategoryId: string;
           version: number;
@@ -89,6 +91,7 @@ export class CreatorProfileRepository {
         select
           id,
           display_name as "displayName",
+          handle::text as handle,
           bio_he as "bioHe",
           primary_category_id as "primaryCategoryId",
           avatar_media_asset_id as "avatarAssetId",
@@ -121,10 +124,28 @@ export class CreatorProfileRepository {
         if (!avatar) return { kind: 'invalid_avatar' };
       }
 
+      if (patch.handle && patch.handle !== current.handle) {
+        const [unavailable] = await transaction<{ unavailable: boolean }[]>`
+          select (
+            exists (
+              select 1 from app.reserved_handles
+              where handle = ${patch.handle}
+            )
+            or exists (
+              select 1 from app.creator_profiles
+              where handle = ${patch.handle}
+                and id <> ${current.id}
+            )
+          ) as unavailable
+        `;
+        if (unavailable?.unavailable) return { kind: 'invalid_handle' };
+      }
+
       const [updated] = await transaction<{ id: string }[]>`
         update app.creator_profiles
         set
           display_name = coalesce(${patch.displayName ?? null}, display_name),
+          handle = coalesce(${patch.handle ?? null}, handle),
           bio_he = coalesce(${patch.bioHe ?? null}, bio_he),
           primary_category_id = coalesce(
             ${patch.primaryCategoryId ?? null}::uuid,

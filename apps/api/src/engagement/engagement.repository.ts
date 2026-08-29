@@ -409,6 +409,7 @@ function mapRecommendation(
     productName: row.productName,
     review: { direction: 'rtl', language: 'he', value: row.reviewHe },
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
+    storyClips: [],
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,

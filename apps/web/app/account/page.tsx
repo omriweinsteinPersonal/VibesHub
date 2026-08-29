@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
+import { CreatorAccount } from '../_components/creator-account';
 import { WorkspaceHeader } from '../_components/workspace-header';
 
 interface AccountSummary {
@@ -40,6 +41,10 @@ export default function AccountPage() {
         setState('error');
       });
   }, []);
+
+  if (state === 'ready' && account?.creator) {
+    return <CreatorAccount {...(account.email ? { email: account.email } : {})} />;
+  }
 
   return (
     <main className="workspacePage">

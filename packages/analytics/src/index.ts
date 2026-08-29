@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const clientAnalyticsEventNames = [
   'creator.storefrontViewed',
+  'creator.instagramTapped',
   'recommendation.impression',
   'story.opened',
   'story.completed',
@@ -22,6 +23,12 @@ export const clientAnalyticsEventSchema = z.discriminatedUnion('name', [
     .extend({
       creatorId: z.uuid(),
       name: z.literal('creator.storefrontViewed'),
+    })
+    .strict(),
+  clientEventEnvelopeSchema
+    .extend({
+      creatorId: z.uuid(),
+      name: z.literal('creator.instagramTapped'),
     })
     .strict(),
   clientEventEnvelopeSchema

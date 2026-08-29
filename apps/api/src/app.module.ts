@@ -18,6 +18,9 @@ import { AdminApplicationController } from './creator-applications/admin-applica
 import { CreatorProfileController } from './creator-profile/creator-profile.controller.js';
 import { CreatorProfileRepository } from './creator-profile/creator-profile.repository.js';
 import { CreatorProfileService } from './creator-profile/creator-profile.service.js';
+import { CreatorStudioController } from './creator-studio/creator-studio.controller.js';
+import { CreatorStudioRepository } from './creator-studio/creator-studio.repository.js';
+import { CreatorStudioService } from './creator-studio/creator-studio.service.js';
 import { ApplicationController } from './creator-applications/application.controller.js';
 import { ApplicationRepository } from './creator-applications/application.repository.js';
 import { ApplicationService } from './creator-applications/application.service.js';
@@ -26,7 +29,10 @@ import { HealthController } from './health.controller.js';
 import { EngagementController } from './engagement/engagement.controller.js';
 import { EngagementRepository } from './engagement/engagement.repository.js';
 import { IdempotencyService } from './idempotency.service.js';
-import { CreatorMediaController } from './media/creator-media.controller.js';
+import {
+  CreatorMediaController,
+  CreatorVideoMediaController,
+} from './media/creator-media.controller.js';
 import { MediaRepository } from './media/media.repository.js';
 import { MediaService } from './media/media.service.js';
 import { MediaStorageGateway } from './media/media-storage.gateway.js';
@@ -48,6 +54,7 @@ import { DiscountCodeService } from './discounts/discount-code.service.js';
 import { CreatorRecommendationsController } from './recommendations/creator-recommendations.controller.js';
 import { RecommendationRepository } from './recommendations/recommendation.repository.js';
 import { RecommendationService } from './recommendations/recommendation.service.js';
+import { ProductMetadataService } from './recommendations/product-metadata.service.js';
 
 @Module({
   controllers: [
@@ -61,7 +68,9 @@ import { RecommendationService } from './recommendations/recommendation.service.
     CreatorDiscountCodesController,
     CreatorRecommendationsController,
     CreatorMediaController,
+    CreatorVideoMediaController,
     CreatorProfileController,
+    CreatorStudioController,
     AccountController,
     EngagementController,
     ApplicationController,
@@ -81,12 +90,15 @@ import { RecommendationService } from './recommendations/recommendation.service.
     ApplicationService,
     CreatorProfileRepository,
     CreatorProfileService,
+    CreatorStudioRepository,
+    CreatorStudioService,
     CreatorDirectoryRepository,
     ProductDiscoveryRepository,
     DiscountCodeRepository,
     DiscountCodeService,
     RecommendationRepository,
     RecommendationService,
+    ProductMetadataService,
     MediaRepository,
     MediaStorageGateway,
     MediaService,

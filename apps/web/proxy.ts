@@ -18,10 +18,49 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  if (isProtectedPath(request.nextUrl.pathname) && !data?.claims) {
+    const signInUrl = request.nextUrl.clone();
+    signInUrl.pathname = '/auth';
+    signInUrl.search = '';
+    signInUrl.searchParams.set('mode', 'login');
+    signInUrl.searchParams.set(
+      'next',
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+    return NextResponse.redirect(signInUrl);
+  }
   return response;
 }
 
 export const config = {
-  matcher: ['/account/:path*', '/admin/:path*', '/creator/:path*'],
+  matcher: [
+    '/account/:path*',
+    '/admin/:path*',
+    '/creator/:path*',
+    '/creator-home',
+    '/dashboard',
+    '/analytics',
+  ],
 };
+
+function isProtectedPath(pathname: string): boolean {
+  if (
+    pathname === '/account' ||
+    pathname.startsWith('/account/') ||
+    pathname === '/creator-home' ||
+    pathname === '/dashboard' ||
+    pathname === '/analytics' ||
+    pathname.startsWith('/admin/')
+  ) {
+    return true;
+  }
+
+  return [
+    '/creator/apply',
+    '/creator/analytics',
+    '/creator/discount-codes',
+    '/creator/profile',
+    '/creator/recommendations',
+  ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}

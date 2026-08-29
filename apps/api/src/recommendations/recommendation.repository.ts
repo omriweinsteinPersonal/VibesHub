@@ -3,6 +3,7 @@ import type {
   CreatorRecommendationInput,
   DiscountCodeVerificationStatus,
   RecommendationCard,
+  StoryClip,
 } from '@vibeshub/contracts';
 
 import { parseApiConfig } from '../config.js';
@@ -71,6 +72,7 @@ interface RecommendationRow {
   productUrl: string;
   reviewHe: string;
   shopPublicId: string;
+  storyClips: StoryClip[];
   updatedAt: string;
   version: number;
   videoUrl: string | null;
@@ -151,7 +153,9 @@ export class RecommendationRepository {
         catalog,
         input.discountCode ?? null,
         input.discountLabel ?? null,
+        input.discountExpiresAt ?? null,
       );
+      await this.syncStoryClips(sql, inserted.id, userId, input);
       return this.findOwnedWithSql(sql, inserted.id, userId);
     });
   }
@@ -300,7 +304,9 @@ export class RecommendationRepository {
         catalog,
         input.discountCode ?? null,
         input.discountLabel ?? null,
+        input.discountExpiresAt ?? null,
       );
+      await this.syncStoryClips(sql, updated.id, userId, input);
       return this.findOwnedWithSql(sql, updated.id, userId);
     });
   }
@@ -625,7 +631,26 @@ export class RecommendationRepository {
         merchant_domain.hostname::text as "merchantHostname",
         affiliate_link.public_id::text as "shopPublicId",
         affiliate_link.destination_url as "productUrl",
-        offer.price_amount_minor::text as "priceAmountMinor"
+        offer.price_amount_minor::text as "priceAmountMinor",
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'id', clip.id,
+                'mediaAssetId', clip.media_asset_id,
+                'position', clip.position,
+                'url', coalesce(story_media.public_url, clip.video_url)
+              ) order by clip.position, clip.id
+            )
+            from app.recommendation_story_clips clip
+            left join app.media_assets story_media
+              on story_media.id = clip.media_asset_id
+             and story_media.status = 'ready'
+            where clip.recommendation_id = recommendation.id
+              and coalesce(story_media.public_url, clip.video_url) is not null
+          ),
+          '[]'::jsonb
+        ) as "storyClips"
       from app.recommendations recommendation
       join app.products product on product.id = recommendation.product_id
       join app.brands brand on brand.id = product.brand_id
@@ -795,6 +820,7 @@ export class RecommendationRepository {
     catalog: CatalogIdentity,
     discountCode: string | null,
     discountLabel: string | null,
+    discountExpiresAt: string | null,
   ): Promise<void> {
     await sql`
       delete from app.recommendation_discount_codes
@@ -809,6 +835,7 @@ export class RecommendationRepository {
         brand_id,
         code,
         label,
+        expires_at,
         lifecycle_status
       ) values (
         ${creatorId},
@@ -816,13 +843,15 @@ export class RecommendationRepository {
         ${catalog.brandId},
         ${discountCode.toUpperCase()},
         ${discountLabel},
+        ${discountExpiresAt},
         'draft'
       )
       on conflict (creator_id, merchant_id, code)
         where deleted_at is null and lifecycle_status <> 'archived'
       do update set
         brand_id = excluded.brand_id,
-        label = excluded.label
+        label = excluded.label,
+        expires_at = excluded.expires_at
       returning id
     `;
     if (!code) throw new Error('Discount code upsert did not return an identity');
@@ -833,6 +862,48 @@ export class RecommendationRepository {
         position
       ) values (${recommendationId}, ${code.id}, 0)
     `;
+  }
+
+  private async syncStoryClips(
+    sql: DatabaseClient,
+    recommendationId: string,
+    userId: string,
+    input: CreatorRecommendationInput,
+  ): Promise<void> {
+    await sql`
+      delete from app.recommendation_story_clips
+      where recommendation_id = ${recommendationId}
+    `;
+    const clips =
+      input.storyClips ??
+      (input.videoUrl ? [{ mediaAssetId: null, videoUrl: input.videoUrl }] : []);
+    for (const [position, clip] of clips.entries()) {
+      if (clip.mediaAssetId) {
+        const [asset] = await sql<{ id: string }[]>`
+          select id
+          from app.media_assets
+          where id = ${clip.mediaAssetId}
+            and owner_user_id = ${userId}
+            and media_kind = 'story_video'
+            and status = 'ready'
+            and deleted_at is null
+        `;
+        if (!asset) throw new Error('STORY_MEDIA_ASSET_NOT_READY_OR_OWNED');
+      }
+      await sql`
+        insert into app.recommendation_story_clips (
+          recommendation_id,
+          media_asset_id,
+          video_url,
+          position
+        ) values (
+          ${recommendationId},
+          ${clip.mediaAssetId ?? null},
+          ${clip.videoUrl ?? null},
+          ${position}
+        )
+      `;
+    }
   }
 
   private async insertAffiliateLink(
@@ -970,6 +1041,7 @@ function mapRecommendationCard(
     productName: row.productName,
     review: { direction: 'rtl', language: 'he', value: row.reviewHe },
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
+    storyClips: row.storyClips ?? [],
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,

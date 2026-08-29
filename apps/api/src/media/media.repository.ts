@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import type { RecommendationImageContentType } from '@vibeshub/contracts';
+import type {
+  RecommendationImageContentType,
+  StoryVideoContentType,
+} from '@vibeshub/contracts';
 
 import { Database } from '../database.js';
 
 export interface MediaAssetRow {
-  contentType: RecommendationImageContentType;
+  contentType: RecommendationImageContentType | StoryVideoContentType;
   declaredSizeBytes: string;
   id: string;
+  mediaKind: 'recommendation_image' | 'story_video';
   objectPath: string;
   publicUrl: string | null;
   sizeBytes: string | null;
@@ -19,17 +23,21 @@ export class MediaRepository {
   constructor(private readonly database: Database) {}
 
   async createPending(input: {
-    contentType: RecommendationImageContentType;
+    bucketId: 'recommendation-images' | 'story-videos';
+    contentType: RecommendationImageContentType | StoryVideoContentType;
     declaredSizeBytes: number;
     expiresAt: string;
     id: string;
     objectPath: string;
+    mediaKind: 'recommendation_image' | 'story_video';
     userId: string;
   }): Promise<MediaAssetRow> {
     const [asset] = await this.database.sql<MediaAssetRow[]>`
       insert into app.media_assets (
         id,
         owner_user_id,
+        media_kind,
+        bucket_id,
         object_path,
         content_type,
         declared_size_bytes,
@@ -37,6 +45,8 @@ export class MediaRepository {
       ) values (
         ${input.id},
         ${input.userId},
+        ${input.mediaKind},
+        ${input.bucketId},
         ${input.objectPath},
         ${input.contentType},
         ${input.declaredSizeBytes},
@@ -44,6 +54,7 @@ export class MediaRepository {
       )
       returning
         id,
+        media_kind as "mediaKind",
         object_path as "objectPath",
         content_type as "contentType",
         declared_size_bytes::text as "declaredSizeBytes",
@@ -60,6 +71,7 @@ export class MediaRepository {
     const [asset] = await this.database.sql<MediaAssetRow[]>`
       select
         id,
+        media_kind as "mediaKind",
         object_path as "objectPath",
         content_type as "contentType",
         declared_size_bytes::text as "declaredSizeBytes",
@@ -95,6 +107,7 @@ export class MediaRepository {
         and version = ${expectedVersion}
       returning
         id,
+        media_kind as "mediaKind",
         object_path as "objectPath",
         content_type as "contentType",
         declared_size_bytes::text as "declaredSizeBytes",
@@ -131,6 +144,7 @@ export class MediaRepository {
         (select count(*) from app.recommendations where image_asset_id = ${id})
         + (select count(*) from app.products where primary_image_asset_id = ${id})
         + (select count(*) from app.creator_profiles where avatar_media_asset_id = ${id})
+        + (select count(*) from app.recommendation_story_clips where media_asset_id = ${id})
       )::integer as count
     `;
     return row?.count ?? 0;

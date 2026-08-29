@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 import { trackClientAnalytics } from '../../lib/analytics';
 
@@ -9,6 +10,28 @@ export function StorefrontViewTracker({ creatorId }: { creatorId: string }) {
     trackClientAnalytics({ creatorId, name: 'creator.storefrontViewed' });
   }, [creatorId]);
   return null;
+}
+
+export function TrackedInstagramLink({
+  children,
+  className,
+  creatorId,
+  href,
+}: {
+  children: ReactNode;
+  className?: string;
+  creatorId: string;
+  href: string;
+}) {
+  function open(event: MouseEvent<HTMLAnchorElement>) {
+    event.currentTarget.blur();
+    trackClientAnalytics({ creatorId, name: 'creator.instagramTapped' });
+  }
+  return (
+    <a className={className} href={href} onClick={open} rel="noreferrer" target="_blank">
+      {children}
+    </a>
+  );
 }
 
 export function RecommendationImpressionTracker({

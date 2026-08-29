@@ -26,6 +26,7 @@ const recommendation: CreatorRecommendationRecord = {
     value: 'המוצר האהוב עליי למראה טבעי וזוהר',
   },
   shopUrl: 'https://api.example.com/v1/go/01989f72-07e4-7f32-9b42-1ba55d4ca012',
+  storyClips: [],
   updatedAt: '2026-08-07T10:00:00.000Z',
   version: 3,
   videoUrl: null,

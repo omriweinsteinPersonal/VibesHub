@@ -18,6 +18,7 @@ interface HashIdentity {
 interface MetricRow {
   codeCopies: number;
   date: string;
+  instagramTaps: number;
   recommendationViews: number;
   shopClicks: number;
   storyCompletions: number;
@@ -139,6 +140,8 @@ export class AnalyticsRepository {
 
       if (event.name === 'creator.storefrontViewed') {
         await this.projectStorefrontView(sql, event, identity);
+      } else if (event.name === 'creator.instagramTapped') {
+        await this.projectInstagramTap(sql, event);
       } else if (event.name === 'recommendation.impression') {
         await this.projectRecommendationView(sql, event, identity);
       } else if (event.name === 'story.opened' || event.name === 'story.completed') {
@@ -234,6 +237,7 @@ export class AnalyticsRepository {
           coalesce(metric.story_opens, 0)::integer as "storyOpens",
           coalesce(metric.story_completions, 0)::integer as "storyCompletions",
           coalesce(metric.code_copies, 0)::integer as "codeCopies",
+          coalesce(metric.instagram_taps, 0)::integer as "instagramTaps",
           coalesce(metric.shop_clicks, 0)::integer as "shopClicks"
         from generate_series(
           current_date - (${days}::integer - 1),
@@ -273,6 +277,7 @@ export class AnalyticsRepository {
     const summary = series.reduce(
       (total, metric) => ({
         codeCopies: total.codeCopies + metric.codeCopies,
+        instagramTaps: total.instagramTaps + metric.instagramTaps,
         recommendationViews: total.recommendationViews + metric.recommendationViews,
         shopClicks: total.shopClicks + metric.shopClicks,
         storyCompletions: total.storyCompletions + metric.storyCompletions,
@@ -323,7 +328,10 @@ export class AnalyticsRepository {
     sql: DatabaseClient,
     event: ClientAnalyticsEvent,
   ): Promise<boolean> {
-    if (event.name === 'creator.storefrontViewed') {
+    if (
+      event.name === 'creator.storefrontViewed' ||
+      event.name === 'creator.instagramTapped'
+    ) {
       const [creator] = await sql<{ valid: boolean }[]>`
         select true as valid
         from app.creator_profiles
@@ -482,6 +490,25 @@ export class AnalyticsRepository {
     `;
   }
 
+  private async projectInstagramTap(
+    sql: DatabaseClient,
+    event: Extract<ClientAnalyticsEvent, { name: 'creator.instagramTapped' }>,
+  ): Promise<void> {
+    await sql`
+      insert into analytics.creator_daily_metrics (
+        creator_id,
+        metric_date,
+        instagram_taps
+      ) values (
+        ${event.creatorId},
+        (${event.occurredAt}::timestamptz at time zone 'utc')::date,
+        1
+      )
+      on conflict (creator_id, metric_date) do update
+      set instagram_taps = analytics.creator_daily_metrics.instagram_taps + 1
+    `;
+  }
+
   private async projectCodeCopy(
     sql: DatabaseClient,
     event: Extract<ClientAnalyticsEvent, { name: 'discountCode.copied' }>,
@@ -573,6 +600,7 @@ export class AnalyticsRepository {
 function emptyMetric(): CreatorAnalyticsDashboard['summary'] {
   return {
     codeCopies: 0,
+    instagramTaps: 0,
     recommendationViews: 0,
     shopClicks: 0,
     storyCompletions: 0,

@@ -11,7 +11,8 @@ interface StoryVideoProps {
   productId: string;
   productName: string;
   recommendationId: string;
-  videoUrl: string;
+  videoUrl?: string;
+  videoUrls?: string[];
 }
 
 export function StoryVideo({
@@ -21,8 +22,11 @@ export function StoryVideo({
   productName,
   recommendationId,
   videoUrl,
+  videoUrls,
 }: StoryVideoProps) {
+  const clips = videoUrls?.length ? videoUrls : videoUrl ? [videoUrl] : [];
   const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [playbackError, setPlaybackError] = useState(false);
   const [progress, setProgress] = useState(0);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -71,6 +75,7 @@ export function StoryVideo({
     completionSent.current = false;
     setPlaybackError(false);
     setProgress(0);
+    setActiveIndex(0);
     setOpen(true);
     if (creatorId) {
       trackClientAnalytics({
@@ -103,18 +108,36 @@ export function StoryVideo({
     });
   }
 
+  function finishClip(video: HTMLVideoElement) {
+    recordCompletion(video);
+    if (activeIndex < clips.length - 1) {
+      completionSent.current = false;
+      setPlaybackError(false);
+      setProgress(0);
+      setActiveIndex((current) => current + 1);
+    }
+  }
+
+  if (!clips.length) return null;
+  const activeUrl = clips[activeIndex]!;
+
   return (
     <>
       <button
         aria-haspopup="dialog"
         aria-label={`Watch video preview for ${productName}`}
-        className="storyPreview"
+        className="storyPreview storyPreviewCircle"
         onClick={showStory}
         ref={trigger}
         type="button"
       >
-        <span aria-hidden="true">▶</span>
-        Video
+        <span
+          className="storyPreviewThumb"
+          style={{ backgroundImage: `url(${posterUrl})` }}
+          aria-hidden="true"
+        >
+          <b>▶</b>
+        </span>
       </button>
       {open
         ? createPortal(
@@ -128,8 +151,19 @@ export function StoryVideo({
               role="dialog"
             >
               <div className="storyViewer" ref={viewer}>
-                <div className="storyViewerProgress" aria-hidden="true">
-                  <span style={{ width: `${progress}%` }} />
+                <div
+                  className="storyViewerProgress storyViewerSegments"
+                  aria-hidden="true"
+                >
+                  {clips.map((_, index) => (
+                    <i key={index}>
+                      <span
+                        style={{
+                          width: `${index < activeIndex ? 100 : index === activeIndex ? progress : 0}%`,
+                        }}
+                      />
+                    </i>
+                  ))}
                 </div>
                 <div className="storyViewerHeader">
                   <div>
@@ -149,7 +183,7 @@ export function StoryVideo({
                 {playbackError ? (
                   <div className="storyViewerError" role="alert">
                     <p>This video preview could not be played.</p>
-                    <a href={videoUrl} rel="noopener noreferrer" target="_blank">
+                    <a href={activeUrl} rel="noopener noreferrer" target="_blank">
                       Open the original video
                     </a>
                   </div>
@@ -157,13 +191,14 @@ export function StoryVideo({
                   <video
                     autoPlay
                     controls
-                    onEnded={(event) => recordCompletion(event.currentTarget)}
+                    key={activeUrl}
+                    onEnded={(event) => finishClip(event.currentTarget)}
                     onError={() => setPlaybackError(true)}
                     onTimeUpdate={(event) => recordCompletion(event.currentTarget)}
                     playsInline
                     poster={posterUrl}
                     preload="metadata"
-                    src={videoUrl}
+                    src={activeUrl}
                   />
                 )}
               </div>

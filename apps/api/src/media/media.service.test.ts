@@ -7,6 +7,7 @@ const pendingAsset: MediaAssetRow = {
   contentType: 'image/png',
   declaredSizeBytes: '8',
   id: '01989f72-07e4-7f32-9b42-1ba55d4ca011',
+  mediaKind: 'recommendation_image',
   objectPath:
     '01989f72-07e4-7f32-9b42-1ba55d4ca010/01989f72-07e4-7f32-9b42-1ba55d4ca011.png',
   publicUrl: null,

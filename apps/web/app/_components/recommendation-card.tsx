@@ -46,14 +46,20 @@ export function RecommendationCardView({
           src={recommendation.imageUrl}
           unoptimized
         />
-        {recommendation.videoUrl ? (
+        {recommendation.storyClips.length || recommendation.videoUrl ? (
           <StoryVideo
             creatorId={attributedCreatorId}
             posterUrl={recommendation.imageUrl}
             productId={recommendation.productId}
             productName={recommendation.productName}
             recommendationId={recommendation.id}
-            videoUrl={recommendation.videoUrl}
+            videoUrls={
+              recommendation.storyClips.length
+                ? recommendation.storyClips.map(({ url }) => url)
+                : recommendation.videoUrl
+                  ? [recommendation.videoUrl]
+                  : []
+            }
           />
         ) : null}
         {recommendation.discount ? (
