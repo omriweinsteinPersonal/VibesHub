@@ -401,7 +401,7 @@ function mapDiscoveryRecommendation(
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },
     productId: row.productId,
     productName: row.productName,
-    review: { direction: 'rtl', language: 'he', value: row.reviewHe },
+    review: directionalReview(row.reviewHe),
     savedCount: row.savedCount,
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
     storyClips: [],
@@ -409,4 +409,9 @@ function mapDiscoveryRecommendation(
     version: row.version,
     videoUrl: row.videoUrl,
   };
+}
+
+function directionalReview(value: string): RecommendationCard['review'] {
+  const isHebrew = /[א-ת]/u.test(value);
+  return { direction: isHebrew ? 'rtl' : 'ltr', language: isHebrew ? 'he' : 'en', value };
 }

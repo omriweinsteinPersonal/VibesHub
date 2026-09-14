@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
 
 import { trackClientAnalytics } from '../../lib/analytics';
 
@@ -119,6 +119,14 @@ export function StoryVideo({
     }
   }
 
+  function showClip(index: number) {
+    if (index < 0 || index >= clips.length || index === activeIndex) return;
+    completionSent.current = false;
+    setPlaybackError(false);
+    setProgress(0);
+    setActiveIndex(index);
+  }
+
   if (!clips.length) return null;
   const activeUrl = clips[activeIndex]!;
 
@@ -183,6 +191,26 @@ export function StoryVideo({
                     <X aria-hidden="true" size={16} />
                   </button>
                 </div>
+                {clips.length > 1 ? (
+                  <div className="storyViewerNavigation">
+                    <button
+                      aria-label="Previous story"
+                      disabled={activeIndex === 0}
+                      onClick={() => showClip(activeIndex - 1)}
+                      type="button"
+                    >
+                      <ChevronLeft aria-hidden="true" size={22} />
+                    </button>
+                    <button
+                      aria-label="Next story"
+                      disabled={activeIndex === clips.length - 1}
+                      onClick={() => showClip(activeIndex + 1)}
+                      type="button"
+                    >
+                      <ChevronRight aria-hidden="true" size={22} />
+                    </button>
+                  </div>
+                ) : null}
                 {playbackError ? (
                   <div className="storyViewerError" role="alert">
                     <p>This video preview could not be played.</p>

@@ -1,3 +1,5 @@
+'use client';
+
 import type {
   DiscountCodeVerificationStatus,
   RecommendationCard,
@@ -5,8 +7,10 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ExternalLink, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Tag } from 'lucide-react';
+import { useRef, useState } from 'react';
 
+import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { SaveProductButton } from './engagement';
 import {
   CopyDiscountCodeButton,
@@ -30,6 +34,24 @@ export function RecommendationCardView({
   showSave = false,
 }: RecommendationCardViewProps) {
   const attributedCreatorId = creatorId ?? creator?.id;
+  const images = recommendation.images?.length
+    ? recommendation.images
+    : [
+        {
+          id: null,
+          imageAssetId: recommendation.imageAssetId,
+          position: 0,
+          url: recommendation.imageUrl,
+        },
+      ];
+  const [activeImage, setActiveImage] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const shownImage = images[activeImage] ?? images[0];
+
+  function showAdjacentImage(direction: number) {
+    setActiveImage((current) => (current + direction + images.length) % images.length);
+  }
+
   return (
     <article className="storeProductCard">
       {attributedCreatorId ? (
@@ -39,18 +61,73 @@ export function RecommendationCardView({
           recommendationId={recommendation.id}
         />
       ) : null}
-      <div className="storeProductImage">
+      <div
+        className="storeProductImage"
+        onTouchEnd={(event) => {
+          const start = touchStart.current;
+          touchStart.current = null;
+          if (!start || images.length < 2) return;
+          const touch = event.changedTouches[0];
+          if (!touch) return;
+          const horizontalDistance = touch.clientX - start.x;
+          const verticalDistance = touch.clientY - start.y;
+          if (
+            Math.abs(horizontalDistance) >= 40 &&
+            Math.abs(horizontalDistance) > Math.abs(verticalDistance)
+          ) {
+            showAdjacentImage(horizontalDistance < 0 ? 1 : -1);
+          }
+        }}
+        onTouchStart={(event) => {
+          const touch = event.touches[0];
+          touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+        }}
+      >
         <Image
           alt={`${recommendation.productName} by ${recommendation.brandName}`}
           fill
           sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
-          src={recommendation.imageUrl}
+          src={shownImage?.url ?? recommendation.imageUrl}
           unoptimized
         />
+        {images.length > 1 ? (
+          <>
+            <button
+              aria-label="Previous product photo"
+              className="productGalleryArrow previous"
+              onClick={() => showAdjacentImage(-1)}
+              type="button"
+            >
+              <ChevronLeft aria-hidden="true" size={18} />
+            </button>
+            <button
+              aria-label="Next product photo"
+              className="productGalleryArrow next"
+              onClick={() => showAdjacentImage(1)}
+              type="button"
+            >
+              <ChevronRight aria-hidden="true" size={18} />
+            </button>
+            <div
+              className="productGalleryDots"
+              aria-label={`${images.length} product photos`}
+            >
+              {images.map((image, index) => (
+                <button
+                  aria-label={`Show product photo ${index + 1}`}
+                  aria-pressed={activeImage === index}
+                  key={image.id ?? `${image.url}:${index}`}
+                  onClick={() => setActiveImage(index)}
+                  type="button"
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
         {recommendation.storyClips.length || recommendation.videoUrl ? (
           <StoryVideo
             creatorId={attributedCreatorId}
-            posterUrl={recommendation.imageUrl}
+            posterUrl={shownImage?.url ?? recommendation.imageUrl}
             productId={recommendation.productId}
             productName={recommendation.productName}
             recommendationId={recommendation.id}
@@ -76,7 +153,12 @@ export function RecommendationCardView({
             recommendationId={recommendation.id}
           />
         ) : null}
-        <p className="productBrand">{recommendation.brandName}</p>
+        <p className="productBrand">
+          {merchantNameFromHostname(
+            recommendation.merchantHostname,
+            recommendation.brandName,
+          )}
+        </p>
         <h3>{recommendation.productName}</h3>
         <p className="storePrice">{formatIls(recommendation.price.amountMinor)}</p>
         <p className="storeReview" dir="rtl" lang="he">

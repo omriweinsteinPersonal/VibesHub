@@ -45,14 +45,6 @@ export default function AboutPage() {
               at the top of a feed, it is because creators put it there.
             </p>
 
-            <blockquote className="aboutQuote">
-              <p dir="rtl" lang="he">
-                ״אני רוצה שכל המלצה שאני משתפת תהיה כזו שהייתי נותנת לחברה הטובה שלי. בלי
-                כוכביות ובלי מוצרים שלא נגעתי בהם.״
-              </p>
-              <cite>Noa Levi — Beauty Creator</cite>
-            </blockquote>
-
             <div className="aboutActions">
               <Link className="button primary" href="/creators">
                 Explore Creators

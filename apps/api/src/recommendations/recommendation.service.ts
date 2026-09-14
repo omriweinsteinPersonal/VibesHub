@@ -74,6 +74,13 @@ export class RecommendationService {
       discountLabel: current.discount?.label ?? null,
       imageAssetId: current.imageAssetId,
       imageUrl: current.imageAssetId ? null : current.imageUrl,
+      additionalImages: (current.images ?? [])
+        .slice(1)
+        .map((image) =>
+          image.imageAssetId
+            ? { imageAssetId: image.imageAssetId }
+            : { imageUrl: image.url },
+        ),
       priceAmountMinor: current.price.amountMinor,
       productName: current.productName,
       productUrl: current.productUrl,

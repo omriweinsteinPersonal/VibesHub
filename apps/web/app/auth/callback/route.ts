@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const next =
     requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
       ? requestedNext
-      : '/account';
+      : '/auth/continue';
   const response = NextResponse.redirect(new URL(next, request.url));
 
   if (!code)

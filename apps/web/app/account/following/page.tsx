@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { apiCollectionRequest } from '../../../lib/api';
 import { CreatorCardView } from '../../_components/creator-card';
 import { EngagementProvider, FollowCreatorButton } from '../../_components/engagement';
-import { WorkspaceHeader } from '../../_components/workspace-header';
+import { SiteHeader } from '../../_components/site-header';
 
 export default function FollowedCreatorsPage() {
   const [items, setItems] = useState<FollowedCreator[]>([]);
@@ -40,7 +40,7 @@ export default function FollowedCreatorsPage() {
 
   return (
     <main className="workspacePage">
-      <WorkspaceHeader />
+      <SiteHeader />
       <section className="workspaceContent shopperCollection">
         <p className="eyebrow">YOUR COMMUNITY</p>
         <h1>Creators you follow</h1>

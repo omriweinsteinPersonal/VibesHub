@@ -13,6 +13,11 @@ export const directionalTextSchema = z.object({
   value: z.string().trim().min(1),
 });
 
+const publicAssetUrlSchema = z
+  .url()
+  .max(2_048)
+  .refine(isProductionOrLocalUrl, 'Use HTTPS outside local development');
+
 export const categoryCardSchema = z
   .object({
     descriptionHe: z.string().nullable(),
@@ -27,10 +32,7 @@ export const categoryCardSchema = z
 
 export const creatorCardSchema = z
   .object({
-    avatarUrl: z
-      .url({ protocol: /^https$/ })
-      .max(2_048)
-      .nullable(),
+    avatarUrl: publicAssetUrlSchema.nullable(),
     bio: directionalTextSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
@@ -84,12 +86,7 @@ export const commercialRelationshipSchema = z.enum([
 
 export const recommendationLifecycleSchema = z.enum(['draft', 'published', 'archived']);
 
-export const hebrewRecommendationSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(1_000)
-  .refine((value) => /[א-ת]/u.test(value), 'A Hebrew recommendation is required');
+export const recommendationReviewSchema = z.string().trim().min(1).max(1_000);
 
 export const recommendationImageContentTypeSchema = z.enum([
   'image/jpeg',
@@ -122,7 +119,7 @@ export const recommendationImageAssetSchema = z
   .object({
     contentType: recommendationImageContentTypeSchema,
     id: idSchema,
-    publicUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    publicUrl: publicAssetUrlSchema,
     sizeBytes: z
       .int()
       .min(1)
@@ -162,7 +159,7 @@ export const storyVideoAssetSchema = z
   .object({
     contentType: storyVideoContentTypeSchema,
     id: idSchema,
-    publicUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    publicUrl: publicAssetUrlSchema,
     sizeBytes: z
       .int()
       .min(1)
@@ -188,7 +185,28 @@ export const storyClipSchema = z
     id: idSchema,
     mediaAssetId: idSchema.nullable(),
     position: z.int().nonnegative(),
-    url: z.url({ protocol: /^https$/ }).max(2_048),
+    url: publicAssetUrlSchema,
+  })
+  .strict();
+
+export const recommendationImageInputSchema = z
+  .object({
+    imageAssetId: idSchema.nullable().optional(),
+    imageUrl: optionalHttpsUrlSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) === 1,
+    'Choose exactly one image source',
+  );
+
+export const recommendationImageSchema = z
+  .object({
+    id: idSchema.nullable(),
+    imageAssetId: idSchema.nullable(),
+    position: z.int().nonnegative(),
+    url: publicAssetUrlSchema,
   })
   .strict();
 
@@ -202,10 +220,11 @@ const creatorRecommendationInputFieldsSchema = z
     discountLabel: optionalTrimmedStringSchema(100).optional(),
     imageAssetId: idSchema.nullable().optional(),
     imageUrl: optionalHttpsUrlSchema.optional(),
+    additionalImages: z.array(recommendationImageInputSchema).max(9).optional(),
     priceAmountMinor: z.int().nonnegative(),
     productName: z.string().trim().min(1).max(200),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
-    reviewHe: hebrewRecommendationSchema,
+    reviewHe: recommendationReviewSchema,
     storyClips: z.array(storyClipInputSchema).max(10).optional(),
     videoUrl: optionalHttpsUrlSchema.optional(),
   })
@@ -237,10 +256,13 @@ export const creatorProductMetadataInputSchema = z
 export const creatorProductMetadataSchema = z
   .object({
     brandName: z.string().trim().max(120).nullable(),
+    categorySlug: z.string().trim().max(80).nullable(),
+    description: z.string().trim().max(2_000).nullable(),
     imageUrl: z
       .url({ protocol: /^https$/ })
       .max(2_048)
       .nullable(),
+    imageUrls: z.array(z.url({ protocol: /^https$/ }).max(2_048)).max(10),
     priceAmountMinor: z.int().nonnegative().nullable(),
     productName: z.string().trim().max(200).nullable(),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
@@ -410,7 +432,8 @@ export const recommendationCardSchema = z
     discount: recommendationDiscountSchema.nullable(),
     id: idSchema,
     imageAssetId: idSchema.nullable(),
-    imageUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    imageUrl: publicAssetUrlSchema,
+    images: z.array(recommendationImageSchema).max(10).optional(),
     lifecycle: recommendationLifecycleSchema,
     merchantHostname: z.string().trim().min(4).max(253),
     price: moneySchema,
@@ -438,10 +461,7 @@ export const creatorRecommendationSchema = recommendationCardSchema
 
 export const creatorStorefrontSchema = z
   .object({
-    avatarUrl: z
-      .url({ protocol: /^https$/ })
-      .max(2_048)
-      .nullable(),
+    avatarUrl: publicAssetUrlSchema.nullable(),
     bio: directionalTextSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
@@ -743,7 +763,7 @@ export const creatorProfileSettingsSchema = z
     avatar: z
       .object({
         assetId: idSchema,
-        url: z.url({ protocol: /^https$/ }).max(2_048),
+        url: publicAssetUrlSchema,
       })
       .strict()
       .nullable(),
@@ -856,10 +876,7 @@ export const creatorMediaKitInputSchema = creatorMediaKitFieldsSchema
 
 export const creatorStudioSummarySchema = z
   .object({
-    avatarUrl: z
-      .url({ protocol: /^https$/ })
-      .max(2_048)
-      .nullable(),
+    avatarUrl: publicAssetUrlSchema.nullable(),
     counts: z
       .object({
         brandDiscounts: z.int().nonnegative(),
@@ -954,6 +971,8 @@ export type StoryVideoUpload = z.infer<typeof storyVideoUploadSchema>;
 export type StoryVideoUploadInput = z.infer<typeof storyVideoUploadInputSchema>;
 export type StoryClip = z.infer<typeof storyClipSchema>;
 export type StoryClipInput = z.infer<typeof storyClipInputSchema>;
+export type RecommendationImage = z.infer<typeof recommendationImageSchema>;
+export type RecommendationImageInput = z.infer<typeof recommendationImageInputSchema>;
 export type AccountProfile = z.infer<typeof accountProfileSchema>;
 export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;

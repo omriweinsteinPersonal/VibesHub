@@ -22,59 +22,46 @@ interface ProductFetchResponse {
 export class ProductMetadataService {
   async fetch(rawUrl: string): Promise<CreatorProductMetadata> {
     let url = await requirePublicHttpsUrl(rawUrl);
+    const shopify = await fetchShopifyProductMetadata(url);
+    if (shopify) return shopify;
+    const adidas = await fetchAdidasProductMetadata(url);
+    if (adidas) return adidas;
     for (let redirects = 0; redirects <= maxRedirects; redirects += 1) {
+      const fallback = productMetadataFromUrl(url);
       const response = (await fetch(url, {
         headers: {
-          accept: 'text/html,application/xhtml+xml',
-          'user-agent': 'VibesHubProductPreview/1.0',
+          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'accept-language': 'he-IL,he;q=0.9,en;q=0.8',
+          'user-agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
         },
         redirect: 'manual',
         signal: AbortSignal.timeout(8_000),
       }).catch(() => null)) as ProductFetchResponse | null;
       if (!response) {
-        throw problem(
-          422,
-          'PRODUCT_DETAILS_UNAVAILABLE',
-          'Product details could not be fetched',
-        );
+        return fallback;
       }
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get('location');
         if (!location || redirects === maxRedirects) {
-          throw problem(
-            422,
-            'PRODUCT_DETAILS_UNAVAILABLE',
-            'Product link redirected too many times',
-          );
+          return fallback;
         }
         url = await requirePublicHttpsUrl(new URL(location, url).toString());
         continue;
       }
       if (!response.ok) {
-        throw problem(
-          422,
-          'PRODUCT_DETAILS_UNAVAILABLE',
-          'Product page did not return a usable response',
-        );
+        return fallback;
       }
       const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
       if (
         !contentType.includes('text/html') &&
         !contentType.includes('application/xhtml+xml')
       ) {
-        throw problem(
-          422,
-          'PRODUCT_DETAILS_UNAVAILABLE',
-          'Product link must return an HTML page',
-        );
+        return fallback;
       }
       const length = Number(response.headers.get('content-length') ?? 0);
       if (length > maxHtmlBytes) {
-        throw problem(
-          422,
-          'PRODUCT_DETAILS_UNAVAILABLE',
-          'Product page is too large to preview',
-        );
+        return fallback;
       }
       const html = (await response.text()).slice(0, maxHtmlBytes);
       return parseProductMetadata(html, url);
@@ -85,6 +72,77 @@ export class ProductMetadataService {
       'Product details could not be fetched',
     );
   }
+}
+
+async function fetchShopifyProductMetadata(
+  productUrl: string,
+): Promise<CreatorProductMetadata | null> {
+  const url = new URL(productUrl);
+  const productMatch = url.pathname.match(/\/products\/([^/]+)\/?$/u);
+  if (!productMatch?.[1]) return null;
+  const endpoint = new URL(`/products/${productMatch[1]}.js`, url.origin);
+  const response = (await fetch(endpoint, {
+    headers: {
+      accept: 'application/json',
+      'accept-language': 'he-IL,he;q=0.9,en;q=0.8',
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
+    },
+    signal: AbortSignal.timeout(8_000),
+  }).catch(() => null)) as ProductFetchResponse | null;
+  if (!response?.ok) return null;
+  try {
+    const product = objectValue(JSON.parse(await response.text()));
+    if (!product) return null;
+    const title = firstString(product.title);
+    const description = primaryShopifyDescription(
+      firstString(product.description),
+      title,
+    );
+    const imageUrls = uniqueHttpsUrls(strings(product.images), productUrl);
+    const price = product.price;
+    return {
+      brandName: brandFromProductUrl(productUrl) ?? firstString(product.vendor),
+      categorySlug: suggestCategorySlug([
+        title,
+        description,
+        firstString(product.type),
+        ...strings(product.tags),
+        decodeURIComponent(url.pathname),
+      ]),
+      description,
+      imageUrl: imageUrls[0] ?? null,
+      imageUrls,
+      priceAmountMinor:
+        typeof price === 'number' && Number.isFinite(price) ? Math.round(price) : null,
+      productName: title ?? productNameFromUrl(productUrl),
+      productUrl,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function primaryShopifyDescription(description: string | null, title: string | null) {
+  if (!description) return null;
+  const lines = decodeEntities(
+    description
+      .replace(/<br\s*\/?\s*>/giu, '\n')
+      .replace(/<\/p\s*>/giu, '\n')
+      .replace(/<[^>]+>/gu, ''),
+  )
+    .split(/\n+/u)
+    .map((line) => line.replace(/\s+/gu, ' ').trim())
+    .filter(Boolean);
+  const narrative = lines.filter((line) => line !== title);
+  const specificationIndex = narrative.findIndex((line) =>
+    /^(?:מפרט טכני|technical specifications?)\s*:?$/iu.test(line),
+  );
+  return (
+    (specificationIndex >= 0 ? narrative.slice(0, specificationIndex) : narrative)
+      .join('\n\n')
+      .slice(0, 2_000) || null
+  );
 }
 
 async function requirePublicHttpsUrl(rawUrl: string): Promise<string> {
@@ -164,12 +222,16 @@ export function parseProductMetadata(
   const jsonLd = parseJsonLd(html);
   const image = firstString(jsonLd?.image) ?? meta.get('og:image') ?? null;
   const absoluteImage = image ? safeAbsoluteHttpsUrl(image, productUrl) : null;
-  const price =
-    firstString(jsonLd?.offers && objectValue(jsonLd.offers)?.price) ??
-    meta.get('product:price:amount') ??
-    null;
+  const imageUrls = uniqueHttpsUrls(
+    [absoluteImage, ...strings(jsonLd?.image)].filter((value): value is string =>
+      Boolean(value),
+    ),
+    productUrl,
+  );
+  const price = offerPrice(jsonLd?.offers) ?? meta.get('product:price:amount') ?? null;
   return {
     brandName:
+      meta.get('og:site_name') ??
       namedEntity(jsonLd?.brand) ??
       namedEntity(jsonLd?.manufacturer) ??
       namedEntity(jsonLd?.vendor) ??
@@ -177,9 +239,21 @@ export function parseProductMetadata(
       meta.get('og:brand') ??
       meta.get('brand') ??
       meta.get('manufacturer') ??
-      meta.get('og:site_name') ??
       brandFromProductUrl(productUrl),
+    categorySlug: suggestCategorySlug([
+      firstString(jsonLd?.name),
+      firstString(jsonLd?.description),
+      meta.get('og:title') ?? null,
+      meta.get('og:description') ?? null,
+      decodeURIComponent(new URL(productUrl).pathname),
+    ]),
+    description:
+      firstString(jsonLd?.description) ??
+      meta.get('og:description') ??
+      meta.get('description') ??
+      null,
     imageUrl: absoluteImage,
+    imageUrls,
     priceAmountMinor:
       price && Number.isFinite(Number(price)) ? Math.round(Number(price) * 100) : null,
     productName:
@@ -191,6 +265,123 @@ export function parseProductMetadata(
         null),
     productUrl,
   };
+}
+
+export function productMetadataFromUrl(productUrl: string): CreatorProductMetadata {
+  return {
+    brandName: brandFromProductUrl(productUrl),
+    categorySlug: suggestCategorySlug([decodeURIComponent(new URL(productUrl).pathname)]),
+    description: null,
+    imageUrl: null,
+    imageUrls: [],
+    priceAmountMinor: null,
+    productName: productNameFromUrl(productUrl),
+    productUrl,
+  };
+}
+
+async function fetchAdidasProductMetadata(
+  productUrl: string,
+): Promise<CreatorProductMetadata | null> {
+  const url = new URL(productUrl);
+  if (!/(^|\.)adidas\.co\.il$/iu.test(url.hostname)) return null;
+  const productCode = decodeURIComponent(url.pathname).match(
+    /\/([a-z0-9_-]+)\.html$/iu,
+  )?.[1];
+  if (!productCode) return null;
+  const endpoint = new URL(
+    '/on/demandware.store/Sites-adidas-IL-Site/he_IL/Product-ShowQuickView',
+    url,
+  );
+  endpoint.searchParams.set('pid', productCode);
+  const response = (await fetch(endpoint, {
+    headers: {
+      accept: 'application/json',
+      'accept-language': 'he-IL,he;q=0.9,en;q=0.8',
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
+    },
+    signal: AbortSignal.timeout(8_000),
+  }).catch(() => null)) as ProductFetchResponse | null;
+  if (!response?.ok) return null;
+  try {
+    const payload = objectValue(JSON.parse(await response.text()));
+    const product = objectValue(payload?.product);
+    if (!product) return null;
+    const price = objectValue(objectValue(product.price)?.sales)?.value;
+    const images = objectValue(product.images)?.zoom;
+    const imageUrls = uniqueHttpsUrls(
+      Array.isArray(images)
+        ? images.map((entry) => firstString(objectValue(entry)?.url)).filter(isString)
+        : [],
+      productUrl,
+    );
+    return {
+      brandName: firstString(product.brand) ?? 'Adidas',
+      categorySlug: suggestCategorySlug([
+        firstString(product.productName),
+        firstString(product.shortDescription),
+        firstString(product.longDescription),
+        decodeURIComponent(url.pathname),
+      ]),
+      description:
+        firstString(product.shortDescription) ?? firstString(product.longDescription),
+      imageUrl: imageUrls[0] ?? null,
+      imageUrls,
+      priceAmountMinor:
+        typeof price === 'number' && Number.isFinite(price)
+          ? Math.round(price * 100)
+          : null,
+      productName: firstString(product.productName) ?? productNameFromUrl(productUrl),
+      productUrl,
+    };
+  } catch {
+    return null;
+  }
+}
+
+const categorySignals: ReadonlyArray<[string, RegExp]> = [
+  [
+    'food',
+    /(?:food|kitchen|cook|grill|toaster|sandwich|coffee|recipe|restaurant|מטבח|בישול|גריל|טוסטר|כריכים|מזון|אוכל|קפה)/iu,
+  ],
+  ['beauty', /(?:beauty|makeup|cosmetic|lipstick|mascara|איפור|קוסמטיקה|שפתון|מסקרה)/iu],
+  [
+    'skincare',
+    /(?:skincare|skin care|serum|moisturi[sz]er|cleanser|טיפוח|סרום|קרם פנים)/iu,
+  ],
+  [
+    'fashion',
+    /(?:fashion|dress|shirt|pants|shoes?|sneakers?|bag|clothing|אופנה|שמלה|חולצה|מכנס|נעל|תיק)/iu,
+  ],
+  ['fitness', /(?:fitness|workout|training|gym|כושר|אימון|חדר כושר)/iu],
+  [
+    'sports',
+    /(?:sport|football|basketball|tennis|running|ספורט|כדורגל|כדורסל|טניס|ריצה)/iu,
+  ],
+  [
+    'technology',
+    /(?:technology|electronic|computer|phone|tablet|headphones?|טכנולוגיה|אלקטרוניקה|מחשב|טלפון|אוזניות)/iu,
+  ],
+  [
+    'home-decor',
+    /(?:home decor|furniture|lamp|rug|sofa|עיצוב הבית|ריהוט|מנורה|שטיח|ספה)/iu,
+  ],
+  ['books', /(?:books?|novel|reading|ספרים?|רומן|קריאה)/iu],
+  ['travel', /(?:travel|hotel|flight|luggage|טיול|מלון|טיסה|מזוודה)/iu],
+  ['wellness', /(?:wellness|meditation|supplement|vitamin|בריאות|מדיטציה|תוסף|ויטמין)/iu],
+  [
+    'accessories-jewelry',
+    /(?:jewel(?:ry|lery)|necklace|bracelet|watch|תכשיט|שרשרת|צמיד|שעון)/iu,
+  ],
+  ['kids-baby', /(?:kids?|baby|children|toys?|ילדים|תינוק|צעצוע)/iu],
+  ['pets', /(?:pets?|dog|cat|כלבים?|חתולים?|חיות מחמד)/iu],
+  ['gaming', /(?:gaming|video game|playstation|xbox|גיימינג|משחקי וידאו|פלייסטיישן)/iu],
+];
+
+export function suggestCategorySlug(values: Array<string | null>): string | null {
+  const searchable = values.filter(isString).join(' ');
+  return categorySignals.find(([, pattern]) => pattern.test(searchable))?.[0] ?? null;
 }
 
 function parseJsonLd(html: string): Record<string, unknown> | null {
@@ -233,6 +424,23 @@ function firstString(value: unknown): string | null {
   return null;
 }
 
+function strings(value: unknown): string[] {
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  if (Array.isArray(value)) return value.flatMap(strings);
+  const record = objectValue(value);
+  return record ? strings(record.url) : [];
+}
+
+function isString(value: string | null): value is string {
+  return Boolean(value);
+}
+
+function uniqueHttpsUrls(values: string[], base: string): string[] {
+  return [
+    ...new Set(values.map((value) => safeAbsoluteHttpsUrl(value, base)).filter(isString)),
+  ].slice(0, 10);
+}
+
 function namedEntity(value: unknown): string | null {
   const direct = firstString(value);
   if (direct) return direct;
@@ -245,6 +453,36 @@ function namedEntity(value: unknown): string | null {
         firstString(record.legalName) ??
         firstString(record.alternateName))
     : null;
+}
+
+function offerPrice(value: unknown): string | null {
+  if (Array.isArray(value)) {
+    return value.map(offerPrice).find(Boolean) ?? null;
+  }
+  const offer = objectValue(value);
+  if (!offer) return null;
+  return (
+    firstString(offer.price) ??
+    firstString(objectValue(offer.priceSpecification)?.price) ??
+    null
+  );
+}
+
+function productNameFromUrl(productUrl: string): string | null {
+  try {
+    const segments = new URL(productUrl).pathname
+      .split('/')
+      .map((segment) => decodeURIComponent(segment).trim())
+      .filter(Boolean);
+    let candidate = segments.at(-1) ?? '';
+    if (/^[a-z]{0,4}\d[a-z0-9_-]*\.html$/iu.test(candidate) && segments.length > 1) {
+      candidate = segments.at(-2) ?? candidate;
+    }
+    candidate = candidate.replace(/\.(?:html?|php|aspx?)$/iu, '').replace(/[-_]+/gu, ' ');
+    return candidate.trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 function brandFromProductUrl(productUrl: string): string | null {
@@ -261,6 +499,14 @@ function brandFromProductUrl(productUrl: string): string | null {
         ? secondLevelDomain
         : labels[0];
     if (!brand) return null;
+    const knownBrands: Record<string, string> = {
+      adidas: 'Adidas',
+      'foodappeal-online': 'Food Appeal',
+      fox: 'Fox',
+      terminalx: 'Terminal X',
+      weshoes: 'WeShoes',
+    };
+    if (knownBrands[brand.toLowerCase()]) return knownBrands[brand.toLowerCase()] ?? null;
     return brand
       .split(/[-_]/u)
       .filter(Boolean)

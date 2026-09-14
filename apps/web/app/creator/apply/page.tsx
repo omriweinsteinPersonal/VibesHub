@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
@@ -24,6 +25,7 @@ interface CreatorApplication {
 }
 
 export default function CreatorApplicationPage() {
+  const router = useRouter();
   const [application, setApplication] = useState<CreatorApplication | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [displayName, setDisplayName] = useState('');
@@ -105,7 +107,8 @@ export default function CreatorApplicationPage() {
         { idempotent: true, method: 'POST' },
       );
       setApplication(submitted);
-      setMessage('Your application was submitted for review.');
+      setMessage('Your creator storefront is ready.');
+      router.push('/creator-home');
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : 'Could not submit the application.',
@@ -130,8 +133,8 @@ export default function CreatorApplicationPage() {
         <p className="eyebrow">CREATOR APPLICATION</p>
         <h1>Open your VibesHub storefront</h1>
         <p className="workspaceLead">
-          Tell us who you are and where your community follows you. Every application is
-          reviewed by a person.
+          Tell us who you are and where your community follows you. Your creator
+          storefront will open immediately.
         </p>
         {application && !editable ? (
           <div className="statusBanner">
@@ -228,7 +231,7 @@ export default function CreatorApplicationPage() {
               disabled={loading}
               type="submit"
             >
-              {loading ? 'Submitting…' : 'Submit application'}
+              {loading ? 'Creating storefront…' : 'Create creator storefront'}
             </button>
           ) : null}
         </form>

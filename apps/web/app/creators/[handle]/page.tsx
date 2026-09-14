@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../../lib/api';
+import { hasCreatorSession } from '../../../lib/server-session';
+import { CreatorShellHeader } from '../../_components/creator-shell-header';
 import { CreatorStorefrontView } from '../../_components/creator-storefront';
 import { SiteFooter } from '../../_components/site-footer';
 import { SiteHeader } from '../../_components/site-header';
@@ -30,6 +32,7 @@ export default async function CreatorStorefrontPage({
 }: CreatorStorefrontPageProps) {
   const { handle } = await params;
   const filters = await searchParams;
+  const creatorSession = await hasCreatorSession();
   const query = new URLSearchParams({ limit: '48' });
   if (filters.cursor) query.set('cursor', filters.cursor);
 
@@ -52,12 +55,12 @@ export default async function CreatorStorefrontPage({
     discountCodes = discountCodeResponse.data;
   } catch (cause) {
     if (cause instanceof ApiError && cause.status === 404) notFound();
-    return <UnavailableStorefront />;
+    return <UnavailableStorefront creatorSession={creatorSession} />;
   }
 
   return (
     <div className="editorialPage">
-      <SiteHeader />
+      {creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
       <main>
         <CreatorStorefrontView
           codes={discountCodes}
@@ -70,10 +73,10 @@ export default async function CreatorStorefrontPage({
   );
 }
 
-function UnavailableStorefront() {
+function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) {
   return (
     <div className="editorialPage">
-      <SiteHeader />
+      {creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
       <main>
         <section className="directoryHero">
           <p className="eyebrow">CREATOR STOREFRONT</p>

@@ -25,8 +25,8 @@ The default local services are:
 | Web             | `http://localhost:3000`        |
 | Public API      | `http://localhost:4000`        |
 | Worker health   | `http://localhost:4001/health` |
-| Supabase API    | `http://127.0.0.1:54321`       |
-| Supabase Studio | `http://127.0.0.1:54323`       |
+| Supabase API    | `http://127.0.0.1:55321`       |
+| Supabase Studio | `http://127.0.0.1:55323`       |
 
 Copy the relevant `.env.example` files to untracked `.env.local` or `.env` files before enabling authenticated or privileged integrations. Service-role credentials must remain server-only.
 

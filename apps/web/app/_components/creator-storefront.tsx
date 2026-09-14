@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
+import { publicAssetUrl } from '../../lib/public-asset-url';
 import {
   CopyDiscountCodeButton,
   StorefrontViewTracker,
@@ -65,7 +66,7 @@ export function CreatorStorefrontView({
                 fill
                 priority
                 sizes="180px"
-                src={storefront.avatarUrl}
+                src={publicAssetUrl(storefront.avatarUrl)}
                 unoptimized
               />
             ) : (

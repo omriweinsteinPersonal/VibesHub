@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
 import { CreatorAccount } from '../_components/creator-account';
-import { WorkspaceHeader } from '../_components/workspace-header';
+import { SiteHeader } from '../_components/site-header';
 
 interface AccountSummary {
   application: { id: string; status: string } | null;
@@ -49,15 +49,7 @@ export default function AccountPage() {
 
   return (
     <main className="workspacePage">
-      <WorkspaceHeader
-        sessionState={
-          state === 'ready'
-            ? 'authenticated'
-            : state === 'signedOut'
-              ? 'anonymous'
-              : 'loading'
-        }
-      />
+      <SiteHeader />
       {state === 'loading' ? <AccountSkeleton /> : null}
       {state === 'signedOut' ? <SignedOutAccount /> : null}
       {state === 'error' ? <AccountError message={error} /> : null}

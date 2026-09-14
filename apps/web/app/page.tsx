@@ -1,56 +1,32 @@
-import Image from 'next/image';
+import type { CategoryCard, DiscoveryRecommendationCard } from '@vibeshub/contracts';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  BadgeCheck,
-  CirclePlay,
-  Heart,
-  ShieldCheck,
-  Sparkles,
-  Tag,
-} from 'lucide-react';
+import { ArrowRight, Heart, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 
+import { publicApiCollectionRequest } from '../lib/api';
+import { EngagementProvider } from './_components/engagement';
+import { RecommendationCardView } from './_components/recommendation-card';
+import { RotatingHeroCollage } from './_components/rotating-hero-collage';
 import { SiteFooter } from './_components/site-footer';
 import { SiteHeader } from './_components/site-header';
 
-const categories = [
-  'Fashion',
-  'Beauty',
-  'Skincare',
-  'Food',
-  'Fitness',
-  'Lifestyle',
-  'Technology',
-];
+export const dynamic = 'force-dynamic';
 
-const recommendations = [
-  {
-    brand: 'RARE BEAUTY',
-    className: 'blush',
-    code: 'NOA10',
-    name: 'Soft Pinch Liquid Blush',
-    price: '₪120',
-    review: 'המוצר האהוב עליי למראה טבעי וזוהר שנשאר לאורך כל היום.',
-  },
-  {
-    brand: 'LEWODY',
-    className: 'serum',
-    code: 'GLOW15',
-    name: 'Glow Vitamin C Serum',
-    price: '₪189',
-    review: 'אחרי חודש השימוש העור נראה אחיד יותר ואני אוהבת את המרקם הקליל.',
-  },
-  {
-    brand: 'STUDIO RINA',
-    className: 'coat',
-    code: 'MAYA20',
-    name: 'Oversized Wool Coat',
-    price: '₪690',
-    review: 'המעיל שמסדר כל לוק בשנייה — גזרה מדויקת ובד נעים במיוחד.',
-  },
-];
+export default async function HomePage() {
+  let categories: CategoryCard[] = [];
+  let recommendations: DiscoveryRecommendationCard[] = [];
+  try {
+    const [categoryPage, recommendationPage] = await Promise.all([
+      publicApiCollectionRequest<CategoryCard>('/categories'),
+      publicApiCollectionRequest<DiscoveryRecommendationCard>(
+        '/discover/recommendations?sort=most-saved',
+      ),
+    ]);
+    categories = categoryPage.data;
+    recommendations = recommendationPage.data.slice(0, 6);
+  } catch {
+    // The homepage remains useful while local services are starting.
+  }
 
-export default function HomePage() {
   return (
     <div className="editorialPage">
       <SiteHeader />
@@ -59,7 +35,7 @@ export default function HomePage() {
           <div className="heroCopy">
             <p className="eyebrow heroCreatorCount">
               <Sparkles aria-hidden="true" size={14} />
-              4,200+ ISRAELI CREATORS
+              ISRAELI CREATORS
             </p>
             <h1>
               Discover what your favorite creators <em>recommend</em>
@@ -77,95 +53,46 @@ export default function HomePage() {
                 Discover Products
               </Link>
             </div>
-            <dl className="metrics">
-              <div>
-                <dt>Creators</dt>
-                <dd>4.2K</dd>
-              </div>
-              <div>
-                <dt>Recommendations</dt>
-                <dd>38K</dd>
-              </div>
-              <div>
-                <dt>Shoppers</dt>
-                <dd>1.1M</dd>
-              </div>
-            </dl>
           </div>
-          <div
-            className="editorialCollage"
-            aria-label="Creator and lifestyle editorial collage"
-          >
-            <Image
-              alt="Creator surrounded by fashion, beauty and food recommendations"
-              fill
-              priority
-              sizes="(max-width: 900px) 100vw, 50vw"
-              src="/images/hero-collage.jpg"
-            />
-            <div className="creatorUpdate">
-              <span className="storyRing">NL</span>
-              <span>
-                <strong>
-                  Noa Levi <BadgeCheck aria-hidden="true" size={14} />
-                </strong>
-                <small dir="rtl" lang="he">
-                  שיתפה 3 המלצות חדשות
-                </small>
-              </span>
-            </div>
-          </div>
+          <RotatingHeroCollage />
         </section>
 
-        <section className="categoryBand" id="categories" aria-label="Categories">
-          {categories.map((category) => (
-            <Link href={`/discover?category=${category.toLowerCase()}`} key={category}>
-              {category}
-              <Sparkles aria-hidden="true" size={12} />
-            </Link>
-          ))}
-        </section>
+        {categories.length ? (
+          <section className="categoryBand" id="categories" aria-label="Categories">
+            {categories.map((category) => (
+              <Link href={`/discover?category=${category.slug}`} key={category.id}>
+                {category.name}
+                <Sparkles aria-hidden="true" size={12} />
+              </Link>
+            ))}
+          </section>
+        ) : null}
 
         <section className="section" id="products">
           <p className="eyebrow">SELECTED PRODUCTS</p>
-          <h2>Most saved this month</h2>
-          <p className="sectionIntro">
-            Real recommendations from creator storefronts, with codes that work.
-          </p>
-          <div className="productGrid">
-            {recommendations.map((item) => (
-              <article className="productCard" key={item.name}>
-                <div className={`productImage ${item.className}`}>
-                  <span className="storyBadge">
-                    <CirclePlay aria-hidden="true" size={14} />
-                    Video
-                  </span>
-                  <span className="codeBadge">{item.code}</span>
-                </div>
-                <div className="productDetails">
-                  <p className="brand">{item.brand}</p>
-                  <h3>{item.name}</h3>
-                  <p className="price">{item.price}</p>
-                  <p className="hebrew" dir="rtl" lang="he">
-                    {item.review}
-                  </p>
-                  <div className="recommendedBy">
-                    <span className="storyRing">NL</span>
-                    Recommended by Noa Levi
-                  </div>
-                  <footer>
-                    <span>
-                      <Tag aria-hidden="true" size={14} />
-                      CODE: {item.code}
-                    </span>
-                    <a className="button primary small" href="#shop">
-                      Shop now
-                    </a>
-                  </footer>
-                </div>
-              </article>
-            ))}
-          </div>
+          <h2>Latest creator recommendations</h2>
+          <p className="sectionIntro">Products published by creators on VibesHub.</p>
+          {recommendations.length ? (
+            <EngagementProvider
+              productIds={recommendations.map((item) => item.productId)}
+            >
+              <div className="productGrid storeProductGrid">
+                {recommendations.map((recommendation) => (
+                  <RecommendationCardView
+                    creator={recommendation.creator}
+                    key={recommendation.id}
+                    recommendation={recommendation}
+                    showSave
+                  />
+                ))}
+              </div>
+            </EngagementProvider>
+          ) : (
+            <div className="directoryState">
+              <h3>No recommendations yet</h3>
+              <p>Creator recommendations will appear here after they are published.</p>
+            </div>
+          )}
         </section>
 
         <section className="trust" id="about">
@@ -176,22 +103,22 @@ export default function HomePage() {
               <span aria-hidden="true">
                 <ShieldCheck size={18} />
               </span>
-              <h3>Verified creators only</h3>
-              <p>Every storefront is reviewed before it goes live.</p>
+              <h3>Creator-owned storefronts</h3>
+              <p>Each storefront brings a creator&apos;s recommendations together.</p>
             </article>
             <article>
               <span aria-hidden="true">
                 <Heart size={18} />
               </span>
-              <h3>Written by hand</h3>
-              <p>Creators write each review in their own words, in Hebrew.</p>
+              <h3>Personal recommendations</h3>
+              <p>Creators can explain why they recommend every product.</p>
             </article>
             <article>
               <span aria-hidden="true">
                 <Tag size={18} />
               </span>
-              <h3>Codes that work</h3>
-              <p>Discount codes are checked so the price you see is the price you pay.</p>
+              <h3>Useful offers</h3>
+              <p>Product links and available discount codes stay in one place.</p>
             </article>
           </div>
         </section>

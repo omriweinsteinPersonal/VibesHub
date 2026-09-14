@@ -20,6 +20,7 @@ import {
   merchantDomainReasonInputSchema,
   globalSearchQuerySchema,
   recommendationCardSchema,
+  recommendationImageAssetSchema,
   recommendationImageUploadInputSchema,
 } from './index.js';
 
@@ -104,6 +105,24 @@ describe('shared API contracts', () => {
           { platform: 'instagram', url: 'https://instagram.com/noa' },
           { platform: 'instagram', url: 'https://instagram.com/noa-beauty' },
         ],
+      }),
+    ).toThrow();
+  });
+
+  it('allows local media URLs without allowing insecure remote media', () => {
+    const asset = {
+      contentType: 'image/png',
+      id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+      publicUrl:
+        'http://127.0.0.1:55321/storage/v1/object/public/recommendation-images/avatar.png',
+      sizeBytes: 1024,
+      status: 'ready',
+    };
+    expect(recommendationImageAssetSchema.parse(asset).publicUrl).toBe(asset.publicUrl);
+    expect(() =>
+      recommendationImageAssetSchema.parse({
+        ...asset,
+        publicUrl: 'http://images.example.com/avatar.png',
       }),
     ).toThrow();
   });

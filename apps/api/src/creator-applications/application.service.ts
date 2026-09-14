@@ -90,13 +90,14 @@ export class ApplicationService {
         'The requested creator handle is unavailable',
       );
     }
-    const changed = await this.applications.transitionOwned(
-      id,
-      userId,
-      [application.status],
-      'submitted',
-    );
-    if (!changed) throw this.invalidTransition(application.status, 'submit');
+    try {
+      await this.applications.approve(id, userId, {}, application.status);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'INVALID_APPLICATION_STATE') {
+        throw this.invalidTransition(application.status, 'submit');
+      }
+      throw error;
+    }
     return (await this.applications.findById(id)) ?? application;
   }
 

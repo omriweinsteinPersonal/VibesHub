@@ -1,6 +1,7 @@
 import type { ClientAnalyticsEvent } from '@vibeshub/analytics';
 
 import { getApiUrl } from './config';
+import { randomUuid } from './random-id';
 
 type ClientEventInput = ClientAnalyticsEvent extends infer Event
   ? Event extends ClientAnalyticsEvent
@@ -24,15 +25,15 @@ export function trackClientAnalytics(input: ClientEventInput): void {
   const event: ClientAnalyticsEvent = {
     ...input,
     anonymousId: getSessionIdentifier(anonymousStorageKey),
-    eventId: crypto.randomUUID(),
+    eventId: randomUuid(),
     occurredAt: new Date().toISOString(),
     schemaVersion: 1,
     sessionId: getSessionIdentifier(sessionStorageKey),
     source: 'web',
-  } as ClientAnalyticsEvent;
+  };
 
   void fetch(`${getApiUrl()}/v1/analytics/client-events`, {
-    body: JSON.stringify({ batchId: crypto.randomUUID(), events: [event] }),
+    body: JSON.stringify({ batchId: randomUuid(), events: [event] }),
     headers: { 'content-type': 'application/json' },
     keepalive: true,
     method: 'POST',
@@ -44,7 +45,7 @@ export function trackClientAnalytics(input: ClientEventInput): void {
 function getSessionIdentifier(key: string): string {
   const current = window.sessionStorage.getItem(key);
   if (current) return current;
-  const created = crypto.randomUUID();
+  const created = randomUuid();
   window.sessionStorage.setItem(key, created);
   return created;
 }

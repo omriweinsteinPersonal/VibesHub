@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { BadgeCheck, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { publicAssetUrl } from '../../lib/public-asset-url';
+
 interface CreatorCardViewProps {
   actions?: ReactNode;
   creator: CreatorCard;
@@ -22,7 +24,7 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
             alt={creator.displayName}
             fill
             sizes="(max-width: 800px) 100vw, 380px"
-            src={creator.avatarUrl}
+            src={publicAssetUrl(creator.avatarUrl)}
             unoptimized
           />
         ) : (

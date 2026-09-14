@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { Suspense, useState, type FormEvent } from 'react';
 
+import { apiRequest } from '../../lib/api';
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -45,7 +46,14 @@ function AuthExperience() {
           password,
         });
         if (authError) throw authError;
-        router.replace(safeNext);
+        let destination = safeNext;
+        if (!requestedNext) {
+          const account = await apiRequest<{
+            creator: { handle: string; id: string } | null;
+          }>('/me');
+          destination = account.creator ? '/creator-home' : '/account';
+        }
+        router.replace(destination);
         router.refresh();
       } else {
         const next = role === 'creator' ? '/creator/apply' : '/account';
@@ -73,7 +81,12 @@ function AuthExperience() {
 
   async function continueWithGoogle() {
     setError('');
-    const next = mode === 'signup' && role === 'creator' ? '/creator/apply' : safeNext;
+    const next =
+      mode === 'signup' && role === 'creator'
+        ? '/creator/apply'
+        : mode === 'login' && !requestedNext
+          ? '/auth/continue'
+          : safeNext;
     const { error: authError } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -163,7 +176,7 @@ function AuthExperience() {
                   onChange={(event) => setFullName(event.target.value)}
                   required
                   value={fullName}
-                  placeholder="Noa Levi"
+                  placeholder="Your full name"
                 />
               </label>
             ) : null}

@@ -407,13 +407,18 @@ function mapRecommendation(
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },
     productId: row.productId,
     productName: row.productName,
-    review: { direction: 'rtl', language: 'he', value: row.reviewHe },
+    review: directionalReview(row.reviewHe),
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
     storyClips: [],
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,
   };
+}
+
+function directionalReview(value: string): RecommendationCard['review'] {
+  const isHebrew = /[א-ת]/u.test(value);
+  return { direction: isHebrew ? 'rtl' : 'ltr', language: isHebrew ? 'he' : 'en', value };
 }
 
 function mapPage<Row, Item>(

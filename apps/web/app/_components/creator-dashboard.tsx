@@ -38,13 +38,19 @@ import {
   apiRequest,
   publicApiCollectionRequest,
 } from '../../lib/api';
-import { storyVideoAccept, uploadStoryVideo } from '../../lib/recommendation-media';
+import {
+  recommendationImageAccept,
+  storyVideoAccept,
+  uploadRecommendationImage,
+  uploadStoryVideo,
+} from '../../lib/recommendation-media';
 import { CreatorShellHeader } from './creator-shell-header';
 import { SiteFooter } from './site-footer';
 
 type Composer = null | 'choose' | 'product' | 'discount';
 
 interface ProductEditor {
+  additionalImages: Array<{ imageAssetId: string; url: string }>;
   brandName: string;
   categoryId: string;
   discountCode: string;
@@ -69,6 +75,7 @@ interface DiscountEditor {
 }
 
 const emptyProduct: ProductEditor = {
+  additionalImages: [],
   brandName: '',
   categoryId: '',
   discountCode: '',
@@ -175,46 +182,64 @@ export function CreatorDashboard() {
     setDiscount(emptyDiscount);
   }
 
-  const fetchProductDetails = useCallback(async (rawUrl: string) => {
-    const requestedUrl = normalizedProductUrl(rawUrl);
-    if (!requestedUrl) return;
-    const requestId = ++productFetchRequest.current;
-    setFetching(true);
-    setError('');
-    try {
-      const metadata = await apiRequest<CreatorProductMetadata>(
-        '/creator/recommendations/fetch-details',
-        { body: JSON.stringify({ url: requestedUrl }), method: 'POST' },
-      );
-      setProduct((current) =>
-        normalizedProductUrl(current.productUrl) === requestedUrl
-          ? {
-              ...current,
-              brandName: metadata.brandName ?? current.brandName,
-              imageAssetId: metadata.imageUrl ? '' : current.imageAssetId,
-              imageUrl: metadata.imageUrl ?? current.imageUrl,
-              priceIls:
-                metadata.priceAmountMinor === null
-                  ? current.priceIls
-                  : String(metadata.priceAmountMinor / 100),
-              productName: metadata.productName ?? current.productName,
-              productUrl: metadata.productUrl,
-            }
-          : current,
-      );
-      if (productFetchRequest.current === requestId) {
-        setNotice('Available product details were filled in. Everything stays editable.');
+  const fetchProductDetails = useCallback(
+    async (rawUrl: string) => {
+      const requestedUrl = normalizedProductUrl(rawUrl);
+      if (!requestedUrl) return;
+      const requestId = ++productFetchRequest.current;
+      setFetching(true);
+      setError('');
+      try {
+        const metadata = await apiRequest<CreatorProductMetadata>(
+          '/creator/recommendations/fetch-details',
+          { body: JSON.stringify({ url: requestedUrl }), method: 'POST' },
+        );
+        setProduct((current) =>
+          normalizedProductUrl(current.productUrl) === requestedUrl
+            ? {
+                ...current,
+                brandName: metadata.brandName ?? current.brandName,
+                categoryId:
+                  categories.find((category) => category.slug === metadata.categorySlug)
+                    ?.id ?? current.categoryId,
+                additionalImages: current.imageAssetId
+                  ? current.additionalImages
+                  : metadata.imageUrls.slice(1).map((url) => ({ imageAssetId: '', url })),
+                imageAssetId:
+                  metadata.imageUrl && !current.imageAssetId ? '' : current.imageAssetId,
+                imageUrl:
+                  metadata.imageUrl && !current.imageAssetId
+                    ? metadata.imageUrl
+                    : current.imageUrl,
+                priceIls:
+                  metadata.priceAmountMinor === null
+                    ? current.priceIls
+                    : String(metadata.priceAmountMinor / 100),
+                productName: metadata.productName ?? current.productName,
+                productUrl: metadata.productUrl,
+                reviewHe: metadata.description
+                  ? metadata.description.slice(0, 1000)
+                  : current.reviewHe,
+              }
+            : current,
+        );
+        if (productFetchRequest.current === requestId) {
+          setNotice(
+            'Available product details were filled in. Everything stays editable.',
+          );
+        }
+      } catch (cause) {
+        if (productFetchRequest.current === requestId) {
+          setError(messageFor(cause));
+        }
+      } finally {
+        if (productFetchRequest.current === requestId) {
+          setFetching(false);
+        }
       }
-    } catch (cause) {
-      if (productFetchRequest.current === requestId) {
-        setError(messageFor(cause));
-      }
-    } finally {
-      if (productFetchRequest.current === requestId) {
-        setFetching(false);
-      }
-    }
-  }, []);
+    },
+    [categories],
+  );
 
   async function selectStoryClip(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -233,6 +258,39 @@ export function CreatorDashboard() {
         }));
       }
       setNotice('Story clip uploaded and verified.');
+    } catch (cause) {
+      setError(messageFor(cause));
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  }
+
+  async function selectProductImages(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []).slice(
+      0,
+      10 - (product.additionalImages.length + 1),
+    );
+    if (!files.length) return;
+    setUploading(true);
+    setError('');
+    try {
+      for (const file of files) {
+        const asset = await uploadRecommendationImage(file, () => undefined);
+        setProduct((current) => {
+          if (!current.imageAssetId && !current.imageUrl) {
+            return { ...current, imageAssetId: asset.id, imageUrl: asset.publicUrl };
+          }
+          return {
+            ...current,
+            additionalImages: [
+              ...current.additionalImages,
+              { imageAssetId: asset.id, url: asset.publicUrl },
+            ].slice(0, 9),
+          };
+        });
+      }
+      setNotice('Product photos uploaded. The first photo is the default.');
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -284,6 +342,11 @@ export function CreatorDashboard() {
         discountLabel: product.discountLabel.trim() || null,
         imageAssetId: product.imageAssetId || null,
         imageUrl: product.imageAssetId ? null : product.imageUrl,
+        additionalImages: product.additionalImages.map((image) =>
+          image.imageAssetId
+            ? { imageAssetId: image.imageAssetId }
+            : { imageUrl: image.url },
+        ),
         priceAmountMinor: Math.round(price * 100),
         productName: product.productName,
         productUrl: product.productUrl,
@@ -304,7 +367,7 @@ export function CreatorDashboard() {
           idempotent: true,
           method: 'POST',
         });
-        setNotice('Recommendation saved as a draft. Turn Live on when it is ready.');
+        setNotice('Recommendation published to your storefront.');
       }
       closeComposer();
       await load();
@@ -392,6 +455,10 @@ export function CreatorDashboard() {
   function editProduct(item: CreatorRecommendation) {
     setEditingProduct(item);
     setProduct({
+      additionalImages: (item.images ?? []).slice(1).map((image) => ({
+        imageAssetId: image.imageAssetId ?? '',
+        url: image.url,
+      })),
       brandName: item.brandName,
       categoryId: item.categoryId,
       discountCode: item.discount?.code ?? '',
@@ -550,6 +617,7 @@ export function CreatorDashboard() {
                   onChangeType={() => setComposer('choose')}
                   onClose={closeComposer}
                   onFetch={fetchProductDetails}
+                  onImages={selectProductImages}
                   onSave={saveProduct}
                   onStory={selectStoryClip}
                   saving={saving || uploading}
@@ -651,6 +719,7 @@ function ProductForm({
   onChangeType,
   onClose,
   onFetch,
+  onImages,
   onSave,
   onStory,
   saving,
@@ -664,6 +733,7 @@ function ProductForm({
   onClose: () => void;
   onChangeType: () => void;
   onFetch: (url: string) => void;
+  onImages: (event: ChangeEvent<HTMLInputElement>) => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   onStory: (event: ChangeEvent<HTMLInputElement>) => void;
   saving: boolean;
@@ -744,17 +814,63 @@ function ProductForm({
               onChange={(event) => update('brandName', event.target.value)}
             />
           </label>
-          <label>
-            Image link
-            <input
-              type="url"
-              value={editor.imageAssetId ? '' : editor.imageUrl}
-              onChange={(event) =>
-                onChange({ ...editor, imageAssetId: '', imageUrl: event.target.value })
-              }
-              placeholder="https://"
-            />
-          </label>
+          <fieldset className="creatorProductPhotos creatorFullField">
+            <legend>Product photos</legend>
+            <p>The first photo is shown by default. Add up to 10 photos.</p>
+            {editor.imageUrl ? (
+              <div className="creatorProductPhotoGrid">
+                {[
+                  { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
+                  ...editor.additionalImages,
+                ].map((image, index) => (
+                  <span key={`${image.url}:${index}`}>
+                    <Image alt="" fill sizes="96px" src={image.url} unoptimized />
+                    {index === 0 ? <small>Default</small> : null}
+                    <button
+                      aria-label={`Remove photo ${index + 1}`}
+                      onClick={() => {
+                        const images = [
+                          { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
+                          ...editor.additionalImages,
+                        ].filter((_, imageIndex) => imageIndex !== index);
+                        const [primary, ...additionalImages] = images;
+                        onChange({
+                          ...editor,
+                          additionalImages,
+                          imageAssetId: primary?.imageAssetId ?? '',
+                          imageUrl: primary?.url ?? '',
+                        });
+                      }}
+                      type="button"
+                    >
+                      <X aria-hidden="true" size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            <div className="creatorPhotoControls">
+              <label className="button secondary">
+                <Upload aria-hidden="true" size={16} />
+                Add photos
+                <input
+                  accept={recommendationImageAccept}
+                  multiple
+                  onChange={onImages}
+                  type="file"
+                />
+              </label>
+              <input
+                aria-label="Primary image link"
+                type="url"
+                value={editor.imageAssetId ? '' : editor.imageUrl}
+                onChange={(event) =>
+                  onChange({ ...editor, imageAssetId: '', imageUrl: event.target.value })
+                }
+                placeholder="Or paste an image link"
+              />
+            </div>
+          </fieldset>
           <label>
             Price (₪) — override with your special price
             <input
@@ -806,10 +922,9 @@ function ProductForm({
           </label>
         </div>
         <label className="creatorFullField">
-          Review (Hebrew)
+          Review
           <textarea
-            dir="rtl"
-            lang="he"
+            dir="auto"
             maxLength={1000}
             required
             rows={3}

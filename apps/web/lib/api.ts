@@ -1,4 +1,5 @@
 import { getApiUrl } from './config';
+import { randomUuid } from './random-id';
 import { getSupabaseBrowserClient } from './supabase-browser';
 
 interface ProblemDetails {
@@ -26,7 +27,7 @@ export async function apiRequest<T>(
   const headers = new Headers(init.headers);
   headers.set('authorization', `Bearer ${data.session.access_token}`);
   if (init.body) headers.set('content-type', 'application/json');
-  if (init.idempotent) headers.set('idempotency-key', crypto.randomUUID());
+  if (init.idempotent) headers.set('idempotency-key', randomUuid());
 
   return request<T>(path, { ...init, headers });
 }

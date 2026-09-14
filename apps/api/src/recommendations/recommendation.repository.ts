@@ -3,6 +3,7 @@ import type {
   CreatorRecommendationInput,
   DiscountCodeVerificationStatus,
   RecommendationCard,
+  RecommendationImage,
   StoryClip,
 } from '@vibeshub/contracts';
 
@@ -62,6 +63,7 @@ interface RecommendationRow {
   id: string;
   imageAssetId: string | null;
   imageUrl: string;
+  images: RecommendationImage[];
   lifecycle: RecommendationCard['lifecycle'];
   merchantHostname: string;
   position: number;
@@ -122,6 +124,8 @@ export class RecommendationRepository {
           discount_code,
           discount_label,
           commercial_relationship,
+          lifecycle,
+          published_at,
           position
         ) values (
           ${creator.id},
@@ -134,6 +138,8 @@ export class RecommendationRepository {
           ${input.discountCode?.toUpperCase() ?? null},
           ${input.discountLabel ?? null},
           ${input.commercialRelationship},
+          'published',
+          statement_timestamp(),
           (
             select coalesce(max(existing.position), -1) + 1
             from app.recommendations existing
@@ -156,6 +162,8 @@ export class RecommendationRepository {
         input.discountExpiresAt ?? null,
       );
       await this.syncStoryClips(sql, inserted.id, userId, input);
+      await this.syncAdditionalImages(sql, inserted.id, userId, input);
+      await this.ensureStorefrontSection(sql, creator.id, input.categoryId);
       return this.findOwnedWithSql(sql, inserted.id, userId);
     });
   }
@@ -307,6 +315,7 @@ export class RecommendationRepository {
         input.discountExpiresAt ?? null,
       );
       await this.syncStoryClips(sql, updated.id, userId, input);
+      await this.syncAdditionalImages(sql, updated.id, userId, input);
       return this.findOwnedWithSql(sql, updated.id, userId);
     });
   }
@@ -601,6 +610,25 @@ export class RecommendationRepository {
         recommendation.id,
         recommendation.image_asset_id as "imageAssetId",
         coalesce(media.public_url, recommendation.image_url) as "imageUrl",
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'id', gallery_image.id,
+                'imageAssetId', gallery_image.image_asset_id,
+                'position', gallery_image.position + 1,
+                'url', coalesce(gallery_media.public_url, gallery_image.image_url)
+              ) order by gallery_image.position, gallery_image.id
+            )
+            from app.recommendation_images gallery_image
+            left join app.media_assets gallery_media
+              on gallery_media.id = gallery_image.image_asset_id
+             and gallery_media.status = 'ready'
+            where gallery_image.recommendation_id = recommendation.id
+              and coalesce(gallery_media.public_url, gallery_image.image_url) is not null
+          ),
+          '[]'::jsonb
+        ) as "images",
         recommendation.review_he as "reviewHe",
         recommendation.video_url as "videoUrl",
         case
@@ -795,10 +823,25 @@ export class RecommendationRepository {
       throw new Error('OFFER_PRODUCT_IDENTITY_CONFLICT');
     }
     const [merchantDomain] = await sql<CatalogIdRow[]>`
-      insert into app.merchant_domains (merchant_id, hostname)
-      values (${merchant.id}, ${hostname})
+      insert into app.merchant_domains (
+        merchant_id, hostname, allow_import, allow_redirect, verified_at,
+        review_status, reviewed_at, review_note
+      )
+      values (
+        ${merchant.id}, ${hostname}, true, true, statement_timestamp(),
+        'approved', statement_timestamp(), 'Automatically approved on creator publish'
+      )
       on conflict (hostname) do update
-      set merchant_id = app.merchant_domains.merchant_id
+      set
+        allow_import = true,
+        allow_redirect = true,
+        verified_at = coalesce(app.merchant_domains.verified_at, statement_timestamp()),
+        review_status = 'approved',
+        reviewed_at = coalesce(app.merchant_domains.reviewed_at, statement_timestamp()),
+        review_note = coalesce(
+          app.merchant_domains.review_note,
+          'Automatically approved on creator publish'
+        )
       where app.merchant_domains.merchant_id = excluded.merchant_id
       returning id
     `;
@@ -864,6 +907,26 @@ export class RecommendationRepository {
     `;
   }
 
+  private async ensureStorefrontSection(
+    sql: DatabaseClient,
+    creatorId: string,
+    categoryId: string,
+  ): Promise<void> {
+    await sql`
+      insert into app.creator_storefront_sections (creator_id, category_id, position)
+      values (
+        ${creatorId},
+        ${categoryId},
+        (
+          select coalesce(max(section.position), -1) + 1
+          from app.creator_storefront_sections section
+          where section.creator_id = ${creatorId}
+        )
+      )
+      on conflict (creator_id, category_id) do nothing
+    `;
+  }
+
   private async syncStoryClips(
     sql: DatabaseClient,
     recommendationId: string,
@@ -906,6 +969,26 @@ export class RecommendationRepository {
     }
   }
 
+  private async syncAdditionalImages(
+    sql: DatabaseClient,
+    recommendationId: string,
+    userId: string,
+    input: CreatorRecommendationInput,
+  ): Promise<void> {
+    await sql`delete from app.recommendation_images where recommendation_id = ${recommendationId}`;
+    for (const [position, source] of (input.additionalImages ?? []).entries()) {
+      const image = await this.resolveImageSource(sql, userId, source);
+      await sql`
+        insert into app.recommendation_images (
+          recommendation_id, image_asset_id, image_url, position
+        ) values (
+          ${recommendationId}, ${image.assetId},
+          ${image.assetId ? null : image.publicUrl}, ${position}
+        )
+      `;
+    }
+  }
+
   private async insertAffiliateLink(
     sql: DatabaseClient,
     recommendationId: string,
@@ -925,7 +1008,7 @@ export class RecommendationRepository {
         ${catalog.merchantDomainId},
         ${catalog.merchantId},
         ${catalog.destinationUrl},
-        'blocked'
+        'active'
       )
     `;
   }
@@ -933,7 +1016,7 @@ export class RecommendationRepository {
   private async resolveImageSource(
     sql: DatabaseClient,
     userId: string,
-    input: CreatorRecommendationInput,
+    input: Pick<CreatorRecommendationInput, 'imageAssetId' | 'imageUrl'>,
   ): Promise<RecommendationImageSource> {
     if (!input.imageAssetId) {
       if (!input.imageUrl) throw new Error('RECOMMENDATION_IMAGE_REQUIRED');
@@ -1034,16 +1117,30 @@ function mapRecommendationCard(
     id: row.id,
     imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,
+    images: [
+      {
+        id: null,
+        imageAssetId: row.imageAssetId,
+        position: 0,
+        url: row.imageUrl,
+      },
+      ...(row.images ?? []),
+    ],
     lifecycle: row.lifecycle,
     merchantHostname: row.merchantHostname,
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },
     productId: row.productId,
     productName: row.productName,
-    review: { direction: 'rtl', language: 'he', value: row.reviewHe },
+    review: directionalReview(row.reviewHe),
     shopUrl: trackedRedirectUrl(redirectBaseUrl, row.shopPublicId),
     storyClips: row.storyClips ?? [],
     updatedAt: row.updatedAt,
     version: row.version,
     videoUrl: row.videoUrl,
   };
+}
+
+function directionalReview(value: string): RecommendationCard['review'] {
+  const isHebrew = /[א-ת]/u.test(value);
+  return { direction: isHebrew ? 'rtl' : 'ltr', language: isHebrew ? 'he' : 'en', value };
 }

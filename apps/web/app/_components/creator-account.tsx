@@ -17,6 +17,7 @@ import {
   deleteRecommendationImage,
   uploadCreatorImage,
 } from '../../lib/recommendation-media';
+import { publicAssetUrl } from '../../lib/public-asset-url';
 import { CreatorShellHeader } from './creator-shell-header';
 import { SiteFooter } from './site-footer';
 
@@ -263,7 +264,7 @@ export function CreatorAccount({ email }: { email?: string }) {
                     alt=""
                     fill
                     sizes="96px"
-                    src={profileEditor.avatarUrl}
+                    src={publicAssetUrl(profileEditor.avatarUrl)}
                     unoptimized
                   />
                 ) : (

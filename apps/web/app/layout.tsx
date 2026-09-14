@@ -2,7 +2,7 @@ import '@vibeshub/design-tokens/tokens.css';
 import './forms.css';
 import './styles.css';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Instrument_Serif } from 'next/font/google';
 import type { ReactNode } from 'react';
 
@@ -25,6 +25,12 @@ export const metadata: Metadata = {
     default: 'VibesHub',
     template: '%s · VibesHub',
   },
+};
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  viewportFit: 'cover',
+  width: 'device-width',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

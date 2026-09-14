@@ -56,6 +56,7 @@ export interface ApplicationRepositoryPort {
     id: string,
     reviewerUserId: string,
     review: CreatorApplicationReviewInput,
+    expectedStatus?: CreatorApplicationStatus,
   ): Promise<void>;
   create(
     userId: string,
@@ -263,6 +264,7 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
     id: string,
     reviewerUserId: string,
     review: CreatorApplicationReviewInput,
+    expectedStatus: CreatorApplicationStatus = 'under_review',
   ): Promise<void> {
     await this.database.sql.begin(async (transaction) => {
       const [application] = await transaction<ApplicationRow[]>`
@@ -276,7 +278,7 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
         where id = ${id}
         for update
       `;
-      if (!application || application.status !== 'under_review') {
+      if (!application || application.status !== expectedStatus) {
         throw new Error('INVALID_APPLICATION_STATE');
       }
       if (
@@ -316,7 +318,10 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
       `;
       await transaction`
         update app.creator_applications
-        set status = 'approved', decided_at = statement_timestamp(), version = version + 1
+        set status = 'approved',
+            submitted_at = coalesce(submitted_at, statement_timestamp()),
+            decided_at = statement_timestamp(),
+            version = version + 1
         where id = ${id}
       `;
       await transaction`
