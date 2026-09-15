@@ -22,8 +22,10 @@ export default function SavedProductsPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [suggestions, setSuggestions] = useState<DiscoveryRecommendationCard[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
+  const [suggestionsResult, setSuggestionsResult] = useState<{
+    items: DiscoveryRecommendationCard[];
+    requestKey: string | null;
+  }>({ items: [], requestKey: null });
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt)),
@@ -43,6 +45,10 @@ export default function SavedProductsPage() {
     .slice(0, 4)
     .map(({ slug }) => slug)
     .join(',');
+  const savedProductIdsKey = items.map(({ productId }) => productId).join(',');
+  const suggestionsRequestKey = `${recommendationKey}|${savedProductIdsKey}`;
+  const suggestionsLoading = suggestionsResult.requestKey !== suggestionsRequestKey;
+  const suggestions = suggestionsLoading ? [] : suggestionsResult.items;
 
   useEffect(() => {
     void loadPage();
@@ -54,7 +60,8 @@ export default function SavedProductsPage() {
     let active = true;
     const categorySlugs = recommendationKey ? recommendationKey.split(',') : [];
     const queries = categorySlugs.length > 0 ? categorySlugs : [null];
-    setSuggestionsLoading(true);
+    const savedIds = new Set(savedProductIdsKey ? savedProductIdsKey.split(',') : []);
+    const requestKey = `${recommendationKey}|${savedProductIdsKey}`;
 
     void Promise.all(
       queries.map((category) => {
@@ -67,28 +74,25 @@ export default function SavedProductsPage() {
     )
       .then((pages) => {
         if (!active) return;
-        const savedIds = new Set(items.map(({ productId }) => productId));
         const unique = new Map<string, DiscoveryRecommendationCard>();
         for (const recommendation of pages.flatMap(({ data }) => data)) {
           if (!savedIds.has(recommendation.productId)) {
             unique.set(recommendation.productId, recommendation);
           }
         }
-        setSuggestions([...unique.values()].slice(0, 12));
+        setSuggestionsResult({
+          items: [...unique.values()].slice(0, 12),
+          requestKey,
+        });
       })
       .catch(() => {
-        if (active) setSuggestions([]);
-      })
-      .finally(() => {
-        if (active) setSuggestionsLoading(false);
+        if (active) setSuggestionsResult({ items: [], requestKey });
       });
 
     return () => {
       active = false;
     };
-    // Item IDs are included so removing a saved product refreshes the exclusions.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recommendationKey, items.map(({ productId }) => productId).join(',')]);
+  }, [recommendationKey, savedProductIdsKey]);
 
   async function loadPage(cursor?: string) {
     setLoading(true);

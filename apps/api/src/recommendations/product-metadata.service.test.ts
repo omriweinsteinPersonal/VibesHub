@@ -126,15 +126,15 @@ describe('ProductMetadataService Shopify import', () => {
         imageUrls: ['https://cdn.shopify.com/product.jpg'],
         priceAmountMinor: 35991,
       });
-      expect(fetchMock.mock.calls[0]?.[0].toString()).toBe(
+      const requestedUrl = fetchMock.mock.calls[0]?.[0];
+      expect(requestedUrl).toBeInstanceOf(URL);
+      expect((requestedUrl as URL).href).toBe(
         'https://weshoes.co.il/products/desb1184-001.js',
       );
     } finally {
       fetchMock.mockRestore();
     }
-      });
   });
-
   it('uses the Shopify storefront identity instead of a category vendor', async () => {
     const { ProductMetadataService } = await import('./product-metadata.service.js');
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
@@ -150,11 +150,14 @@ describe('ProductMetadataService Shopify import', () => {
       ),
     );
 
-    await expect(
-      new ProductMetadataService().fetch(
-        'https://fox.co.il/collections/mens/products/1164375802',
-      ),
-    ).resolves.toMatchObject({ brandName: 'Fox' });
-
-    fetchMock.mockRestore();
+    try {
+      await expect(
+        new ProductMetadataService().fetch(
+          'https://fox.co.il/collections/mens/products/1164375802',
+        ),
+      ).resolves.toMatchObject({ brandName: 'Fox' });
+    } finally {
+      fetchMock.mockRestore();
+    }
   });
+});

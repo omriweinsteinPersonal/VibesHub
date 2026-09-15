@@ -27,6 +27,8 @@ const discountCode: CreatorDiscountCode = {
 
 describe('DiscountCodeService', () => {
   it('publishes an unexpired code through creator confirmation', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-08T12:00:00.000Z'));
     const published: CreatorDiscountCode = {
       ...discountCode,
       lastVerifiedAt: '2026-08-07T10:05:00.000Z',
@@ -40,10 +42,14 @@ describe('DiscountCodeService', () => {
     };
     const service = new DiscountCodeService(repository as never);
 
-    await expect(service.confirm(discountCode.id, 'user-id', 1)).resolves.toEqual(
-      published,
-    );
-    expect(repository.confirmOwned).toHaveBeenCalledWith(discountCode.id, 'user-id', 1);
+    try {
+      await expect(service.confirm(discountCode.id, 'user-id', 1)).resolves.toEqual(
+        published,
+      );
+      expect(repository.confirmOwned).toHaveBeenCalledWith(discountCode.id, 'user-id', 1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('requires the loaded version before editing', async () => {
