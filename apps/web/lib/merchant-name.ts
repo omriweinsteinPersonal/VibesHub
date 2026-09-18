@@ -7,7 +7,10 @@ const merchantNames: Record<string, string> = {
 };
 
 export function merchantNameFromHostname(hostname: string, fallback: string): string {
-  const labels = hostname.toLowerCase().replace(/^www\./u, '').split('.');
+  const labels = hostname
+    .toLowerCase()
+    .replace(/^www\./u, '')
+    .split('.');
   const publicSuffix = labels.at(-1) ?? '';
   const secondLevel = labels.at(-2) ?? '';
   const countryCodeDomain =

@@ -45,7 +45,10 @@ export function RotatingHeroCollage() {
   }, []);
 
   return (
-    <div className="editorialCollage rotatingHeroCollage" aria-label="Fashion, beauty, coffee and creator editorial gallery">
+    <div
+      className="editorialCollage rotatingHeroCollage"
+      aria-label="Fashion, beauty, coffee and creator editorial gallery"
+    >
       {tileImages.map((images, tile) => (
         <div className={`rotatingHeroTile tile${tile + 1}`} key={images[0]}>
           {images.map((url, imageIndex) => (
@@ -56,7 +59,11 @@ export function RotatingHeroCollage() {
               fill
               key={url}
               priority={imageIndex === 0}
-              sizes={tile === 0 ? '(max-width: 900px) 38vw, 22vw' : '(max-width: 900px) 30vw, 15vw'}
+              sizes={
+                tile === 0
+                  ? '(max-width: 900px) 38vw, 22vw'
+                  : '(max-width: 900px) 30vw, 15vw'
+              }
               src={url}
             />
           ))}
