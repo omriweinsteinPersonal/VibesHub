@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   CreatorRecommendationInput,
   DiscountCodeVerificationStatus,
+  PublicRecommendationDetail,
   RecommendationCard,
   RecommendationImage,
   StoryClip,
@@ -53,6 +54,7 @@ interface RecommendationRow {
   categoryName: string;
   categorySlug: string;
   commercialRelationship: RecommendationCard['commercialRelationship'];
+  creatorId: string;
   createdAt: string;
   discountCode: string | null;
   discountId: string | null;
@@ -63,6 +65,7 @@ interface RecommendationRow {
   id: string;
   imageAssetId: string | null;
   imageUrl: string;
+  instagramStoryUrl: string | null;
   images: RecommendationImage[];
   lifecycle: RecommendationCard['lifecycle'];
   merchantHostname: string;
@@ -119,6 +122,7 @@ export class RecommendationRepository {
           offer_id,
           image_asset_id,
           image_url,
+          instagram_story_url,
           review_he,
           video_url,
           discount_code,
@@ -133,6 +137,7 @@ export class RecommendationRepository {
           ${catalog.offerId},
           ${image.assetId},
           ${image.assetId ? null : image.publicUrl},
+          ${input.instagramStoryUrl ?? null},
           ${input.reviewHe},
           ${input.videoUrl ?? null},
           ${input.discountCode?.toUpperCase() ?? null},
@@ -243,6 +248,47 @@ export class RecommendationRepository {
     return mapPublicPage(rows, limit, `storefront:${handle}`, this.redirectBaseUrl);
   }
 
+  async findPublishedById(id: string): Promise<PublicRecommendationDetail | null> {
+    const [row] = await this.database.sql<RecommendationRow[]>`
+      ${this.recommendationSelect(true)}
+      join app.creator_profiles creator on creator.id = recommendation.creator_id
+      where recommendation.id = ${id}
+        and recommendation.lifecycle = 'published'
+        and recommendation.deleted_at is null
+        and recommendation.published_at is not null
+        and creator.status = 'approved'
+        and creator.published_at is not null
+        and brand.status = 'active'
+        and merchant.status = 'active'
+        and category.is_active = true
+        and product.status = 'active'
+        and offer.status = 'active'
+        and affiliate_link.status = 'active'
+        and merchant_domain.allow_redirect = true
+        and merchant_domain.verified_at is not null
+        and (recommendation.image_asset_id is null or media.status = 'ready')
+    `;
+    if (!row) return null;
+    const [creator] = await this.database.sql<
+      { displayName: string; handle: string; id: string; isVerified: boolean }[]
+    >`
+      select id, display_name as "displayName", handle::text as handle,
+        is_verified as "isVerified"
+      from app.creator_profiles
+      where id = ${row.creatorId}
+    `;
+    if (!creator) return null;
+    return {
+      ...mapRecommendationCard(row, this.redirectBaseUrl),
+      creator: {
+        displayName: creator.displayName,
+        handle: creator.handle,
+        id: creator.id,
+        verificationStatus: creator.isVerified ? 'verified' : 'unverified',
+      },
+    };
+  }
+
   async replaceOwned(
     id: string,
     userId: string,
@@ -262,6 +308,7 @@ export class RecommendationRepository {
           offer_id = ${catalog.offerId},
           image_asset_id = ${image.assetId},
           image_url = ${image.assetId ? null : image.publicUrl},
+          instagram_story_url = ${input.instagramStoryUrl ?? null},
           review_he = ${input.reviewHe},
           video_url = ${input.videoUrl ?? null},
           discount_code = ${input.discountCode?.toUpperCase() ?? null},
@@ -608,6 +655,7 @@ export class RecommendationRepository {
     return this.database.sql`
       select
         recommendation.id,
+        recommendation.creator_id as "creatorId",
         recommendation.image_asset_id as "imageAssetId",
         coalesce(media.public_url, recommendation.image_url) as "imageUrl",
         coalesce(
@@ -630,6 +678,7 @@ export class RecommendationRepository {
           '[]'::jsonb
         ) as "images",
         recommendation.review_he as "reviewHe",
+        recommendation.instagram_story_url as "instagramStoryUrl",
         recommendation.video_url as "videoUrl",
         case
           when ${publicProjection} then placed_discount.code::text
@@ -1117,6 +1166,7 @@ function mapRecommendationCard(
     id: row.id,
     imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,
+    instagramStoryUrl: row.instagramStoryUrl,
     images: [
       {
         id: null,

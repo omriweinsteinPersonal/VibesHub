@@ -4,11 +4,13 @@ import type {
   CreatorAnalyticsDashboard,
   CreatorStudioSummary,
 } from '@vibeshub/contracts';
+import Image from 'next/image';
 import Link from 'next/link';
-import { createLucideIcon, Eye, MousePointerClick, Tag, Users } from 'lucide-react';
-import { useEffect, useMemo, useState, type PointerEvent } from 'react';
+import { createLucideIcon, Eye, MousePointerClick, Package, Tag, Users } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
+import { publicAssetUrl } from '../../../lib/public-asset-url';
 import { CreatorShellHeader } from '../../_components/creator-shell-header';
 import { SiteFooter } from '../../_components/site-footer';
 
@@ -90,13 +92,27 @@ export default function CreatorAnalyticsPage() {
 }
 
 function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboard }) {
+  const [category, setCategory] = useState('all');
+  const [product, setProduct] = useState('all');
   const metrics = [
     [Eye, 'Storefront visits', dashboard.summary.storefrontViews],
     [Users, 'Unique visitors', dashboard.summary.uniqueVisitors],
     [MousePointerClick, 'Product clicks', dashboard.summary.shopClicks],
     [Tag, 'Code clicks', dashboard.summary.codeCopies],
-    [Instagram, 'Instagram taps', dashboard.summary.instagramTaps],
   ] as const;
+  const categories = useMemo(
+    () => Array.from(new Map(dashboard.recommendations.map((item) => [
+      item.categorySlug,
+      item.categoryName,
+    ])).entries()),
+    [dashboard.recommendations],
+  );
+  const categoryProducts = dashboard.recommendations.filter(
+    (item) => category === 'all' || item.categorySlug === category,
+  );
+  const visibleProducts = categoryProducts.filter(
+    (item) => product === 'all' || item.id === product,
+  );
   return (
     <>
       <section className="creatorAnalyticsMetrics">
@@ -111,25 +127,80 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
         ))}
       </section>
       <section className="creatorAnalyticsCard">
-        <h2>Traffic — last 30 days</h2>
+        <div className="creatorTrafficHeading">
+          <h2>Traffic — last 30 days</h2>
+          <span>
+            <Instagram aria-hidden="true" size={15} />
+            {dashboard.summary.instagramTaps.toLocaleString('en-IL')} Instagram taps
+          </span>
+        </div>
         <TrafficChart series={dashboard.series} />
       </section>
       <section className="creatorAnalyticsCard productTrafficCard">
-        <h2>Product traffic</h2>
-        <p>Taps on “Shop now”, per product.</p>
-        {dashboard.recommendations.some(({ shopClicks }) => shopClicks > 0) ? (
+        <div className="productTrafficHeading">
+          <div>
+            <h2>Product traffic</h2>
+            <p>Shop link taps by recommendation</p>
+          </div>
+          <span>{visibleProducts.length} products</span>
+        </div>
+        <div className="productTrafficFilters">
+          <label>
+            Category
+            <select
+              value={category}
+              onChange={(event) => {
+                setCategory(event.target.value);
+                setProduct('all');
+              }}
+            >
+              <option value="all">All categories</option>
+              {categories.map(([slug, name]) => (
+                <option key={slug} value={slug}>{name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Product
+            <select value={product} onChange={(event) => setProduct(event.target.value)}>
+              <option value="all">All products</option>
+              {categoryProducts.map((item) => (
+                <option key={item.id} value={item.id}>{item.productName}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {visibleProducts.length ? (
           <div className="productTrafficRows">
-            {dashboard.recommendations.map((item) => (
+            <div className="productTrafficColumns" aria-hidden="true">
+              <span>Product</span><span>Clicks</span>
+            </div>
+            {visibleProducts.map((item) => (
               <div key={item.id}>
-                <span>{item.productName}</span>
+                <span className="productTrafficIdentity">
+                  <span className="productTrafficThumbnail">
+                    {item.imageUrl ? (
+                      <Image
+                        alt=""
+                        fill
+                        sizes="48px"
+                        src={publicAssetUrl(item.imageUrl)}
+                        unoptimized
+                      />
+                    ) : <Package aria-hidden="true" size={19} />}
+                  </span>
+                  <span className="productTrafficName">
+                    <strong>{item.productName}</strong>
+                    <small>{item.categoryName}</small>
+                  </span>
+                </span>
                 <strong>{item.shopClicks.toLocaleString('en-IL')}</strong>
               </div>
             ))}
           </div>
         ) : (
           <div className="creatorAnalyticsEmpty">
-            No product clicks yet — clicks show up here as soon as shoppers tap “Shop
-            now”.
+            No products in this category yet.
           </div>
         )}
       </section>
@@ -139,12 +210,25 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
 
 function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] }) {
   const [hovered, setHovered] = useState<number | null>(null);
+  const [chartWidth, setChartWidth] = useState(320);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setChartWidth(Math.max(280, Math.floor(entry.contentRect.width)));
+    });
+    observer.observe(chart);
+    return () => observer.disconnect();
+  }, []);
+
   const geometry = useMemo(() => {
-    const width = 1000;
-    const height = 300;
-    const left = 42;
-    const top = 20;
-    const bottom = 34;
+    const width = chartWidth;
+    const height = chartWidth < 560 ? 185 : 260;
+    const left = chartWidth < 560 ? 30 : 42;
+    const top = 18;
+    const bottom = 28;
     const maximum = Math.max(
       1,
       ...series.flatMap((item) => [item.storefrontViews, item.shopClicks]),
@@ -159,7 +243,7 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
     const path = (points: Array<{ x: number; y: number }>) =>
       points.map((item, index) => `${index ? 'L' : 'M'} ${item.x} ${item.y}`).join(' ');
     return { bottom, clicks, height, left, path, top, visits, width, yMax };
-  }, [series]);
+  }, [chartWidth, series]);
 
   function move(event: PointerEvent<SVGSVGElement>) {
     if (!series.length) return;
@@ -174,7 +258,7 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
   const active = hovered === null ? null : series[hovered];
   const activePoint = hovered === null ? null : geometry.visits[hovered];
   return (
-    <div className="creatorTrafficChart">
+    <div className="creatorTrafficChart" ref={chartRef}>
       <svg
         aria-label="Storefront visits and product clicks for the last 30 days"
         onPointerLeave={() => setHovered(null)}
@@ -220,7 +304,7 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
           </>
         ) : null}
         {series.map((item, index) =>
-          index % 5 === 0 || index === series.length - 1 ? (
+          index % (chartWidth < 560 ? 7 : 5) === 0 || index === series.length - 1 ? (
             <text
               className="dateLabel"
               key={item.date}

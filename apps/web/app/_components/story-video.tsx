@@ -12,6 +12,7 @@ interface StoryVideoProps {
   productId: string;
   productName: string;
   recommendationId: string;
+  triggerLabel?: string;
   videoUrl?: string;
   videoUrls?: string[];
 }
@@ -22,6 +23,7 @@ export function StoryVideo({
   productId,
   productName,
   recommendationId,
+  triggerLabel,
   videoUrl,
   videoUrls,
 }: StoryVideoProps) {
@@ -135,20 +137,31 @@ export function StoryVideo({
       <button
         aria-haspopup="dialog"
         aria-label={`Watch video preview for ${productName}`}
-        className="storyPreview storyPreviewCircle"
+        className={
+          triggerLabel
+            ? 'button secondary productDetailStoryButton'
+            : 'storyPreview storyPreviewCircle'
+        }
         onClick={showStory}
         ref={trigger}
         type="button"
       >
-        <span
-          className="storyPreviewThumb"
-          style={{ backgroundImage: `url(${posterUrl})` }}
-          aria-hidden="true"
-        >
-          <b>
-            <Play aria-hidden="true" size={14} />
-          </b>
-        </span>
+        {triggerLabel ? (
+          <>
+            <Play aria-hidden="true" size={16} />
+            {triggerLabel}
+          </>
+        ) : (
+          <span
+            className="storyPreviewThumb"
+            style={{ backgroundImage: `url(${posterUrl})` }}
+            aria-hidden="true"
+          >
+            <b>
+              <Play aria-hidden="true" size={14} />
+            </b>
+          </span>
+        )}
       </button>
       {open
         ? createPortal(

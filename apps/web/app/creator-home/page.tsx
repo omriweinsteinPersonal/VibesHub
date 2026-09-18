@@ -7,14 +7,15 @@ import {
   ArrowUpRight,
   ChartColumn,
   LayoutDashboard,
+  Plus,
   Settings,
   Store,
-  WandSparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
+import { publicAssetUrl } from '../../lib/public-asset-url';
 import { CreatorShellHeader } from '../_components/creator-shell-header';
 import { SiteFooter } from '../_components/site-footer';
 
@@ -41,19 +42,50 @@ export default function CreatorHomePage() {
             <section className="creatorWelcome">
               <p className="eyebrow">CREATOR STUDIO</p>
               <div className="creatorWelcomeTitle">
-                {summary.avatarUrl ? (
-                  <span className="creatorWelcomeAvatar">
-                    <Image alt="" fill sizes="84px" src={summary.avatarUrl} unoptimized />
-                  </span>
-                ) : null}
-                <h1>Welcome back, {summary.displayName}</h1>
+                <span className="creatorWelcomeAvatar">
+                  {summary.avatarUrl ? (
+                    <Image
+                      alt=""
+                      fill
+                      sizes="84px"
+                      src={publicAssetUrl(summary.avatarUrl)}
+                      unoptimized
+                    />
+                  ) : (
+                    <b>
+                      {summary.displayName
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join('')
+                        .toUpperCase()}
+                    </b>
+                  )}
+                </span>
+                <div className="creatorWelcomeIdentity">
+                  <h1>Welcome back, {summary.displayName}</h1>
+                  <p>Everything your storefront needs, in one place.</p>
+                </div>
               </div>
-              <p>Everything your storefront needs, in one place.</p>
               <div className="creatorCountPills">
-                <span>{summary.counts.recommendations} recommendations</span>
-                <span>{summary.counts.brandDiscounts} brand discounts</span>
-                <span>{summary.counts.storyClips} story clips</span>
+                <span>
+                  <strong>{summary.counts.recommendations}</strong> recommendations
+                </span>
+                <span>
+                  <strong>{summary.counts.brandDiscounts}</strong> brand discounts
+                </span>
+                <span>
+                  <strong>{summary.counts.collections}</strong> collections
+                </span>
               </div>
+              <Link
+                className="button primary creatorWelcomeAction"
+                href="/dashboard?add=product"
+              >
+                <Plus aria-hidden="true" size={17} />
+                Add recommendation
+              </Link>
             </section>
 
             <section className="creatorHomeGrid">
@@ -89,20 +121,6 @@ export default function CreatorHomePage() {
               >
                 Profile photo, bio, category, media kit and your Instagram link.
               </HomeCard>
-            </section>
-
-            <section className="creatorQuickTip">
-              <span aria-hidden="true">
-                <WandSparkles size={20} />
-              </span>
-              <p>
-                <strong>Quick tip:</strong> paste a product link in the dashboard and
-                we&apos;ll pull the photo, brand and price for you — then attach a story
-                clip so shoppers see it in action.
-              </p>
-              <Link className="button primary" href="/dashboard?add=product">
-                Add a recommendation
-              </Link>
             </section>
           </>
         ) : null}

@@ -44,6 +44,7 @@ interface RecommendationRow {
   id: string;
   imageAssetId: string | null;
   imageUrl: string;
+  instagramStoryUrl: string | null;
   lifecycle: RecommendationCard['lifecycle'];
   merchantHostname: string;
   priceAmountMinor: string;
@@ -244,6 +245,7 @@ export class EngagementRepository {
         recommendation.image_asset_id as "imageAssetId",
         coalesce(media.public_url, recommendation.image_url) as "imageUrl",
         recommendation.review_he as "reviewHe",
+        recommendation.instagram_story_url as "instagramStoryUrl",
         recommendation.video_url as "videoUrl",
         placed_discount.code::text as "discountCode",
         placed_discount.id as "discountId",
@@ -402,6 +404,7 @@ function mapRecommendation(
     id: row.id,
     imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,
+    instagramStoryUrl: row.instagramStoryUrl,
     lifecycle: row.lifecycle,
     merchantHostname: row.merchantHostname,
     price: { amountMinor: Number(row.priceAmountMinor), currency: 'ILS' },

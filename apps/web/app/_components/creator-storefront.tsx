@@ -85,19 +85,19 @@ export function CreatorStorefrontView({
             <p>
               {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
             </p>
-            <div className="referenceStorefrontActions">
-              <FollowCreatorButton creatorId={storefront.id} />
-              {instagram ? (
-                <TrackedInstagramLink
-                  className="button secondary"
-                  creatorId={storefront.id}
-                  href={instagram.url}
-                >
-                  Instagram
-                  <ExternalLink aria-hidden="true" size={14} />
-                </TrackedInstagramLink>
-              ) : null}
-            </div>
+          </div>
+          <div className="referenceStorefrontActions">
+            <FollowCreatorButton creatorId={storefront.id} />
+            {instagram ? (
+              <TrackedInstagramLink
+                className="button secondary"
+                creatorId={storefront.id}
+                href={instagram.url}
+              >
+                Instagram
+                <ExternalLink aria-hidden="true" size={14} />
+              </TrackedInstagramLink>
+            ) : null}
           </div>
           <div className="referenceStorefrontBio">
             <small>{storefront.recommendationCount} recommendations</small>
@@ -224,17 +224,30 @@ function groupRecommendations(
   recommendations: RecommendationCard[],
 ) {
   const sections = storefront.storefrontSections ?? [];
-  if (!sections.length)
+  const curatedSections = storefront.curatedSections ?? [];
+  if (!sections.length && !curatedSections.length)
     return recommendations.length
       ? [{ items: recommendations, key: 'all', title: 'More picks' }]
       : [];
   const used = new Set<string>();
-  const rows = sections.flatMap((category) => {
-    const items = recommendations.filter((item) => item.category.slug === category.slug);
+  const rows = curatedSections.flatMap((section) => {
+    const items = section.recommendationIds.flatMap(
+      (id) => recommendations.find((item) => item.id === id) ?? [],
+    );
     if (!items.length) return [];
     items.forEach(({ id }) => used.add(id));
-    return [{ items, key: category.slug, title: category.name }];
+    return [{ items, key: section.id, title: section.title }];
   });
+  rows.push(
+    ...sections.flatMap((category) => {
+      const items = recommendations.filter(
+        (item) => item.category.slug === category.slug && !used.has(item.id),
+      );
+      if (!items.length) return [];
+      items.forEach(({ id }) => used.add(id));
+      return [{ items, key: category.slug, title: category.name }];
+    }),
+  );
   const remaining = recommendations.filter(({ id }) => !used.has(id));
   if (remaining.length) rows.push({ items: remaining, key: 'more', title: 'More picks' });
   return rows;

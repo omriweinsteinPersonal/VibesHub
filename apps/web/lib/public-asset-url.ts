@@ -11,6 +11,7 @@ export function publicAssetUrl(value: string): string {
     asset.protocol = publicSupabase.protocol;
     asset.hostname = publicSupabase.hostname;
     asset.port = publicSupabase.port;
+    asset.pathname = `${publicSupabase.pathname.replace(/\/$/, '')}${asset.pathname}`;
     return asset.toString();
   } catch {
     return value;

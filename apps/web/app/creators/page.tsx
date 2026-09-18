@@ -1,7 +1,7 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { ArrowRight, Search, Sparkles } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
 import { CreatorCardView } from '../_components/creator-card';
@@ -42,14 +42,41 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
   return (
     <div className="editorialPage">
       <SiteHeader />
-      <section className="directoryHero">
-        <p className="eyebrow">COMMUNITY</p>
-        <h1>The creators behind the recommendations</h1>
+      <section className="directoryHero creatorsAcquisitionHero">
+        <p className="eyebrow">FOR CREATORS</p>
+        <h1>Turn your recommendations into a storefront</h1>
         <p className="lede">
-          Each storefront is run by one person with one point of view. Follow the ones
-          whose taste matches yours.
+          Bring your trusted products, videos and discount codes together in one place
+          your community can return to.
         </p>
+        <div className="creatorsHeroActions">
+          <Link className="button primary" href="/auth?mode=signup&role=creator">
+            Join as a Creator
+            <ArrowRight aria-hidden="true" size={16} />
+          </Link>
+          <Link className="button secondary" href="#creator-community">
+            Meet the community
+          </Link>
+        </div>
+        <div className="creatorValuePoints" aria-label="Creator benefits">
+          <div><Sparkles aria-hidden="true" size={16} />Your own storefront</div>
+          <div><Sparkles aria-hidden="true" size={16} />Recommendations in one place</div>
+          <div><Sparkles aria-hidden="true" size={16} />A direct path for your audience</div>
+        </div>
+      </section>
 
+      <section
+        className="directoryContent creatorsDirectory"
+        id="creator-community"
+        aria-labelledby="directory-title"
+      >
+        <div className="directoryHeading">
+          <div>
+            <p className="eyebrow">THE COMMUNITY</p>
+            <h2 id="directory-title">Creators already on VibesHub</h2>
+          </div>
+          <p>{creators.length} shown</p>
+        </div>
         <form className="directorySearch" action="/creators" method="get" role="search">
           <label htmlFor="creator-search">Search creators</label>
           <div>
@@ -58,7 +85,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
               defaultValue={filters.q}
               id="creator-search"
               name="q"
-              placeholder="Search a creator by name, handle or category…"
+              placeholder="Search by name, handle or category"
               type="search"
             />
             <button className="button primary" type="submit">
@@ -66,17 +93,6 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
             </button>
           </div>
         </form>
-      </section>
-
-      <section className="directoryContent" aria-labelledby="directory-title">
-        <div className="directoryHeading">
-          <div>
-            <p className="eyebrow" id="directory-title">
-              ON VIBESHUB
-            </p>
-          </div>
-          <p>{creators.length} shown</p>
-        </div>
 
         {unavailable ? (
           <div className="directoryState" role="status">

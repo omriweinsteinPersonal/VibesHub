@@ -12,8 +12,26 @@ describe('CreatorStudioService', () => {
     const service = new CreatorStudioService(repository as never);
 
     await expect(
-      service.replaceStorefrontConfiguration('user-id', 2, { categoryIds: [] }),
+      service.replaceStorefrontConfiguration('user-id', 2, {
+        categoryIds: [],
+        curatedSections: [],
+      }),
     ).rejects.toMatchObject({ response: { code: 'PRECONDITION_FAILED' } });
+  });
+
+  it('rejects recommendations outside the creator inventory', async () => {
+    const repository = {
+      replaceStorefrontConfiguration: vi.fn().mockResolvedValue({
+        kind: 'invalid_recommendations',
+      }),
+    };
+    const service = new CreatorStudioService(repository as never);
+    await expect(
+      service.replaceStorefrontConfiguration('user-id', 1, {
+        categoryIds: [],
+        curatedSections: [],
+      }),
+    ).rejects.toMatchObject({ response: { code: 'VALIDATION_FAILED' } });
   });
 
   it('requires an approved creator for media-kit reads', async () => {

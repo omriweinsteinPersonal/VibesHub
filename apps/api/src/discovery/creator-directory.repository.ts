@@ -24,6 +24,7 @@ interface CreatorCardRow {
   recommendationCount: number;
   socialLinks?: CreatorStorefront['socialLinks'];
   storefrontSections?: CreatorStorefront['storefrontSections'];
+  curatedSections?: CreatorStorefront['curatedSections'];
 }
 
 export interface CreatorDirectoryPage {
@@ -150,6 +151,26 @@ export class CreatorDirectoryRepository {
           ),
           '[]'::jsonb
         ) as "storefrontSections",
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'id', section.id,
+                'kind', section.kind,
+                'title', section.title,
+                'recommendationIds', coalesce(
+                  (select jsonb_agg(item.recommendation_id order by item.position)
+                   from app.creator_curated_section_items item
+                   where item.section_id = section.id),
+                  '[]'::jsonb
+                )
+              ) order by section.position
+            )
+            from app.creator_curated_sections section
+            where section.creator_id = creator.id
+          ),
+          '[]'::jsonb
+        ) as "curatedSections",
         (
           select count(*)::integer
           from app.recommendations recommendation
@@ -178,6 +199,7 @@ export class CreatorDirectoryRepository {
           ...mapCreatorCard(row),
           socialLinks: row.socialLinks ?? [],
           storefrontSections: row.storefrontSections ?? [],
+          curatedSections: row.curatedSections ?? [],
         }
       : null;
   }

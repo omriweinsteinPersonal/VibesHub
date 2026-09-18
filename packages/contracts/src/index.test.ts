@@ -4,6 +4,7 @@ import {
   creatorAnalyticsDashboardSchema,
   creatorRecommendationInputSchema,
   creatorRecommendationMoveInputSchema,
+  creatorStorefrontConfigurationInputSchema,
   creatorCardSchema,
   creatorProfilePatchSchema,
   creatorProfileSettingsSchema,
@@ -187,6 +188,39 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 
+  it('accepts Instagram story and Highlight links but rejects other destinations', () => {
+    const input = {
+      brandName: 'Rare Beauty',
+      categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+      imageUrl: 'https://images.example.com/blush.jpg',
+      priceAmountMinor: 12_000,
+      productName: 'Soft Pinch Liquid Blush',
+      productUrl: 'https://shop.example.com/blush',
+      reviewHe: 'A lovely product',
+    };
+    expect(
+      creatorRecommendationInputSchema.parse({
+        ...input,
+        instagramStoryUrl: 'https://www.instagram.com/stories/creator/123456/',
+      }).instagramStoryUrl,
+    ).toBe('https://www.instagram.com/stories/creator/123456/');
+    expect(
+      creatorRecommendationInputSchema.parse({
+        ...input,
+        instagramStoryUrl: 'https://instagram.com/stories/highlights/123456/',
+      }).instagramStoryUrl,
+    ).toBe('https://instagram.com/stories/highlights/123456/');
+    for (const url of [
+      'https://instagram.com.evil.example/stories/creator/123456/',
+      'https://www.instagram.com/reel/123456/',
+      'http://www.instagram.com/stories/creator/123456/',
+    ]) {
+      expect(() =>
+        creatorRecommendationInputSchema.parse({ ...input, instagramStoryUrl: url }),
+      ).toThrow();
+    }
+  });
+
   it('allows only one bounded storefront move direction', () => {
     expect(creatorRecommendationMoveInputSchema.parse({ direction: 'up' })).toEqual({
       direction: 'up',
@@ -196,6 +230,33 @@ describe('shared API contracts', () => {
     ).toThrow();
     expect(() =>
       creatorRecommendationMoveInputSchema.parse({ direction: 'down', id: 'extra' }),
+    ).toThrow();
+  });
+
+  it('validates creator-owned section definitions without changing global categories', () => {
+    const section = {
+      id: '01989f72-07e4-7f32-9b42-1ba55d4ca020',
+      kind: 'collection',
+      title: 'Fox favorites',
+      recommendationIds: ['01989f72-07e4-7f32-9b42-1ba55d4ca021'],
+    };
+    expect(
+      creatorStorefrontConfigurationInputSchema.parse({
+        categoryIds: [],
+        curatedSections: [section],
+      }).curatedSections,
+    ).toEqual([section]);
+    expect(() =>
+      creatorStorefrontConfigurationInputSchema.parse({
+        categoryIds: [],
+        curatedSections: [section, section],
+      }),
+    ).toThrow();
+    expect(() =>
+      creatorStorefrontConfigurationInputSchema.parse({
+        categoryIds: [],
+        curatedSections: [{ ...section, title: '' }],
+      }),
     ).toThrow();
   });
 
@@ -328,8 +389,11 @@ describe('shared API contracts', () => {
       range: { days: 7, from: '2026-08-02', to: '2026-08-08' },
       recommendations: [
         {
+          categoryName: 'Beauty',
+          categorySlug: 'beauty',
           codeCopies: 2,
           id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+          imageUrl: null,
           productName: 'Soft Pinch Liquid Blush',
           shopClicks: 4,
           storyCompletions: 3,

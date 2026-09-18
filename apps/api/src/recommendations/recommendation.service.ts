@@ -74,6 +74,7 @@ export class RecommendationService {
       discountLabel: current.discount?.label ?? null,
       imageAssetId: current.imageAssetId,
       imageUrl: current.imageAssetId ? null : current.imageUrl,
+      instagramStoryUrl: current.instagramStoryUrl,
       additionalImages: (current.images ?? [])
         .slice(1)
         .map((image) =>

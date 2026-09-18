@@ -35,6 +35,7 @@ interface EditorState {
   discountLabel: string;
   imageAssetId: string;
   imageUrl: string;
+  instagramStoryUrl: string;
   priceIls: string;
   productName: string;
   productUrl: string;
@@ -52,6 +53,7 @@ const emptyEditor: EditorState = {
   discountLabel: '',
   imageAssetId: '',
   imageUrl: '',
+  instagramStoryUrl: '',
   priceIls: '',
   productName: '',
   productUrl: '',
@@ -132,6 +134,7 @@ export default function CreatorRecommendationsPage() {
         discountLabel: editor.discountLabel.trim() || null,
         imageAssetId: editor.imageAssetId || null,
         imageUrl: editor.imageAssetId ? null : editor.imageUrl || null,
+        instagramStoryUrl: editor.instagramStoryUrl.trim() || null,
         priceAmountMinor: Math.round(amount * 100),
         productName: editor.productName,
         productUrl: editor.productUrl,
@@ -225,6 +228,7 @@ export default function CreatorRecommendationsPage() {
       discountLabel: recommendation.discount?.label ?? '',
       imageAssetId: recommendation.imageAssetId ?? '',
       imageUrl: recommendation.imageUrl,
+      instagramStoryUrl: recommendation.instagramStoryUrl ?? '',
       priceIls: String(recommendation.price.amountMinor / 100),
       productName: recommendation.productName,
       productUrl: recommendation.productUrl,
@@ -453,6 +457,16 @@ export default function CreatorRecommendationsPage() {
                 placeholder="10% off"
                 value={editor.discountLabel}
                 onChange={(event) => update('discountLabel', event.target.value)}
+              />
+            </label>
+            <label>
+              Instagram story or Highlight link (optional)
+              <input
+                pattern="https://(www\.)?instagram\.com/stories/.+"
+                placeholder="https://www.instagram.com/stories/..."
+                type="url"
+                value={editor.instagramStoryUrl}
+                onChange={(event) => update('instagramStoryUrl', event.target.value)}
               />
             </label>
             <label>

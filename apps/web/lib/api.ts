@@ -4,6 +4,7 @@ import { getSupabaseBrowserClient } from './supabase-browser';
 
 interface ProblemDetails {
   detail?: string;
+  errors?: Array<{ field?: string; message?: string }>;
   title?: string;
 }
 
@@ -69,10 +70,7 @@ async function collectionRequest<T>(
     page?: { hasMore: boolean; nextCursor: string | null };
   } & ProblemDetails;
   if (!response.ok) {
-    throw new ApiError(
-      body.detail ?? body.title ?? 'The request failed.',
-      response.status,
-    );
+    throw new ApiError(problemMessage(body), response.status);
   }
   return {
     data: body.data ?? [],
@@ -85,10 +83,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.status === 204) return undefined as T;
   const body = (await response.json()) as { data?: T } & ProblemDetails;
   if (!response.ok) {
-    throw new ApiError(
-      body.detail ?? body.title ?? 'The request failed.',
-      response.status,
-    );
+    throw new ApiError(problemMessage(body), response.status);
   }
   return body.data as T;
+}
+
+function problemMessage(body: ProblemDetails): string {
+  const issue = body.errors?.[0];
+  if (issue?.message) {
+    return `${issue.field ? `${issue.field}: ` : ''}${issue.message}`;
+  }
+  return body.detail ?? body.title ?? 'The request failed.';
 }

@@ -24,6 +24,13 @@ interface StorefrontSectionRow {
   version: number;
 }
 
+interface CuratedSectionRow {
+  id: string;
+  kind: 'section' | 'collection';
+  title: string;
+  recommendationIds: string[];
+}
+
 interface MediaKitRow {
   agentAgencyName: string | null;
   agentEmail: string | null;
@@ -46,6 +53,7 @@ interface MediaKitRow {
 
 export type CreatorStudioUpdateResult<T> =
   | { kind: 'invalid_categories' }
+  | { kind: 'invalid_recommendations' }
   | { kind: 'not_found' }
   | { actualVersion: number; kind: 'version_conflict' }
   | { data: T; kind: 'updated' };
@@ -58,6 +66,7 @@ export class CreatorStudioRepository {
     const [row] = await this.database.sql<
       (CreatorIdentityRow & {
         brandDiscounts: number;
+        collections: number;
         recommendationCount: number;
         storyClips: number;
       })[]
@@ -88,6 +97,12 @@ export class CreatorStudioRepository {
         ) as "brandDiscounts",
         (
           select count(*)::integer
+          from app.creator_curated_sections section
+          where section.creator_id = creator.id
+            and section.kind = 'collection'
+        ) as collections,
+        (
+          select count(*)::integer
           from app.recommendation_story_clips clip
           join app.recommendations recommendation
             on recommendation.id = clip.recommendation_id
@@ -108,6 +123,7 @@ export class CreatorStudioRepository {
           avatarUrl: row.avatarUrl,
           counts: {
             brandDiscounts: row.brandDiscounts,
+            collections: row.collections,
             recommendations: row.recommendationCount,
             storyClips: row.storyClips,
           },
@@ -159,6 +175,22 @@ export class CreatorStudioRepository {
       if ((categoryCount?.count ?? 0) !== input.categoryIds.length) {
         return { kind: 'invalid_categories' };
       }
+      const recommendationIds = [
+        ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
+      ];
+      if (recommendationIds.length) {
+        const [owned] = await sql<{ count: number }[]>`
+          select count(*)::integer as count
+          from app.recommendations
+          where creator_id = ${identity.id}
+            and id = any(${recommendationIds}::uuid[])
+            and lifecycle <> 'archived'
+            and deleted_at is null
+        `;
+        if (owned?.count !== recommendationIds.length) {
+          return { kind: 'invalid_recommendations' };
+        }
+      }
 
       await sql`delete from app.creator_storefront_sections where creator_id = ${identity.id}`;
       for (const [position, categoryId] of input.categoryIds.entries()) {
@@ -166,6 +198,23 @@ export class CreatorStudioRepository {
           insert into app.creator_storefront_sections (creator_id, category_id, position)
           values (${identity.id}, ${categoryId}, ${position})
         `;
+      }
+      await sql`delete from app.creator_curated_sections where creator_id = ${identity.id}`;
+      for (const [position, section] of input.curatedSections.entries()) {
+        await sql`
+          insert into app.creator_curated_sections (id, creator_id, kind, title, position)
+          values (${section.id}, ${identity.id}, ${section.kind}, ${section.title}, ${position})
+        `;
+        for (const [
+          itemPosition,
+          recommendationId,
+        ] of section.recommendationIds.entries()) {
+          await sql`
+            insert into app.creator_curated_section_items
+              (section_id, recommendation_id, position)
+            values (${section.id}, ${recommendationId}, ${itemPosition})
+          `;
+        }
       }
       await sql`
         update app.creator_storefront_preferences
@@ -293,7 +342,22 @@ export class CreatorStudioRepository {
       where preference.creator_id = ${creatorId}
       order by section.position
     `;
+    const curatedRows = await sql<CuratedSectionRow[]>`
+      select
+        section.id,
+        section.kind,
+        section.title,
+        coalesce(jsonb_agg(item.recommendation_id order by item.position)
+          filter (where item.recommendation_id is not null), '[]'::jsonb)
+          as "recommendationIds"
+      from app.creator_curated_sections section
+      left join app.creator_curated_section_items item on item.section_id = section.id
+      where section.creator_id = ${creatorId}
+      group by section.id
+      order by section.position
+    `;
     return {
+      curatedSections: curatedRows,
       sections: rows.flatMap((row) =>
         row.categoryId
           ? [

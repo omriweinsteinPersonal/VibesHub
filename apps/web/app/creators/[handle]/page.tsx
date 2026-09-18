@@ -23,18 +23,13 @@ export const metadata: Metadata = {
 
 interface CreatorStorefrontPageProps {
   params: Promise<{ handle: string }>;
-  searchParams: Promise<{ cursor?: string }>;
 }
 
 export default async function CreatorStorefrontPage({
   params,
-  searchParams,
 }: CreatorStorefrontPageProps) {
   const { handle } = await params;
-  const filters = await searchParams;
   const creatorSession = await hasCreatorSession();
-  const query = new URLSearchParams({ limit: '48' });
-  if (filters.cursor) query.set('cursor', filters.cursor);
 
   let storefront: CreatorStorefront;
   let recommendations: RecommendationCard[] = [];
@@ -43,15 +38,13 @@ export default async function CreatorStorefrontPage({
     const [creatorResponse, recommendationResponse, discountCodeResponse] =
       await Promise.all([
         publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
-        publicApiCollectionRequest<RecommendationCard>(
-          `/creators/${encodeURIComponent(handle)}/recommendations?${query.toString()}`,
-        ),
+        loadStorefrontRecommendations(handle),
         publicApiCollectionRequest<PublicDiscountCode>(
           `/creators/${encodeURIComponent(handle)}/discount-codes`,
         ),
       ]);
     storefront = creatorResponse;
-    recommendations = recommendationResponse.data;
+    recommendations = recommendationResponse;
     discountCodes = discountCodeResponse.data;
   } catch (cause) {
     if (cause instanceof ApiError && cause.status === 404) notFound();
@@ -71,6 +64,23 @@ export default async function CreatorStorefrontPage({
       <SiteFooter />
     </div>
   );
+}
+
+async function loadStorefrontRecommendations(
+  handle: string,
+): Promise<RecommendationCard[]> {
+  const items: RecommendationCard[] = [];
+  let cursor: string | null = null;
+  do {
+    const query = new URLSearchParams({ limit: '48' });
+    if (cursor) query.set('cursor', cursor);
+    const page = await publicApiCollectionRequest<RecommendationCard>(
+      `/creators/${encodeURIComponent(handle)}/recommendations?${query.toString()}`,
+    );
+    items.push(...page.data);
+    cursor = page.page.nextCursor;
+  } while (cursor);
+  return items;
 }
 
 function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) {

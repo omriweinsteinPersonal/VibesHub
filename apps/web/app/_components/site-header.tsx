@@ -57,6 +57,16 @@ export function SiteHeader() {
           icon: LogIn,
           label: 'Login',
         },
+    ...(shopperSession
+      ? [
+          {
+            active: pathname === '/account',
+            href: '/account',
+            icon: UserRound,
+            label: 'Account',
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
@@ -65,6 +75,11 @@ export function SiteHeader() {
 
     async function refreshShopperSession() {
       try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          if (active) setShopperSession(false);
+          return;
+        }
         const account = await apiRequest<AccountSummary>('/me');
         if (active) setShopperSession(!account.creator);
       } catch (cause) {
@@ -77,8 +92,12 @@ export function SiteHeader() {
     }
 
     void refreshShopperSession();
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      void refreshShopperSession();
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session || event === 'SIGNED_OUT') {
+        setShopperSession(false);
+        return;
+      }
+      window.setTimeout(() => void refreshShopperSession(), 0);
     });
     return () => {
       active = false;
@@ -147,7 +166,10 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
-      <nav aria-label="Mobile navigation" className="mobileTabBar">
+      <nav
+        aria-label="Mobile navigation"
+        className={`mobileTabBar${shopperSession ? ' mobileTabBarShopper' : ''}`}
+      >
         {mobileLinks.map(({ active, href, icon: Icon, label }) => (
           <Link aria-current={active ? 'page' : undefined} href={href} key={href}>
             <Icon aria-hidden="true" />

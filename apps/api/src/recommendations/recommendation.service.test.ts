@@ -13,6 +13,7 @@ const recommendation: CreatorRecommendationRecord = {
   id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
   imageAssetId: null,
   imageUrl: 'https://images.example.com/blush.jpg',
+  instagramStoryUrl: null,
   lifecycle: 'published',
   merchantHostname: 'shop.example.com',
   position: 2,

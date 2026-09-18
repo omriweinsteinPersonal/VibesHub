@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import { LogOut, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
+import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { CreatorAccount } from '../_components/creator-account';
 import { SiteHeader } from '../_components/site-header';
 
@@ -17,6 +19,7 @@ interface AccountSummary {
 }
 
 export default function AccountPage() {
+  const router = useRouter();
   const [account, setAccount] = useState<AccountSummary | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'signedOut' | 'error'>(
     'loading',
@@ -42,6 +45,12 @@ export default function AccountPage() {
         setState('error');
       });
   }, []);
+
+  async function signOut() {
+    await getSupabaseBrowserClient().auth.signOut();
+    router.replace('/');
+    router.refresh();
+  }
 
   if (state === 'ready' && account?.creator) {
     return <CreatorAccount {...(account.email ? { email: account.email } : {})} />;
@@ -76,6 +85,14 @@ export default function AccountPage() {
               <h2>Shopper profile</h2>
               <p>{account.email}</p>
               <p>{account.capabilities.length} active platform capabilities</p>
+              <button
+                className="button secondary accountSignOutButton"
+                onClick={() => void signOut()}
+                type="button"
+              >
+                <LogOut aria-hidden="true" size={16} />
+                Sign out
+              </button>
             </article>
             <article className="workspaceCard">
               <h2>Creator journey</h2>

@@ -29,9 +29,136 @@ svg.lucide {
 }
 
 .mobileMenuButton,
+.creatorMobileSignOut,
+.creatorBottomBar,
 .mobileNavigation,
 .mobileTabBar {
   display: none;
+}
+
+@media (max-width: 900px) {
+  body:has(.creatorBottomBar) {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .creatorBottomBar {
+    align-items: start;
+    background: rgb(255 254 251 / 98%);
+    border-top: 1px solid var(--vh-border);
+    bottom: 0;
+    box-shadow: 0 -6px 24px rgb(43 33 28 / 7%);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    left: 0;
+    padding: 7px max(8px, env(safe-area-inset-right))
+      calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    position: fixed;
+    right: 0;
+    z-index: 1000;
+  }
+
+  .creatorBottomBar a {
+    align-items: center;
+    color: var(--vh-muted);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.68rem;
+    gap: 3px;
+    justify-content: center;
+    min-height: 48px;
+    min-width: 0;
+    touch-action: manipulation;
+  }
+
+  .creatorBottomBar svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .creatorBottomBar a[aria-current='page'] {
+    color: var(--vh-accent-strong);
+    font-weight: 600;
+  }
+
+  .creatorShellActions > a,
+  .creatorShellActions > .button {
+    display: none;
+  }
+
+  .creatorMobileSignOut {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--vh-muted);
+    cursor: pointer;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+    touch-action: manipulation;
+    width: 44px;
+  }
+
+  .creatorMobileSignOut svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .creatorMobileSignOut:focus-visible,
+  .creatorMobileSignOut:hover {
+    color: var(--vh-accent-strong);
+  }
+
+  .creatorComposer {
+    scroll-margin-top: 84px;
+  }
+
+  .creatorComposer form,
+  .creatorComposerBody,
+  .creatorFormGrid,
+  .creatorFormGrid > *,
+  .creatorFullField,
+  .creatorInlineField,
+  .creatorProductPhotos,
+  .creatorStoryFields {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .creatorComposer input,
+  .creatorComposer select,
+  .creatorComposer textarea {
+    min-width: 0;
+  }
+
+  .creatorProductLinkField > label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    margin-bottom: 8px;
+  }
+
+  .creatorProductLinkField .creatorInlineField,
+  .creatorStoryFields > .creatorInlineField {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .creatorProductLinkField .creatorInlineField > input,
+  .creatorStoryFields > .creatorInlineField > input {
+    width: 100%;
+  }
+
+  .creatorComposerHeader,
+  .creatorFormActions {
+    position: static;
+  }
+
+  .creatorFormActions {
+    flex-wrap: wrap;
+  }
 }
 
 /* Creator studio reference experience */
@@ -106,6 +233,17 @@ svg.lucide {
   margin-bottom: 0;
 }
 
+.creatorWelcome > .eyebrow {
+  margin: 0 0 24px;
+}
+
+.creatorWelcomeAction {
+  gap: 7px;
+  margin-bottom: 28px;
+  min-height: 42px;
+  padding: 0 16px;
+}
+
 .creatorWelcomeTitle {
   align-items: center;
   display: flex;
@@ -122,7 +260,7 @@ svg.lucide {
   margin: 8px 0;
 }
 
-.creatorWelcome > p:last-of-type,
+.creatorWelcomeIdentity p,
 .creatorDashboardIntro > div > p:last-child,
 .creatorAnalyticsHeading p,
 .creatorAccountHeading p {
@@ -168,12 +306,20 @@ svg.lucide {
 .creatorCountPills {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 28px;
-  margin-top: 36px;
+  gap: 8px;
+  margin: 24px 0 12px;
 }
 
-.creatorCountPills span,
+.creatorCountPills span {
+  align-items: center;
+  background: #f5f0e8;
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 5px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+
 .creatorAccountHeadingActions > span {
   background: #f5f0e8;
   border-radius: 999px;
@@ -236,38 +382,6 @@ svg.lucide {
   height: 46px;
   justify-content: center;
   width: 46px;
-}
-
-.creatorQuickTip {
-  align-items: center;
-  background: #fbf5eb;
-  border: 1px solid #e8ddcf;
-  border-radius: 28px;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: auto 1fr auto;
-  margin-top: 42px;
-  padding: 30px 38px;
-}
-
-.creatorQuickTip > span {
-  align-items: center;
-  background: white;
-  border-radius: 50%;
-  color: var(--vh-accent);
-  display: inline-flex;
-  height: 42px;
-  justify-content: center;
-  width: 42px;
-}
-
-.creatorQuickTip p {
-  color: #746a63;
-  line-height: 1.55;
-  margin: 0;
-}
-.creatorQuickTip strong {
-  color: var(--vh-ink);
 }
 
 .creatorDashboardIntro,
@@ -922,32 +1036,30 @@ svg.lucide {
 }
 
 .creatorAnalyticsHeading {
-  margin-bottom: 45px;
+  margin-bottom: 24px;
 }
 .creatorAnalyticsHeading h1 {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 .creatorAnalyticsMetrics {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-bottom: 30px;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
 }
 .creatorAnalyticsMetrics article {
   border: 1px solid #e5dcd1;
-  border-radius: 26px;
-  min-height: 136px;
-  padding: 25px;
+  border-radius: 16px;
+  min-height: 110px;
+  padding: 18px;
 }
 .creatorAnalyticsMetrics p {
   align-items: center;
   color: #80746b;
   display: flex;
   font-size: 0.75rem;
-  gap: 9px;
-  letter-spacing: 0.14em;
-  margin: 0 0 18px;
-  text-transform: uppercase;
+  gap: 8px;
+  margin: 0 0 12px;
 }
 .creatorAnalyticsMetrics strong {
   font-family:
@@ -959,14 +1071,30 @@ svg.lucide {
   font-weight: 400;
 }
 .creatorAnalyticsCard {
-  margin-bottom: 28px;
-  padding: 30px;
+  margin-bottom: 16px;
+  padding: 22px;
 }
 .creatorAnalyticsCard h2 {
-  margin: 0 0 20px;
+  margin: 0;
+}
+.creatorTrafficHeading,
+.productTrafficHeading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.creatorTrafficHeading > span,
+.productTrafficHeading > span {
+  align-items: center;
+  color: #7d7168;
+  display: inline-flex;
+  font-size: 0.75rem;
+  gap: 6px;
 }
 .creatorTrafficChart {
-  min-height: 320px;
   position: relative;
 }
 .creatorTrafficChart svg {
@@ -1023,27 +1151,97 @@ svg.lucide {
   color: #7b6f67;
   font-size: 0.83rem;
 }
-.productTrafficCard > p {
+.productTrafficHeading p {
   color: #7d7168;
-  margin-top: -12px;
+  font-size: 0.82rem;
+  margin: 3px 0 0;
+}
+.productTrafficFilters {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.productTrafficFilters label {
+  color: #7d7168;
+  display: grid;
+  font-size: 0.72rem;
+  gap: 5px;
+}
+.productTrafficFilters select {
+  background: #fff;
+  border: 1px solid #e5dcd1;
+  border-radius: 8px;
+  color: var(--vh-ink);
+  font: inherit;
+  font-size: 0.82rem;
+  min-height: 40px;
+  min-width: 0;
+  padding: 0 9px;
+  width: 100%;
 }
 .creatorAnalyticsEmpty {
   border: 1px dashed #dfd5c9;
-  border-radius: 24px;
+  border-radius: 12px;
   color: #81766e;
-  margin-top: 30px;
-  padding: 36px;
+  margin-top: 12px;
+  padding: 22px;
   text-align: center;
 }
 .productTrafficRows {
   display: grid;
-  margin-top: 24px;
+  margin-top: 14px;
 }
 .productTrafficRows > div {
   border-top: 1px solid #eee5dc;
-  display: flex;
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
   justify-content: space-between;
-  padding: 16px 4px;
+  padding: 9px 2px;
+}
+.productTrafficRows > .productTrafficColumns {
+  border-top: 0;
+  color: #8a7e74;
+  font-size: 0.7rem;
+  padding: 4px 2px 8px;
+}
+.productTrafficIdentity {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+.productTrafficThumbnail {
+  align-items: center;
+  background: #f5f0e8;
+  border-radius: 6px;
+  color: #9a8d82;
+  display: inline-flex;
+  flex: 0 0 46px;
+  height: 46px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.productTrafficThumbnail img {
+  object-fit: cover;
+}
+.productTrafficName {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.productTrafficName strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.productTrafficName small {
+  color: #8a7e74;
+  font-size: 0.7rem;
 }
 
 .referenceAuthMain {
@@ -1170,10 +1368,14 @@ svg.lucide {
 .referenceStorefrontInner {
   align-items: center;
   display: grid;
-  gap: 40px;
-  grid-template-columns: 190px 1fr 1fr;
+  column-gap: 36px;
+  grid-template-areas:
+    'avatar identity bio'
+    'avatar actions bio';
+  grid-template-columns: 190px minmax(0, 1fr) minmax(280px, 0.9fr);
   margin: 0 auto;
   max-width: 1580px;
+  row-gap: 16px;
 }
 .referenceStorefrontAvatar {
   border: 5px solid white;
@@ -1181,6 +1383,7 @@ svg.lucide {
   box-shadow: 0 5px 20px rgb(55 39 27 / 10%);
   display: grid;
   height: 175px;
+  grid-area: avatar;
   overflow: hidden;
   place-items: center;
   position: relative;
@@ -1193,6 +1396,10 @@ svg.lucide {
   align-items: center;
   display: flex;
   gap: 14px;
+}
+.referenceStorefrontName {
+  align-self: end;
+  grid-area: identity;
 }
 .referenceStorefrontName h1 {
   font-size: clamp(2.8rem, 4vw, 4.2rem);
@@ -1211,14 +1418,21 @@ svg.lucide {
 .referenceStorefrontName > p {
   color: #776c64;
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 6px 0 0;
 }
 .referenceStorefrontActions {
+  align-self: start;
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  grid-area: actions;
+}
+.referenceStorefrontActions .engagementAction {
+  margin-top: 0;
 }
 .referenceStorefrontBio {
+  grid-area: bio;
   justify-self: end;
   max-width: 600px;
   text-align: right;
@@ -1392,17 +1606,9 @@ svg.lucide {
   .creatorAccountMain {
     padding: 58px 20px;
   }
-  .creatorHomeGrid,
   .creatorTypeGrid,
   .creatorFormGrid {
     grid-template-columns: 1fr;
-  }
-  .creatorQuickTip {
-    align-items: start;
-    grid-template-columns: auto 1fr;
-  }
-  .creatorQuickTip .button {
-    grid-column: 1 / -1;
   }
   .creatorDashboardIntro,
   .creatorAnalyticsHeading,
@@ -1446,11 +1652,10 @@ svg.lucide {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .creatorTrafficChart {
-    min-height: 220px;
-    overflow-x: auto;
+    min-height: 0;
   }
   .creatorTrafficChart svg {
-    min-width: 720px;
+    min-width: 0;
   }
   .referenceAuthMain {
     grid-template-columns: 1fr;
@@ -1463,14 +1668,17 @@ svg.lucide {
     padding: 55px 20px;
   }
   .referenceStorefrontInner {
-    grid-template-columns: 110px 1fr;
+    grid-template-areas:
+      'avatar identity'
+      'actions actions'
+      'bio bio';
+    grid-template-columns: 110px minmax(0, 1fr);
   }
   .referenceStorefrontAvatar {
     height: 105px;
     width: 105px;
   }
   .referenceStorefrontBio {
-    grid-column: 1 / -1;
     justify-self: stretch;
     text-align: left;
   }
@@ -1503,21 +1711,91 @@ svg.lucide {
     width: 16px;
   }
   .creatorWelcomeTitle {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
   .creatorWelcome h1 {
-    font-size: 2.75rem;
+    font-size: 1.55rem;
+    line-height: 1.15;
+    margin: 0 0 5px;
   }
-  .creatorHomeCard {
-    min-height: 0;
-    padding: 26px;
+  .creatorWelcomeIdentity p {
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .creatorWelcomeAvatar {
+    height: 62px;
+    width: 62px;
+  }
+  .creatorWelcome > .eyebrow {
+    margin-bottom: 20px;
+  }
+  .creatorWelcomeAction {
+    font-size: 0.8rem;
+    margin-bottom: 24px;
+    min-height: 40px;
+    padding: 0 12px;
+  }
+  .creatorCountPills {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 22px 0 12px;
   }
   .creatorCountPills span {
-    padding: 8px 12px;
+    border-radius: 8px;
+    display: block;
+    font-size: 0.7rem;
+    line-height: 1.25;
+    min-width: 0;
+    padding: 10px 8px;
+    text-align: center;
+    white-space: normal;
   }
-  .creatorQuickTip {
-    padding: 24px 20px;
+  .creatorCountPills strong {
+    display: block;
+    font-size: 1rem;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .creatorHomeGrid {
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .creatorHomeCard {
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+    padding: 18px;
+  }
+  .creatorHomeIcon {
+    height: 38px;
+    width: 38px;
+  }
+  .creatorHomeIcon svg {
+    height: 18px;
+    width: 18px;
+  }
+  .creatorHomeCard h2 {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    margin: 16px 0 7px;
+  }
+  .creatorHomeCard p {
+    display: -webkit-box;
+    font-size: 0.76rem;
+    line-height: 1.35;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  .creatorHomeCard > a {
+    font-size: 0.76rem;
+    line-height: 1.3;
+    margin-top: auto;
+    padding-top: 12px;
   }
   .creatorSectionHeading .button {
     width: 100%;
@@ -1530,8 +1808,55 @@ svg.lucide {
     flex-direction: column;
     gap: 8px;
   }
+  .creatorAnalyticsMain {
+    padding-top: 26px;
+  }
+  .creatorAnalyticsHeading {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .creatorAnalyticsHeading h1 {
+    font-size: 1.9rem;
+  }
+  .creatorAnalyticsHeading .button {
+    min-height: 36px;
+  }
   .creatorAnalyticsMetrics {
-    grid-template-columns: 1fr;
+    gap: 9px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 12px;
+  }
+  .creatorAnalyticsMetrics article {
+    min-height: 100px;
+    padding: 13px;
+  }
+  .creatorAnalyticsMetrics p {
+    font-size: 0.72rem;
+    gap: 6px;
+    line-height: 1.3;
+    margin-bottom: 7px;
+  }
+  .creatorAnalyticsMetrics strong {
+    font-size: 1.9rem;
+  }
+  .creatorAnalyticsCard {
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 16px;
+  }
+  .creatorAnalyticsCard h2 {
+    font-size: 1.3rem;
+  }
+  .creatorTrafficHeading {
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .productTrafficFilters {
+    gap: 8px;
+  }
+  .productTrafficThumbnail {
+    flex-basis: 42px;
+    height: 42px;
   }
   .creatorAccountHeadingActions {
     align-items: flex-start;
@@ -1542,8 +1867,8 @@ svg.lucide {
   }
   .referenceStorefrontInner {
     align-items: start;
-    gap: 18px;
-    grid-template-columns: 82px 1fr;
+    gap: 16px;
+    grid-template-columns: 82px minmax(0, 1fr);
   }
   .referenceStorefrontAvatar {
     height: 78px;
@@ -1553,12 +1878,12 @@ svg.lucide {
     font-size: 2.2rem;
   }
   .referenceStorefrontName > p {
-    flex-direction: column;
-    gap: 3px;
+    gap: 2px 10px;
   }
   .referenceStorefrontActions {
     align-items: stretch;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .referenceStorefrontRow > header > div:last-child {
     display: none;
@@ -2817,6 +3142,22 @@ h1 em {
   text-transform: uppercase;
 }
 
+.instagramStoryLink {
+  align-items: center;
+  color: var(--vh-accent-strong);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 7px;
+  margin-top: 14px;
+  width: fit-content;
+}
+
+.instagramStoryLink:hover,
+.instagramStoryLink:focus-visible {
+  text-decoration: underline;
+}
+
 .discoveryCreator {
   align-items: center;
   color: var(--vh-muted);
@@ -3771,6 +4112,59 @@ dt {
   object-fit: cover;
 }
 
+.creatorsAcquisitionHero {
+  padding-bottom: 82px;
+}
+
+.creatorsAcquisitionHero h1 {
+  max-width: 760px;
+}
+
+.creatorsHeroActions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.creatorsHeroActions .button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.creatorValuePoints {
+  border-top: 1px solid var(--vh-border);
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 56px;
+  max-width: 920px;
+  padding-top: 22px;
+}
+
+.creatorValuePoints > div {
+  align-items: center;
+  color: var(--vh-muted);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 8px;
+}
+
+.creatorValuePoints svg {
+  color: var(--vh-accent);
+}
+
+.creatorsDirectory {
+  border-top: 1px solid var(--vh-border);
+  padding-top: 64px;
+}
+
+.creatorsDirectory .directorySearch {
+  margin-bottom: 36px;
+  margin-top: 0;
+}
+
 .rotatingHeroCollage {
   display: grid;
   gap: 5px;
@@ -4162,6 +4556,10 @@ dt {
     z-index: 1000;
   }
 
+  .mobileTabBarShopper {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .mobileTabBar a {
     align-items: center;
     color: var(--vh-muted);
@@ -4207,6 +4605,30 @@ dt {
     justify-content: center;
     padding: 0;
     width: 44px;
+  }
+
+  .creatorMobileSignOut {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--vh-muted);
+    cursor: pointer;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+    touch-action: manipulation;
+    width: 44px;
+  }
+
+  .creatorMobileSignOut svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .creatorMobileSignOut:focus-visible,
+  .creatorMobileSignOut:hover {
+    color: var(--vh-accent-strong);
   }
 
   .mobileMenuButton svg {
@@ -4484,6 +4906,13 @@ dt {
 .siteHeaderIconAction svg {
   height: 18px;
   width: 18px;
+}
+
+.accountSignOutButton {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .savedProductsHero {
@@ -4769,6 +5198,12 @@ dt {
   .shopperAccountLink,
   .shopperSignOut {
     display: none;
+  }
+
+  .accountSignOutButton {
+    justify-content: center;
+    min-height: 46px;
+    width: 100%;
   }
 
   .savedProductsHero {
@@ -5152,6 +5587,156 @@ dt {
     min-height: 44px;
     padding-inline: 8px;
   }
+
+  .editorialPage .trust {
+    margin: 54px 20px 32px;
+    padding: 44px 20px;
+    width: auto;
+  }
+
+  .editorialPage .trustGrid {
+    display: grid;
+    gap: 30px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 34px;
+    overflow: visible;
+  }
+
+  .trustGrid article {
+    min-width: 0;
+  }
+
+  .trustGrid h3 {
+    margin-top: 14px;
+  }
+
+  .creatorsHeroActions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 26px;
+  }
+
+  .creatorsHeroActions .button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .creatorValuePoints {
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 34px;
+    padding-top: 18px;
+  }
+
+  .creatorValuePoints > div {
+    font-size: 0.8rem;
+  }
+
+  .creatorsAcquisitionHero {
+    padding-bottom: 42px;
+    padding-top: 44px;
+  }
+
+  .creatorsAcquisitionHero h1 {
+    font-size: 2.55rem;
+    line-height: 0.98;
+    margin-top: 16px;
+  }
+
+  .creatorsAcquisitionHero .lede {
+    font-size: 0.96rem;
+    line-height: 1.6;
+  }
+
+  .creatorsDirectory {
+    padding-top: 42px;
+  }
+
+  .creatorsDirectory .directoryHeading {
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .creatorsDirectory .directoryHeading h2 {
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+
+  .creatorsDirectory .directoryHeading > p {
+    font-size: 0.72rem;
+  }
+
+  .creatorsDirectory .directorySearch {
+    margin-bottom: 28px;
+  }
+
+  .creatorsDirectory .directorySearch input {
+    font-size: 16px;
+    min-height: 54px;
+  }
+
+  .creatorsDirectory .directorySearch .button {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .discoverSearch {
+    max-width: none;
+    width: 100%;
+  }
+
+  .discoverSearch input {
+    font-size: 16px;
+    height: 64px;
+    padding-left: 54px;
+  }
+
+  .discoverSearch .fieldSearchIcon {
+    height: 21px;
+    width: 21px;
+  }
+
+  .discoverProducts .storeProductGrid {
+    grid-auto-columns: minmax(232px, 72vw);
+  }
+
+  .discoverProducts .storeProductCard {
+    display: flex;
+    flex-direction: column;
+    height: 468px;
+  }
+
+  .discoverProducts .storeProductImage {
+    aspect-ratio: 4 / 3;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .discoverProducts .storeProductDetails {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .discoverProducts .storeProductDetails h3 {
+    display: -webkit-box;
+    min-height: 2.5em;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .discoverProducts .storeReview {
+    min-height: 3.1em;
+  }
+
+  .discoverProducts .storeProductDetails footer {
+    margin-top: auto;
+  }
 }
 
 .storyViewerProgress.storyViewerSegments > i {
@@ -5195,4 +5780,836 @@ dt {
 .storyViewerNavigation button:disabled {
   opacity: 0;
   pointer-events: none;
+}
+
+.creatorInventoryControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 0 0 22px;
+}
+
+.creatorInventoryFilter {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin: 0;
+}
+
+.creatorInventoryFilter label {
+  color: var(--vh-muted);
+  font-size: 0.8rem;
+}
+
+.creatorInventoryFilter select {
+  background: #fff;
+  border: 1px solid #e6ddd2;
+  border-radius: 8px;
+  font: inherit;
+  min-height: 42px;
+  min-width: 0;
+  padding: 0 12px;
+}
+
+.creatorInventoryGroup {
+  margin: 0 0 28px;
+}
+
+.creatorInventoryGroup > h3 {
+  align-items: baseline;
+  display: flex;
+  font-size: 1.3rem;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.creatorInventoryGroup > h3 span {
+  color: var(--vh-muted);
+  font-family: var(--font-vh-body), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.creatorManageList {
+  gap: 10px;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) {
+  align-items: center;
+  border-radius: 8px;
+  gap: 16px;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  min-height: 0;
+  padding: 12px;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) .creatorManageImage {
+  border-radius: 5px;
+  height: 72px;
+  width: 72px;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) .creatorManageCopy h3 {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  margin: 2px 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) .creatorManageCopy > a {
+  font-size: 0.75rem;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) .creatorManageActions {
+  flex-direction: row;
+  gap: 4px;
+}
+
+.creatorManageCard:not(.creatorDiscountManageCard) .creatorManageActions > button {
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.creatorCustomSectionList {
+  margin: 22px 0;
+}
+
+.creatorCustomSection {
+  align-items: center;
+  border-bottom: 1px solid #eee5da;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 12px 0;
+}
+
+.creatorCustomSection > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.creatorCustomSection small {
+  color: var(--vh-muted);
+  font-size: 0.75rem;
+}
+
+.creatorCustomSectionActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.creatorCustomSectionActions button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e6ddd2;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.creatorCustomSectionActions button:disabled {
+  opacity: 0.4;
+}
+
+.creatorCuratedForm {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  width: 100%;
+}
+
+.creatorCuratedForm > label {
+  display: grid;
+  font-size: 0.875rem;
+  gap: 7px;
+}
+
+.creatorCuratedForm > label input {
+  border: 1px solid #ded5ca;
+  border-radius: 8px;
+  font: inherit;
+  min-height: 46px;
+  min-width: 0;
+  padding: 8px 12px;
+  width: 100%;
+}
+
+.creatorCuratedForm fieldset {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.creatorCuratedForm legend {
+  font-size: 0.875rem;
+  margin-bottom: 10px;
+}
+
+.creatorCuratedChoices {
+  border: 1px solid #e6ddd2;
+  border-radius: 8px;
+  display: grid;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.creatorCuratedChoices label {
+  align-items: center;
+  border-bottom: 1px solid #eee5da;
+  display: flex;
+  gap: 12px;
+  min-height: 58px;
+  padding: 8px 12px;
+}
+
+.creatorCuratedChoices label:last-child {
+  border-bottom: 0;
+}
+
+.creatorCuratedChoices input {
+  flex: 0 0 auto;
+  height: 18px;
+  width: 18px;
+}
+
+.creatorCuratedChoices span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.creatorCuratedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.creatorAddSection {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .creatorDashboardMain {
+    padding: 28px 16px 88px;
+  }
+
+  .creatorSectionHeading {
+    gap: 16px;
+  }
+
+  .creatorSectionHeading .button {
+    justify-content: center;
+    min-height: 46px;
+    width: 100%;
+  }
+
+  .creatorComposer {
+    border: 1px solid #e6ddd2;
+    border-radius: 8px;
+    margin: 0 0 24px;
+    overflow: visible;
+    width: 100%;
+  }
+
+  .creatorComposerHeader {
+    align-items: flex-start;
+    border-radius: 8px 8px 0 0;
+    gap: 12px;
+    padding: 18px 16px;
+    position: static;
+  }
+
+  .creatorComposerHeader > div {
+    min-width: 0;
+  }
+
+  .creatorComposerHeader h2 {
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .creatorComposerHeader p {
+    overflow-wrap: anywhere;
+  }
+
+  .creatorComposerBody {
+    padding: 20px 16px 16px;
+  }
+
+  .creatorTypeGrid {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .creatorTypeGrid button {
+    border-radius: 8px;
+    min-height: 140px;
+    padding: 18px;
+  }
+
+  .creatorTypeGrid strong {
+    margin-top: 12px;
+  }
+
+  .creatorComposer input,
+  .creatorComposer select {
+    height: 48px;
+    min-height: 48px;
+  }
+
+  .creatorFormGrid {
+    gap: 18px;
+  }
+
+  .creatorFormActions {
+    background: transparent;
+    bottom: auto;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding: 18px 0 0;
+    position: static;
+  }
+
+  .creatorFormActions > button {
+    flex: 1 1 100%;
+    justify-content: center;
+    min-height: 46px;
+  }
+
+  .creatorFormActions > button:not(.button) {
+    color: var(--vh-muted);
+  }
+
+  .creatorInventoryFilter {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .creatorInventoryControls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .creatorInventoryFilter select {
+    font-size: 16px;
+    width: 100%;
+  }
+
+  .creatorManageCard:not(.creatorDiscountManageCard) {
+    gap: 8px 12px;
+    grid-template-columns: 64px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageImage {
+    height: 64px;
+    width: 64px;
+  }
+
+  .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageCopy h3 {
+    font-size: 1rem;
+  }
+
+  .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageActions {
+    grid-column: 2;
+    justify-content: flex-end;
+  }
+
+  .creatorCustomSection {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .creatorCustomSectionActions {
+    align-self: flex-end;
+  }
+
+  .creatorCuratedForm {
+    width: 100%;
+  }
+
+  .creatorCuratedActions > button {
+    flex: 1 1 100%;
+    justify-content: center;
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 900px) {
+  .creatorComposer {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .creatorComposerHeader {
+    flex: 0 0 auto;
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
+
+  .creatorComposerHeader h2 {
+    margin: 0 0 6px;
+  }
+
+  .creatorTypeGrid {
+    position: relative;
+  }
+
+  .referenceStorefrontHero {
+    padding: 38px 20px 34px;
+  }
+
+  .referenceStorefrontInner {
+    margin-inline: auto;
+    max-width: 620px;
+    row-gap: 20px;
+  }
+
+  .referenceStorefrontName {
+    align-self: center;
+  }
+
+  .referenceStorefrontActions {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    width: 100%;
+  }
+
+  .referenceStorefrontActions .engagementAction,
+  .referenceStorefrontActions .engagementAction > button,
+  .referenceStorefrontActions > a {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .referenceStorefrontActions .engagementAction > button,
+  .referenceStorefrontActions > a {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 46px;
+  }
+
+  .referenceStorefrontBio {
+    border-top: 1px solid #e9dfd4;
+    max-width: none;
+    padding-top: 16px;
+  }
+
+  .referenceStorefrontBio p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 8px 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .creatorTypeGrid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px 16px 18px;
+  }
+
+  .creatorTypeGrid button {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .creatorTypeGrid strong {
+    margin: 10px 0 4px;
+  }
+
+  .referenceStorefrontName h1 {
+    font-size: 2rem;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .referenceStorefrontName > p {
+    font-size: 0.84rem;
+  }
+}
+
+/* Shared shopper product card */
+.storeProductCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.storeCardHitArea {
+  inset: 0;
+  position: absolute;
+  z-index: 2;
+}
+
+.storeCardHitArea:focus-visible {
+  outline: 3px solid var(--vh-accent);
+  outline-offset: -3px;
+}
+
+.storeProductImage {
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.storeProductDetails {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px;
+}
+
+.storeProductTopline {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 34px;
+}
+
+.storeProductTopline .productBrand {
+  letter-spacing: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storeCardAction,
+.storeProductDetails footer a {
+  position: relative;
+  z-index: 3;
+}
+
+.storeCardAction .saveProductButton {
+  float: none;
+  height: 32px;
+  margin: 0;
+  min-height: 32px;
+  padding-inline: 9px;
+}
+
+.storeProductDetails h3,
+.savedProductRail .storeProductDetails h3,
+.discoverProducts .storeProductDetails h3 {
+  display: -webkit-box;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  margin: 7px 0 5px;
+  min-height: 2.5em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.storeProductDetails .storePrice {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.storeProductDetails footer,
+.savedProductRail .storeProductDetails footer,
+.discoverProducts .storeProductDetails footer {
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.storeProductDetails footer .merchantDomain {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storeProductDetails footer .button {
+  flex: 0 0 auto;
+  min-height: 34px;
+}
+
+/* Product detail */
+.productDetailPage {
+  margin: 0 auto;
+  max-width: 1320px;
+  padding: 30px 32px 100px;
+}
+
+.productDetailBreadcrumb {
+  align-items: center;
+  color: var(--vh-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.productDetailBreadcrumb a:hover {
+  color: var(--vh-accent-strong);
+}
+
+.productDetailLayout {
+  align-items: start;
+  display: grid;
+  gap: 48px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+}
+
+.productDetailMedia {
+  aspect-ratio: 1 / 1;
+  background: var(--vh-surface);
+  overflow: hidden;
+  position: relative;
+}
+
+.productDetailMedia img {
+  object-fit: contain;
+}
+
+.productDetailGalleryArrow {
+  align-items: center;
+  background: rgb(255 255 255 / 94%);
+  border: 1px solid var(--vh-border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+}
+
+.productDetailGalleryArrow.previous {
+  left: 12px;
+}
+
+.productDetailGalleryArrow.next {
+  right: 12px;
+}
+
+.productDetailThumbnails {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.productDetailThumbnails button {
+  background: var(--vh-surface);
+  border: 1px solid var(--vh-border);
+  cursor: pointer;
+  flex: 0 0 68px;
+  height: 68px;
+  padding: 0;
+  position: relative;
+}
+
+.productDetailThumbnails button[aria-pressed='true'] {
+  border: 2px solid var(--vh-accent);
+}
+
+.productDetailThumbnails img {
+  object-fit: cover;
+}
+
+.productDetailInformation .eyebrow {
+  color: var(--vh-accent-strong);
+  margin: 0 0 10px;
+}
+
+.productDetailInformation h1 {
+  font-size: 3rem;
+  line-height: 1.1;
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.productDetailPrice {
+  font-size: 1.3rem;
+  margin: 0 0 14px;
+}
+
+.productDetailCreator {
+  align-items: center;
+  color: var(--vh-muted);
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  gap: 5px;
+}
+
+.productDetailCreator strong {
+  color: var(--vh-ink);
+}
+
+.productDetailActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 26px 0;
+}
+
+.productDetailActions > .button {
+  align-items: center;
+  display: inline-flex;
+  gap: 9px;
+  justify-content: center;
+}
+
+.productDetailActions .saveProductButton {
+  float: none;
+  margin: 0;
+  min-height: 44px;
+}
+
+.productDetailDiscount {
+  align-items: center;
+  background: var(--vh-surface);
+  border-block: 1px solid var(--vh-border);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 18px 0;
+}
+
+.productDetailDiscount > div {
+  display: grid;
+  gap: 2px;
+}
+
+.productDetailDiscount small,
+.productDetailStore {
+  color: var(--vh-muted);
+  font-size: 0.75rem;
+}
+
+.productDetailDiscount strong {
+  font-size: 1.2rem;
+}
+
+.productDetailDescription,
+.productDetailStories {
+  border-top: 1px solid var(--vh-border);
+  margin-top: 28px;
+  padding-top: 22px;
+}
+
+.productDetailDescription h2,
+.productDetailStories h2 {
+  font-size: 1.5rem;
+  margin: 0 0 12px;
+}
+
+.productDetailDescription p {
+  color: var(--vh-muted);
+  line-height: 1.75;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.productDetailStories > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.productDetailStoryButton,
+.productDetailStories .button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.productDetailStore {
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .productGrid,
+  .storefrontProducts .storeProductGrid,
+  .discoverProducts .storeProductGrid,
+  .shopperFavorites .storeProductGrid,
+  .referenceStorefrontScroller,
+  .savedProductRail {
+    grid-auto-columns: 240px;
+  }
+
+  .productGrid,
+  .storefrontProducts .storeProductGrid,
+  .discoverProducts .storeProductGrid,
+  .shopperFavorites .storeProductGrid {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    overflow-x: auto;
+  }
+
+  .storeProductCard,
+  .savedProductRail .storeProductCard,
+  .discoverProducts .storeProductCard {
+    height: 360px;
+  }
+
+  .storeProductImage,
+  .savedProductRail .storeProductImage,
+  .discoverProducts .storeProductImage {
+    aspect-ratio: 4 / 3;
+    flex: 0 0 auto;
+  }
+
+  .storeProductDetails,
+  .savedProductRail .storeProductDetails,
+  .discoverProducts .storeProductDetails {
+    padding: 14px;
+  }
+
+  .productDetailLayout {
+    gap: 28px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .productDetailPage {
+    max-width: 680px;
+    padding: 22px 20px 110px;
+  }
+
+  .productDetailInformation h1 {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .productDetailPage {
+    padding-inline: 16px;
+  }
+
+  .productDetailActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .productDetailActions > .button {
+    min-width: 0;
+  }
 }

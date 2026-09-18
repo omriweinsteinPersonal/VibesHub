@@ -74,6 +74,20 @@ const optionalHttpsUrlSchema = z
   .url({ protocol: /^https$/ })
   .max(2_048)
   .nullable();
+const optionalInstagramStoryUrlSchema = z
+  .url({ protocol: /^https$/ })
+  .max(2_048)
+  .refine((value) => {
+    const url = new URL(value);
+    return (
+      ['instagram.com', 'www.instagram.com'].includes(url.hostname) &&
+      !url.username &&
+      !url.password &&
+      !url.port &&
+      url.pathname.startsWith('/stories/')
+    );
+  }, 'Use an Instagram story or Highlight link')
+  .nullable();
 const optionalTrimmedStringSchema = (maximumLength: number) =>
   z.string().trim().min(1).max(maximumLength).nullable();
 
@@ -220,6 +234,7 @@ const creatorRecommendationInputFieldsSchema = z
     discountLabel: optionalTrimmedStringSchema(100).optional(),
     imageAssetId: idSchema.nullable().optional(),
     imageUrl: optionalHttpsUrlSchema.optional(),
+    instagramStoryUrl: optionalInstagramStoryUrlSchema.optional(),
     additionalImages: z.array(recommendationImageInputSchema).max(9).optional(),
     priceAmountMinor: z.int().nonnegative(),
     productName: z.string().trim().min(1).max(200),
@@ -321,7 +336,10 @@ export const creatorAnalyticsDashboardSchema = z
       z
         .object({
           codeCopies: z.int().nonnegative(),
+          categoryName: z.string().trim().min(1),
+          categorySlug: z.string().trim().min(1),
           id: idSchema,
+          imageUrl: publicAssetUrlSchema.nullable(),
           productName: z.string().trim().min(1).max(200),
           shopClicks: z.int().nonnegative(),
           storyCompletions: z.int().nonnegative(),
@@ -433,6 +451,7 @@ export const recommendationCardSchema = z
     id: idSchema,
     imageAssetId: idSchema.nullable(),
     imageUrl: publicAssetUrlSchema,
+    instagramStoryUrl: optionalInstagramStoryUrlSchema.default(null),
     images: z.array(recommendationImageSchema).max(10).optional(),
     lifecycle: recommendationLifecycleSchema,
     merchantHostname: z.string().trim().min(4).max(253),
@@ -474,6 +493,19 @@ export const creatorStorefrontSchema = z
     recommendationCount: z.int().nonnegative(),
     storefrontSections: z
       .array(categoryCardSchema.pick({ id: true, name: true, slug: true }))
+      .max(24)
+      .default([]),
+    curatedSections: z
+      .array(
+        z
+          .object({
+            id: idSchema,
+            kind: z.enum(['section', 'collection']),
+            title: z.string().trim().min(1).max(80),
+            recommendationIds: z.array(idSchema).max(20),
+          })
+          .strict(),
+      )
       .max(24)
       .default([]),
     socialLinks: z.array(
@@ -535,6 +567,10 @@ export const discoveryRecommendationCardSchema = recommendationCardSchema
     creator: recommendationCreatorSchema,
     savedCount: z.int().nonnegative(),
   })
+  .strict();
+
+export const publicRecommendationDetailSchema = recommendationCardSchema
+  .extend({ creator: recommendationCreatorSchema })
   .strict();
 
 export const globalSearchResultsSchema = z
@@ -812,9 +848,19 @@ export const storefrontSectionSchema = z
   })
   .strict();
 
+export const curatedSectionSchema = z
+  .object({
+    id: idSchema,
+    kind: z.enum(['section', 'collection']),
+    title: z.string().trim().min(1).max(80),
+    recommendationIds: z.array(idSchema).max(20),
+  })
+  .strict();
+
 export const creatorStorefrontConfigurationSchema = z
   .object({
     sections: z.array(storefrontSectionSchema).max(24),
+    curatedSections: z.array(curatedSectionSchema).max(24).default([]),
     version: z.int().positive(),
   })
   .strict();
@@ -827,6 +873,14 @@ export const creatorStorefrontConfigurationInputSchema = z
       .refine(
         (ids) => new Set(ids).size === ids.length,
         'Each storefront section can be selected once',
+      ),
+    curatedSections: z
+      .array(curatedSectionSchema)
+      .max(24)
+      .default([])
+      .refine(
+        (sections) => new Set(sections.map(({ id }) => id)).size === sections.length,
+        'Each custom section can be selected once',
       ),
   })
   .strict();
@@ -880,6 +934,7 @@ export const creatorStudioSummarySchema = z
     counts: z
       .object({
         brandDiscounts: z.int().nonnegative(),
+        collections: z.int().nonnegative(),
         recommendations: z.int().nonnegative(),
         storyClips: z.int().nonnegative(),
       })
@@ -932,6 +987,7 @@ export type DiscoveryRecommendationQuery = z.infer<
 export type DiscoveryRecommendationCard = z.infer<
   typeof discoveryRecommendationCardSchema
 >;
+export type PublicRecommendationDetail = z.infer<typeof publicRecommendationDetailSchema>;
 export type GlobalSearchQuery = z.infer<typeof globalSearchQuerySchema>;
 export type GlobalSearchResults = z.infer<typeof globalSearchResultsSchema>;
 export type RecommendationCreator = z.infer<typeof recommendationCreatorSchema>;
