@@ -1,4 +1,4 @@
-# VibesHub product and business decisions
+# Swave product and business decisions
 
 **Status:** Accepted as the initial implementation baseline
 
@@ -10,20 +10,20 @@ These decisions are the contract that the system architecture, schema, API, and 
 
 ## 1. Product definition
 
-VibesHub is a curated creator discovery and affiliate marketplace. Israeli shoppers discover products through trusted creator recommendations, Hebrew reviews, short story-style videos, and discount codes.
+Swave is a curated creator discovery and affiliate marketplace. Israeli shoppers discover products through trusted creator recommendations, Hebrew reviews, short story-style videos, and discount codes.
 
-VibesHub is not an inventory-holding retailer in the first release.
+Swave is not an inventory-holding retailer in the first release.
 
 ### Accepted
 
-- Shoppers browse VibesHub and complete purchases on an external merchant website.
-- VibesHub does not own inventory, create orders, collect product payment, handle fulfilment, or process returns in the first release.
-- Every outbound shopping action uses a VibesHub-controlled redirect so attribution and link health can be measured safely.
+- Shoppers browse Swave and complete purchases on an external merchant website.
+- Swave does not own inventory, create orders, collect product payment, handle fulfilment, or process returns in the first release.
+- Every outbound shopping action uses a Swave-controlled redirect so attribution and link health can be measured safely.
 - The architecture leaves room for merchant feeds and affiliate-network integrations without assuming that they exist initially.
 
 ### Explicitly excluded from the first release
 
-- VibesHub checkout and shopping cart
+- Swave checkout and shopping cart
 - Seller payouts and split payments
 - Inventory reservations
 - Order, refund, fulfilment, and returns management
@@ -31,7 +31,7 @@ VibesHub is not an inventory-holding retailer in the first release.
 - Direct messaging between shoppers and creators
 - Shopper-authored product reviews
 
-If VibesHub later becomes the merchant of record or processes payments, the order, tax, fraud, payout, refund, and legal architecture must be redesigned before that work starts.
+If Swave later becomes the merchant of record or processes payments, the order, tax, fraud, payout, refund, and legal architecture must be redesigned before that work starts.
 
 ## 2. Monetization baseline
 
@@ -49,7 +49,7 @@ This keeps the first App Store and Google Play releases focused on physical-prod
 A shopper and a creator are not mutually exclusive account types.
 
 - Anyone can browse public creators, recommendations, categories, and trending content without an account.
-- A user creates one VibesHub account.
+- A user creates one Swave account.
 - Every account has shopper capabilities such as saving and following.
 - A user can apply for creator capabilities from the same account.
 - Creator access is granted only after an application is approved.
@@ -69,7 +69,7 @@ Phone OTP is deferred until cost, support, abuse prevention, and Israeli deliver
 
 - A creator submits a profile, Hebrew bio, category, social links, and supporting identity/audience information.
 - An administrator reviews the application before the public storefront is activated.
-- A verified badge means VibesHub performed its defined verification process; it does not mean every product claim is independently endorsed.
+- A verified badge means Swave performed its defined verification process; it does not mean every product claim is independently endorsed.
 - A new creator's initial recommendations are reviewed before publication.
 - Established creators may move to post-publication moderation based on trust history.
 - Users can report creators, products, recommendations, videos, and discount codes.
@@ -95,13 +95,13 @@ This separation allows multiple creators to recommend one product while preservi
 - Initial importing uses an allowlist of supported merchants.
 - Structured product data and merchant-specific adapters are preferred over uncontrolled scraping.
 - Imported title, brand, image, category, price, and currency remain editable before submission.
-- VibesHub stores the source URL, canonical URL, source merchant, extraction method, and observation time.
+- Swave stores the source URL, canonical URL, source merchant, extraction method, and observation time.
 - The importer must defend against server-side request forgery, redirect abuse, private-network access, oversized responses, and unsupported content types.
 
 ## 6. Product images and media rights
 
-- VibesHub does not permanently hotlink third-party product images.
-- A published image is copied into VibesHub-controlled storage only when its source and permitted usage are recorded.
+- Swave does not permanently hotlink third-party product images.
+- A published image is copied into Swave-controlled storage only when its source and permitted usage are recorded.
 - Supported image sources are creator uploads, licensed brand/merchant assets, approved feeds, or another documented permitted source.
 - The system stores the original source, rights source, checksum, dimensions, and generated renditions.
 - Images are moderated before or shortly after publication according to creator trust level.
@@ -114,7 +114,7 @@ This separation allows multiple creators to recommend one product while preservi
 - Product cards visually clamp the recommendation to five lines.
 - The database does not truncate reviews to five rendered lines because line count varies by device and typography.
 - A detail view can expose the full text through a "Read more" interaction.
-- Creators write recommendation content in their own words; VibesHub does not silently generate or replace their review.
+- Creators write recommendation content in their own words; Swave does not silently generate or replace their review.
 
 ## 8. Product-card presentation contract
 
@@ -226,7 +226,7 @@ The first release reports attribution and engagement, not merchant conversion, u
 
 - The public website is mobile-first and remains fully usable without installing an application.
 - iOS and Android are native Expo/React Native applications, not webview wrappers.
-- Public VibesHub URLs support iOS Universal Links and Android App Links.
+- Public Swave URLs support iOS Universal Links and Android App Links.
 - If the app is installed, creator and recommendation links open the native destination; otherwise they open the website.
 - Creator bulk management is strongest on the responsive web dashboard, while native apps include essential add, edit, publish, video, and analytics actions.
 

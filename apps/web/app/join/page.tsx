@@ -35,7 +35,7 @@ export default function JoinPage() {
       if (data.session) router.replace(next);
       else
         setMessage(
-          'Check your email to confirm your account, then continue to VibesHub.',
+          'Check your email to confirm your account, then continue to Swave.',
         );
     } catch (authError) {
       setError(

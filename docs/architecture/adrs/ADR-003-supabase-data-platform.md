@@ -6,7 +6,7 @@
 
 ## Context
 
-VibesHub data is strongly relational: creators recommend shared products; offers belong to merchants; codes have scopes and states; media has ownership and placement; social actions and moderation require integrity and auditability.
+Swave data is strongly relational: creators recommend shared products; offers belong to merchants; codes have scopes and states; media has ownership and placement; social actions and moderation require integrity and auditability.
 
 The project also needs authentication, object storage, backups, connection pooling, and a clear path to increased database capacity without operating infrastructure prematurely.
 
@@ -18,7 +18,7 @@ The project also needs authentication, object storage, backups, connection pooli
 - Use Supabase Storage for controlled image uploads and delivery.
 - Connect the API using an appropriate pooled PostgreSQL connection.
 - Commit all application schema changes as SQL migrations.
-- Keep core business logic in the VibesHub domain/API rather than database-vendor functions.
+- Keep core business logic in the Swave domain/API rather than database-vendor functions.
 - Enable row-level security on exposed schemas as defense in depth, even though privileged writes pass through the API.
 
 ## Consequences
@@ -34,14 +34,14 @@ The project also needs authentication, object storage, backups, connection pooli
 - Do not put core domain behavior exclusively in Supabase Edge Functions.
 - Do not expose the service-role key to clients.
 - Do not make generated PostgREST endpoints the only contract for core workflows.
-- Keep media-provider IDs and auth IDs behind VibesHub-owned records.
+- Keep media-provider IDs and auth IDs behind Swave-owned records.
 - Test backup restoration and maintain exportable SQL migrations.
 
 ## Rejected alternatives
 
 ### Firebase as the primary database
 
-Rejected because VibesHub's relational catalog, ownership, moderation, and reporting model fits PostgreSQL more naturally.
+Rejected because Swave's relational catalog, ownership, moderation, and reporting model fits PostgreSQL more naturally.
 
 ### Self-managed PostgreSQL
 

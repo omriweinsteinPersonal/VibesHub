@@ -1,4 +1,4 @@
-# VibesHub system architecture
+# Swave system architecture
 
 **Status:** Accepted baseline
 
@@ -6,7 +6,7 @@
 
 ## 1. Architectural drivers
 
-The supplied VibesHub screens and product decisions establish these drivers:
+The supplied Swave screens and product decisions establish these drivers:
 
 - Public creator, category, product, and trending pages must be fast, indexable, and shareable.
 - The same public links must work on mobile web and deep-link into installed native applications.
@@ -27,9 +27,9 @@ flowchart LR
     Creator[Approved creator]
     Staff[Moderator or administrator]
 
-    Web[VibesHub web]
-    Mobile[VibesHub iOS and Android]
-    Platform[VibesHub platform API]
+    Web[Swave web]
+    Mobile[Swave iOS and Android]
+    Platform[Swave platform API]
 
     Merchant[External merchant]
     Social[Social platforms]
@@ -139,7 +139,7 @@ UI implementations are platform-specific. Web and native share design tokens, co
 
 - Provide native discovery, search, story viewing, saved content, and account experiences.
 - Support essential creator profile, recommendation, video, code, publication, and analytics actions.
-- Register iOS Universal Links and Android App Links for public VibesHub URLs.
+- Register iOS Universal Links and Android App Links for public Swave URLs.
 - Store sessions using platform-secure storage.
 - Use native push-notification, sharing, image-picker, camera, and upload capabilities.
 
@@ -226,7 +226,7 @@ PostgreSQL is the system of record.
 - Public lists use stable cursor pagination.
 - Append-only interaction events are summarized into daily creator and recommendation metrics.
 - Search documents are derived data and can be rebuilt from PostgreSQL.
-- Media provider identifiers are references; VibesHub remains authoritative for ownership, visibility, moderation, and placement.
+- Media provider identifiers are references; Swave remains authoritative for ownership, visibility, moderation, and placement.
 
 The detailed ERD and table ownership map are defined in the next architecture step.
 
@@ -295,7 +295,7 @@ Search indexes separate record types:
 - brand
 - category
 
-Algolia is introduced only when measured requirements exceed the PostgreSQL implementation, such as advanced typo tolerance, faceting latency, ranking operations, or search scale. Search is derived and replaceable; clients depend on VibesHub's API contract rather than a search-vendor SDK.
+Algolia is introduced only when measured requirements exceed the PostgreSQL implementation, such as advanced typo tolerance, faceting latency, ranking operations, or search scale. Search is derived and replaceable; clients depend on Swave's API contract rather than a search-vendor SDK.
 
 ## 15. Deployment topology
 
@@ -324,7 +324,7 @@ The API runs as a separate Vercel project near the primary database and uses the
 
 ## 16. Environments
 
-VibesHub maintains isolated development, staging, and production environments.
+Swave maintains isolated development, staging, and production environments.
 
 | Concern  | Development      | Staging              | Production             |
 | -------- | ---------------- | -------------------- | ---------------------- |
@@ -332,7 +332,7 @@ VibesHub maintains isolated development, staging, and production environments.
 | Auth     | Test providers   | Store-like providers | Production providers   |
 | Storage  | Test buckets     | Test buckets         | Production buckets     |
 | Video    | Test environment | Test environment     | Production environment |
-| Domains  | Local/preview    | Staging domain       | VibesHub domain        |
+| Domains  | Local/preview    | Staging domain       | Swave domain        |
 | Data     | Synthetic        | Synthetic/approved   | Real users             |
 
 Production data is never copied wholesale into lower environments. Schema changes are applied through committed migrations and rehearsed in staging.

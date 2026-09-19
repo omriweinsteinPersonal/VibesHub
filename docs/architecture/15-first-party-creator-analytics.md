@@ -6,7 +6,7 @@
 
 ## Outcome
 
-VibesHub now measures the first creator commerce funnel without a third-party analytics dependency:
+Swave now measures the first creator commerce funnel without a third-party analytics dependency:
 
 1. creator storefront view;
 2. recommendation impression after at least 50% visibility for one continuous second;

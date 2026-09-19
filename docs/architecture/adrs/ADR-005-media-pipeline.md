@@ -6,7 +6,7 @@
 
 ## Context
 
-VibesHub's experience depends on large product images, creator profile media, story-style video, upload progress, thumbnails, and efficient mobile delivery. Routing large uploads through application servers would waste compute and make retries fragile.
+Swave's experience depends on large product images, creator profile media, story-style video, upload progress, thumbnails, and efficient mobile delivery. Routing large uploads through application servers would waste compute and make retries fragile.
 
 ## Decision
 
@@ -15,7 +15,7 @@ VibesHub's experience depends on large product images, creator profile media, st
 - Keep originals private unless public access is required.
 - Generate and publish controlled renditions for supported display sizes and formats.
 - Use Mux for direct video upload, processing, thumbnails, and adaptive playback.
-- Store VibesHub video ownership, status, moderation, and placement separately from Mux asset identifiers.
+- Store Swave video ownership, status, moderation, and placement separately from Mux asset identifiers.
 - Validate signed media webhooks and process them idempotently.
 
 ## Consequences
@@ -24,13 +24,13 @@ VibesHub's experience depends on large product images, creator profile media, st
 - Upload and processing state is asynchronous and must be reflected in creator UI.
 - Video delivery, transcoding, and playback observability are delegated to a specialist provider.
 - Provider cost and outage behavior must be monitored.
-- Media deletion requires coordinated deletion of VibesHub records and provider assets.
+- Media deletion requires coordinated deletion of Swave records and provider assets.
 
 ## Rejected alternatives
 
 ### Store video files as ordinary application objects only
 
-Rejected because adaptive streaming, transcoding, thumbnails, device compatibility, and playback metrics would become VibesHub infrastructure responsibilities.
+Rejected because adaptive streaming, transcoding, thumbnails, device compatibility, and playback metrics would become Swave infrastructure responsibilities.
 
 ### Accept only externally hosted video URLs
 

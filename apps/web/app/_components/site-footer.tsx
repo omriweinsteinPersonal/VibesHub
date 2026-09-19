@@ -29,7 +29,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="siteFooterBottom">
-        <span>© 2026 VibesHub. Made in Tel Aviv.</span>
+        <span>© 2026 Swave. Made in Tel Aviv.</span>
         <span>Authentic recommendations only.</span>
       </div>
     </footer>

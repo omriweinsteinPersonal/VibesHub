@@ -45,9 +45,9 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
       <section className="directoryHero creatorsAcquisitionHero">
         <p className="eyebrow">FOR CREATORS</p>
         <h1>Turn your recommendations into a storefront</h1>
-        <p className="lede">
-          Bring your trusted products, videos and discount codes together in one place
-          your community can return to.
+        <p className="lede" dir="rtl" lang="he">
+          המוצרים, הסרטונים וקודי ההנחה שעליהם המלצת, כולם בחנות אישית אחת
+          שהקהילה שלך יכולה לחזור אליה.
         </p>
         <div className="creatorsHeroActions">
           <Link className="button primary" href="/auth?mode=signup&role=creator">
@@ -73,7 +73,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
         <div className="directoryHeading">
           <div>
             <p className="eyebrow">THE COMMUNITY</p>
-            <h2 id="directory-title">Creators already on VibesHub</h2>
+            <h2 id="directory-title">Creators already on Swave</h2>
           </div>
           <p>{creators.length} shown</p>
         </div>

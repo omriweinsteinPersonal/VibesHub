@@ -9,10 +9,10 @@
 This slice replaces manually entered image URLs in Creator Studio with a controlled direct-upload flow while preserving ADR-005 and ADR-006.
 
 - Supabase Storage carries image bytes.
-- The private `app.media_assets` table carries VibesHub ownership, lifecycle, declared metadata, verified metadata, and provider placement.
+- The private `app.media_assets` table carries Swave ownership, lifecycle, declared metadata, verified metadata, and provider placement.
 - The shared NestJS API authorizes every upload, completion, attachment, and deletion.
 - The browser uploads directly to one server-generated object path and never receives the Supabase server secret.
-- Recommendation and product rows reference the VibesHub asset identity rather than a provider management identifier.
+- Recommendation and product rows reference the Swave asset identity rather than a provider management identifier.
 
 ## Access model
 

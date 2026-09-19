@@ -23,7 +23,7 @@ It adds canonical brands, merchants, products, merchant offers, and creator reco
 - Recommendation image, story cover, and story video URLs are presentation fields on the recommendation for this slice.
 - Discount code and label fields are temporarily attached to a recommendation. They will move to the normalized discount-code model when validation, expiry, and many-to-many product scope are implemented.
 - Creator management now supports explicit storefront ordering, archive, and restore as described in `13-creator-content-management.md`.
-- Outbound shopping now uses the tracked `/go/{publicId}` endpoint and exact merchant-domain allowlist described in `10-tracked-outbound-shopping.md`. Creator management responses retain the original product URL separately so editing cannot turn VibesHub's redirect URL into a merchant offer.
+- Outbound shopping now uses the tracked `/go/{publicId}` endpoint and exact merchant-domain allowlist described in `10-tracked-outbound-shopping.md`. Creator management responses retain the original product URL separately so editing cannot turn Swave's redirect URL into a merchant offer.
 
 ## Deliberate boundaries
 

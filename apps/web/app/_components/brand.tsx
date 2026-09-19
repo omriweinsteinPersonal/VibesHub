@@ -1,17 +1,16 @@
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link
       className={compact ? 'logo logoCompact' : 'logo'}
       href="/"
-      aria-label="VibesHub home"
+      aria-label="Swave home"
     >
       <span aria-hidden="true" className="logoMark">
-        <Sparkles size={16} />
+        <span className="logoGlyph">S</span>
       </span>
-      <span>VibesHub</span>
+      <span className="logoWordmark">Swave</span>
     </Link>
   );
 }

@@ -1,4 +1,4 @@
-# VibesHub database migration strategy
+# Swave database migration strategy
 
 **Status:** Accepted baseline
 
@@ -20,7 +20,7 @@ The migration strategy assumes Supabase-managed PostgreSQL and standard SQL migr
 
 ## 2. Source of truth
 
-Committed SQL migration files are the only source of truth for the VibesHub application schema.
+Committed SQL migration files are the only source of truth for the Swave application schema.
 
 ```text
 packages/database/

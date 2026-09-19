@@ -69,7 +69,7 @@ function AuthExperience() {
         if (data.session) router.replace(next);
         else
           setMessage(
-            'Check your email to confirm your account, then continue to VibesHub.',
+            'Check your email to confirm your account, then continue to Swave.',
           );
       }
     } catch (cause) {
@@ -214,7 +214,7 @@ function AuthExperience() {
             </button>
           </form>
           <p className="referenceAuthTerms">
-            By continuing you agree to the VibesHub community guidelines.{' '}
+            By continuing you agree to the Swave community guidelines.{' '}
             <Link href="/about">Learn more</Link>
           </p>
         </section>

@@ -197,7 +197,7 @@ function SignedOutAccount() {
       <div className="accountGuestMark" aria-hidden="true">
         <Sparkles size={20} />
       </div>
-      <p className="eyebrow">YOUR VIBESHUB</p>
+      <p className="eyebrow">YOUR SWAVE</p>
       <h1>Keep the things you love close</h1>
       <p className="workspaceLead">
         Log in to return to your saved products, followed creators and creator storefront

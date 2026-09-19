@@ -62,7 +62,7 @@ export default function LoginScreen() {
         <Pressable accessibilityRole="button" onPress={() => router.back()}>
           <Text style={styles.back}>← Back</Text>
         </Pressable>
-        <Text style={styles.eyebrow}>VIBESHUB COMMUNITY</Text>
+        <Text style={styles.eyebrow}>SWAVE COMMUNITY</Text>
         <Text style={styles.title}>
           {mode === 'login' ? 'Welcome back' : 'Create your account'}
         </Text>

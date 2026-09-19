@@ -13,7 +13,7 @@ Executing them synchronously inside shopper or creator requests would increase l
 ## Decision
 
 - Use Google Cloud Tasks to deliver durable work to the Cloud Run worker.
-- Define jobs through a VibesHub-owned dispatcher interface so domain modules do not depend directly on the queue SDK.
+- Define jobs through a Swave-owned dispatcher interface so domain modules do not depend directly on the queue SDK.
 - Version every job payload.
 - Use idempotency keys and persisted job-attempt state for externally visible effects.
 - Use bounded exponential retries and explicit terminal failure handling.

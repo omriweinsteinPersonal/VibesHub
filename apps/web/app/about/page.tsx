@@ -7,7 +7,7 @@ import { SiteHeader } from '../_components/site-header';
 
 export const metadata: Metadata = {
   description:
-    'Learn why VibesHub puts trusted Israeli creators at the center of product discovery.',
+    'Learn why Swave puts trusted Israeli creators at the center of product discovery.',
   title: 'About',
 };
 

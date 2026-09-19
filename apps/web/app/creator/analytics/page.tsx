@@ -6,45 +6,14 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createLucideIcon, Eye, MousePointerClick, Package, Tag, Users } from 'lucide-react';
+import { Eye, MousePointerClick, Package, Tag, Users } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
 import { publicAssetUrl } from '../../../lib/public-asset-url';
 import { CreatorShellHeader } from '../../_components/creator-shell-header';
+import { InstagramIcon } from '../../_components/instagram-icon';
 import { SiteFooter } from '../../_components/site-footer';
-
-const Instagram = createLucideIcon('Instagram', [
-  [
-    'rect',
-    {
-      height: '20',
-      key: 'instagram-frame',
-      rx: '5',
-      ry: '5',
-      width: '20',
-      x: '2',
-      y: '2',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z',
-      key: 'instagram-lens',
-    },
-  ],
-  [
-    'line',
-    {
-      key: 'instagram-highlight',
-      x1: '17.5',
-      x2: '17.51',
-      y1: '6.5',
-      y2: '6.5',
-    },
-  ],
-]);
 
 export default function CreatorAnalyticsPage() {
   const [dashboard, setDashboard] = useState<CreatorAnalyticsDashboard | null>(null);
@@ -130,7 +99,7 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
         <div className="creatorTrafficHeading">
           <h2>Traffic — last 30 days</h2>
           <span>
-            <Instagram aria-hidden="true" size={15} />
+            <InstagramIcon aria-hidden="true" size={15} />
             {dashboard.summary.instagramTaps.toLocaleString('en-IL')} Instagram taps
           </span>
         </div>

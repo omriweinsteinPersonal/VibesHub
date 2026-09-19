@@ -4,12 +4,15 @@ import { ArrowRight, Heart, ShieldCheck, Sparkles, Tag } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../lib/api';
 import { EngagementProvider } from './_components/engagement';
+import { InstagramIcon } from './_components/instagram-icon';
 import { RecommendationCardView } from './_components/recommendation-card';
 import { RotatingHeroCollage } from './_components/rotating-hero-collage';
 import { SiteFooter } from './_components/site-footer';
 import { SiteHeader } from './_components/site-header';
 
 export const dynamic = 'force-dynamic';
+
+const swaveInstagramUrl = process.env.NEXT_PUBLIC_SWAVE_INSTAGRAM_URL;
 
 export default async function HomePage() {
   let categories: CategoryCard[] = [];
@@ -33,10 +36,6 @@ export default async function HomePage() {
       <main>
         <section className="hero" id="top">
           <div className="heroCopy">
-            <p className="eyebrow heroCreatorCount">
-              <Sparkles aria-hidden="true" size={14} />
-              ISRAELI CREATORS
-            </p>
             <h1>
               Discover what your favorite creators <em>recommend</em>
             </h1>
@@ -69,9 +68,8 @@ export default async function HomePage() {
         ) : null}
 
         <section className="section" id="products">
-          <p className="eyebrow">SELECTED PRODUCTS</p>
           <h2>Latest creator recommendations</h2>
-          <p className="sectionIntro">Products published by creators on VibesHub.</p>
+          <p className="sectionIntro">Products published by creators on Swave.</p>
           {recommendations.length ? (
             <EngagementProvider
               productIds={recommendations.map((item) => item.productId)}
@@ -96,31 +94,56 @@ export default async function HomePage() {
         </section>
 
         <section className="trust" id="about">
-          <p className="eyebrow">WHY VIBESHUB</p>
+          <p className="eyebrow">WHY SWAVE</p>
           <h2>Built on trust, not on ad budgets</h2>
-          <div className="trustGrid">
+          <div className="trustGrid" dir="rtl" lang="he">
             <article>
               <span aria-hidden="true">
                 <ShieldCheck size={18} />
               </span>
-              <h3>Creator-owned storefronts</h3>
-              <p>Each storefront brings a creator&apos;s recommendations together.</p>
+              <h3>חנויות אישיות של יוצרים</h3>
+              <p>כל חנות מרוכזת במקום אחד</p>
             </article>
             <article>
               <span aria-hidden="true">
                 <Heart size={18} />
               </span>
-              <h3>Personal recommendations</h3>
-              <p>Creators can explain why they recommend every product.</p>
+              <h3>המלצות אישיות</h3>
+              <p>יוצרים מסבירים למה הם ממליצים על כל מוצר</p>
             </article>
             <article>
               <span aria-hidden="true">
                 <Tag size={18} />
               </span>
-              <h3>Useful offers</h3>
-              <p>Product links and available discount codes stay in one place.</p>
+              <h3>הטבות בלעדיות</h3>
+              <p>גישה להנחות והטבות מיוחדות לקהילה</p>
             </article>
           </div>
+        </section>
+
+        <section className="homeInstagram" aria-labelledby="home-instagram-title">
+          <div className="homeInstagramCopy">
+            <p className="eyebrow">ON INSTAGRAM</p>
+            <h2 id="home-instagram-title">Find us on Instagram</h2>
+            <p>Meet the people, products, and stories shaping Swave.</p>
+          </div>
+          {swaveInstagramUrl ? (
+            <a
+              className="button homeInstagramLink"
+              href={swaveInstagramUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <InstagramIcon aria-hidden="true" size={16} />
+              Follow Swave
+              <ArrowRight aria-hidden="true" size={14} />
+            </a>
+          ) : (
+            <button className="button homeInstagramLink" disabled type="button">
+              <InstagramIcon aria-hidden="true" size={16} />
+              Instagram soon
+            </button>
+          )}
         </section>
       </main>
       <SiteFooter />

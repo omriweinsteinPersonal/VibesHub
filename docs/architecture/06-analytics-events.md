@@ -1,4 +1,4 @@
-# VibesHub analytics event contracts
+# Swave analytics event contracts
 
 **Status:** Accepted baseline
 
@@ -14,7 +14,7 @@
 - Raw event retention is bounded; dashboards read aggregates.
 - Sponsored/affiliate attribution is recorded explicitly rather than inferred from card position.
 
-PostHog or another product-analytics tool may receive a privacy-filtered subset for internal product analysis. PostgreSQL/derived VibesHub events remain the source for creator-facing business metrics.
+PostHog or another product-analytics tool may receive a privacy-filtered subset for internal product analysis. PostgreSQL/derived Swave events remain the source for creator-facing business metrics.
 
 ## 2. Event envelope
 
@@ -248,7 +248,7 @@ Accepted `discountCode.copied` client events. This means a copy interaction, not
 
 ### Instagram/social taps
 
-Clicks on a creator social destination through a VibesHub-controlled action/redirect.
+Clicks on a creator social destination through a Swave-controlled action/redirect.
 
 ### Story completion rate
 

@@ -121,7 +121,7 @@ export default function SavedProductsPage() {
       <SiteHeader />
       <section className="savedProductsHero">
         <div>
-          <p className="eyebrow">YOUR VIBESHUB</p>
+          <p className="eyebrow">YOUR SWAVE</p>
           <h1>My List</h1>
           <p className="lede">
             Your saved recommendations, offers and products in one place.

@@ -92,7 +92,7 @@ function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) 
           <p className="eyebrow">CREATOR STOREFRONT</p>
           <h1>This storefront is temporarily unavailable</h1>
           <p className="lede">
-            The VibesHub API is not connected in this environment yet.
+            The Swave API is not connected in this environment yet.
           </p>
           <Link className="button secondary" href="/creators">
             Browse creators

@@ -1,4 +1,4 @@
-# VibesHub HTTP API contracts
+# Swave HTTP API contracts
 
 **Status:** Accepted baseline
 
@@ -43,7 +43,7 @@ All clients must tolerate additive response fields. They must not infer authoriz
 
 ## 4. Authentication and capability resolution
 
-The API verifies token signature, issuer, audience, expiry, and revocation-relevant account state. It then resolves VibesHub-owned capabilities from PostgreSQL.
+The API verifies token signature, issuer, audience, expiry, and revocation-relevant account state. It then resolves Swave-owned capabilities from PostgreSQL.
 
 Capabilities:
 
@@ -105,7 +105,7 @@ Cursor contents are an implementation detail and may be signed or encrypted. Cli
 
 ## 6. Error contract
 
-Errors follow Problem Details semantics and use stable VibesHub codes.
+Errors follow Problem Details semantics and use stable Swave codes.
 
 ```json
 {
@@ -323,7 +323,7 @@ This endpoint is intentionally outside the JSON `/v1` surface.
 - Append only approved attribution parameters.
 - Record/enqueue the server-authoritative `shop_clicked` event under a strict latency budget.
 - Return `302` or `307` according to redirect policy.
-- Return a safe VibesHub error page for blocked or invalid destinations.
+- Return a safe Swave error page for blocked or invalid destinations.
 - Never become a generic open redirect.
 
 ## 10. Authenticated shopper endpoints

@@ -6,7 +6,7 @@
 
 ## Context
 
-VibesHub needs bilingual creator, product, brand, and category discovery plus creator-facing traffic metrics and trending feeds. Search indexes and analytics aggregates are derived data, while PostgreSQL records remain authoritative.
+Swave needs bilingual creator, product, brand, and category discovery plus creator-facing traffic metrics and trending feeds. Search indexes and analytics aggregates are derived data, while PostgreSQL records remain authoritative.
 
 Selecting specialized vendors before usage patterns are measured would increase cost and coupling. Treating transactional tables as permanent high-volume analytics storage would eventually degrade operational workloads.
 
@@ -14,7 +14,7 @@ Selecting specialized vendors before usage patterns are measured would increase 
 
 - Start discovery with PostgreSQL full-text search and trigram matching.
 - Normalize Hebrew and English search fields explicitly.
-- Expose search through VibesHub API contracts rather than a vendor SDK in clients.
+- Expose search through Swave API contracts rather than a vendor SDK in clients.
 - Record versioned business events asynchronously.
 - Build daily creator, recommendation, and link aggregates for dashboards.
 - Compute trending from aggregate signals and recency decay, with editorial controls.

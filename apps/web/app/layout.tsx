@@ -22,8 +22,8 @@ const displayFont = Instrument_Serif({
 export const metadata: Metadata = {
   description: 'Authentic recommendations from Israeli creators.',
   title: {
-    default: 'VibesHub',
-    template: '%s · VibesHub',
+    default: 'Swave',
+    template: '%s · Swave',
   },
 };
 

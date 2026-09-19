@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 
+import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
 import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { publicShopUrl } from '../../lib/public-shop-url';
@@ -31,6 +32,7 @@ export function RecommendationCardView({
     recommendation.merchantHostname,
     recommendation.brandName,
   );
+  const title = splitBilingualProductTitle(recommendation.productName);
 
   return (
     <article className="storeProductCard">
@@ -68,8 +70,15 @@ export function RecommendationCardView({
             </div>
           ) : null}
         </div>
-        <h3>{recommendation.productName}</h3>
-        <p className="storePrice">{formatIls(recommendation.price.amountMinor)}</p>
+        <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
+          {title ? (
+            <>
+              <span dir="ltr" lang="en">{title.english}</span>
+              <span dir="rtl" lang="he">{title.hebrew}</span>
+            </>
+          ) : recommendation.productName}
+        </h3>
+        <p className="storePrice" dir="rtl">{formatIls(recommendation.price.amountMinor)}</p>
         <footer>
           <span className="merchantDomain">{recommendation.merchantHostname}</span>
           <a

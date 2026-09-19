@@ -1,7 +1,7 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BadgeCheck, Users } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { publicAssetUrl } from '../../lib/public-asset-url';
@@ -13,9 +13,9 @@ interface CreatorCardViewProps {
 
 export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
   return (
-    <article className="creatorCard">
+    <article className="creatorCard storeProductCard">
       <Link
-        className="creatorPortrait"
+        className="creatorPortrait storeProductImage"
         href={`/creators/${creator.handle}`}
         aria-label={`View ${creator.displayName}'s storefront`}
       >
@@ -31,27 +31,23 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
           initials(creator.displayName)
         )}
       </Link>
-      <div className="creatorDetails">
+      <div className="creatorDetails storeProductDetails">
         <div className="creatorTitle">
           <div className="creatorNameLine">
-            <h3>{creator.displayName}</h3>
+            <h3 dir="auto">{creator.displayName}</h3>
             {creator.verificationStatus === 'verified' ? (
               <span className="verifiedBadge" aria-label="Verified creator">
                 <BadgeCheck aria-hidden="true" size={16} />
               </span>
             ) : null}
           </div>
-          <p>
-            <Users aria-hidden="true" size={14} />
-            {compactNumber(creator.followerCount)} followers
-          </p>
         </div>
         <p className="creatorCategory">{creator.primaryCategory.name} creator</p>
-        <p className="creatorBio" dir="rtl" lang="he">
+        <p className="creatorBio" dir={creator.bio.direction} lang={creator.bio.language}>
           {creator.bio.value}
         </p>
         <footer>
-          <span>{creator.recommendationCount} recommendations</span>
+          <span className="creatorRecommendationCount">{creator.recommendationCount} recommendations</span>
           <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
             View Profile
           </Link>
@@ -60,13 +56,6 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
       </div>
     </article>
   );
-}
-
-function compactNumber(value: number): string {
-  return new Intl.NumberFormat('en', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  }).format(value);
 }
 
 function initials(name: string): string {

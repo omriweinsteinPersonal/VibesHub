@@ -6,7 +6,7 @@
 
 ## Context
 
-The audience is primarily in Israel. VibesHub needs global CDN delivery for public assets, managed web deployment, a shared API for web and mobile, separately scalable asynchronous workers, and low-latency access between application compute and the primary PostgreSQL database.
+The audience is primarily in Israel. Swave needs global CDN delivery for public assets, managed web deployment, a shared API for web and mobile, separately scalable asynchronous workers, and low-latency access between application compute and the primary PostgreSQL database.
 
 Placing compute near users while leaving the database in another region can make each API request slower because it introduces cross-region latency for every database round trip.
 
@@ -58,7 +58,7 @@ Rejected because the application would pay cross-region latency on database oper
 
 ### Kubernetes
 
-Rejected because VibesHub does not initially need cluster operations, custom scheduling, or that level of infrastructure control.
+Rejected because Swave does not initially need cluster operations, custom scheduling, or that level of infrastructure control.
 
 ## Revisit when
 

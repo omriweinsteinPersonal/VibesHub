@@ -1,4 +1,4 @@
-# VibesHub security boundaries
+# Swave security boundaries
 
 **Status:** Accepted baseline
 
@@ -6,7 +6,7 @@
 
 ## 1. Security objectives
 
-VibesHub must protect:
+Swave must protect:
 
 - shopper identity, private saves/follows, device tokens, and account rights
 - creator identity, unpublished content, analytics, media, and commercial relationships
@@ -25,7 +25,7 @@ flowchart LR
     Internet[Untrusted internet]
     Clients[Web and native clients]
     Edge[Vercel/CDN and public redirect]
-    API[Public VibesHub API]
+    API[Public Swave API]
     Worker[Private worker]
     Importer[Restricted product importer]
     Data[PostgreSQL and storage]
@@ -164,10 +164,10 @@ The product importer is a high-risk subsystem because creators submit arbitrary 
 
 - `/go/{publicId}` looks up a stored active link; it never accepts an arbitrary target URL.
 - Destination hostname must match an active merchant allowlist entry.
-- Redirect chains are not followed by VibesHub during a shopper redirect; link health checks validate separately.
+- Redirect chains are not followed by Swave during a shopper redirect; link health checks validate separately.
 - Attribution parameters are built from allowlisted keys and safely encoded.
 - User query parameters are not blindly forwarded.
-- Suspended creators, blocked offers, unhealthy links, and archived recommendations fail closed to a safe VibesHub page.
+- Suspended creators, blocked offers, unhealthy links, and archived recommendations fail closed to a safe Swave page.
 - Redirect response prevents unsafe caching when status may change.
 - High-volume abuse is rate-limited without exposing creator-private analytics.
 - Changes to destination, merchant, or provider reference are versioned and audited.

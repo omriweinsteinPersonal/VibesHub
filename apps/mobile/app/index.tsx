@@ -21,9 +21,9 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.logoMark}>
-            <Text style={styles.logoMarkText}>✣</Text>
+            <Text style={styles.logoMarkText}>S</Text>
           </View>
-          <Text style={styles.logo}>VibesHub</Text>
+          <Text style={styles.logo}>Swave</Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/login')}
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 36,
   },
-  logoMarkText: { color: colors.white, fontSize: 18 },
+  logoMarkText: { color: colors.white, fontFamily: 'Georgia', fontSize: 25, lineHeight: 30 },
   logo: {
     color: colors.ink,
     fontFamily: 'Georgia',

@@ -28,7 +28,7 @@ Local development uses the checked-in Supabase configuration. Preview, staging, 
 
 ## Identity and creator onboarding
 
-The clients authenticate directly with Supabase Auth. Every protected API request sends the Supabase access token as a bearer token; the API verifies its claims and then resolves VibesHub-owned capabilities from PostgreSQL. Supabase metadata is never trusted for creator, moderator, or administrator authorization.
+The clients authenticate directly with Supabase Auth. Every protected API request sends the Supabase access token as a bearer token; the API verifies its claims and then resolves Swave-owned capabilities from PostgreSQL. Supabase metadata is never trusted for creator, moderator, or administrator authorization.
 
 Configure these public client variables from the local Supabase output:
 

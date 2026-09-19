@@ -98,14 +98,14 @@ export function GlobalSearch() {
           }}
         >
           <section
-            aria-label="Search VibesHub"
+            aria-label="Search Swave"
             aria-modal="true"
             className="searchModal"
             role="dialog"
           >
             <header>
               <div>
-                <p className="eyebrow">SEARCH VIBESHUB</p>
+                <p className="eyebrow">SEARCH SWAVE</p>
                 <h2>Find creators and products</h2>
               </div>
               <button

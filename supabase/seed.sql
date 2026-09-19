@@ -1,3 +1,3 @@
--- VibesHub local development uses real sign-ups and creator-entered content.
+-- Swave local development uses real sign-ups and creator-entered content.
 -- Shared reference data is maintained by migrations; no demo users or products
 -- are inserted here.

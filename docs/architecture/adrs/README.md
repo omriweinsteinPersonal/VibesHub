@@ -1,6 +1,6 @@
 # Architecture decision records
 
-Architecture decision records capture decisions that materially constrain VibesHub implementation. Each record includes context, the accepted decision, consequences, rejected alternatives, and conditions that would justify revisiting it.
+Architecture decision records capture decisions that materially constrain Swave implementation. Each record includes context, the accepted decision, consequences, rejected alternatives, and conditions that would justify revisiting it.
 
 | ADR                                          | Decision                                       | Status   |
 | -------------------------------------------- | ---------------------------------------------- | -------- |

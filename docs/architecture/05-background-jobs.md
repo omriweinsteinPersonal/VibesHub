@@ -1,4 +1,4 @@
-# VibesHub background-job contracts
+# Swave background-job contracts
 
 **Status:** Accepted baseline
 
@@ -6,7 +6,7 @@
 
 ## 1. Delivery model
 
-VibesHub uses at-least-once asynchronous delivery. Exactly-once execution is not assumed.
+Swave uses at-least-once asynchronous delivery. Exactly-once execution is not assumed.
 
 1. A domain transaction writes its business state and `ops.outbox_events` row atomically.
 2. The outbox dispatcher publishes an authenticated Google Cloud Task.
@@ -202,7 +202,7 @@ pendingUpload -> uploaded -> processing -> ready
                               pendingModeration -> approved|rejected|blocked
 ```
 
-Provider events can arrive more than once or out of order. State application compares provider event time/sequence and VibesHub state rules before changing the asset.
+Provider events can arrive more than once or out of order. State application compares provider event time/sequence and Swave state rules before changing the asset.
 
 ## 9. Outbox dispatch
 

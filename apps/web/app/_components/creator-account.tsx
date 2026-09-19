@@ -368,7 +368,7 @@ export function CreatorAccount({ email }: { email?: string }) {
           <form className="creatorAccountCard creatorMediaKit" onSubmit={saveMediaKit}>
             <h2>Media kit</h2>
             <p>
-              Brands running campaigns on VibesHub match against these numbers. The more
+              Brands running campaigns on Swave match against these numbers. The more
               you fill in, the more campaigns you&apos;ll appear in.
             </p>
             <div className="creatorFormGrid">

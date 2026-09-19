@@ -5,8 +5,8 @@ import { Public } from '../auth/auth.decorators.js';
 import { RedirectService } from './redirect.service.js';
 
 const unavailablePage = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Link unavailable | VibesHub</title></head>
-<body><main><h1>This shopping link is unavailable</h1><p>Please return to VibesHub and try another recommendation.</p></main></body></html>`;
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Link unavailable | Swave</title></head>
+<body><main><h1>This shopping link is unavailable</h1><p>Please return to Swave and try another recommendation.</p></main></body></html>`;
 
 @Controller('go')
 @Public()

@@ -6,7 +6,7 @@
 
 ## Context
 
-Web and native clients require the same business rules. VibesHub also has cross-cutting workflows involving creators, catalog records, recommendations, codes, media, moderation, affiliate links, and analytics.
+Web and native clients require the same business rules. Swave also has cross-cutting workflows involving creators, catalog records, recommendations, codes, media, moderation, affiliate links, and analytics.
 
 Implementing core writes inside the Next.js application would couple the backend to one client. Starting with microservices would add deployment, networking, data-consistency, and observability complexity before load or team boundaries justify it.
 

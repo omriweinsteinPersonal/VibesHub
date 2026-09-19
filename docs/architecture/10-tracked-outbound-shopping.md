@@ -6,7 +6,7 @@
 
 ## Scope
 
-Every dynamic recommendation now exposes a VibesHub-owned `shopUrl` backed by the shared NestJS API:
+Every dynamic recommendation now exposes a Swave-owned `shopUrl` backed by the shared NestJS API:
 
 ```text
 GET /go/{non-sequential-public-id}
@@ -68,7 +68,7 @@ Web cards open the tracked URL in a new tab with `nofollow sponsored noopener no
 
 ## Failure behavior
 
-Malformed, missing, blocked, unhealthy, unapproved, suspended, unpublished, or mismatched links return a small safe VibesHub HTML page with `404`. The API does not follow merchant redirect chains during a shopper click and never forwards shopper query parameters. Failure to enqueue analytics is logged without blocking an otherwise valid shopping redirect.
+Malformed, missing, blocked, unhealthy, unapproved, suspended, unpublished, or mismatched links return a small safe Swave HTML page with `404`. The API does not follow merchant redirect chains during a shopper click and never forwards shopper query parameters. Failure to enqueue analytics is logged without blocking an otherwise valid shopping redirect.
 
 ## Deployment boundary
 

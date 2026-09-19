@@ -6,7 +6,7 @@
 
 ## Context
 
-VibesHub requires indexable editorial storefronts, social sharing, responsive mobile web, App Store and Google Play distribution, deep links, native media uploads, push notifications, and platform-quality navigation.
+Swave requires indexable editorial storefronts, social sharing, responsive mobile web, App Store and Google Play distribution, deep links, native media uploads, push notifications, and platform-quality navigation.
 
 A single rendered UI across web, iOS, and Android would maximize superficial code sharing but constrain either the public web experience or native application quality.
 
