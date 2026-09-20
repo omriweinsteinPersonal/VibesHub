@@ -13,7 +13,9 @@ export function splitBilingualProductTitle(title: string) {
     if (separator.test(word)) continue;
     if (hebrew.test(word) && latin.test(word)) {
       let previousPart: 'en' | 'he' | null = null;
-      for (const part of word.match(/[\u0590-\u05ff]+|[A-Za-z]+|[0-9]+|[^\u0590-\u05ffA-Za-z0-9]+/gu) ?? []) {
+      for (const part of word.match(
+        /[\u0590-\u05ff]+|[A-Za-z]+|[0-9]+|[^\u0590-\u05ffA-Za-z0-9]+/gu,
+      ) ?? []) {
         if (!hebrew.test(part) && !latin.test(part) && !/[0-9]/u.test(part)) continue;
         if (hebrew.test(part)) previous = 'he';
         else if (latin.test(part)) previous = 'en';

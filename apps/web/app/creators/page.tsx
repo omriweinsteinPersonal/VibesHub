@@ -46,8 +46,8 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
         <p className="eyebrow">FOR CREATORS</p>
         <h1>Turn your recommendations into a storefront</h1>
         <p className="lede" dir="rtl" lang="he">
-          המוצרים, הסרטונים וקודי ההנחה שעליהם המלצת, כולם בחנות אישית אחת
-          שהקהילה שלך יכולה לחזור אליה.
+          המוצרים, הסרטונים וקודי ההנחה שעליהם המלצת, כולם בחנות אישית אחת שהקהילה שלך
+          יכולה לחזור אליה.
         </p>
         <div className="creatorsHeroActions">
           <Link className="button primary" href="/auth?mode=signup&role=creator">
@@ -59,9 +59,17 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
           </Link>
         </div>
         <div className="creatorValuePoints" aria-label="Creator benefits">
-          <div><Sparkles aria-hidden="true" size={16} />Your own storefront</div>
-          <div><Sparkles aria-hidden="true" size={16} />Recommendations in one place</div>
-          <div><Sparkles aria-hidden="true" size={16} />A direct path for your audience</div>
+          <div>
+            <Sparkles aria-hidden="true" size={16} />
+            Your own storefront
+          </div>
+          <div>
+            <Sparkles aria-hidden="true" size={16} />
+            Recommendations in one place
+          </div>
+          <div>
+            <Sparkles aria-hidden="true" size={16} />A direct path for your audience
+          </div>
         </div>
       </section>
 

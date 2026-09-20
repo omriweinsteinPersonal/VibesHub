@@ -332,7 +332,7 @@ Swave maintains isolated development, staging, and production environments.
 | Auth     | Test providers   | Store-like providers | Production providers   |
 | Storage  | Test buckets     | Test buckets         | Production buckets     |
 | Video    | Test environment | Test environment     | Production environment |
-| Domains  | Local/preview    | Staging domain       | Swave domain        |
+| Domains  | Local/preview    | Staging domain       | Swave domain           |
 | Data     | Synthetic        | Synthetic/approved   | Real users             |
 
 Production data is never copied wholesale into lower environments. Schema changes are applied through committed migrations and rehearsed in staging.

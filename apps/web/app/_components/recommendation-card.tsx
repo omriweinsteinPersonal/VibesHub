@@ -73,12 +73,20 @@ export function RecommendationCardView({
         <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
           {title ? (
             <>
-              <span dir="ltr" lang="en">{title.english}</span>
-              <span dir="rtl" lang="he">{title.hebrew}</span>
+              <span dir="ltr" lang="en">
+                {title.english}
+              </span>
+              <span dir="rtl" lang="he">
+                {title.hebrew}
+              </span>
             </>
-          ) : recommendation.productName}
+          ) : (
+            recommendation.productName
+          )}
         </h3>
-        <p className="storePrice" dir="rtl">{formatIls(recommendation.price.amountMinor)}</p>
+        <p className="storePrice" dir="rtl">
+          {formatIls(recommendation.price.amountMinor)}
+        </p>
         <footer>
           <span className="merchantDomain">{recommendation.merchantHostname}</span>
           <a

@@ -70,10 +70,12 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
     [Tag, 'Code clicks', dashboard.summary.codeCopies],
   ] as const;
   const categories = useMemo(
-    () => Array.from(new Map(dashboard.recommendations.map((item) => [
-      item.categorySlug,
-      item.categoryName,
-    ])).entries()),
+    () =>
+      Array.from(
+        new Map(
+          dashboard.recommendations.map((item) => [item.categorySlug, item.categoryName]),
+        ).entries(),
+      ),
     [dashboard.recommendations],
   );
   const categoryProducts = dashboard.recommendations.filter(
@@ -125,7 +127,9 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
             >
               <option value="all">All categories</option>
               {categories.map(([slug, name]) => (
-                <option key={slug} value={slug}>{name}</option>
+                <option key={slug} value={slug}>
+                  {name}
+                </option>
               ))}
             </select>
           </label>
@@ -134,7 +138,9 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
             <select value={product} onChange={(event) => setProduct(event.target.value)}>
               <option value="all">All products</option>
               {categoryProducts.map((item) => (
-                <option key={item.id} value={item.id}>{item.productName}</option>
+                <option key={item.id} value={item.id}>
+                  {item.productName}
+                </option>
               ))}
             </select>
           </label>
@@ -142,7 +148,8 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
         {visibleProducts.length ? (
           <div className="productTrafficRows">
             <div className="productTrafficColumns" aria-hidden="true">
-              <span>Product</span><span>Clicks</span>
+              <span>Product</span>
+              <span>Clicks</span>
             </div>
             {visibleProducts.map((item) => (
               <div key={item.id}>
@@ -156,7 +163,9 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
                         src={publicAssetUrl(item.imageUrl)}
                         unoptimized
                       />
-                    ) : <Package aria-hidden="true" size={19} />}
+                    ) : (
+                      <Package aria-hidden="true" size={19} />
+                    )}
                   </span>
                   <span className="productTrafficName">
                     <strong>{item.productName}</strong>
@@ -168,9 +177,7 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
             ))}
           </div>
         ) : (
-          <div className="creatorAnalyticsEmpty">
-            No products in this category yet.
-          </div>
+          <div className="creatorAnalyticsEmpty">No products in this category yet.</div>
         )}
       </section>
     </>

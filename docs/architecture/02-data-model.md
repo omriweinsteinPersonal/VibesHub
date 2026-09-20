@@ -27,7 +27,7 @@ PostgreSQL is the source of truth. Search documents, public feed projections, ag
 | ----------- | ---------------------------------------------------- | ------------------------------------------- |
 | `auth`      | Supabase-managed identities and sessions             | Through Supabase Auth only                  |
 | `storage`   | Supabase-managed object metadata                     | Through storage policies and signed uploads |
-| `app`       | Transactional Swave domain data                   | No; API owns access                         |
+| `app`       | Transactional Swave domain data                      | No; API owns access                         |
 | `analytics` | Raw business events and daily aggregates             | No; API/worker owns access                  |
 | `audit`     | Immutable privileged-action history                  | No; restricted staff access through API     |
 | `ops`       | Outbox, webhook receipts, imports, jobs, idempotency | No; API/worker only                         |

@@ -47,7 +47,9 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
           {creator.bio.value}
         </p>
         <footer>
-          <span className="creatorRecommendationCount">{creator.recommendationCount} recommendations</span>
+          <span className="creatorRecommendationCount">
+            {creator.recommendationCount} recommendations
+          </span>
           <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
             View Profile
           </Link>

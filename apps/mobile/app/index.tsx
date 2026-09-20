@@ -107,7 +107,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 36,
   },
-  logoMarkText: { color: colors.white, fontFamily: 'Georgia', fontSize: 25, lineHeight: 30 },
+  logoMarkText: {
+    color: colors.white,
+    fontFamily: 'Georgia',
+    fontSize: 25,
+    lineHeight: 30,
+  },
   logo: {
     color: colors.ink,
     fontFamily: 'Georgia',

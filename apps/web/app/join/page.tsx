@@ -34,9 +34,7 @@ export default function JoinPage() {
       if (authError) throw authError;
       if (data.session) router.replace(next);
       else
-        setMessage(
-          'Check your email to confirm your account, then continue to Swave.',
-        );
+        setMessage('Check your email to confirm your account, then continue to Swave.');
     } catch (authError) {
       setError(
         authError instanceof Error ? authError.message : 'Account creation failed.',

@@ -91,9 +91,7 @@ function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) 
         <section className="directoryHero">
           <p className="eyebrow">CREATOR STOREFRONT</p>
           <h1>This storefront is temporarily unavailable</h1>
-          <p className="lede">
-            The Swave API is not connected in this environment yet.
-          </p>
+          <p className="lede">The Swave API is not connected in this environment yet.</p>
           <Link className="button secondary" href="/creators">
             Browse creators
           </Link>

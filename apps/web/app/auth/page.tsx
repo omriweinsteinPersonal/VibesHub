@@ -68,9 +68,7 @@ function AuthExperience() {
         if (authError) throw authError;
         if (data.session) router.replace(next);
         else
-          setMessage(
-            'Check your email to confirm your account, then continue to Swave.',
-          );
+          setMessage('Check your email to confirm your account, then continue to Swave.');
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
