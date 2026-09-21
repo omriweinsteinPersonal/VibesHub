@@ -49,8 +49,10 @@ interface RecommendationImageSource {
 }
 
 interface RecommendationRow {
+  brandId: string;
   brandName: string;
   categoryId: string;
+  categoryIds: string[];
   categoryName: string;
   categorySlug: string;
   commercialRelationship: RecommendationCard['commercialRelationship'];
@@ -84,7 +86,9 @@ interface RecommendationRow {
 }
 
 export interface CreatorRecommendationRecord extends RecommendationCard {
+  brandId: string;
   categoryId: string;
+  categoryIds: string[];
   position: number;
   productUrl: string;
 }
@@ -115,6 +119,7 @@ export class RecommendationRepository {
       if (!creator) return null;
       const image = await this.resolveImageSource(sql, userId, input);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
+      await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
       const [inserted] = await sql<{ id: string }[]>`
         insert into app.recommendations (
           creator_id,
@@ -156,6 +161,7 @@ export class RecommendationRepository {
         returning id
       `;
       if (!inserted) return null;
+      await this.syncRecommendationCategories(sql, inserted.id, input.categoryIds ?? [input.categoryId]);
       await this.insertAffiliateLink(sql, inserted.id, catalog);
       await this.syncDiscountPlacement(
         sql,
@@ -264,8 +270,6 @@ export class RecommendationRepository {
         and product.status = 'active'
         and offer.status = 'active'
         and affiliate_link.status = 'active'
-        and merchant_domain.allow_redirect = true
-        and merchant_domain.verified_at is not null
         and (recommendation.image_asset_id is null or media.status = 'ready')
     `;
     if (!row) return null;
@@ -301,6 +305,7 @@ export class RecommendationRepository {
       if (!creator) return null;
       const image = await this.resolveImageSource(sql, userId, input);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
+      await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
       const [updated] = await sql<{ id: string; lifecycle: string }[]>`
         update app.recommendations
         set
@@ -323,6 +328,7 @@ export class RecommendationRepository {
         returning id, lifecycle
       `;
       if (!updated) return null;
+      await this.syncRecommendationCategories(sql, updated.id, input.categoryIds ?? [input.categoryId]);
       const [link] = await sql<{ id: string }[]>`
         update app.affiliate_links affiliate_link
         set
@@ -701,8 +707,10 @@ export class RecommendationRepository {
         recommendation.updated_at as "updatedAt",
         product.name as "productName",
         product.id as "productId",
+        brand.id as "brandId",
         brand.name as "brandName",
         category.id as "categoryId",
+        coalesce((select jsonb_agg(link.category_id order by link.position) from app.recommendation_categories link where link.recommendation_id = recommendation.id), jsonb_build_array(category.id)) as "categoryIds",
         category.slug::text as "categorySlug",
         category.name_en as "categoryName",
         merchant_domain.hostname::text as "merchantHostname",
@@ -903,6 +911,32 @@ export class RecommendationRepository {
       offerId: offer.id,
       productId: product.id,
     };
+  }
+
+  private async syncRecommendationCategories(
+    sql: DatabaseClient,
+    recommendationId: string,
+    categoryIds: string[],
+  ): Promise<void> {
+    const uniqueIds = [...new Set(categoryIds)];
+    await sql`delete from app.recommendation_categories where recommendation_id = ${recommendationId}`;
+    for (const [position, categoryId] of uniqueIds.entries()) {
+      await sql`
+        insert into app.recommendation_categories (recommendation_id, category_id, position)
+        values (${recommendationId}, ${categoryId}, ${position})
+      `;
+    }
+  }
+
+  private async ensureCreatorBrand(sql: DatabaseClient, creatorId: string, brandId: string, productUrl: string) {
+    const url = new URL(productUrl);
+    const websiteUrl = `${url.protocol}//${url.host}`;
+    await sql`
+      insert into app.creator_brands (creator_id, brand_id, website_url, position)
+      values (${creatorId}, ${brandId}, ${websiteUrl},
+        (select coalesce(max(position), -1) + 1 from app.creator_brands where creator_id = ${creatorId}))
+      on conflict (creator_id, brand_id) do update set lifecycle = 'active'
+    `;
   }
 
   private async syncDiscountPlacement(
@@ -1138,7 +1172,9 @@ function mapCreatorRecommendation(
 ): CreatorRecommendationRecord {
   return {
     ...mapRecommendationCard(row, redirectBaseUrl),
+    brandId: row.brandId,
     categoryId: row.categoryId,
+    categoryIds: row.categoryIds,
     position: row.position,
     productUrl: row.productUrl,
   };

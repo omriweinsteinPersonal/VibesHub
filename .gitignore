@@ -21,6 +21,7 @@ supabase/.branches/
 supabase/.temp/
 
 # Logs and editor state
+.logs/
 *.log
 *.tsbuildinfo
 .DS_Store

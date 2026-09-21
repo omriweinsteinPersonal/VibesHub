@@ -199,12 +199,14 @@ export function FollowCreatorButton({
 }
 
 interface SaveProductButtonProps {
+  iconOnly?: boolean;
   onChange?: ((saved: boolean) => void) | undefined;
   productId: string;
   recommendationId: string;
 }
 
 export function SaveProductButton({
+  iconOnly = false,
   onChange,
   productId,
   recommendationId,
@@ -219,7 +221,7 @@ export function SaveProductButton({
     <button
       aria-label={saved ? 'Remove from saved products' : 'Save product'}
       aria-pressed={saved}
-      className={`saveProductButton ${saved ? 'saved' : ''}`}
+        className={`saveProductButton ${iconOnly ? 'iconOnly' : ''} ${saved ? 'saved' : ''}`}
       disabled={!engagement.ready || busy}
       title={error || (saved ? 'Saved' : 'Save product')}
       type="button"
@@ -236,7 +238,7 @@ export function SaveProductButton({
       <span aria-hidden="true">
         {busy ? '…' : <Heart fill={saved ? 'currentColor' : 'none'} size={16} />}
       </span>
-      {saved ? 'Saved' : 'Save'}
+        {iconOnly ? null : saved ? 'Saved' : 'Save'}
     </button>
   );
 }

@@ -12,8 +12,10 @@ import { validateRedirectDestination } from '../redirects/redirect-destination.j
 import { catalogSlug } from '../recommendations/recommendation.js';
 
 interface DiscountCodeRow {
-  code: string;
+  brandId: string | null;
+  code: string | null;
   detailsHe: string | null;
+  discountPercent: number | null;
   expiresAt: string | null;
   id: string;
   label: string | null;
@@ -22,6 +24,13 @@ interface DiscountCodeRow {
   merchantHostname: string;
   merchantName: string;
   merchantUrl: string;
+  offerType: 'brand_promotion' | 'creator_code';
+  priority: number;
+  recurrenceRule: 'month_end_week' | 'none';
+  scopeId: string | null;
+  scopeKind: 'brand' | 'collection' | 'item';
+  source: 'external' | 'manual';
+  stackable: boolean;
   startsAt: string | null;
   updatedAt: string;
   verificationStatus: DiscountCodeVerificationStatus;
@@ -45,24 +54,45 @@ export class DiscountCodeRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId, true);
       if (!creator) return null;
+      if (!(await this.offerTargetsBelongToCreator(sql, creator.id, input))) return null;
       const merchantId = await this.upsertMerchant(sql, input.merchantUrl);
       const [inserted] = await sql<{ id: string }[]>`
         insert into app.discount_codes (
           creator_id,
           merchant_id,
+          creator_brand_id,
+          destination_url,
           code,
           label,
           details_text,
           starts_at,
-          expires_at
+          expires_at,
+          offer_type,
+          discount_percent,
+          scope_kind,
+          scope_id,
+          priority,
+          stackable,
+          recurrence_rule,
+          source
         ) values (
           ${creator.id},
           ${merchantId},
+          ${input.brandId},
+          ${input.merchantUrl},
           ${input.code},
           ${input.label},
           ${input.detailsHe},
           ${input.startsAt},
-          ${input.expiresAt}
+          ${input.expiresAt},
+          ${input.offerType},
+          ${input.discountPercent},
+          ${input.scopeKind},
+          ${input.scopeId},
+          ${input.priority},
+          ${input.stackable},
+          ${input.recurrenceRule},
+          ${input.source}
         )
         returning id
       `;
@@ -100,16 +130,27 @@ export class DiscountCodeRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId, true);
       if (!creator) return null;
+      if (!(await this.offerTargetsBelongToCreator(sql, creator.id, input))) return null;
       const merchantId = await this.upsertMerchant(sql, input.merchantUrl);
       const [updated] = await sql<{ id: string }[]>`
         update app.discount_codes
         set
           merchant_id = ${merchantId},
+          creator_brand_id = ${input.brandId},
+          destination_url = ${input.merchantUrl},
           code = ${input.code},
           label = ${input.label},
           details_text = ${input.detailsHe},
           starts_at = ${input.startsAt},
           expires_at = ${input.expiresAt},
+          offer_type = ${input.offerType},
+          discount_percent = ${input.discountPercent},
+          scope_kind = ${input.scopeKind},
+          scope_id = ${input.scopeId},
+          priority = ${input.priority},
+          stackable = ${input.stackable},
+          recurrence_rule = ${input.recurrenceRule},
+          source = ${input.source},
           verification_status = 'unverified',
           last_verified_at = null,
           lifecycle_status = case
@@ -211,8 +252,15 @@ export class DiscountCodeRepository {
         )
         and (code.starts_at is null or code.starts_at <= statement_timestamp())
         and (code.expires_at is null or code.expires_at > statement_timestamp())
+        and (
+          code.recurrence_rule = 'none'
+          or (
+            code.recurrence_rule = 'month_end_week'
+            and current_date >= (date_trunc('month', current_date) + interval '1 month - 7 days')::date
+          )
+        )
         and merchant.status = 'active'
-      order by code.updated_at desc, code.id desc
+      order by code.priority desc, code.updated_at desc, code.id desc
       limit 50
     `;
     return rows.map(mapPublicDiscountCode);
@@ -262,8 +310,10 @@ export class DiscountCodeRepository {
       select
         code.id,
         code.code::text as code,
+        code.creator_brand_id as "brandId",
         code.label,
         code.details_text as "detailsHe",
+        code.discount_percent as "discountPercent",
         code.starts_at as "startsAt",
         code.expires_at as "expiresAt",
         case
@@ -276,9 +326,16 @@ export class DiscountCodeRepository {
         code.lifecycle_status as lifecycle,
         code.updated_at as "updatedAt",
         code.version,
+        code.offer_type as "offerType",
+        code.priority,
+        code.recurrence_rule as "recurrenceRule",
+        code.scope_id as "scopeId",
+        code.scope_kind as "scopeKind",
+        code.source,
+        code.stackable,
         merchant.name as "merchantName",
         merchant.hostname::text as "merchantHostname",
-        merchant.homepage_url as "merchantUrl"
+        coalesce(code.destination_url, merchant.homepage_url) as "merchantUrl"
       from app.discount_codes code
       join app.merchants merchant on merchant.id = code.merchant_id
     `;
@@ -310,20 +367,58 @@ export class DiscountCodeRepository {
     `;
     return merchant.id;
   }
+
+  private async offerTargetsBelongToCreator(
+    sql: DatabaseClient,
+    creatorId: string,
+    input: CreatorDiscountCodeInput,
+  ): Promise<boolean> {
+    if (input.brandId) {
+      const [brand] = await sql<{ exists: boolean }[]>`
+        select true as exists from app.creator_brands
+        where id = ${input.brandId} and creator_id = ${creatorId} and lifecycle = 'active'
+      `;
+      if (!brand) return false;
+    }
+    if (input.scopeKind === 'brand') return input.scopeId === null;
+    if (!input.scopeId) return false;
+    if (input.scopeKind === 'item') {
+      const [item] = await sql<{ exists: boolean }[]>`
+        select true as exists from app.recommendations
+        where id = ${input.scopeId} and creator_id = ${creatorId} and deleted_at is null
+      `;
+      return Boolean(item);
+    }
+    const [collection] = await sql<{ exists: boolean }[]>`
+      select true as exists from app.creator_curated_sections
+      where id = ${input.scopeId} and creator_id = ${creatorId} and kind = 'collection'
+    `;
+    return Boolean(collection);
+  }
 }
 
 function mapPublicDiscountCode(row: DiscountCodeRow): PublicDiscountCode {
   return {
+    brandId: row.brandId,
     code: row.code,
     details: row.detailsHe
       ? { direction: 'rtl', language: 'he', value: row.detailsHe }
       : null,
     expiresAt: row.expiresAt,
+    discountPercent: row.discountPercent,
     id: row.id,
     label: row.label,
     lastVerifiedAt: row.lastVerifiedAt,
     merchantHostname: row.merchantHostname,
     merchantName: row.merchantName,
+    merchantUrl: row.merchantUrl,
+    offerType: row.offerType,
+    priority: row.priority,
+    recurrenceRule: row.recurrenceRule,
+    scopeId: row.scopeId,
+    scopeKind: row.scopeKind,
+    source: row.source,
+    stackable: row.stackable,
     startsAt: row.startsAt,
     verificationStatus: row.verificationStatus,
   };
@@ -333,7 +428,6 @@ function mapCreatorDiscountCode(row: DiscountCodeRow): CreatorDiscountCode {
   return {
     ...mapPublicDiscountCode(row),
     lifecycle: row.lifecycle,
-    merchantUrl: row.merchantUrl,
     updatedAt: row.updatedAt,
     version: row.version,
   };

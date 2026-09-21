@@ -228,6 +228,7 @@ const creatorRecommendationInputFieldsSchema = z
   .object({
     brandName: z.string().trim().min(1).max(120),
     categoryId: idSchema,
+    categoryIds: z.array(idSchema).min(1).max(8).optional(),
     commercialRelationship: commercialRelationshipSchema.default('organic'),
     discountCode: optionalTrimmedStringSchema(50).optional(),
     discountExpiresAt: z.iso.datetime().nullable().optional(),
@@ -373,13 +374,14 @@ export const discountCodeLifecycleSchema = z.enum([
 
 const discountCodeInputFieldsSchema = z
   .object({
+    brandId: idSchema.nullable().default(null),
     code: z
       .string()
       .trim()
-      .min(1)
       .max(50)
-      .regex(/^\S+$/, 'Discount codes cannot contain spaces')
-      .transform((value) => value.toUpperCase()),
+      .regex(/^\S*$/, 'Discount codes cannot contain spaces')
+      .transform((value) => value.toUpperCase())
+      .nullable(),
     detailsHe: z
       .string()
       .trim()
@@ -388,8 +390,16 @@ const discountCodeInputFieldsSchema = z
       .refine((value) => /[א-ת]/u.test(value), 'Hebrew details are required')
       .nullable(),
     expiresAt: z.iso.datetime().nullable(),
+    discountPercent: z.number().int().min(1).max(100).nullable().default(null),
     label: z.string().trim().min(1).max(100).nullable(),
     merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    offerType: z.enum(['creator_code', 'brand_promotion']).default('creator_code'),
+    priority: z.number().int().min(-1_000).max(1_000).default(0),
+    recurrenceRule: z.enum(['none', 'month_end_week']).default('none'),
+    scopeId: idSchema.nullable().default(null),
+    scopeKind: z.enum(['brand', 'collection', 'item']).default('brand'),
+    source: z.enum(['manual', 'external']).default('manual'),
+    stackable: z.boolean().default(false),
     startsAt: z.iso.datetime().nullable(),
   })
   .strict();
@@ -419,14 +429,24 @@ export const creatorDiscountCodePatchSchema = discountCodeInputFieldsSchema
 
 export const publicDiscountCodeSchema = z
   .object({
-    code: z.string().trim().min(1).max(50),
+    brandId: idSchema.nullable(),
+    code: z.string().trim().min(1).max(50).nullable(),
     details: directionalTextSchema.nullable(),
+    discountPercent: z.number().int().min(1).max(100).nullable(),
     expiresAt: z.iso.datetime().nullable(),
     id: idSchema,
     label: z.string().trim().min(1).max(100).nullable(),
     lastVerifiedAt: z.iso.datetime().nullable(),
     merchantHostname: z.string().trim().min(4).max(253),
     merchantName: z.string().trim().min(1).max(160),
+    merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    offerType: z.enum(['creator_code', 'brand_promotion']),
+    priority: z.number().int(),
+    recurrenceRule: z.enum(['none', 'month_end_week']),
+    scopeId: idSchema.nullable(),
+    scopeKind: z.enum(['brand', 'collection', 'item']),
+    source: z.enum(['manual', 'external']),
+    stackable: z.boolean(),
     startsAt: z.iso.datetime().nullable(),
     verificationStatus: discountCodeVerificationStatusSchema,
   })
@@ -435,7 +455,6 @@ export const publicDiscountCodeSchema = z
 export const creatorDiscountCodeSchema = publicDiscountCodeSchema
   .extend({
     lifecycle: discountCodeLifecycleSchema,
-    merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
     updatedAt: z.iso.datetime(),
     version: z.int().positive(),
   })
@@ -472,11 +491,40 @@ export const recommendationCardSchema = z
 
 export const creatorRecommendationSchema = recommendationCardSchema
   .extend({
+    brandId: idSchema,
     categoryId: idSchema,
+    categoryIds: z.array(idSchema).min(1).max(8),
     position: z.int().nonnegative(),
     productUrl: z.url({ protocol: /^https$/ }).max(2_048),
   })
   .strict();
+
+const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
+export const defaultStorefrontTheme = {
+  profileBackground: '#fbf6ec',
+  recommendationsBackground: '#ffffff',
+  productBackground: '#ffffff',
+  discountBackground: '#f8f6f2',
+  collectionBackground: '#fbf9f6',
+  accentColor: '#b77856',
+  textColor: '#30251f',
+} as const;
+
+export const storefrontThemeSchema = z.object({
+  profileBackground: storefrontColorSchema,
+  recommendationsBackground: storefrontColorSchema,
+  productBackground: storefrontColorSchema,
+  discountBackground: storefrontColorSchema,
+  collectionBackground: storefrontColorSchema,
+  accentColor: storefrontColorSchema,
+  textColor: storefrontColorSchema,
+}).strict();
+
+export const storefrontThemeConfigurationSchema = z.object({
+  theme: storefrontThemeSchema,
+  version: z.int().positive(),
+}).strict();
 
 export const creatorStorefrontSchema = z
   .object({
@@ -491,6 +539,14 @@ export const creatorStorefrontSchema = z
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
+    brands: z.array(z.object({
+      brandId: idSchema,
+      collectionCount: z.int().nonnegative(),
+      id: idSchema,
+      itemCount: z.int().nonnegative(),
+      name: z.string().trim().min(1).max(120),
+      websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    }).strict()).max(100).default([]),
     storefrontSections: z
       .array(categoryCardSchema.pick({ id: true, name: true, slug: true }))
       .max(24)
@@ -500,19 +556,39 @@ export const creatorStorefrontSchema = z
         z
           .object({
             id: idSchema,
-            kind: z.enum(['section', 'collection']),
+            kind: z.enum(['section', 'collection', 'page']),
+            brandId: idSchema.nullable().default(null),
             title: z.string().trim().min(1).max(80),
+            description: z.string().trim().max(240).default(''),
+            imageUrl: publicAssetUrlSchema.nullable().default(null),
+            parentCollectionId: idSchema.nullable().default(null),
             recommendationIds: z.array(idSchema).max(20),
+            showItemsIndividually: z.boolean().default(false),
           })
           .strict(),
       )
       .max(24)
       .default([]),
+    contentOrder: z
+      .array(
+        z
+          .object({
+            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            id: idSchema,
+          })
+          .strict(),
+      )
+      .max(200)
+      .default([]),
+    theme: storefrontThemeSchema.default(defaultStorefrontTheme),
     socialLinks: z.array(
       z
         .object({
           handle: z.string().trim().max(100).nullable(),
-          platform: z.enum(['instagram', 'tiktok', 'youtube', 'website']),
+          platform: z.enum([
+            'instagram', 'tiktok', 'linkedin', 'x',
+            'youtube', 'facebook', 'pinterest', 'website',
+          ]),
           url: z.url({ protocol: /^https$/ }).max(2_048),
         })
         .strict(),
@@ -737,7 +813,16 @@ export const accountProfilePatchSchema = accountProfileSchema
     'At least one profile field is required',
   );
 
-export const socialPlatformSchema = z.enum(['instagram', 'tiktok', 'youtube', 'website']);
+export const socialPlatformSchema = z.enum([
+  'instagram',
+  'tiktok',
+  'linkedin',
+  'x',
+  'youtube',
+  'facebook',
+  'pinterest',
+  'website',
+]);
 
 export const creatorApplicationSocialLinkSchema = z
   .object({
@@ -808,7 +893,7 @@ export const creatorProfileSettingsSchema = z
     handle: creatorCardSchema.shape.handle,
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ id: true, name: true, slug: true }),
-    socialLinks: z.array(creatorProfileSocialLinkSchema).max(4),
+    socialLinks: z.array(creatorProfileSocialLinkSchema).max(8),
     version: z.int().positive(),
   })
   .strict();
@@ -828,7 +913,7 @@ export const creatorProfilePatchSchema = z
     primaryCategoryId: idSchema.optional(),
     socialLinks: z
       .array(creatorProfileSocialLinkSchema)
-      .max(4)
+      .max(8)
       .refine(
         (links) => new Set(links.map(({ platform }) => platform)).size === links.length,
         'Use each social platform at most once',
@@ -850,23 +935,63 @@ export const storefrontSectionSchema = z
 
 export const curatedSectionSchema = z
   .object({
+    brandId: idSchema.nullable().default(null),
     id: idSchema,
-    kind: z.enum(['section', 'collection']),
+    kind: z.enum(['section', 'collection', 'page']),
     title: z.string().trim().min(1).max(80),
+    description: z.string().trim().max(240).default(''),
+    imageUrl: publicAssetUrlSchema.nullable().default(null),
+    parentCollectionId: idSchema.nullable().default(null),
     recommendationIds: z.array(idSchema).max(20),
+    showItemsIndividually: z.boolean().default(false),
   })
   .strict();
+
+export const creatorBrandInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+}).strict();
+
+export const creatorBrandSchema = creatorBrandInputSchema.extend({
+  brandId: idSchema,
+  id: idSchema,
+  itemCount: z.int().nonnegative(),
+  collectionCount: z.int().nonnegative(),
+  version: z.int().positive(),
+}).strict();
 
 export const creatorStorefrontConfigurationSchema = z
   .object({
     sections: z.array(storefrontSectionSchema).max(24),
     curatedSections: z.array(curatedSectionSchema).max(24).default([]),
+    contentOrder: z
+      .array(
+        z
+          .object({
+            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            id: idSchema,
+          })
+          .strict(),
+      )
+      .max(200)
+      .default([]),
     version: z.int().positive(),
   })
   .strict();
 
 export const creatorStorefrontConfigurationInputSchema = z
   .object({
+    contentOrder: z
+      .array(
+        z
+          .object({
+            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            id: idSchema,
+          })
+          .strict(),
+      )
+      .max(200)
+      .default([]),
     categoryIds: z
       .array(idSchema)
       .max(24)
@@ -976,6 +1101,8 @@ export type DiscountCodeVerificationStatus = z.infer<
   typeof discountCodeVerificationStatusSchema
 >;
 export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
+export type StorefrontTheme = z.infer<typeof storefrontThemeSchema>;
+export type StorefrontThemeConfiguration = z.infer<typeof storefrontThemeConfigurationSchema>;
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema
@@ -1052,6 +1179,8 @@ export type CreatorStorefrontConfiguration = z.infer<
 export type CreatorStorefrontConfigurationInput = z.infer<
   typeof creatorStorefrontConfigurationInputSchema
 >;
+export type CreatorBrand = z.infer<typeof creatorBrandSchema>;
+export type CreatorBrandInput = z.infer<typeof creatorBrandInputSchema>;
 export type CreatorStudioSummary = z.infer<typeof creatorStudioSummarySchema>;
 export type Money = z.infer<typeof moneySchema>;
 export type Operation = z.infer<typeof operationSchema>;

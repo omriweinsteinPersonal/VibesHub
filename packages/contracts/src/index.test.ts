@@ -245,7 +245,20 @@ describe('shared API contracts', () => {
         categoryIds: [],
         curatedSections: [section],
       }).curatedSections,
-    ).toEqual([section]);
+    ).toEqual([{ ...section, brandId: null, description: '', imageUrl: null, parentCollectionId: null, showItemsIndividually: false }]);
+    expect(
+      creatorStorefrontConfigurationInputSchema.parse({
+        categoryIds: [],
+        curatedSections: [{
+          id: '01989f72-07e4-7f32-9b42-1ba55d4ca022',
+          kind: 'page',
+          title: 'Summer picks',
+          description: 'Selected for sunny days',
+          parentCollectionId: section.id,
+          recommendationIds: section.recommendationIds,
+        }, section],
+      }).curatedSections[0]?.kind,
+    ).toBe('page');
     expect(() =>
       creatorStorefrontConfigurationInputSchema.parse({
         categoryIds: [],

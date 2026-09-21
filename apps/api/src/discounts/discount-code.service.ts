@@ -49,11 +49,20 @@ export class DiscountCodeService {
       throw problem(409, 'INVALID_STATE_TRANSITION', 'Archived codes cannot be edited');
     }
     const input = creatorDiscountCodeInputSchema.parse({
+      brandId: current.brandId,
       code: current.code,
       detailsHe: current.details?.value ?? null,
+      discountPercent: current.discountPercent,
       expiresAt: current.expiresAt,
       label: current.label,
       merchantUrl: current.merchantUrl,
+      offerType: current.offerType,
+      priority: current.priority,
+      recurrenceRule: current.recurrenceRule,
+      scopeId: current.scopeId,
+      scopeKind: current.scopeKind,
+      source: current.source,
+      stackable: current.stackable,
       startsAt: current.startsAt,
       ...patch,
     });

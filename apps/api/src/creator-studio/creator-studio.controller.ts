@@ -2,8 +2,10 @@ import { Body, Controller, Get, Headers, Put, Req } from '@nestjs/common';
 import {
   creatorMediaKitInputSchema,
   creatorStorefrontConfigurationInputSchema,
+  storefrontThemeSchema,
   type CreatorMediaKitInput,
   type CreatorStorefrontConfigurationInput,
+  type StorefrontTheme,
 } from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
 
@@ -27,6 +29,28 @@ export class CreatorStudioController {
   async sections(@CurrentActor() actor: RequestActor, @Req() request: FastifyRequest) {
     return singleResponse(
       await this.studio.storefrontConfiguration(actor.userId),
+      request.id,
+    );
+  }
+
+  @Get('storefront-theme')
+  async theme(@CurrentActor() actor: RequestActor, @Req() request: FastifyRequest) {
+    return singleResponse(await this.studio.storefrontTheme(actor.userId), request.id);
+  }
+
+  @Put('storefront-theme')
+  async replaceTheme(
+    @CurrentActor() actor: RequestActor,
+    @Headers('if-match') ifMatch: string | undefined,
+    @Body() body: StorefrontTheme,
+    @Req() request: FastifyRequest,
+  ) {
+    return singleResponse(
+      await this.studio.replaceStorefrontTheme(
+        actor.userId,
+        parseIfMatch(ifMatch),
+        storefrontThemeSchema.parse(body),
+      ),
       request.id,
     );
   }

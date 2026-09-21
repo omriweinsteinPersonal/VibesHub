@@ -5,6 +5,7 @@ import type { CreatorDiscountCode } from '@vibeshub/contracts';
 import { DiscountCodeService } from './discount-code.service.js';
 
 const discountCode: CreatorDiscountCode = {
+  brandId: null,
   code: 'NOA10',
   details: {
     direction: 'rtl',
@@ -12,6 +13,7 @@ const discountCode: CreatorDiscountCode = {
     value: 'עשרה אחוזי הנחה באתר',
   },
   expiresAt: '2026-09-01T00:00:00.000Z',
+  discountPercent: 10,
   id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
   label: '10% off',
   lastVerifiedAt: null,
@@ -19,6 +21,13 @@ const discountCode: CreatorDiscountCode = {
   merchantHostname: 'shop.example.com',
   merchantName: 'shop.example.com',
   merchantUrl: 'https://shop.example.com',
+  offerType: 'creator_code',
+  priority: 0,
+  recurrenceRule: 'none',
+  scopeId: null,
+  scopeKind: 'brand',
+  source: 'manual',
+  stackable: false,
   startsAt: null,
   updatedAt: '2026-08-07T10:00:00.000Z',
   verificationStatus: 'unverified',

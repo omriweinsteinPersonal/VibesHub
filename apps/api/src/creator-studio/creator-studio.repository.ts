@@ -5,7 +5,10 @@ import type {
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
   CreatorStudioSummary,
+  StorefrontTheme,
+  StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
+import { storefrontThemeSchema } from '@vibeshub/contracts';
 
 import { Database, type DatabaseClient } from '../database.js';
 
@@ -17,6 +20,7 @@ interface CreatorIdentityRow {
 }
 
 interface StorefrontSectionRow {
+  contentOrder: CreatorStorefrontConfiguration['contentOrder'];
   categoryId: string;
   categoryName: string;
   categorySlug: string;
@@ -25,10 +29,15 @@ interface StorefrontSectionRow {
 }
 
 interface CuratedSectionRow {
+  brandId: string | null;
   id: string;
-  kind: 'section' | 'collection';
+  kind: 'section' | 'collection' | 'page';
   title: string;
+  description: string;
+  imageUrl: string | null;
+  parentCollectionId: string | null;
   recommendationIds: string[];
+  showItemsIndividually: boolean;
 }
 
 interface MediaKitRow {
@@ -142,6 +151,62 @@ export class CreatorStudioRepository {
     return this.readStorefrontConfiguration(this.database.sql, identity.id);
   }
 
+  async getStorefrontTheme(userId: string): Promise<StorefrontThemeConfiguration | null> {
+    const identity = await this.findCreator(this.database.sql, userId);
+    if (!identity) return null;
+    return this.readStorefrontTheme(this.database.sql, identity.id);
+  }
+
+  async replaceStorefrontTheme(
+    userId: string,
+    expectedVersion: number,
+    theme: StorefrontTheme,
+  ): Promise<CreatorStudioUpdateResult<StorefrontThemeConfiguration>> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const identity = await this.findCreator(sql, userId, true);
+      if (!identity) return { kind: 'not_found' };
+      await sql`
+        insert into app.creator_storefront_preferences (creator_id)
+        values (${identity.id})
+        on conflict (creator_id) do nothing
+      `;
+      const [row] = await sql<{ themeVersion: number }[]>`
+        select theme_version as "themeVersion"
+        from app.creator_storefront_preferences
+        where creator_id = ${identity.id}
+        for update
+      `;
+      if (!row) return { kind: 'not_found' };
+      if (row.themeVersion !== expectedVersion)
+        return { actualVersion: row.themeVersion, kind: 'version_conflict' };
+      await sql`
+        update app.creator_storefront_preferences
+        set theme = ${sql.json(theme)}, theme_version = theme_version + 1
+        where creator_id = ${identity.id}
+      `;
+      return { data: await this.readStorefrontTheme(sql, identity.id), kind: 'updated' };
+    });
+  }
+
+  private async readStorefrontTheme(
+    sql: DatabaseClient,
+    creatorId: string,
+  ): Promise<StorefrontThemeConfiguration> {
+    await sql`
+      insert into app.creator_storefront_preferences (creator_id)
+      values (${creatorId})
+      on conflict (creator_id) do nothing
+    `;
+    const [row] = await sql<{ theme: StorefrontTheme; version: number }[]>`
+      select theme, theme_version as version
+      from app.creator_storefront_preferences
+      where creator_id = ${creatorId}
+    `;
+    if (!row) throw new Error('Creator storefront theme is missing');
+    return { theme: storefrontThemeSchema.parse(row.theme), version: row.version };
+  }
+
   async replaceStorefrontConfiguration(
     userId: string,
     expectedVersion: number,
@@ -175,6 +240,47 @@ export class CreatorStudioRepository {
       if ((categoryCount?.count ?? 0) !== input.categoryIds.length) {
         return { kind: 'invalid_categories' };
       }
+      const orderedIds = input.contentOrder.map(({ kind, id }) => `${kind}:${id}`);
+      if (new Set(orderedIds).size !== orderedIds.length)
+        return { kind: 'invalid_recommendations' };
+      const orderedRecommendations = input.contentOrder
+        .filter(({ kind }) => kind === 'recommendation')
+        .map(({ id }) => id);
+      const orderedDiscounts = input.contentOrder
+        .filter(({ kind }) => kind === 'discount')
+        .map(({ id }) => id);
+      const orderedSections = input.contentOrder.filter(
+        ({ kind }) => kind === 'collection' || kind === 'section',
+      );
+      if (input.curatedSections.some((section) => section.kind === 'page' &&
+        section.parentCollectionId !== null && !input.curatedSections.some(
+          (parent) => parent.kind === 'collection' && parent.id === section.parentCollectionId && parent.brandId === section.brandId,
+        ))) return { kind: 'invalid_recommendations' };
+      const orderedCategories = input.contentOrder
+        .filter(({ kind }) => kind === 'category')
+        .map(({ id }) => id);
+      if (
+        orderedCategories.some((id) => !input.categoryIds.includes(id)) ||
+        orderedSections.some(
+          ({ id, kind }) =>
+            !input.curatedSections.some(
+              (section) => section.id === id && section.kind === kind,
+            ),
+        )
+      )
+        return { kind: 'invalid_recommendations' };
+      const [orderOwnership] = await sql<
+        { recommendations: number; discounts: number }[]
+      >`
+        select
+          (select count(*)::integer from app.recommendations where creator_id = ${identity.id} and id = any(${orderedRecommendations}::uuid[]) and lifecycle <> 'archived' and deleted_at is null) as recommendations,
+          (select count(*)::integer from app.discount_codes where creator_id = ${identity.id} and id = any(${orderedDiscounts}::uuid[]) and lifecycle_status <> 'archived' and deleted_at is null) as discounts
+      `;
+      if (
+        orderOwnership?.recommendations !== orderedRecommendations.length ||
+        orderOwnership.discounts !== orderedDiscounts.length
+      )
+        return { kind: 'invalid_recommendations' };
       const recommendationIds = [
         ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
       ];
@@ -191,6 +297,10 @@ export class CreatorStudioRepository {
           return { kind: 'invalid_recommendations' };
         }
       }
+      for (const section of input.curatedSections) {
+        if (section.kind === 'collection' && !section.brandId)
+          return { kind: 'invalid_recommendations' };
+      }
 
       await sql`delete from app.creator_storefront_sections where creator_id = ${identity.id}`;
       for (const [position, categoryId] of input.categoryIds.entries()) {
@@ -202,8 +312,10 @@ export class CreatorStudioRepository {
       await sql`delete from app.creator_curated_sections where creator_id = ${identity.id}`;
       for (const [position, section] of input.curatedSections.entries()) {
         await sql`
-          insert into app.creator_curated_sections (id, creator_id, kind, title, position)
-          values (${section.id}, ${identity.id}, ${section.kind}, ${section.title}, ${position})
+          insert into app.creator_curated_sections
+            (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, position)
+          values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
+            ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${position})
         `;
         for (const [
           itemPosition,
@@ -218,7 +330,7 @@ export class CreatorStudioRepository {
       }
       await sql`
         update app.creator_storefront_preferences
-        set version = version + 1
+        set version = version + 1, content_order = ${sql.json(input.contentOrder)}
         where creator_id = ${identity.id}
       `;
       return {
@@ -335,6 +447,7 @@ export class CreatorStudioRepository {
         category.name_en as "categoryName",
         section.position,
         preference.version
+        , preference.content_order as "contentOrder"
       from app.creator_storefront_preferences preference
       left join app.creator_storefront_sections section
         on section.creator_id = preference.creator_id
@@ -346,7 +459,12 @@ export class CreatorStudioRepository {
       select
         section.id,
         section.kind,
+        section.brand_id as "brandId",
         section.title,
+        section.description,
+        section.image_url as "imageUrl",
+        section.show_items_individually as "showItemsIndividually",
+        section.parent_collection_id as "parentCollectionId",
         coalesce(jsonb_agg(item.recommendation_id order by item.position)
           filter (where item.recommendation_id is not null), '[]'::jsonb)
           as "recommendationIds"
@@ -357,6 +475,7 @@ export class CreatorStudioRepository {
       order by section.position
     `;
     return {
+      contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       curatedSections: curatedRows,
       sections: rows.flatMap((row) =>
         row.categoryId

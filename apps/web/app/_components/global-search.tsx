@@ -209,7 +209,7 @@ export function GlobalSearch() {
                             <strong>{product.productName}</strong>
                             <span>Recommended by {product.creator.displayName}</span>
                           </div>
-                          <b>{formatIls(product.price.amountMinor)}</b>
+                          {product.price.amountMinor > 0 ? <b>{formatIls(product.price.amountMinor)}</b> : null}
                         </Link>
                       ))}
                     </div>

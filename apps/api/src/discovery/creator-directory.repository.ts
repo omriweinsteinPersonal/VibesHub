@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { defaultStorefrontTheme } from '@vibeshub/contracts';
 import type {
   CreatorCard,
   CreatorDirectoryQuery,
@@ -22,9 +23,12 @@ interface CreatorCardRow {
   id: string;
   isVerified: boolean;
   recommendationCount: number;
+  brands?: CreatorStorefront['brands'];
   socialLinks?: CreatorStorefront['socialLinks'];
   storefrontSections?: CreatorStorefront['storefrontSections'];
   curatedSections?: CreatorStorefront['curatedSections'];
+  contentOrder?: CreatorStorefront['contentOrder'];
+  theme?: CreatorStorefront['theme'];
 }
 
 export interface CreatorDirectoryPage {
@@ -153,11 +157,31 @@ export class CreatorDirectoryRepository {
         ) as "storefrontSections",
         coalesce(
           (
+            select jsonb_agg(jsonb_build_object(
+              'id', creator_brand.id,
+              'brandId', brand.id,
+              'name', coalesce(creator_brand.display_name, brand.name),
+              'websiteUrl', creator_brand.website_url,
+              'itemCount', (select count(*)::integer from app.recommendations recommendation join app.products product on product.id = recommendation.product_id where recommendation.creator_id = creator.id and product.brand_id = brand.id and recommendation.lifecycle = 'published' and recommendation.deleted_at is null),
+              'collectionCount', (select count(*)::integer from app.creator_curated_sections section where section.creator_id = creator.id and section.brand_id = brand.id and section.kind = 'collection')
+            ) order by creator_brand.position)
+            from app.creator_brands creator_brand
+            join app.brands brand on brand.id = creator_brand.brand_id
+            where creator_brand.creator_id = creator.id and creator_brand.lifecycle = 'active'
+          ), '[]'::jsonb
+        ) as brands,
+        coalesce(
+          (
             select jsonb_agg(
               jsonb_build_object(
                 'id', section.id,
                 'kind', section.kind,
+                'brandId', section.brand_id,
                 'title', section.title,
+                'description', section.description,
+                'imageUrl', section.image_url,
+                'showItemsIndividually', section.show_items_individually,
+                'parentCollectionId', section.parent_collection_id,
                 'recommendationIds', coalesce(
                   (select jsonb_agg(item.recommendation_id order by item.position)
                    from app.creator_curated_section_items item
@@ -171,6 +195,8 @@ export class CreatorDirectoryRepository {
           ),
           '[]'::jsonb
         ) as "curatedSections",
+        coalesce((select content_order from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "contentOrder",
+        (select theme from app.creator_storefront_preferences where creator_id = creator.id) as theme,
         (
           select count(*)::integer
           from app.recommendations recommendation
@@ -197,9 +223,12 @@ export class CreatorDirectoryRepository {
     return row
       ? {
           ...mapCreatorCard(row),
+          brands: row.brands ?? [],
           socialLinks: row.socialLinks ?? [],
           storefrontSections: row.storefrontSections ?? [],
           curatedSections: row.curatedSections ?? [],
+          contentOrder: Array.isArray(row.contentOrder) ? row.contentOrder : [],
+          theme: row.theme ?? defaultStorefrontTheme,
         }
       : null;
   }

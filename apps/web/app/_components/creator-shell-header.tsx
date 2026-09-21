@@ -1,18 +1,30 @@
 'use client';
 
+import type { CreatorProfileSettings } from '@vibeshub/contracts';
 import Link from 'next/link';
-import { ChartColumn, House, LayoutDashboard, LogOut, User } from 'lucide-react';
+import { ChartColumn, House, LayoutDashboard, LogOut, Store, User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
+import { apiRequest } from '../../lib/api';
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { Brand } from './brand';
 
 export function CreatorShellHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const [storefrontHref, setStorefrontHref] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    void apiRequest<CreatorProfileSettings>('/creator/profile')
+      .then(({ handle }) => { if (active) setStorefrontHref(`/creators/${encodeURIComponent(handle)}`); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
   const links = [
     { href: '/creator-home', icon: House, label: 'Home' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    ...(storefrontHref ? [{ href: storefrontHref, icon: Store, label: 'Storefront' }] : []),
     { href: '/analytics', icon: ChartColumn, label: 'Analytics' },
     { href: '/account', icon: User, label: 'Account' },
   ];
@@ -29,7 +41,7 @@ export function CreatorShellHeader() {
         <div className="creatorShellHeaderInner">
           <Brand />
           <nav aria-label="Creator workspace">
-            {links.slice(0, 3).map((link) => (
+            {links.filter(({ label }) => label !== 'Account').map((link) => (
               <Link
                 aria-current={pathname === link.href ? 'page' : undefined}
                 href={link.href}

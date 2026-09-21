@@ -68,6 +68,7 @@ export class RecommendationService {
     const input = creatorRecommendationInputSchema.parse({
       brandName: current.brandName,
       categoryId: current.categoryId,
+      categoryIds: current.categoryIds,
       commercialRelationship: current.commercialRelationship,
       discountCode: current.discount?.code ?? null,
       discountExpiresAt: current.discount?.expiresAt ?? null,

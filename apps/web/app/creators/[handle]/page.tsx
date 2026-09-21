@@ -4,13 +4,16 @@ import type {
   RecommendationCard,
 } from '@vibeshub/contracts';
 import type { Metadata } from 'next';
+import { defaultStorefrontTheme } from '@vibeshub/contracts';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../../lib/api';
+import { loadStorefrontRecommendations } from '../../../lib/storefront-recommendations';
 import { hasCreatorSession } from '../../../lib/server-session';
 import { CreatorShellHeader } from '../../_components/creator-shell-header';
 import { CreatorStorefrontView } from '../../_components/creator-storefront';
+import { StorefrontPhonePreview } from '../../_components/storefront-phone-preview';
 import { SiteFooter } from '../../_components/site-footer';
 import { SiteHeader } from '../../_components/site-header';
 
@@ -23,13 +26,16 @@ export const metadata: Metadata = {
 
 interface CreatorStorefrontPageProps {
   params: Promise<{ handle: string }>;
+  searchParams: Promise<{ mobilePreview?: string | string[] }>;
 }
 
 export default async function CreatorStorefrontPage({
   params,
+  searchParams,
 }: CreatorStorefrontPageProps) {
   const { handle } = await params;
-  const creatorSession = await hasCreatorSession();
+  const previewOnly = (await searchParams).mobilePreview === '1';
+  const creatorSession = await hasCreatorSession(handle);
 
   let storefront: CreatorStorefront;
   let recommendations: RecommendationCard[] = [];
@@ -53,34 +59,26 @@ export default async function CreatorStorefrontPage({
 
   return (
     <div className="editorialPage">
-      {creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
+      {previewOnly ? null : creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
       <main>
-        <CreatorStorefrontView
-          codes={discountCodes}
-          recommendations={recommendations}
-          storefront={storefront}
-        />
+        <StorefrontPhonePreview
+          creatorId={storefront.id}
+          editable={creatorSession}
+          previewUrl={`/creators/${encodeURIComponent(handle)}?mobilePreview=1`}
+          theme={storefront.theme ?? defaultStorefrontTheme}
+          title={`${storefront.displayName} mobile storefront`}
+        >
+          <CreatorStorefrontView
+            codes={discountCodes}
+            editable={creatorSession}
+            recommendations={recommendations}
+            storefront={storefront}
+          />
+        </StorefrontPhonePreview>
       </main>
-      <SiteFooter />
+      {previewOnly ? null : <SiteFooter />}
     </div>
   );
-}
-
-async function loadStorefrontRecommendations(
-  handle: string,
-): Promise<RecommendationCard[]> {
-  const items: RecommendationCard[] = [];
-  let cursor: string | null = null;
-  do {
-    const query = new URLSearchParams({ limit: '48' });
-    if (cursor) query.set('cursor', cursor);
-    const page = await publicApiCollectionRequest<RecommendationCard>(
-      `/creators/${encodeURIComponent(handle)}/recommendations?${query.toString()}`,
-    );
-    items.push(...page.data);
-    cursor = page.page.nextCursor;
-  } while (cursor);
-  return items;
 }
 
 function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) {

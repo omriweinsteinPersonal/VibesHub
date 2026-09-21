@@ -11,6 +11,7 @@ import { Sparkles } from 'lucide-react';
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
 
 import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
+import { creatorConnectors } from '../../../lib/creator-connectors';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
@@ -19,13 +20,6 @@ import {
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
 type SocialPlatform = CreatorProfileSocialLink['platform'];
-
-const socialPlatforms: Array<{ label: string; platform: SocialPlatform }> = [
-  { label: 'Instagram profile', platform: 'instagram' },
-  { label: 'TikTok profile', platform: 'tiktok' },
-  { label: 'YouTube channel', platform: 'youtube' },
-  { label: 'Website', platform: 'website' },
-];
 
 interface EditorState {
   avatarAssetId: string;
@@ -37,9 +31,13 @@ interface EditorState {
 }
 
 const emptySocialUrls: Record<SocialPlatform, string> = {
+  facebook: '',
   instagram: '',
+  linkedin: '',
+  pinterest: '',
   tiktok: '',
   website: '',
+  x: '',
   youtube: '',
 };
 
@@ -135,9 +133,16 @@ export default function CreatorProfilePage() {
     setError('');
     setNotice('');
     try {
-      const socialLinks = socialPlatforms.flatMap(({ platform }) => {
+      const platformOrder = [
+        ...profile.socialLinks.map(({ platform }) => platform),
+        ...creatorConnectors
+          .map(({ platform }) => platform)
+          .filter((platform) => !profile.socialLinks.some((link) => link.platform === platform)),
+      ];
+      const socialLinks = platformOrder.flatMap((platform) => {
         const url = editor.socialUrls[platform].trim();
-        return url ? [{ platform, url }] : [];
+        const handle = profile.socialLinks.find((link) => link.platform === platform)?.handle;
+        return url ? [{ handle: handle ?? null, platform, url }] : [];
       });
       const previousAvatarAssetId = profile.avatar?.assetId ?? null;
       const updated = await apiRequest<CreatorProfileSettings>('/creator/profile', {
@@ -305,12 +310,12 @@ export default function CreatorProfilePage() {
             <fieldset className="profileSocialFields">
               <legend>Public links</legend>
               <div className="fieldGrid">
-                {socialPlatforms.map(({ label, platform }) => (
+                {creatorConnectors.map(({ label, placeholder, platform }) => (
                   <label key={platform}>
                     {label}
                     <input
                       onChange={(event) => updateSocial(platform, event.target.value)}
-                      placeholder={`https://${platform}.com/...`}
+                      placeholder={placeholder}
                       type="url"
                       value={editor.socialUrls[platform]}
                     />

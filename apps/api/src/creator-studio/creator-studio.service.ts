@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   CreatorMediaKitInput,
   CreatorStorefrontConfigurationInput,
+  StorefrontTheme,
 } from '@vibeshub/contracts';
 
 import { problem } from '../api-problem.js';
@@ -17,6 +18,19 @@ export class CreatorStudioService {
 
   async storefrontConfiguration(userId: string) {
     return this.requireCreator(await this.studio.getStorefrontConfiguration(userId));
+  }
+
+  async storefrontTheme(userId: string) {
+    return this.requireCreator(await this.studio.getStorefrontTheme(userId));
+  }
+
+  async replaceStorefrontTheme(userId: string, expectedVersion: number, theme: StorefrontTheme) {
+    const result = await this.studio.replaceStorefrontTheme(userId, expectedVersion, theme);
+    if (result.kind === 'updated') return result.data;
+    if (result.kind === 'version_conflict') {
+      throw problem(412, 'PRECONDITION_FAILED', 'The storefront design changed before this update was saved');
+    }
+    return this.requireCreator(null);
   }
 
   async replaceStorefrontConfiguration(

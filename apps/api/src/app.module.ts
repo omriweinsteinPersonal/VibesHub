@@ -13,7 +13,7 @@ import { ActorRepository } from './auth/actor.repository.js';
 import { AuthenticationGuard } from './auth/auth.guard.js';
 import { CapabilityGuard } from './auth/capability.guard.js';
 import { SupabaseTokenVerifier } from './auth/token-verifier.js';
-import { CategoriesController } from './categories.controller.js';
+import { CategoriesController, CreatorCategoriesController } from './categories.controller.js';
 import { AdminApplicationController } from './creator-applications/admin-application.controller.js';
 import { CreatorProfileController } from './creator-profile/creator-profile.controller.js';
 import { CreatorProfileRepository } from './creator-profile/creator-profile.repository.js';
@@ -55,17 +55,22 @@ import { CreatorRecommendationsController } from './recommendations/creator-reco
 import { RecommendationRepository } from './recommendations/recommendation.repository.js';
 import { RecommendationService } from './recommendations/recommendation.service.js';
 import { ProductMetadataService } from './recommendations/product-metadata.service.js';
+import { CreatorBrandController } from './brands/creator-brand.controller.js';
+import { CreatorBrandRepository } from './brands/creator-brand.repository.js';
+import { CreatorBrandService } from './brands/creator-brand.service.js';
 
 @Module({
   controllers: [
     HealthController,
     CategoriesController,
+    CreatorCategoriesController,
     CreatorsController,
     DiscoverController,
     SearchController,
     AnalyticsController,
     CreatorAnalyticsController,
     CreatorDiscountCodesController,
+    CreatorBrandController,
     CreatorRecommendationsController,
     CreatorMediaController,
     CreatorVideoMediaController,
@@ -96,6 +101,8 @@ import { ProductMetadataService } from './recommendations/product-metadata.servi
     ProductDiscoveryRepository,
     DiscountCodeRepository,
     DiscountCodeService,
+    CreatorBrandRepository,
+    CreatorBrandService,
     RecommendationRepository,
     RecommendationService,
     ProductMetadataService,

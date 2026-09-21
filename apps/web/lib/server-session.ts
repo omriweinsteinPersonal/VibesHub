@@ -7,7 +7,7 @@ interface AccountSummary {
   creator: { handle: string; id: string } | null;
 }
 
-export async function hasCreatorSession(): Promise<boolean> {
+export async function hasCreatorSession(handle?: string): Promise<boolean> {
   try {
     const cookieStore = await cookies();
     const { publishableKey, url } = getSupabasePublicConfig();
@@ -26,7 +26,10 @@ export async function hasCreatorSession(): Promise<boolean> {
     });
     if (!response.ok) return false;
     const body = (await response.json()) as { data?: AccountSummary };
-    return Boolean(body.data?.creator);
+    return Boolean(
+      body.data?.creator &&
+      (!handle || body.data.creator.handle.toLowerCase() === handle.toLowerCase()),
+    );
   } catch {
     return false;
   }

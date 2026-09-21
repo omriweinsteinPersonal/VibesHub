@@ -72,7 +72,7 @@ export default function CreatorDiscountCodesPage() {
     setError('');
     setNotice('');
     const body = JSON.stringify({
-      code: editor.code,
+      code: editor.code.trim() || null,
       detailsHe: editor.detailsHe.trim() || null,
       expiresAt: toIso(editor.expiresAt),
       label: editor.label.trim() || null,
@@ -142,7 +142,7 @@ export default function CreatorDiscountCodesPage() {
   function beginEditing(code: CreatorDiscountCode) {
     setEditing(code);
     setEditor({
-      code: code.code,
+      code: code.code ?? '',
       detailsHe: code.details?.value ?? '',
       expiresAt: toLocalDateTime(code.expiresAt),
       label: code.label ?? '',
@@ -321,7 +321,7 @@ export default function CreatorDiscountCodesPage() {
                   <span>{verificationLabel(code.verificationStatus)}</span>
                 </div>
                 <p className="productBrand">{code.merchantHostname}</p>
-                <h3>{code.code}</h3>
+                <h3>{code.code || code.label || 'Brand promotion'}</h3>
                 {code.label ? <p className="discountCodeLabel">{code.label}</p> : null}
                 {code.details ? (
                   <p className="discountCodeDetails" dir="rtl" lang="he">

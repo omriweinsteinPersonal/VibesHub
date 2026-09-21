@@ -17,18 +17,20 @@ export function TrackedInstagramLink({
   className,
   creatorId,
   href,
+  title,
 }: {
   children: ReactNode;
   className?: string;
   creatorId: string;
   href: string;
+  title?: string;
 }) {
   function open(event: MouseEvent<HTMLAnchorElement>) {
     event.currentTarget.blur();
     trackClientAnalytics({ creatorId, name: 'creator.instagramTapped' });
   }
   return (
-    <a className={className} href={href} onClick={open} rel="noreferrer" target="_blank">
+    <a className={className} href={href} onClick={open} rel="noreferrer" target="_blank" title={title}>
       {children}
     </a>
   );

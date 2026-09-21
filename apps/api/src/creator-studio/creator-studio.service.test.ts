@@ -1,8 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
+import { defaultStorefrontTheme } from '@vibeshub/contracts';
 
 import { CreatorStudioService } from './creator-studio.service.js';
 
 describe('CreatorStudioService', () => {
+  it('keeps design version conflicts separate from section updates', async () => {
+    const repository = {
+      replaceStorefrontTheme: vi.fn().mockResolvedValue({ actualVersion: 3, kind: 'version_conflict' }),
+    };
+    const service = new CreatorStudioService(repository as never);
+    await expect(service.replaceStorefrontTheme('user-id', 2, defaultStorefrontTheme))
+      .rejects.toMatchObject({ response: { code: 'PRECONDITION_FAILED' } });
+  });
   it('rejects stale storefront configuration writes', async () => {
     const repository = {
       replaceStorefrontConfiguration: vi
@@ -15,6 +24,7 @@ describe('CreatorStudioService', () => {
       service.replaceStorefrontConfiguration('user-id', 2, {
         categoryIds: [],
         curatedSections: [],
+        contentOrder: [],
       }),
     ).rejects.toMatchObject({ response: { code: 'PRECONDITION_FAILED' } });
   });
@@ -30,6 +40,7 @@ describe('CreatorStudioService', () => {
       service.replaceStorefrontConfiguration('user-id', 1, {
         categoryIds: [],
         curatedSections: [],
+        contentOrder: [],
       }),
     ).rejects.toMatchObject({ response: { code: 'VALIDATION_FAILED' } });
   });

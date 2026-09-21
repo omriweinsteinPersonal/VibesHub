@@ -4,6 +4,7 @@ import {
   type ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
@@ -12,6 +13,8 @@ import type { ApiProblemBody } from './api-problem.js';
 
 @Catch()
 export class ProblemDetailsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ProblemDetailsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const request = context.getRequest<FastifyRequest>();
@@ -44,6 +47,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
               type: 'about:blank',
             };
     } else {
+      this.logger.error(
+        `Unhandled API error for ${request.method} ${request.url}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
       body = {
         code: 'INTERNAL_ERROR',
         status: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -105,13 +105,13 @@ export function ProductDetailView({
         <div className="productDetailInformation">
           <p className="eyebrow">{brand}</p>
           <h1>{recommendation.productName}</h1>
-          <p className="productDetailPrice">
+          {recommendation.price.amountMinor > 0 ? <p className="productDetailPrice">
             {new Intl.NumberFormat('he-IL', {
               currency: 'ILS',
               maximumFractionDigits: recommendation.price.amountMinor % 100 === 0 ? 0 : 2,
               style: 'currency',
             }).format(recommendation.price.amountMinor / 100)}
-          </p>
+          </p> : null}
           <Link
             className="productDetailCreator"
             href={`/creators/${recommendation.creator.handle}`}
@@ -156,7 +156,7 @@ export function ProductDetailView({
             </div>
           ) : null}
 
-          <section className="productDetailDescription">
+          {recommendation.review.value !== 'לא צורפה ביקורת' ? <section className="productDetailDescription">
             <h2>About this recommendation</h2>
             <p
               dir={recommendation.review.direction}
@@ -164,7 +164,7 @@ export function ProductDetailView({
             >
               {recommendation.review.value}
             </p>
-          </section>
+          </section> : null}
 
           {clips.length || recommendation.instagramStoryUrl ? (
             <section className="productDetailStories">

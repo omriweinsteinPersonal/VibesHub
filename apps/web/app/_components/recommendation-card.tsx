@@ -3,12 +3,8 @@
 import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
-
 import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
-import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { publicAssetUrl } from '../../lib/public-asset-url';
-import { publicShopUrl } from '../../lib/public-shop-url';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { SaveProductButton } from './engagement';
 
@@ -28,14 +24,10 @@ export function RecommendationCardView({
   showSave = false,
 }: RecommendationCardViewProps) {
   const attributedCreatorId = creatorId ?? creator?.id;
-  const brand = merchantNameFromHostname(
-    recommendation.merchantHostname,
-    recommendation.brandName,
-  );
   const title = splitBilingualProductTitle(recommendation.productName);
 
   return (
-    <article className="storeProductCard">
+    <article className="storeProductCard compactProductCard">
       {attributedCreatorId ? (
         <RecommendationImpressionTracker
           creatorId={attributedCreatorId}
@@ -50,7 +42,7 @@ export function RecommendationCardView({
       />
       <div className="storeProductImage">
         <Image
-          alt={`${recommendation.productName} by ${brand}`}
+          alt={recommendation.productName}
           fill
           sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
           src={publicAssetUrl(recommendation.imageUrl)}
@@ -58,11 +50,19 @@ export function RecommendationCardView({
         />
       </div>
       <div className="storeProductDetails">
-        <div className="storeProductTopline">
-          <p className="productBrand">{brand}</p>
+        <div className="compactProductHeading">
+          <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
+            {title ? (
+              <>
+                <span dir="ltr" lang="en">{title.english}</span>
+                <span dir="rtl" lang="he">{title.hebrew}</span>
+              </>
+            ) : recommendation.productName}
+          </h3>
           {showSave ? (
             <div className="storeCardAction">
               <SaveProductButton
+                iconOnly
                 onChange={onSaveChange}
                 productId={recommendation.productId}
                 recommendationId={recommendation.id}
@@ -70,35 +70,9 @@ export function RecommendationCardView({
             </div>
           ) : null}
         </div>
-        <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
-          {title ? (
-            <>
-              <span dir="ltr" lang="en">
-                {title.english}
-              </span>
-              <span dir="rtl" lang="he">
-                {title.hebrew}
-              </span>
-            </>
-          ) : (
-            recommendation.productName
-          )}
-        </h3>
-        <p className="storePrice" dir="rtl">
-          {formatIls(recommendation.price.amountMinor)}
-        </p>
-        <footer>
-          <span className="merchantDomain">{recommendation.merchantHostname}</span>
-          <a
-            className="button primary small"
-            href={publicShopUrl(recommendation.shopUrl)}
-            rel="nofollow sponsored noopener noreferrer"
-            target="_blank"
-          >
-            Shop
-            <ExternalLink aria-hidden="true" size={14} />
-          </a>
-        </footer>
+        {recommendation.price.amountMinor > 0 ? (
+          <p className="storePrice" dir="rtl">{formatIls(recommendation.price.amountMinor)}</p>
+        ) : null}
       </div>
     </article>
   );
