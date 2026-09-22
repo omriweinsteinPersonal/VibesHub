@@ -11,12 +11,14 @@ describe('storefront collection grouping', () => {
     } as RecommendationCard;
     const storefront = {
       storefrontSections: [{ id: 'category-1', name: 'Fox', slug: 'fox' }],
-      curatedSections: [{
-        id: 'collection-1',
-        kind: 'collection',
-        title: 'my fox favs',
-        recommendationIds: ['product-1'],
-      }],
+      curatedSections: [
+        {
+          id: 'collection-1',
+          kind: 'collection',
+          title: 'my fox favs',
+          recommendationIds: ['product-1'],
+        },
+      ],
       contentOrder: [
         { kind: 'recommendation', id: 'product-1' },
         { kind: 'category', id: 'category-1' },
@@ -32,14 +34,32 @@ describe('storefront collection grouping', () => {
   });
 
   it('keeps a collection visible for its product page and leaves page products in the storefront', () => {
-    const product = { id: 'product-1', brandName: 'Billabong', category: { slug: 'fashion' } } as RecommendationCard;
+    const product = {
+      id: 'product-1',
+      brandName: 'Billabong',
+      category: { slug: 'fashion' },
+    } as RecommendationCard;
     const storefront = {
       storefrontSections: [],
       curatedSections: [
-        { id: 'collection-1', kind: 'collection', title: 'Billabong', recommendationIds: [] },
-        { id: 'page-1', kind: 'page', title: 'Summer picks', parentCollectionId: 'collection-1', recommendationIds: ['product-1'] },
+        {
+          id: 'collection-1',
+          kind: 'collection',
+          title: 'Billabong',
+          recommendationIds: [],
+        },
+        {
+          id: 'page-1',
+          kind: 'page',
+          title: 'Summer picks',
+          parentCollectionId: 'collection-1',
+          recommendationIds: ['product-1'],
+        },
       ],
-      contentOrder: [{ kind: 'collection', id: 'collection-1' }, { kind: 'recommendation', id: 'product-1' }],
+      contentOrder: [
+        { kind: 'collection', id: 'collection-1' },
+        { kind: 'recommendation', id: 'product-1' },
+      ],
     } as unknown as CreatorStorefront;
 
     const rows = groupRecommendations(storefront, [product]);
@@ -49,16 +69,34 @@ describe('storefront collection grouping', () => {
   });
 
   it('shows the same item in each collection it belongs to', () => {
-    const product = { id: 'product-1', category: { slug: 'fashion' } } as RecommendationCard;
+    const product = {
+      id: 'product-1',
+      category: { slug: 'fashion' },
+    } as RecommendationCard;
     const storefront = {
       storefrontSections: [],
       curatedSections: [
-        { id: 'summer', kind: 'collection', title: 'Summer', recommendationIds: ['product-1'] },
-        { id: 'favorites', kind: 'collection', title: 'Favorites', recommendationIds: ['product-1'] },
+        {
+          id: 'summer',
+          kind: 'collection',
+          title: 'Summer',
+          recommendationIds: ['product-1'],
+        },
+        {
+          id: 'favorites',
+          kind: 'collection',
+          title: 'Favorites',
+          recommendationIds: ['product-1'],
+        },
       ],
-      contentOrder: [{ kind: 'collection', id: 'summer' }, { kind: 'collection', id: 'favorites' }],
+      contentOrder: [
+        { kind: 'collection', id: 'summer' },
+        { kind: 'collection', id: 'favorites' },
+      ],
     } as unknown as CreatorStorefront;
 
-    expect(groupRecommendations(storefront, [product]).map(({ items }) => items)).toEqual([[product], [product]]);
+    expect(groupRecommendations(storefront, [product]).map(({ items }) => items)).toEqual(
+      [[product], [product]],
+    );
   });
 });

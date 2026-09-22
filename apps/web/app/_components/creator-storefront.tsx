@@ -1,6 +1,10 @@
 ﻿'use client';
 
-import { defaultStorefrontTheme, storefrontThemeSchema, type StorefrontTheme } from '@vibeshub/contracts';
+import {
+  defaultStorefrontTheme,
+  storefrontThemeSchema,
+  type StorefrontTheme,
+} from '@vibeshub/contracts';
 
 import type {
   CreatorStorefront,
@@ -12,13 +16,15 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BadgeCheck, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import {
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-} from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+} from 'react';
 
 import { apiCollectionRequest, apiRequest } from '../../lib/api';
 import { connectorLabel } from '../../lib/creator-connectors';
@@ -42,9 +48,12 @@ export function CreatorStorefrontView({
   storefront: CreatorStorefront;
 }) {
   const [query, setQuery] = useState('');
-  const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(storefront.theme ?? defaultStorefrontTheme);
+  const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
+    storefront.theme ?? defaultStorefrontTheme,
+  );
   const [canEdit, setCanEdit] = useState(editable);
-  const [configuration, setConfiguration] = useState<CreatorStorefrontConfiguration | null>(null);
+  const [configuration, setConfiguration] =
+    useState<CreatorStorefrontConfiguration | null>(null);
   const [order, setOrder] = useState<StorefrontLayer[]>([]);
   const [savingOrder, setSavingOrder] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -54,7 +63,8 @@ export function CreatorStorefrontView({
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin || event.source !== window.parent) return;
+      if (event.origin !== window.location.origin || event.source !== window.parent)
+        return;
       const data = event.data as { creatorId?: string; theme?: unknown; type?: string };
       if (data.type !== 'swave:theme-preview' || data.creatorId !== storefront.id) return;
       const parsed = storefrontThemeSchema.safeParse(data.theme);
@@ -68,10 +78,13 @@ export function CreatorStorefrontView({
     let active = true;
     apiRequest<{ creator: { handle: string } | null }>('/me')
       .then(({ creator }) => {
-        if (active && creator?.handle.toLowerCase() === storefront.handle.toLowerCase()) setCanEdit(true);
+        if (active && creator?.handle.toLowerCase() === storefront.handle.toLowerCase())
+          setCanEdit(true);
       })
       .catch(() => undefined);
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [editable, storefront.handle]);
   useEffect(() => {
     if (!canEdit) return;
@@ -83,30 +96,56 @@ export function CreatorStorefrontView({
     ])
       .then(([value, inventory, discounts]) => {
         if (!active) return;
-        const validRecommendations = new Set(inventory.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id));
-        const validDiscounts = new Set(discounts.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id));
+        const validRecommendations = new Set(
+          inventory
+            .filter(({ lifecycle }) => lifecycle !== 'archived')
+            .map(({ id }) => id),
+        );
+        const validDiscounts = new Set(
+          discounts
+            .filter(({ lifecycle }) => lifecycle !== 'archived')
+            .map(({ id }) => id),
+        );
         const cleaned = {
           ...value,
           curatedSections: value.curatedSections.map((section) => ({
             ...section,
-            recommendationIds: section.recommendationIds.filter((id) => validRecommendations.has(id)),
+            recommendationIds: section.recommendationIds.filter((id) =>
+              validRecommendations.has(id),
+            ),
           })),
           contentOrder: value.contentOrder.filter(({ kind, id }) =>
-            kind === 'recommendation' ? validRecommendations.has(id)
-              : kind === 'discount' ? validDiscounts.has(id)
-              : true,
+            kind === 'recommendation'
+              ? validRecommendations.has(id)
+              : kind === 'discount'
+                ? validDiscounts.has(id)
+                : true,
           ),
         };
         setConfiguration(cleaned);
         setOrder(storefrontEditOrder(cleaned, recommendations, codes));
       })
       .catch(() => {
-        if (active) setOrderError('Could not load storefront editing. Refresh and try again.');
+        if (active)
+          setOrderError('Could not load storefront editing. Refresh and try again.');
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [canEdit, recommendations, codes]);
-  const contentOrder = configuration ? order : Array.isArray(storefront.contentOrder) ? storefront.contentOrder : [];
-  const orderedStorefront = useMemo(() => ({ ...storefront, contentOrder }), [storefront, contentOrder]);
+  const contentOrder = useMemo(
+    () =>
+      configuration
+        ? order
+        : Array.isArray(storefront.contentOrder)
+          ? storefront.contentOrder
+          : [],
+    [configuration, order, storefront.contentOrder],
+  );
+  const orderedStorefront = useMemo(
+    () => ({ ...storefront, contentOrder }),
+    [storefront, contentOrder],
+  );
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
     if (!term) return recommendations;
@@ -116,22 +155,24 @@ export function CreatorStorefrontView({
       ),
     );
   }, [query, recommendations]);
-  const rows = useMemo(
-    () => {
-      const brandNames = new Set(
-        storefront.brands.map(({ name }) => name.toLocaleLowerCase()),
-      );
-      return groupRecommendations(
-        orderedStorefront,
-        filtered.filter(({ brandName }) => !brandNames.has(brandName.toLocaleLowerCase())),
-      );
-    },
-    [filtered, orderedStorefront, storefront.brands],
-  );
+  const rows = useMemo(() => {
+    const brandNames = new Set(
+      storefront.brands.map(({ name }) => name.toLocaleLowerCase()),
+    );
+    return groupRecommendations(
+      orderedStorefront,
+      filtered.filter(({ brandName }) => !brandNames.has(brandName.toLocaleLowerCase())),
+    );
+  }, [filtered, orderedStorefront, storefront.brands]);
   const blocks = useMemo(() => {
     const remainingRows = [...rows];
     const remainingCodes = codes.filter(({ brandId }) => !brandId);
-    const result: Array<{ key: string; layer: StorefrontLayer | null; row?: (typeof rows)[number]; code?: PublicDiscountCode }> = [];
+    const result: Array<{
+      key: string;
+      layer: StorefrontLayer | null;
+      row?: (typeof rows)[number];
+      code?: PublicDiscountCode;
+    }> = [];
     for (const layer of contentOrder) {
       if (layer.kind === 'discount') {
         const index = remainingCodes.findIndex(({ id }) => id === layer.id);
@@ -147,8 +188,16 @@ export function CreatorStorefrontView({
         }
       }
     }
-    remainingRows.forEach((row) => result.push({ key: `row:${row.key}`, layer: null, row }));
-    remainingCodes.forEach((code) => result.push({ key: `discount:${code.id}`, layer: { kind: 'discount', id: code.id }, code }));
+    remainingRows.forEach((row) =>
+      result.push({ key: `row:${row.key}`, layer: null, row }),
+    );
+    remainingCodes.forEach((code) =>
+      result.push({
+        key: `discount:${code.id}`,
+        layer: { kind: 'discount', id: code.id },
+        code,
+      }),
+    );
     return result;
   }, [rows, codes, contentOrder]);
   async function saveOrder(nextOrder: StorefrontLayer[], previous: StorefrontLayer[]) {
@@ -156,20 +205,49 @@ export function CreatorStorefrontView({
     setSavingOrder(true);
     setOrderError('');
     try {
-      const saved = await apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections', {
-        method: 'PUT',
-        headers: { 'if-match': `"${configuration.version}"` },
-        body: JSON.stringify({
-          categoryIds: configuration.sections.map(({ category }) => category.id),
-          curatedSections: configuration.curatedSections.map(({ id, kind, brandId, title, description, imageUrl, parentCollectionId, recommendationIds, showItemsIndividually }) => ({ id, kind, brandId, title, description, imageUrl, parentCollectionId, recommendationIds, showItemsIndividually })),
-          contentOrder: nextOrder,
-        }),
-      });
+      const saved = await apiRequest<CreatorStorefrontConfiguration>(
+        '/creator/studio/storefront-sections',
+        {
+          method: 'PUT',
+          headers: { 'if-match': `"${configuration.version}"` },
+          body: JSON.stringify({
+            categoryIds: configuration.sections.map(({ category }) => category.id),
+            curatedSections: configuration.curatedSections.map(
+              ({
+                id,
+                kind,
+                brandId,
+                title,
+                description,
+                imageUrl,
+                parentCollectionId,
+                recommendationIds,
+                showItemsIndividually,
+              }) => ({
+                id,
+                kind,
+                brandId,
+                title,
+                description,
+                imageUrl,
+                parentCollectionId,
+                recommendationIds,
+                showItemsIndividually,
+              }),
+            ),
+            contentOrder: nextOrder,
+          }),
+        },
+      );
       setConfiguration(saved);
       setOrder(storefrontEditOrder(saved, recommendations, codes));
     } catch (cause) {
       setOrder(previous);
-      setOrderError(cause instanceof Error ? cause.message : 'Could not save the new order. Please try again.');
+      setOrderError(
+        cause instanceof Error
+          ? cause.message
+          : 'Could not save the new order. Please try again.',
+      );
     } finally {
       setSavingOrder(false);
       setDragSource(null);
@@ -191,259 +269,354 @@ export function CreatorStorefrontView({
       <div
         className="creatorStorefrontCanvas"
         onClickCapture={(event) => {
-          if (!canEdit || window.parent === window || !new URLSearchParams(window.location.search).has('mobilePreview')) return;
+          if (
+            !canEdit ||
+            window.parent === window ||
+            !new URLSearchParams(window.location.search).has('mobilePreview')
+          )
+            return;
           const target = event.target as HTMLElement;
-          if (target.closest('.referenceCollectionPages, .referenceStandalonePages')) return;
+          if (target.closest('.referenceCollectionPages, .referenceStandalonePages'))
+            return;
           if (target.closest('input, button')) return;
-          const section = target.closest('.referenceDiscountLayer') ? 'discount'
-            : target.closest('.storeProductCard') ? 'product'
-            : target.closest('.referenceCollectionFrame') ? 'collection'
-            : target.closest('.referenceStorefrontHero') ? 'profile'
-            : 'recommendations';
-          window.parent.postMessage({ type: 'swave:theme-select', creatorId: storefront.id, section }, window.location.origin);
-        }}
-        style={{
-          '--sf-profile': previewTheme.profileBackground,
-          '--sf-page': previewTheme.recommendationsBackground,
-          '--sf-product': previewTheme.productBackground,
-          '--sf-discount': previewTheme.discountBackground,
-          '--sf-collection': previewTheme.collectionBackground,
-          '--sf-accent': previewTheme.accentColor,
-          '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
-          '--sf-text': previewTheme.textColor,
-        } as CSSProperties}
-      >
-      <StorefrontViewTracker creatorId={storefront.id} />
-      <section className="referenceStorefrontHero">
-        <div className={`referenceStorefrontInner${storefront.socialLinks.length ? '' : ' noConnectors'}`}>
-          <span className="referenceStorefrontAvatar">
-            {storefront.avatarUrl ? (
-              <Image
-                alt={`${storefront.displayName} profile photo`}
-                fill
-                priority
-                sizes="180px"
-                src={publicAssetUrl(storefront.avatarUrl)}
-                unoptimized
-              />
-            ) : (
-              <b>{initials(storefront.displayName)}</b>
-            )}
-          </span>
-          <div className="referenceStorefrontName">
-            <div>
-              <h1>{storefront.displayName}</h1>
-              {storefront.verificationStatus === 'verified' ? (
-                <span aria-label="Verified creator">
-                  <BadgeCheck aria-hidden="true" size={24} />
-                </span>
-              ) : null}
-            </div>
-            <p>
-              {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
-            </p>
-          </div>
-          {storefront.socialLinks.length ? (
-            <nav aria-label="Creator links" className="referenceStorefrontActions referenceConnectors">
-              {storefront.socialLinks.map((link) => {
-                const label = connectorLabel(link.platform);
-                const content = <><CreatorConnectorIcon platform={link.platform} /><span className="srOnly">{label}</span></>;
-                return link.platform === 'instagram' ? (
-                  <TrackedInstagramLink
-                    className="referenceConnectorLink"
-                    creatorId={storefront.id}
-                    href={link.url}
-                    key={link.platform}
-                    title={label}
-                  >
-                    {content}
-                  </TrackedInstagramLink>
-                ) : (
-                  <a
-                    className="referenceConnectorLink"
-                    href={link.url}
-                    key={link.platform}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    title={label}
-                  >
-                    {content}
-                  </a>
-                );
-              })}
-            </nav>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="referenceStorefrontProducts">
-        <header>
-          <label>
-            <Search aria-hidden="true" size={16} />
-            <input
-              aria-label="Search this store"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search this store…"
-              type="search"
-              value={query}
-            />
-          </label>
-        </header>
-        {storefront.brands.map((brand) => (
-          <BrandBlock
-            brand={brand}
-            collections={storefront.curatedSections.filter((section) => section.kind === 'collection' && section.brandId === brand.brandId)}
-            creatorId={storefront.id}
-            handle={storefront.handle}
-            items={recommendations.filter((item) => item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase())}
-            offer={codes.find((code) => code.brandId === brand.id && code.scopeKind === 'brand') ?? null}
-            key={brand.id}
-          />
-        ))}
-        {storefront.curatedSections.some((section) => section.kind === 'page' && !section.parentCollectionId) ? (
-          <div className="referenceStandalonePages referenceCollectionPages">
-            {storefront.curatedSections.filter((section) => section.kind === 'page' && !section.parentCollectionId).map((page) => (
-              <Link href={`/creators/${encodeURIComponent(storefront.handle)}/pages/${page.id}`} key={page.id}>
-                <span>PRODUCT PAGE</span><strong>{page.title}</strong><small>{page.recommendationIds.length} picks →</small>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-        {orderError ? <p className="formError" role="alert">{orderError}</p> : null}
-        {!blocks.length && !storefront.curatedSections.some(({ kind }) => kind === 'page') ? (
-          <div className="directoryState">
-            <h3>No recommendations found</h3>
-            <p>Try another product or brand name.</p>
-          </div>
-        ) : blocks.map(({ key, layer, row, code }) => {
-          const content = row ? (
-            <StorefrontRow creatorId={storefront.id} framed={row.framed} pages={storefront.curatedSections.filter((section) => section.kind === 'page' && section.parentCollectionId === row.key)} recommendations={row.items} storefrontHandle={storefront.handle} title={row.title} />
-          ) : code ? <DiscountBlock code={code} /> : null;
-          if (!canEdit || !configuration || !layer || query) return <div key={key}>{content}</div>;
-          const layerKey = `${layer.kind}:${layer.id}`;
-          const draggableBlocks = blocks.filter(({ layer: item }) => item);
-          const position = draggableBlocks.findIndex(({ layer: item }) => item?.kind === layer.kind && item.id === layer.id);
-          const label = row?.title ?? code?.merchantName ?? 'Recommendation';
-          return (
-            <div
-              aria-label={`${label}. Drag to change its position, or use the arrow keys.`}
-              className="storefrontDraggableBlock"
-              data-dragging={dragSource === layerKey}
-              data-drop-target={dropTarget === layerKey}
-              data-storefront-layer={layerKey}
-              key={key}
-              onClickCapture={(event) => {
-                if (!suppressClick.current) return;
-                event.preventDefault();
-                event.stopPropagation();
-                suppressClick.current = false;
-              }}
-              onContextMenu={(event) => event.preventDefault()}
-              onDragStartCapture={(event) => event.preventDefault()}
-              onKeyDown={(event) => {
-                if (event.target !== event.currentTarget || savingOrder) return;
-                const offset = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
-                if (!offset) return;
-                const target = draggableBlocks[position + offset]?.layer;
-                if (!target) return;
-                event.preventDefault();
-                void moveLayer(layerKey, `${target.kind}:${target.id}`);
-              }}
-              onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
-                if (savingOrder || (event.pointerType === 'mouse' && event.button !== 0)) return;
-                const pointerId = event.pointerId;
-                const isTouch = event.pointerType === 'touch';
-                const gesture = {
-                  source: layerKey,
-                  startX: event.clientX,
-                  startY: event.clientY,
-                  active: false,
-                  order,
-                  changed: false,
-                };
-                const pressTimer = window.setTimeout(() => {
-                  gesture.active = true;
-                  setDragSource(layerKey);
-                }, 280);
-                const cleanup = () => {
-                  window.clearTimeout(pressTimer);
-                  window.removeEventListener('pointermove', onMove);
-                  window.removeEventListener('pointerup', onUp);
-                  window.removeEventListener('pointercancel', onCancel);
-                  window.removeEventListener('touchmove', onTouchMove);
-                  window.removeEventListener('touchend', onTouchEnd);
-                  window.removeEventListener('touchcancel', onTouchCancel);
-                  setDragSource(null);
-                  setDropTarget(null);
-                };
-                const updatePosition = (x: number, y: number) => {
-                  if (!gesture.active) {
-                    if (Math.hypot(x - gesture.startX, y - gesture.startY) > 8) window.clearTimeout(pressTimer);
-                    return;
-                  }
-                  const target = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-storefront-layer]')?.dataset.storefrontLayer ?? null;
-                  if (target && target !== layerKey) {
-                    const nextOrder = reorderLayers(gesture.order, layerKey, target);
-                    if (nextOrder !== gesture.order) {
-                      gesture.order = nextOrder;
-                      gesture.changed = true;
-                      setOrder(nextOrder);
-                    }
-                  }
-                  setDropTarget(target);
-                  if (y < 64) window.scrollBy(0, -18);
-                  else if (y > window.innerHeight - 64) window.scrollBy(0, 18);
-                };
-                const onMove = (pointer: globalThis.PointerEvent) => {
-                  if (pointer.pointerId === pointerId) updatePosition(pointer.clientX, pointer.clientY);
-                };
-                const finish = () => {
-                  const active = gesture.active;
-                  cleanup();
-                  if (active) {
-                    suppressClick.current = true;
-                    if (gesture.changed) void saveOrder(gesture.order, order);
-                    window.setTimeout(() => { suppressClick.current = false; }, 400);
-                  }
-                };
-                const onUp = (pointer: globalThis.PointerEvent) => {
-                  if (pointer.pointerId === pointerId) finish();
-                };
-                const onCancel = (pointer: globalThis.PointerEvent) => {
-                  if (pointer.pointerId === pointerId) {
-                    if (isTouch && gesture.active) return;
-                    cleanup();
-                    if (gesture.changed) setOrder(order);
-                  }
-                };
-                const onTouchMove = (touch: TouchEvent) => {
-                  if (!isTouch) return;
-                  if (gesture.active) touch.preventDefault();
-                  const point = touch.touches[0];
-                  if (point) updatePosition(point.clientX, point.clientY);
-                };
-                const onTouchEnd = () => { if (isTouch) finish(); };
-                const onTouchCancel = () => { if (isTouch) { cleanup(); if (gesture.changed) setOrder(order); } };
-                window.addEventListener('pointermove', onMove);
-                window.addEventListener('pointerup', onUp);
-                window.addEventListener('pointercancel', onCancel);
-                window.addEventListener('touchmove', onTouchMove, { passive: false });
-                window.addEventListener('touchend', onTouchEnd);
-                window.addEventListener('touchcancel', onTouchCancel);
-              }}
-              tabIndex={0}
-            >
-              {content}
-            </div>
+          const section = target.closest('.referenceDiscountLayer')
+            ? 'discount'
+            : target.closest('.storeProductCard')
+              ? 'product'
+              : target.closest('.referenceCollectionFrame')
+                ? 'collection'
+                : target.closest('.referenceStorefrontHero')
+                  ? 'profile'
+                  : 'recommendations';
+          window.parent.postMessage(
+            { type: 'swave:theme-select', creatorId: storefront.id, section },
+            window.location.origin,
           );
-        })}
-      </section>
+        }}
+        style={
+          {
+            '--sf-profile': previewTheme.profileBackground,
+            '--sf-page': previewTheme.recommendationsBackground,
+            '--sf-product': previewTheme.productBackground,
+            '--sf-discount': previewTheme.discountBackground,
+            '--sf-collection': previewTheme.collectionBackground,
+            '--sf-accent': previewTheme.accentColor,
+            '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
+            '--sf-text': previewTheme.textColor,
+          } as CSSProperties
+        }
+      >
+        <StorefrontViewTracker creatorId={storefront.id} />
+        <section className="referenceStorefrontHero">
+          <div
+            className={`referenceStorefrontInner${storefront.socialLinks.length ? '' : ' noConnectors'}`}
+          >
+            <span className="referenceStorefrontAvatar">
+              {storefront.avatarUrl ? (
+                <Image
+                  alt={`${storefront.displayName} profile photo`}
+                  fill
+                  priority
+                  sizes="180px"
+                  src={publicAssetUrl(storefront.avatarUrl)}
+                  unoptimized
+                />
+              ) : (
+                <b>{initials(storefront.displayName)}</b>
+              )}
+            </span>
+            <div className="referenceStorefrontName">
+              <div>
+                <h1>{storefront.displayName}</h1>
+                {storefront.verificationStatus === 'verified' ? (
+                  <span aria-label="Verified creator">
+                    <BadgeCheck aria-hidden="true" size={24} />
+                  </span>
+                ) : null}
+              </div>
+              <p>
+                {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
+              </p>
+            </div>
+            {storefront.socialLinks.length ? (
+              <nav
+                aria-label="Creator links"
+                className="referenceStorefrontActions referenceConnectors"
+              >
+                {storefront.socialLinks.map((link) => {
+                  const label = connectorLabel(link.platform);
+                  const content = (
+                    <>
+                      <CreatorConnectorIcon platform={link.platform} />
+                      <span className="srOnly">{label}</span>
+                    </>
+                  );
+                  return link.platform === 'instagram' ? (
+                    <TrackedInstagramLink
+                      className="referenceConnectorLink"
+                      creatorId={storefront.id}
+                      href={link.url}
+                      key={link.platform}
+                      title={label}
+                    >
+                      {content}
+                    </TrackedInstagramLink>
+                  ) : (
+                    <a
+                      className="referenceConnectorLink"
+                      href={link.url}
+                      key={link.platform}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      title={label}
+                    >
+                      {content}
+                    </a>
+                  );
+                })}
+              </nav>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="referenceStorefrontProducts">
+          <header>
+            <label>
+              <Search aria-hidden="true" size={16} />
+              <input
+                aria-label="Search this store"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search this store…"
+                type="search"
+                value={query}
+              />
+            </label>
+          </header>
+          {storefront.brands.map((brand) => (
+            <BrandBlock
+              brand={brand}
+              collections={storefront.curatedSections.filter(
+                (section) =>
+                  section.kind === 'collection' && section.brandId === brand.brandId,
+              )}
+              creatorId={storefront.id}
+              handle={storefront.handle}
+              items={recommendations.filter(
+                (item) =>
+                  item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase(),
+              )}
+              offer={
+                codes.find(
+                  (code) => code.brandId === brand.id && code.scopeKind === 'brand',
+                ) ?? null
+              }
+              key={brand.id}
+            />
+          ))}
+          {storefront.curatedSections.some(
+            (section) => section.kind === 'page' && !section.parentCollectionId,
+          ) ? (
+            <div className="referenceStandalonePages referenceCollectionPages">
+              {storefront.curatedSections
+                .filter(
+                  (section) => section.kind === 'page' && !section.parentCollectionId,
+                )
+                .map((page) => (
+                  <Link
+                    href={`/creators/${encodeURIComponent(storefront.handle)}/pages/${page.id}`}
+                    key={page.id}
+                  >
+                    <span>PRODUCT PAGE</span>
+                    <strong>{page.title}</strong>
+                    <small>{page.recommendationIds.length} picks →</small>
+                  </Link>
+                ))}
+            </div>
+          ) : null}
+          {orderError ? (
+            <p className="formError" role="alert">
+              {orderError}
+            </p>
+          ) : null}
+          {!blocks.length &&
+          !storefront.curatedSections.some(({ kind }) => kind === 'page') ? (
+            <div className="directoryState">
+              <h3>No recommendations found</h3>
+              <p>Try another product or brand name.</p>
+            </div>
+          ) : (
+            blocks.map(({ key, layer, row, code }) => {
+              const content = row ? (
+                <StorefrontRow
+                  creatorId={storefront.id}
+                  framed={row.framed}
+                  pages={storefront.curatedSections.filter(
+                    (section) =>
+                      section.kind === 'page' && section.parentCollectionId === row.key,
+                  )}
+                  recommendations={row.items}
+                  storefrontHandle={storefront.handle}
+                  title={row.title}
+                />
+              ) : code ? (
+                <DiscountBlock code={code} />
+              ) : null;
+              if (!canEdit || !configuration || !layer || query)
+                return <div key={key}>{content}</div>;
+              const layerKey = `${layer.kind}:${layer.id}`;
+              const draggableBlocks = blocks.filter(({ layer: item }) => item);
+              const position = draggableBlocks.findIndex(
+                ({ layer: item }) => item?.kind === layer.kind && item.id === layer.id,
+              );
+              const label = row?.title ?? code?.merchantName ?? 'Recommendation';
+              return (
+                <div
+                  aria-label={`${label}. Drag to change its position, or use the arrow keys.`}
+                  className="storefrontDraggableBlock"
+                  data-dragging={dragSource === layerKey}
+                  data-drop-target={dropTarget === layerKey}
+                  data-storefront-layer={layerKey}
+                  key={key}
+                  onClickCapture={(event) => {
+                    if (!suppressClick.current) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    suppressClick.current = false;
+                  }}
+                  onContextMenu={(event) => event.preventDefault()}
+                  onDragStartCapture={(event) => event.preventDefault()}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget || savingOrder) return;
+                    const offset =
+                      event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+                    if (!offset) return;
+                    const target = draggableBlocks[position + offset]?.layer;
+                    if (!target) return;
+                    event.preventDefault();
+                    void moveLayer(layerKey, `${target.kind}:${target.id}`);
+                  }}
+                  onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
+                    if (
+                      savingOrder ||
+                      (event.pointerType === 'mouse' && event.button !== 0)
+                    )
+                      return;
+                    const pointerId = event.pointerId;
+                    const isTouch = event.pointerType === 'touch';
+                    const gesture = {
+                      source: layerKey,
+                      startX: event.clientX,
+                      startY: event.clientY,
+                      active: false,
+                      order,
+                      changed: false,
+                    };
+                    const pressTimer = window.setTimeout(() => {
+                      gesture.active = true;
+                      setDragSource(layerKey);
+                    }, 280);
+                    const cleanup = () => {
+                      window.clearTimeout(pressTimer);
+                      window.removeEventListener('pointermove', onMove);
+                      window.removeEventListener('pointerup', onUp);
+                      window.removeEventListener('pointercancel', onCancel);
+                      window.removeEventListener('touchmove', onTouchMove);
+                      window.removeEventListener('touchend', onTouchEnd);
+                      window.removeEventListener('touchcancel', onTouchCancel);
+                      setDragSource(null);
+                      setDropTarget(null);
+                    };
+                    const updatePosition = (x: number, y: number) => {
+                      if (!gesture.active) {
+                        if (Math.hypot(x - gesture.startX, y - gesture.startY) > 8)
+                          window.clearTimeout(pressTimer);
+                        return;
+                      }
+                      const target =
+                        document
+                          .elementFromPoint(x, y)
+                          ?.closest<HTMLElement>('[data-storefront-layer]')?.dataset
+                          .storefrontLayer ?? null;
+                      if (target && target !== layerKey) {
+                        const nextOrder = reorderLayers(gesture.order, layerKey, target);
+                        if (nextOrder !== gesture.order) {
+                          gesture.order = nextOrder;
+                          gesture.changed = true;
+                          setOrder(nextOrder);
+                        }
+                      }
+                      setDropTarget(target);
+                      if (y < 64) window.scrollBy(0, -18);
+                      else if (y > window.innerHeight - 64) window.scrollBy(0, 18);
+                    };
+                    const onMove = (pointer: globalThis.PointerEvent) => {
+                      if (pointer.pointerId === pointerId)
+                        updatePosition(pointer.clientX, pointer.clientY);
+                    };
+                    const finish = () => {
+                      const active = gesture.active;
+                      cleanup();
+                      if (active) {
+                        suppressClick.current = true;
+                        if (gesture.changed) void saveOrder(gesture.order, order);
+                        window.setTimeout(() => {
+                          suppressClick.current = false;
+                        }, 400);
+                      }
+                    };
+                    const onUp = (pointer: globalThis.PointerEvent) => {
+                      if (pointer.pointerId === pointerId) finish();
+                    };
+                    const onCancel = (pointer: globalThis.PointerEvent) => {
+                      if (pointer.pointerId === pointerId) {
+                        if (isTouch && gesture.active) return;
+                        cleanup();
+                        if (gesture.changed) setOrder(order);
+                      }
+                    };
+                    const onTouchMove = (touch: TouchEvent) => {
+                      if (!isTouch) return;
+                      if (gesture.active) touch.preventDefault();
+                      const point = touch.touches[0];
+                      if (point) updatePosition(point.clientX, point.clientY);
+                    };
+                    const onTouchEnd = () => {
+                      if (isTouch) finish();
+                    };
+                    const onTouchCancel = () => {
+                      if (isTouch) {
+                        cleanup();
+                        if (gesture.changed) setOrder(order);
+                      }
+                    };
+                    window.addEventListener('pointermove', onMove);
+                    window.addEventListener('pointerup', onUp);
+                    window.addEventListener('pointercancel', onCancel);
+                    window.addEventListener('touchmove', onTouchMove, { passive: false });
+                    window.addEventListener('touchend', onTouchEnd);
+                    window.addEventListener('touchcancel', onTouchCancel);
+                  }}
+                  tabIndex={0}
+                >
+                  {content}
+                </div>
+              );
+            })
+          )}
+        </section>
       </div>
     </EngagementProvider>
   );
 }
 
-function BrandBlock({ brand, collections, creatorId, handle, items, offer }: {
+function BrandBlock({
+  brand,
+  collections,
+  creatorId,
+  handle,
+  items,
+  offer,
+}: {
   brand: CreatorStorefront['brands'][number];
   collections: CreatorStorefront['curatedSections'];
   creatorId: string;
@@ -451,23 +624,69 @@ function BrandBlock({ brand, collections, creatorId, handle, items, offer }: {
   items: RecommendationCard[];
   offer: PublicDiscountCode | null;
 }) {
-  const collectedIds = new Set(collections.filter(({ showItemsIndividually }) => !showItemsIndividually).flatMap(({ recommendationIds }) => recommendationIds));
+  const collectedIds = new Set(
+    collections
+      .filter(({ showItemsIndividually }) => !showItemsIndividually)
+      .flatMap(({ recommendationIds }) => recommendationIds),
+  );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
-  return <section className="referenceBrandBlock">
-    <a aria-label={`Visit ${brand.name}`} className="referenceBrandHitArea" href={brand.websiteUrl} rel="noopener noreferrer" target="_blank" />
-    <header><div><h3>{brand.name}</h3>{offer ? <p>{offer.discountPercent ? `${offer.discountPercent}%` : offer.label}{offer.code ? ` · ${offer.code}` : ''}</p> : null}</div></header>
-    {collections.length || standaloneItems.length ? <div className="referenceBrandShelf">
-      {collections.map((collection) => {
-        const firstItem = collection.recommendationIds.flatMap((id) => items.find((item) => item.id === id) ?? [])[0];
-        const cover = collection.imageUrl || firstItem?.imageUrl;
-        return <Link className="referenceBrandCollectionCard" href={`/creators/${encodeURIComponent(handle)}/pages/${collection.id}`} key={collection.id}>
-          {cover ? <span className="referenceBrandCardImage"><Image alt="" fill sizes="220px" src={cover} unoptimized /></span> : null}
-          <span><strong>{collection.title}</strong><small>{collection.recommendationIds.length} items</small></span>
-        </Link>;
-      })}
-      {standaloneItems.map((item) => <RecommendationCardView creatorId={creatorId} key={item.id} recommendation={item} showSave />)}
-    </div> : null}
-  </section>;
+  return (
+    <section className="referenceBrandBlock">
+      <a
+        aria-label={`Visit ${brand.name}`}
+        className="referenceBrandHitArea"
+        href={brand.websiteUrl}
+        rel="noopener noreferrer"
+        target="_blank"
+      />
+      <header>
+        <div>
+          <h3>{brand.name}</h3>
+          {offer ? (
+            <p>
+              {offer.discountPercent ? `${offer.discountPercent}%` : offer.label}
+              {offer.code ? ` · ${offer.code}` : ''}
+            </p>
+          ) : null}
+        </div>
+      </header>
+      {collections.length || standaloneItems.length ? (
+        <div className="referenceBrandShelf">
+          {collections.map((collection) => {
+            const firstItem = collection.recommendationIds.flatMap(
+              (id) => items.find((item) => item.id === id) ?? [],
+            )[0];
+            const cover = collection.imageUrl || firstItem?.imageUrl;
+            return (
+              <Link
+                className="referenceBrandCollectionCard"
+                href={`/creators/${encodeURIComponent(handle)}/pages/${collection.id}`}
+                key={collection.id}
+              >
+                {cover ? (
+                  <span className="referenceBrandCardImage">
+                    <Image alt="" fill sizes="220px" src={cover} unoptimized />
+                  </span>
+                ) : null}
+                <span>
+                  <strong>{collection.title}</strong>
+                  <small>{collection.recommendationIds.length} items</small>
+                </span>
+              </Link>
+            );
+          })}
+          {standaloneItems.map((item) => (
+            <RecommendationCardView
+              creatorId={creatorId}
+              key={item.id}
+              recommendation={item}
+              showSave
+            />
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 function DiscountBlock({ code }: { code: PublicDiscountCode }) {
@@ -489,16 +708,35 @@ function DiscountBlock({ code }: { code: PublicDiscountCode }) {
           target="_blank"
         />
         <div className="referenceDiscountIdentity">
-          <Image alt="" className="referenceDiscountLogo" height={36} src={logoUrl} unoptimized width={36} />
+          <Image
+            alt=""
+            className="referenceDiscountLogo"
+            height={36}
+            src={logoUrl}
+            unoptimized
+            width={36}
+          />
           <div>
             <p>{brandName}</p>
-            <h3>{code.label || (code.discountPercent ? `${code.discountPercent}% off` : 'Brand offer')}</h3>
+            <h3>
+              {code.label ||
+                (code.discountPercent ? `${code.discountPercent}% off` : 'Brand offer')}
+            </h3>
           </div>
         </div>
-        {code.code ? <p className="referenceDiscountCode">
-          <span>Code</span>
-          <strong>{code.code}</strong>
-        </p> : <p className="referenceDiscountCode"><span>Offer</span><strong>{code.discountPercent ? `${code.discountPercent}%` : 'Active'}</strong></p>}
+        {code.code ? (
+          <p className="referenceDiscountCode">
+            <span>Code</span>
+            <strong>{code.code}</strong>
+          </p>
+        ) : (
+          <p className="referenceDiscountCode">
+            <span>Offer</span>
+            <strong>
+              {code.discountPercent ? `${code.discountPercent}%` : 'Active'}
+            </strong>
+          </p>
+        )}
       </article>
     </section>
   );
@@ -534,37 +772,52 @@ function StorefrontRow({
         <div>
           <h3>{title}</h3>
           <p>
-            {recommendations.length ? `${recommendations.length} ${recommendations.length === 1 ? 'item' : 'items'}` : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
+            {recommendations.length
+              ? `${recommendations.length} ${recommendations.length === 1 ? 'item' : 'items'}`
+              : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
           </p>
         </div>
-        {recommendations.length ? <div>
-          <button
-            aria-label={`Previous ${title}`}
-            onClick={() => scroll(-1)}
-            type="button"
-          >
-            <ChevronLeft aria-hidden="true" size={16} />
-          </button>
-          <button aria-label={`Next ${title}`} onClick={() => scroll(1)} type="button">
-            <ChevronRight aria-hidden="true" size={16} />
-          </button>
-        </div> : null}
+        {recommendations.length ? (
+          <div>
+            <button
+              aria-label={`Previous ${title}`}
+              onClick={() => scroll(-1)}
+              type="button"
+            >
+              <ChevronLeft aria-hidden="true" size={16} />
+            </button>
+            <button aria-label={`Next ${title}`} onClick={() => scroll(1)} type="button">
+              <ChevronRight aria-hidden="true" size={16} />
+            </button>
+          </div>
+        ) : null}
       </header>
-      {recommendations.length ? <div className="referenceStorefrontScroller" ref={row}>
-        {recommendations.map((recommendation) => (
-          <RecommendationCardView
-            creatorId={creatorId}
-            key={recommendation.id}
-            recommendation={recommendation}
-            showSave
-          />
-        ))}
-      </div> : null}
-      {pages.length ? <div className="referenceCollectionPages">
-        {pages.map((page) => <Link href={`/creators/${encodeURIComponent(storefrontHandle)}/pages/${page.id}`} key={page.id}>
-          <span>PRODUCT PAGE</span><strong>{page.title}</strong><small>{page.recommendationIds.length} picks →</small>
-        </Link>)}
-      </div> : null}
+      {recommendations.length ? (
+        <div className="referenceStorefrontScroller" ref={row}>
+          {recommendations.map((recommendation) => (
+            <RecommendationCardView
+              creatorId={creatorId}
+              key={recommendation.id}
+              recommendation={recommendation}
+              showSave
+            />
+          ))}
+        </div>
+      ) : null}
+      {pages.length ? (
+        <div className="referenceCollectionPages">
+          {pages.map((page) => (
+            <Link
+              href={`/creators/${encodeURIComponent(storefrontHandle)}/pages/${page.id}`}
+              key={page.id}
+            >
+              <span>PRODUCT PAGE</span>
+              <strong>{page.title}</strong>
+              <small>{page.recommendationIds.length} picks →</small>
+            </Link>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -582,7 +835,9 @@ export function groupRecommendations(
     // A curated group owns its selected products regardless of where its layer sits.
     // Category rows must not consume them before the collection is rendered.
     const curatedProductIds = new Set(
-      curatedSections.filter(({ kind }) => kind !== 'page').flatMap(({ recommendationIds }) => recommendationIds),
+      curatedSections
+        .filter(({ kind }) => kind !== 'page')
+        .flatMap(({ recommendationIds }) => recommendationIds),
     );
     const used = new Set<string>();
     const rows: Array<{
@@ -601,7 +856,12 @@ export function groupRecommendations(
             (id) => recommendations.find((item) => item.id === id) ?? [],
           ) ?? [];
         items.forEach(({ id }) => used.add(id));
-        if (items.length || curatedSections.some((page) => page.kind === 'page' && page.parentCollectionId === layer.id))
+        if (
+          items.length ||
+          curatedSections.some(
+            (page) => page.kind === 'page' && page.parentCollectionId === layer.id,
+          )
+        )
           rows.push({
             items,
             key: layer.id,
@@ -632,17 +892,18 @@ export function groupRecommendations(
       }
     }
     for (const section of curatedSections.filter(({ kind }) => kind !== 'page')) {
-      if (
-        contentOrder.some(
-          ({ kind, id }) => kind === section.kind && id === section.id,
-        )
-      )
+      if (contentOrder.some(({ kind, id }) => kind === section.kind && id === section.id))
         continue;
       const items = section.recommendationIds.flatMap(
         (id) => recommendations.find((item) => item.id === id) ?? [],
       );
       items.forEach(({ id }) => used.add(id));
-      if (items.length || curatedSections.some((page) => page.kind === 'page' && page.parentCollectionId === section.id))
+      if (
+        items.length ||
+        curatedSections.some(
+          (page) => page.kind === 'page' && page.parentCollectionId === section.id,
+        )
+      )
         rows.push({
           items,
           key: section.id,
@@ -651,11 +912,7 @@ export function groupRecommendations(
         });
     }
     for (const category of sections) {
-      if (
-        contentOrder.some(
-          ({ kind, id }) => kind === 'category' && id === category.id,
-        )
-      )
+      if (contentOrder.some(({ kind, id }) => kind === 'category' && id === category.id))
         continue;
       const items = recommendations.filter(
         (item) =>
@@ -664,8 +921,7 @@ export function groupRecommendations(
           !curatedProductIds.has(item.id),
       );
       items.forEach(({ id }) => used.add(id));
-      if (items.length)
-        rows.push({ items, key: category.id, title: category.name });
+      if (items.length) rows.push({ items, key: category.id, title: category.name });
     }
     const remaining = recommendations.filter(({ id }) => !used.has(id));
     if (remaining.length)
@@ -682,21 +938,29 @@ export function groupRecommendations(
     key: string;
     title: string;
     framed?: boolean;
-  }> = curatedSections.filter(({ kind }) => kind !== 'page').flatMap((section) => {
-    const items = section.recommendationIds.flatMap(
-      (id) => recommendations.find((item) => item.id === id) ?? [],
-    );
-    if (!items.length && !curatedSections.some((page) => page.kind === 'page' && page.parentCollectionId === section.id)) return [];
-    items.forEach(({ id }) => used.add(id));
-    return [
-      {
-        items,
-        key: section.id,
-        title: section.title,
-        framed: section.kind === 'collection',
-      },
-    ];
-  });
+  }> = curatedSections
+    .filter(({ kind }) => kind !== 'page')
+    .flatMap((section) => {
+      const items = section.recommendationIds.flatMap(
+        (id) => recommendations.find((item) => item.id === id) ?? [],
+      );
+      if (
+        !items.length &&
+        !curatedSections.some(
+          (page) => page.kind === 'page' && page.parentCollectionId === section.id,
+        )
+      )
+        return [];
+      items.forEach(({ id }) => used.add(id));
+      return [
+        {
+          items,
+          key: section.id,
+          title: section.title,
+          framed: section.kind === 'collection',
+        },
+      ];
+    });
   rows.push(
     ...sections.flatMap((category) => {
       const items = recommendations.filter(

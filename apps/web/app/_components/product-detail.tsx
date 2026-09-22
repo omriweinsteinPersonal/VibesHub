@@ -105,13 +105,16 @@ export function ProductDetailView({
         <div className="productDetailInformation">
           <p className="eyebrow">{brand}</p>
           <h1>{recommendation.productName}</h1>
-          {recommendation.price.amountMinor > 0 ? <p className="productDetailPrice">
-            {new Intl.NumberFormat('he-IL', {
-              currency: 'ILS',
-              maximumFractionDigits: recommendation.price.amountMinor % 100 === 0 ? 0 : 2,
-              style: 'currency',
-            }).format(recommendation.price.amountMinor / 100)}
-          </p> : null}
+          {recommendation.price.amountMinor > 0 ? (
+            <p className="productDetailPrice">
+              {new Intl.NumberFormat('he-IL', {
+                currency: 'ILS',
+                maximumFractionDigits:
+                  recommendation.price.amountMinor % 100 === 0 ? 0 : 2,
+                style: 'currency',
+              }).format(recommendation.price.amountMinor / 100)}
+            </p>
+          ) : null}
           <Link
             className="productDetailCreator"
             href={`/creators/${recommendation.creator.handle}`}
@@ -156,15 +159,17 @@ export function ProductDetailView({
             </div>
           ) : null}
 
-          {recommendation.review.value !== 'לא צורפה ביקורת' ? <section className="productDetailDescription">
-            <h2>About this recommendation</h2>
-            <p
-              dir={recommendation.review.direction}
-              lang={recommendation.review.language}
-            >
-              {recommendation.review.value}
-            </p>
-          </section> : null}
+          {recommendation.review.value !== 'לא צורפה ביקורת' ? (
+            <section className="productDetailDescription">
+              <h2>About this recommendation</h2>
+              <p
+                dir={recommendation.review.direction}
+                lang={recommendation.review.language}
+              >
+                {recommendation.review.value}
+              </p>
+            </section>
+          ) : null}
 
           {clips.length || recommendation.instagramStoryUrl ? (
             <section className="productDetailStories">

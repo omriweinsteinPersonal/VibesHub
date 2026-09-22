@@ -13,7 +13,10 @@ import { ActorRepository } from './auth/actor.repository.js';
 import { AuthenticationGuard } from './auth/auth.guard.js';
 import { CapabilityGuard } from './auth/capability.guard.js';
 import { SupabaseTokenVerifier } from './auth/token-verifier.js';
-import { CategoriesController, CreatorCategoriesController } from './categories.controller.js';
+import {
+  CategoriesController,
+  CreatorCategoriesController,
+} from './categories.controller.js';
 import { AdminApplicationController } from './creator-applications/admin-application.controller.js';
 import { CreatorProfileController } from './creator-profile/creator-profile.controller.js';
 import { CreatorProfileRepository } from './creator-profile/creator-profile.repository.js';

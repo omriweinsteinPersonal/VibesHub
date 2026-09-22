@@ -252,10 +252,20 @@ export class CreatorStudioRepository {
       const orderedSections = input.contentOrder.filter(
         ({ kind }) => kind === 'collection' || kind === 'section',
       );
-      if (input.curatedSections.some((section) => section.kind === 'page' &&
-        section.parentCollectionId !== null && !input.curatedSections.some(
-          (parent) => parent.kind === 'collection' && parent.id === section.parentCollectionId && parent.brandId === section.brandId,
-        ))) return { kind: 'invalid_recommendations' };
+      if (
+        input.curatedSections.some(
+          (section) =>
+            section.kind === 'page' &&
+            section.parentCollectionId !== null &&
+            !input.curatedSections.some(
+              (parent) =>
+                parent.kind === 'collection' &&
+                parent.id === section.parentCollectionId &&
+                parent.brandId === section.brandId,
+            ),
+        )
+      )
+        return { kind: 'invalid_recommendations' };
       const orderedCategories = input.contentOrder
         .filter(({ kind }) => kind === 'category')
         .map(({ id }) => id);

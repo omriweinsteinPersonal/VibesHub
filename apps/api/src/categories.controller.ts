@@ -29,9 +29,11 @@ export class CategoriesController {
   }
 }
 
-const customCategoryInputSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-}).strict();
+const customCategoryInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100),
+  })
+  .strict();
 
 @Controller('creator/categories')
 @RequireCapabilities('creator:manage_content')

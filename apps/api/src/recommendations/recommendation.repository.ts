@@ -161,7 +161,11 @@ export class RecommendationRepository {
         returning id
       `;
       if (!inserted) return null;
-      await this.syncRecommendationCategories(sql, inserted.id, input.categoryIds ?? [input.categoryId]);
+      await this.syncRecommendationCategories(
+        sql,
+        inserted.id,
+        input.categoryIds ?? [input.categoryId],
+      );
       await this.insertAffiliateLink(sql, inserted.id, catalog);
       await this.syncDiscountPlacement(
         sql,
@@ -328,7 +332,11 @@ export class RecommendationRepository {
         returning id, lifecycle
       `;
       if (!updated) return null;
-      await this.syncRecommendationCategories(sql, updated.id, input.categoryIds ?? [input.categoryId]);
+      await this.syncRecommendationCategories(
+        sql,
+        updated.id,
+        input.categoryIds ?? [input.categoryId],
+      );
       const [link] = await sql<{ id: string }[]>`
         update app.affiliate_links affiliate_link
         set
@@ -928,7 +936,12 @@ export class RecommendationRepository {
     }
   }
 
-  private async ensureCreatorBrand(sql: DatabaseClient, creatorId: string, brandId: string, productUrl: string) {
+  private async ensureCreatorBrand(
+    sql: DatabaseClient,
+    creatorId: string,
+    brandId: string,
+    productUrl: string,
+  ) {
     const url = new URL(productUrl);
     const websiteUrl = `${url.protocol}//${url.host}`;
     await sql`

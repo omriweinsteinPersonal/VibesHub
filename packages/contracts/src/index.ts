@@ -511,20 +511,24 @@ export const defaultStorefrontTheme = {
   textColor: '#30251f',
 } as const;
 
-export const storefrontThemeSchema = z.object({
-  profileBackground: storefrontColorSchema,
-  recommendationsBackground: storefrontColorSchema,
-  productBackground: storefrontColorSchema,
-  discountBackground: storefrontColorSchema,
-  collectionBackground: storefrontColorSchema,
-  accentColor: storefrontColorSchema,
-  textColor: storefrontColorSchema,
-}).strict();
+export const storefrontThemeSchema = z
+  .object({
+    profileBackground: storefrontColorSchema,
+    recommendationsBackground: storefrontColorSchema,
+    productBackground: storefrontColorSchema,
+    discountBackground: storefrontColorSchema,
+    collectionBackground: storefrontColorSchema,
+    accentColor: storefrontColorSchema,
+    textColor: storefrontColorSchema,
+  })
+  .strict();
 
-export const storefrontThemeConfigurationSchema = z.object({
-  theme: storefrontThemeSchema,
-  version: z.int().positive(),
-}).strict();
+export const storefrontThemeConfigurationSchema = z
+  .object({
+    theme: storefrontThemeSchema,
+    version: z.int().positive(),
+  })
+  .strict();
 
 export const creatorStorefrontSchema = z
   .object({
@@ -539,14 +543,21 @@ export const creatorStorefrontSchema = z
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
-    brands: z.array(z.object({
-      brandId: idSchema,
-      collectionCount: z.int().nonnegative(),
-      id: idSchema,
-      itemCount: z.int().nonnegative(),
-      name: z.string().trim().min(1).max(120),
-      websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
-    }).strict()).max(100).default([]),
+    brands: z
+      .array(
+        z
+          .object({
+            brandId: idSchema,
+            collectionCount: z.int().nonnegative(),
+            id: idSchema,
+            itemCount: z.int().nonnegative(),
+            name: z.string().trim().min(1).max(120),
+            websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+          })
+          .strict(),
+      )
+      .max(100)
+      .default([]),
     storefrontSections: z
       .array(categoryCardSchema.pick({ id: true, name: true, slug: true }))
       .max(24)
@@ -573,7 +584,13 @@ export const creatorStorefrontSchema = z
       .array(
         z
           .object({
-            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            kind: z.enum([
+              'recommendation',
+              'discount',
+              'collection',
+              'section',
+              'category',
+            ]),
             id: idSchema,
           })
           .strict(),
@@ -586,8 +603,14 @@ export const creatorStorefrontSchema = z
         .object({
           handle: z.string().trim().max(100).nullable(),
           platform: z.enum([
-            'instagram', 'tiktok', 'linkedin', 'x',
-            'youtube', 'facebook', 'pinterest', 'website',
+            'instagram',
+            'tiktok',
+            'linkedin',
+            'x',
+            'youtube',
+            'facebook',
+            'pinterest',
+            'website',
           ]),
           url: z.url({ protocol: /^https$/ }).max(2_048),
         })
@@ -947,18 +970,22 @@ export const curatedSectionSchema = z
   })
   .strict();
 
-export const creatorBrandInputSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
-}).strict();
+export const creatorBrandInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+  })
+  .strict();
 
-export const creatorBrandSchema = creatorBrandInputSchema.extend({
-  brandId: idSchema,
-  id: idSchema,
-  itemCount: z.int().nonnegative(),
-  collectionCount: z.int().nonnegative(),
-  version: z.int().positive(),
-}).strict();
+export const creatorBrandSchema = creatorBrandInputSchema
+  .extend({
+    brandId: idSchema,
+    id: idSchema,
+    itemCount: z.int().nonnegative(),
+    collectionCount: z.int().nonnegative(),
+    version: z.int().positive(),
+  })
+  .strict();
 
 export const creatorStorefrontConfigurationSchema = z
   .object({
@@ -968,7 +995,13 @@ export const creatorStorefrontConfigurationSchema = z
       .array(
         z
           .object({
-            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            kind: z.enum([
+              'recommendation',
+              'discount',
+              'collection',
+              'section',
+              'category',
+            ]),
             id: idSchema,
           })
           .strict(),
@@ -985,7 +1018,13 @@ export const creatorStorefrontConfigurationInputSchema = z
       .array(
         z
           .object({
-            kind: z.enum(['recommendation', 'discount', 'collection', 'section', 'category']),
+            kind: z.enum([
+              'recommendation',
+              'discount',
+              'collection',
+              'section',
+              'category',
+            ]),
             id: idSchema,
           })
           .strict(),
@@ -1102,7 +1141,9 @@ export type DiscountCodeVerificationStatus = z.infer<
 >;
 export type CreatorStorefront = z.infer<typeof creatorStorefrontSchema>;
 export type StorefrontTheme = z.infer<typeof storefrontThemeSchema>;
-export type StorefrontThemeConfiguration = z.infer<typeof storefrontThemeConfigurationSchema>;
+export type StorefrontThemeConfiguration = z.infer<
+  typeof storefrontThemeConfigurationSchema
+>;
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 export type RecommendationDirectoryQuery = z.infer<
   typeof recommendationDirectoryQuerySchema

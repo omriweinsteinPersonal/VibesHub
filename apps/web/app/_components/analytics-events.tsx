@@ -30,7 +30,14 @@ export function TrackedInstagramLink({
     trackClientAnalytics({ creatorId, name: 'creator.instagramTapped' });
   }
   return (
-    <a className={className} href={href} onClick={open} rel="noreferrer" target="_blank" title={title}>
+    <a
+      className={className}
+      href={href}
+      onClick={open}
+      rel="noreferrer"
+      target="_blank"
+      title={title}
+    >
       {children}
     </a>
   );

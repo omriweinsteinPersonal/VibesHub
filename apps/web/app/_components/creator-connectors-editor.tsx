@@ -1,8 +1,11 @@
 'use client';
 
-import type { CreatorProfileSettings, CreatorProfileSocialLink } from '@vibeshub/contracts';
+import type {
+  CreatorProfileSettings,
+  CreatorProfileSocialLink,
+} from '@vibeshub/contracts';
 import { ArrowDown, ArrowUp, ExternalLink, Plus, X } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
 import { connectorLabel, creatorConnectors } from '../../lib/creator-connectors';
@@ -15,14 +18,12 @@ export function CreatorConnectorsEditor({
   onSaved: (profile: CreatorProfileSettings) => void;
   profile: CreatorProfileSettings | null;
 }) {
-  const [links, setLinks] = useState<CreatorProfileSocialLink[]>([]);
+  const [links, setLinks] = useState<CreatorProfileSocialLink[]>(
+    () => profile?.socialLinks ?? [],
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-
-  useEffect(() => {
-    setLinks(profile?.socialLinks ?? []);
-  }, [profile]);
 
   function move(from: number, to: number) {
     setLinks((current) => {
@@ -40,13 +41,15 @@ export function CreatorConnectorsEditor({
       ...link,
       url: link.url.trim(),
     }));
-    if (normalized.some(({ url }) => {
-      try {
-        return new URL(url).protocol !== 'https:';
-      } catch {
-        return true;
-      }
-    })) {
+    if (
+      normalized.some(({ url }) => {
+        try {
+          return new URL(url).protocol !== 'https:';
+        } catch {
+          return true;
+        }
+      })
+    ) {
       setError('Enter a complete HTTPS link for every connector.');
       return;
     }
@@ -77,7 +80,11 @@ export function CreatorConnectorsEditor({
           <p>Add the places where shoppers can find you. Links appear below your name.</p>
         </div>
         {profile ? (
-          <a href={`/creator/${profile.handle}`} rel="noopener noreferrer" target="_blank">
+          <a
+            href={`/creator/${profile.handle}`}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             View storefront <ExternalLink aria-hidden="true" size={14} />
           </a>
         ) : null}
@@ -104,7 +111,11 @@ export function CreatorConnectorsEditor({
                           ),
                         )
                       }
-                      placeholder={creatorConnectors.find(({ platform }) => platform === link.platform)?.placeholder}
+                      placeholder={
+                        creatorConnectors.find(
+                          ({ platform }) => platform === link.platform,
+                        )?.placeholder
+                      }
                       required
                       type="url"
                       value={link.url}
@@ -116,19 +127,29 @@ export function CreatorConnectorsEditor({
                       disabled={saving || index === 0}
                       onClick={() => move(index, index - 1)}
                       type="button"
-                    ><ArrowUp size={16} /></button>
+                    >
+                      <ArrowUp size={16} />
+                    </button>
                     <button
                       aria-label={`Move ${connectorLabel(link.platform)} down`}
                       disabled={saving || index === links.length - 1}
                       onClick={() => move(index, index + 1)}
                       type="button"
-                    ><ArrowDown size={16} /></button>
+                    >
+                      <ArrowDown size={16} />
+                    </button>
                     <button
                       aria-label={`Remove ${connectorLabel(link.platform)}`}
                       disabled={saving}
-                      onClick={() => setLinks((current) => current.filter(({ platform }) => platform !== link.platform))}
+                      onClick={() =>
+                        setLinks((current) =>
+                          current.filter(({ platform }) => platform !== link.platform),
+                        )
+                      }
                       type="button"
-                    ><X size={16} /></button>
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
                 </li>
               ))}
@@ -149,11 +170,22 @@ export function CreatorConnectorsEditor({
                     setNotice('');
                   }}
                   type="button"
-                ><Plus aria-hidden="true" size={15} /><CreatorConnectorIcon platform={platform} /> {label}</button>
+                >
+                  <Plus aria-hidden="true" size={15} />
+                  <CreatorConnectorIcon platform={platform} /> {label}
+                </button>
               ))}
           </div>
-          {error ? <p className="formError" role="alert">{error}</p> : null}
-          {notice ? <p className="formSuccess" role="status">{notice}</p> : null}
+          {error ? (
+            <p className="formError" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {notice ? (
+            <p className="formSuccess" role="status">
+              {notice}
+            </p>
+          ) : null}
           <button className="button primary" disabled={saving} type="submit">
             {saving ? 'Saving…' : 'Save connectors'}
           </button>

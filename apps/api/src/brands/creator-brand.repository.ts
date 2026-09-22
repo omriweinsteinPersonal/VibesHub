@@ -36,11 +36,18 @@ export class CreatorBrandRepository {
         on conflict (creator_id, brand_id) do update set display_name = excluded.display_name, website_url = excluded.website_url, lifecycle = 'active', version = app.creator_brands.version + 1
         returning id
       `;
-      return created ? (await this.rows(sql, creatorId)).find(({ id }) => id === created.id) ?? null : null;
+      return created
+        ? ((await this.rows(sql, creatorId)).find(({ id }) => id === created.id) ?? null)
+        : null;
     });
   }
 
-  async update(id: string, userId: string, expectedVersion: number, input: CreatorBrandInput): Promise<CreatorBrand | null> {
+  async update(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+    input: CreatorBrandInput,
+  ): Promise<CreatorBrand | null> {
     const creatorId = await this.creatorId(this.database.sql, userId);
     if (!creatorId) return null;
     const [updated] = await this.database.sql<{ id: string }[]>`
@@ -50,7 +57,10 @@ export class CreatorBrandRepository {
       returning creator_brand.id
     `;
     if (!updated) return null;
-    return (await this.rows(this.database.sql, creatorId)).find((brand) => brand.id === id) ?? null;
+    return (
+      (await this.rows(this.database.sql, creatorId)).find((brand) => brand.id === id) ??
+      null
+    );
   }
 
   async archive(id: string, userId: string, expectedVersion: number): Promise<boolean> {
@@ -65,7 +75,9 @@ export class CreatorBrandRepository {
   }
 
   private async creatorId(sql: DatabaseClient, userId: string) {
-    const [creator] = await sql<{ id: string }[]>`select id from app.creator_profiles where user_id = ${userId} and status = 'approved' and published_at is not null`;
+    const [creator] = await sql<
+      { id: string }[]
+    >`select id from app.creator_profiles where user_id = ${userId} and status = 'approved' and published_at is not null`;
     return creator?.id ?? null;
   }
 

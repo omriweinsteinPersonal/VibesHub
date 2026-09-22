@@ -18,7 +18,10 @@ compiler.stdout.on('data', (chunk) => {
   compilerOutput += chunk;
   const lines = compilerOutput.split(/\r?\n/);
   compilerOutput = lines.pop() ?? '';
-  if (!api && lines.some((line) => /Found 0 errors\. Watching for file changes\./.test(line))) {
+  if (
+    !api &&
+    lines.some((line) => /Found 0 errors\. Watching for file changes\./.test(line))
+  ) {
     api = spawn(process.execPath, ['--env-file=.env', '--watch', 'dist/main.js'], {
       cwd: new URL('..', import.meta.url),
       stdio: 'inherit',

@@ -137,11 +137,15 @@ export default function CreatorProfilePage() {
         ...profile.socialLinks.map(({ platform }) => platform),
         ...creatorConnectors
           .map(({ platform }) => platform)
-          .filter((platform) => !profile.socialLinks.some((link) => link.platform === platform)),
+          .filter(
+            (platform) => !profile.socialLinks.some((link) => link.platform === platform),
+          ),
       ];
       const socialLinks = platformOrder.flatMap((platform) => {
         const url = editor.socialUrls[platform].trim();
-        const handle = profile.socialLinks.find((link) => link.platform === platform)?.handle;
+        const handle = profile.socialLinks.find(
+          (link) => link.platform === platform,
+        )?.handle;
         return url ? [{ handle: handle ?? null, platform, url }] : [];
       });
       const previousAvatarAssetId = profile.avatar?.assetId ?? null;

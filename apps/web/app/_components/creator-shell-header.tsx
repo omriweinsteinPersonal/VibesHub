@@ -17,14 +17,20 @@ export function CreatorShellHeader() {
   useEffect(() => {
     let active = true;
     void apiRequest<CreatorProfileSettings>('/creator/profile')
-      .then(({ handle }) => { if (active) setStorefrontHref(`/creators/${encodeURIComponent(handle)}`); })
+      .then(({ handle }) => {
+        if (active) setStorefrontHref(`/creators/${encodeURIComponent(handle)}`);
+      })
       .catch(() => undefined);
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
   const links = [
     { href: '/creator-home', icon: House, label: 'Home' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    ...(storefrontHref ? [{ href: storefrontHref, icon: Store, label: 'Storefront' }] : []),
+    ...(storefrontHref
+      ? [{ href: storefrontHref, icon: Store, label: 'Storefront' }]
+      : []),
     { href: '/analytics', icon: ChartColumn, label: 'Analytics' },
     { href: '/account', icon: User, label: 'Account' },
   ];
@@ -41,15 +47,17 @@ export function CreatorShellHeader() {
         <div className="creatorShellHeaderInner">
           <Brand />
           <nav aria-label="Creator workspace">
-            {links.filter(({ label }) => label !== 'Account').map((link) => (
-              <Link
-                aria-current={pathname === link.href ? 'page' : undefined}
-                href={link.href}
-                key={link.href}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {links
+              .filter(({ label }) => label !== 'Account')
+              .map((link) => (
+                <Link
+                  aria-current={pathname === link.href ? 'page' : undefined}
+                  href={link.href}
+                  key={link.href}
+                >
+                  {link.label}
+                </Link>
+              ))}
           </nav>
           <div className="creatorShellActions">
             <Link
