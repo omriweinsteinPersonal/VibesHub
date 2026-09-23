@@ -62,7 +62,7 @@ export default async function ShoppersPage() {
           <p className="eyebrow">FOR SHOPPERS</p>
           <h1>Buy from people, not from banners</h1>
           <p className="lede">
-            Swave turns the recommendations you already screenshot into a place you can
+            swavii turns the recommendations you already screenshot into a place you can
             actually shop from.
           </p>
           <div className="heroButtons">

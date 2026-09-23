@@ -274,7 +274,7 @@ export class RecommendationService {
       throw problem(
         422,
         'MERCHANT_DOMAIN_NOT_APPROVED',
-        'This merchant domain is not approved for Swave shopping links yet',
+        'This merchant domain is not approved for swavii shopping links yet',
         'Keep the recommendation as a draft while the merchant domain is reviewed.',
       );
     }

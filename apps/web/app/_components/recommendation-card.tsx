@@ -25,9 +25,17 @@ export function RecommendationCardView({
 }: RecommendationCardViewProps) {
   const attributedCreatorId = creatorId ?? creator?.id;
   const title = splitBilingualProductTitle(recommendation.productName);
+  const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
+    recommendation.productName,
+  )
+    ? 'rtl'
+    : 'ltr';
 
   return (
-    <article className="storeProductCard compactProductCard">
+    <article
+      className="storeProductCard compactProductCard"
+      data-text-direction={textDirection}
+    >
       {attributedCreatorId ? (
         <RecommendationImpressionTracker
           creatorId={attributedCreatorId}
@@ -49,7 +57,7 @@ export function RecommendationCardView({
           unoptimized
         />
       </div>
-      <div className="storeProductDetails">
+      <div className="storeProductDetails" dir={textDirection}>
         <div className="compactProductHeading">
           <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
             {title ? (
@@ -77,7 +85,7 @@ export function RecommendationCardView({
           ) : null}
         </div>
         {recommendation.price.amountMinor > 0 ? (
-          <p className="storePrice" dir="rtl">
+          <p className="storePrice" dir={textDirection}>
             {formatIls(recommendation.price.amountMinor)}
           </p>
         ) : null}

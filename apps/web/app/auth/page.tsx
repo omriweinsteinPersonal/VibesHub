@@ -68,7 +68,7 @@ function AuthExperience() {
         if (authError) throw authError;
         if (data.session) router.replace(next);
         else
-          setMessage('Check your email to confirm your account, then continue to Swave.');
+          setMessage('Check your email to confirm your account, then continue to swavii.');
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
@@ -212,7 +212,7 @@ function AuthExperience() {
             </button>
           </form>
           <p className="referenceAuthTerms">
-            By continuing you agree to the Swave community guidelines.{' '}
+            By continuing you agree to the swavii community guidelines.{' '}
             <Link href="/about">Learn more</Link>
           </p>
         </section>

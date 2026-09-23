@@ -20,10 +20,7 @@ export default function HomeScreen() {
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <View style={styles.logoMark}>
-            <Text style={styles.logoMarkText}>S</Text>
-          </View>
-          <Text style={styles.logo}>Swave</Text>
+          <Text style={styles.logo}>swavii</Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/login')}
@@ -99,25 +96,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
-  logoMark: {
-    alignItems: 'center',
-    backgroundColor: colors.accent,
-    borderRadius: 18,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  logoMarkText: {
-    color: colors.white,
-    fontFamily: 'Georgia',
-    fontSize: 25,
-    lineHeight: 30,
-  },
   logo: {
     color: colors.ink,
     fontFamily: 'Georgia',
-    fontSize: 24,
-    marginLeft: spacing.sm,
+    fontSize: 32,
   },
   profileButton: {
     backgroundColor: colors.surface,

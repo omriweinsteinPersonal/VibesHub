@@ -60,7 +60,7 @@ export default function AdminApplicationsPage() {
           <span>
             <Sparkles aria-hidden="true" size={16} />
           </span>{' '}
-          Swave
+          swavii
         </Link>
         <Link href="/account">Account</Link>
       </header>

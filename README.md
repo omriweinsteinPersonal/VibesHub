@@ -1,6 +1,6 @@
-# Swave
+# swavii
 
-Swave is an English-interface, Hebrew-content creator discovery marketplace for Israeli shoppers. Creators publish storefronts containing product recommendations, story clips, discount codes, and outbound merchant links.
+swavii is a creator platform for building customizable recommendation pages with products, collections, brands, social links, and outbound merchant links.
 
 The repository now contains the first runnable platform foundation: a Next.js web application, Expo native application, NestJS/Fastify API and worker, shared TypeScript packages, Supabase migrations, container definitions, and continuous integration.
 

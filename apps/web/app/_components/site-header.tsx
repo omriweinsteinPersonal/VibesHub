@@ -1,181 +1,39 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, Heart, House, LogIn, LogOut, UserRound, Users } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { House, LogIn, Sparkles, Tag } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
-import { ApiError, apiRequest } from '../../lib/api';
-import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { Brand } from './brand';
-import { GlobalSearch } from './global-search';
 
-interface AccountSummary {
-  creator: { id: string } | null;
-}
+const publicLinks = [
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/#features', label: 'Features' },
+  { href: '/#pricing', label: 'Pricing' },
+];
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [shopperSession, setShopperSession] = useState(false);
-  const publicLinks = [
-    { href: '/creators', label: 'Creators' },
-    { href: '/discover', label: 'Discover' },
-    { href: '/about', label: 'About' },
-  ];
-  const shopperLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/creators', label: 'Creators' },
-    { href: '/discover', label: 'Discover' },
-    { href: '/account/saved', label: 'My List' },
-  ];
-  const links = shopperSession ? shopperLinks : publicLinks;
-  const mobileLinks = [
-    { active: pathname === '/', href: '/', icon: House, label: 'Home' },
-    {
-      active: pathname.startsWith('/creators'),
-      href: '/creators',
-      icon: Users,
-      label: 'Creators',
-    },
-    {
-      active: pathname.startsWith('/discover'),
-      href: '/discover',
-      icon: Compass,
-      label: 'Discover',
-    },
-    shopperSession
-      ? {
-          active: pathname.startsWith('/account/saved'),
-          href: '/account/saved',
-          icon: Heart,
-          label: 'My List',
-        }
-      : {
-          active: pathname.startsWith('/auth') || pathname === '/login',
-          href: '/auth?mode=login',
-          icon: LogIn,
-          label: 'Login',
-        },
-    ...(shopperSession
-      ? [
-          {
-            active: pathname === '/account',
-            href: '/account',
-            icon: UserRound,
-            label: 'Account',
-          },
-        ]
-      : []),
-  ];
-
-  useEffect(() => {
-    let active = true;
-    const supabase = getSupabaseBrowserClient();
-
-    async function refreshShopperSession() {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData.session) {
-          if (active) setShopperSession(false);
-          return;
-        }
-        const account = await apiRequest<AccountSummary>('/me');
-        if (active) setShopperSession(!account.creator);
-      } catch (cause) {
-        if (!active) return;
-        setShopperSession(false);
-        if (!(cause instanceof ApiError && cause.status === 401)) {
-          console.error('Could not resolve the site navigation session', cause);
-        }
-      }
-    }
-
-    void refreshShopperSession();
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session || event === 'SIGNED_OUT') {
-        setShopperSession(false);
-        return;
-      }
-      window.setTimeout(() => void refreshShopperSession(), 0);
-    });
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  async function signOut() {
-    await getSupabaseBrowserClient().auth.signOut();
-    setShopperSession(false);
-    router.replace('/');
-    router.refresh();
-  }
 
   return (
     <>
-      <header className="siteHeader">
+      <header className="siteHeader creatorMarketingHeader">
         <div className="siteHeaderInner">
           <Brand />
           <nav aria-label="Primary navigation">
-            {links.map((link) => (
-              <Link
-                aria-current={pathname === link.href ? 'page' : undefined}
-                href={link.href}
-                key={link.href}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {publicLinks.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
           </nav>
           <div className="actions">
-            <GlobalSearch />
-            {shopperSession ? (
-              <>
-                <Link
-                  aria-label="Account"
-                  className="siteHeaderIconAction shopperAccountLink"
-                  href="/account"
-                  title="Account"
-                >
-                  <UserRound aria-hidden="true" />
-                </Link>
-                <button
-                  aria-label="Sign out"
-                  className="siteHeaderIconAction shopperSignOut"
-                  onClick={() => void signOut()}
-                  title="Sign out"
-                  type="button"
-                >
-                  <LogOut aria-hidden="true" />
-                </button>
-              </>
-            ) : (
-              <>
-                <Link className="loginLink" href="/auth?mode=login">
-                  Login
-                </Link>
-                <Link
-                  className="button primary joinCreatorLink"
-                  href="/auth?mode=signup&amp;role=creator"
-                >
-                  Join as Creator
-                </Link>
-              </>
-            )}
+            <Link className="loginLink" href="/auth?mode=login">Log in</Link>
+            <Link className="button primary joinCreatorLink" href="/auth?mode=signup&role=creator">Create your page</Link>
           </div>
         </div>
       </header>
-      <nav
-        aria-label="Mobile navigation"
-        className={`mobileTabBar${shopperSession ? ' mobileTabBarShopper' : ''}`}
-      >
-        {mobileLinks.map(({ active, href, icon: Icon, label }) => (
-          <Link aria-current={active ? 'page' : undefined} href={href} key={href}>
-            <Icon aria-hidden="true" />
-            <span>{label}</span>
-          </Link>
-        ))}
+      <nav aria-label="Mobile navigation" className="mobileTabBar creatorMarketingMobileNav">
+        <Link aria-current={pathname === '/' ? 'page' : undefined} href="/"><House aria-hidden="true" /><span>Home</span></Link>
+        <Link href="/#features"><Sparkles aria-hidden="true" /><span>Features</span></Link>
+        <Link href="/#pricing"><Tag aria-hidden="true" /><span>Pricing</span></Link>
+        <Link aria-current={pathname.startsWith('/auth') ? 'page' : undefined} href="/auth?mode=login"><LogIn aria-hidden="true" /><span>Log in</span></Link>
       </nav>
     </>
   );

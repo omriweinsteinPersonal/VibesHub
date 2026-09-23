@@ -130,7 +130,7 @@ export default function AdminMerchantDomainsPage() {
           <span>
             <Sparkles aria-hidden="true" size={16} />
           </span>{' '}
-          Swave
+          swavii
         </Link>
         <nav aria-label="Administration">
           <Link href="/admin/applications">Creator applications</Link>
@@ -141,7 +141,7 @@ export default function AdminMerchantDomainsPage() {
         <p className="eyebrow">PLATFORM OPERATIONS</p>
         <h1>Merchant-domain reviews</h1>
         <p className="workspaceLead">
-          Review exact hostnames before Swave imports product data or redirects a shopper.
+          Review exact hostnames before swavii imports product data or redirects a shopper.
           Approval never comes from creator-supplied content.
         </p>
 

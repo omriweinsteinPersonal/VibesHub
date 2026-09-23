@@ -125,13 +125,13 @@ export default function CreatorApplicationPage() {
           <span>
             <Sparkles aria-hidden="true" size={16} />
           </span>{' '}
-          Swave
+          swavii
         </Link>
         <Link href="/account">Account</Link>
       </header>
       <section className="workspaceContent narrow">
         <p className="eyebrow">CREATOR APPLICATION</p>
-        <h1>Open your Swave storefront</h1>
+        <h1>Open your swavii storefront</h1>
         <p className="workspaceLead">
           Tell us who you are and where your community follows you. Your creator
           storefront will open immediately.
@@ -143,7 +143,7 @@ export default function CreatorApplicationPage() {
         ) : null}
         {latestFeedback ? (
           <div className="statusBanner" role="status">
-            <strong>Message from the Swave review team</strong>
+            <strong>Message from the swavii review team</strong>
             <p>{latestFeedback.publicMessage}</p>
           </div>
         ) : null}

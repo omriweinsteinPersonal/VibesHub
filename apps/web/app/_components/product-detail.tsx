@@ -10,7 +10,6 @@ import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { publicShopUrl } from '../../lib/public-shop-url';
 import { CopyDiscountCodeButton } from './analytics-events';
-import { SaveProductButton } from './engagement';
 import { StoryVideo } from './story-video';
 
 export function ProductDetailView({
@@ -39,11 +38,13 @@ export function ProductDetailView({
 
   return (
     <article className="productDetailPage">
-      <nav aria-label="Breadcrumb" className="productDetailBreadcrumb">
-        <Link href="/discover">Discover</Link>
-        <ChevronRight aria-hidden="true" size={14} />
-        <Link href={`/creators/${recommendation.creator.handle}`}>
-          {recommendation.creator.displayName}
+      <nav aria-label="Back to storefront" className="productDetailBreadcrumb">
+        <Link
+          className="productDetailBack"
+          href={`/creators/${encodeURIComponent(recommendation.creator.handle)}`}
+        >
+          <ChevronLeft aria-hidden="true" size={16} />
+          Back
         </Link>
       </nav>
 
@@ -54,7 +55,7 @@ export function ProductDetailView({
               alt={`${recommendation.productName} by ${brand}, photo ${activeImage + 1}`}
               fill
               priority
-              sizes="(max-width: 800px) 100vw, 55vw"
+              sizes="(max-width: 480px) calc(100vw - 32px), 328px"
               src={publicAssetUrl(shownImage.url)}
               unoptimized
             />
@@ -103,7 +104,6 @@ export function ProductDetailView({
         </div>
 
         <div className="productDetailInformation">
-          <p className="eyebrow">{brand}</p>
           <h1>{recommendation.productName}</h1>
           {recommendation.price.amountMinor > 0 ? (
             <p className="productDetailPrice">
@@ -115,13 +115,6 @@ export function ProductDetailView({
               }).format(recommendation.price.amountMinor / 100)}
             </p>
           ) : null}
-          <Link
-            className="productDetailCreator"
-            href={`/creators/${recommendation.creator.handle}`}
-          >
-            Recommended by <strong>{recommendation.creator.displayName}</strong>
-            <ChevronRight aria-hidden="true" size={16} />
-          </Link>
 
           <div className="productDetailActions">
             <a
@@ -133,10 +126,6 @@ export function ProductDetailView({
               Shop at {brand}
               <ExternalLink aria-hidden="true" size={17} />
             </a>
-            <SaveProductButton
-              productId={recommendation.productId}
-              recommendationId={recommendation.id}
-            />
           </div>
 
           {recommendation.discount ? (
@@ -201,7 +190,6 @@ export function ProductDetailView({
               </div>
             </section>
           ) : null}
-          <p className="productDetailStore">Sold at {recommendation.merchantHostname}</p>
         </div>
       </div>
     </article>

@@ -20,10 +20,10 @@ const displayFont = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  description: 'Authentic recommendations from Israeli creators.',
+  description: 'Build a customizable recommendation page and share everything you love with one link.',
   title: {
-    default: 'Swave',
-    template: '%s · Swave',
+    default: 'swavii',
+    template: '%s · swavii',
   },
 };
 

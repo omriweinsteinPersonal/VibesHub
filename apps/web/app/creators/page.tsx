@@ -81,7 +81,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
         <div className="directoryHeading">
           <div>
             <p className="eyebrow">THE COMMUNITY</p>
-            <h2 id="directory-title">Creators already on Swave</h2>
+            <h2 id="directory-title">Creators already on swavii</h2>
           </div>
           <p>{creators.length} shown</p>
         </div>

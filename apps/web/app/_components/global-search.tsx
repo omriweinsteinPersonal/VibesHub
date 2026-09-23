@@ -98,14 +98,14 @@ export function GlobalSearch() {
           }}
         >
           <section
-            aria-label="Search Swave"
+            aria-label="Search swavii"
             aria-modal="true"
             className="searchModal"
             role="dialog"
           >
             <header>
               <div>
-                <p className="eyebrow">SEARCH SWAVE</p>
+                <p className="eyebrow">SEARCH SWAVII</p>
                 <h2>Find creators and products</h2>
               </div>
               <button

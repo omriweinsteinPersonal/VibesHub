@@ -168,7 +168,7 @@ export default function CreatorDiscountCodesPage() {
           <span>
             <Sparkles aria-hidden="true" size={16} />
           </span>{' '}
-          Swave
+          swavii
         </Link>
         <nav aria-label="Creator studio navigation">
           <Link href="/account">Account</Link>

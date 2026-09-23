@@ -597,6 +597,17 @@ export const creatorStorefrontSchema = z
       )
       .max(200)
       .default([]),
+    labels: z
+      .array(
+        z.object({
+          id: idSchema,
+          title: z.string().trim().min(1).max(40),
+          categorySlug: z.string().trim().max(80).nullable(),
+          recommendationIds: z.array(idSchema).max(100),
+        }).strict(),
+      )
+      .max(12)
+      .default([]),
     theme: storefrontThemeSchema.default(defaultStorefrontTheme),
     socialLinks: z.array(
       z
@@ -1008,6 +1019,17 @@ export const creatorStorefrontConfigurationSchema = z
       )
       .max(200)
       .default([]),
+    labels: z
+      .array(
+        z.object({
+          id: idSchema,
+          title: z.string().trim().min(1).max(40),
+          categorySlug: z.string().trim().max(80).nullable(),
+          recommendationIds: z.array(idSchema).max(100),
+        }).strict(),
+      )
+      .max(12)
+      .default([]),
     version: z.int().positive(),
   })
   .strict();
@@ -1045,6 +1067,21 @@ export const creatorStorefrontConfigurationInputSchema = z
       .refine(
         (sections) => new Set(sections.map(({ id }) => id)).size === sections.length,
         'Each custom section can be selected once',
+      ),
+    labels: z
+      .array(
+        z.object({
+          id: idSchema,
+          title: z.string().trim().min(1).max(40),
+          categorySlug: z.string().trim().max(80).nullable(),
+          recommendationIds: z.array(idSchema).max(100),
+        }).strict(),
+      )
+      .max(12)
+      .default([])
+      .refine(
+        (labels) => new Set(labels.map(({ id }) => id)).size === labels.length,
+        'Each storefront label can be selected once',
       ),
   })
   .strict();

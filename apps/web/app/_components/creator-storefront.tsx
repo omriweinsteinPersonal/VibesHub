@@ -48,6 +48,7 @@ export function CreatorStorefrontView({
   storefront: CreatorStorefront;
 }) {
   const [query, setQuery] = useState('');
+  const [activeLabelId, setActiveLabelId] = useState<string | null>(null);
   const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
     storefront.theme ?? defaultStorefrontTheme,
   );
@@ -146,15 +147,24 @@ export function CreatorStorefrontView({
     () => ({ ...storefront, contentOrder }),
     [storefront, contentOrder],
   );
+  const labels = useMemo(
+    () => configuration?.labels ?? storefront.labels ?? [],
+    [configuration?.labels, storefront.labels],
+  );
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
-    if (!term) return recommendations;
-    return recommendations.filter((item) =>
-      [item.productName, item.brandName, item.review.value, item.category.name].some(
-        (value) => value.toLocaleLowerCase('he-IL').includes(term),
-      ),
-    );
-  }, [query, recommendations]);
+    const label = labels.find(({ id }) => id === activeLabelId);
+    return recommendations.filter((item) => {
+      const matchesLabel = !label || (label.categorySlug
+        ? item.category.slug === label.categorySlug
+        : label.recommendationIds.includes(item.id));
+      const matchesSearch = !term ||
+        [item.productName, item.brandName, item.review.value, item.category.name].some(
+          (value) => value.toLocaleLowerCase('he-IL').includes(term),
+        );
+      return matchesLabel && matchesSearch;
+    });
+  }, [activeLabelId, labels, query, recommendations]);
   const rows = useMemo(() => {
     const brandNames = new Set(
       storefront.brands.map(({ name }) => name.toLocaleLowerCase()),
@@ -236,6 +246,7 @@ export function CreatorStorefrontView({
               }),
             ),
             contentOrder: nextOrder,
+            labels: configuration.labels,
           }),
         },
       );
@@ -380,6 +391,27 @@ export function CreatorStorefrontView({
         </section>
 
         <section className="referenceStorefrontProducts">
+          {labels.length ? (
+            <nav aria-label="Store filters" className="referenceStorefrontLabels">
+              <button
+                aria-pressed={activeLabelId === null}
+                onClick={() => setActiveLabelId(null)}
+                type="button"
+              >
+                All
+              </button>
+              {labels.map((label) => (
+                <button
+                  aria-pressed={activeLabelId === label.id}
+                  key={label.id}
+                  onClick={() => setActiveLabelId(label.id)}
+                  type="button"
+                >
+                  {label.title}
+                </button>
+              ))}
+            </nav>
+          ) : null}
           <header>
             <label>
               <Search aria-hidden="true" size={16} />
@@ -392,7 +424,9 @@ export function CreatorStorefrontView({
               />
             </label>
           </header>
-          {storefront.brands.map((brand) => (
+          {storefront.brands.filter((brand) => filtered.some(
+            (item) => item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase(),
+          )).map((brand) => (
             <BrandBlock
               brand={brand}
               collections={storefront.curatedSections.filter(
@@ -401,7 +435,7 @@ export function CreatorStorefrontView({
               )}
               creatorId={storefront.id}
               handle={storefront.handle}
-              items={recommendations.filter(
+              items={filtered.filter(
                 (item) =>
                   item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase(),
               )}
@@ -440,10 +474,7 @@ export function CreatorStorefrontView({
           ) : null}
           {!blocks.length &&
           !storefront.curatedSections.some(({ kind }) => kind === 'page') ? (
-            <div className="directoryState">
-              <h3>No recommendations found</h3>
-              <p>Try another product or brand name.</p>
-            </div>
+            null
           ) : (
             blocks.map(({ key, layer, row, code }) => {
               const content = row ? (
@@ -640,15 +671,17 @@ function BrandBlock({
         target="_blank"
       />
       <header>
-        <div>
-          <h3>{brand.name}</h3>
-          {offer ? (
-            <p>
-              {offer.discountPercent ? `${offer.discountPercent}%` : offer.label}
-              {offer.code ? ` · ${offer.code}` : ''}
-            </p>
-          ) : null}
-        </div>
+        <h3>{brand.name}</h3>
+        {offer ? (
+          <div className="referenceBrandOffer">
+            {offer.discountPercent || offer.label ? (
+              <span>
+                {offer.discountPercent ? `${offer.discountPercent}% off` : offer.label}
+              </span>
+            ) : null}
+            {offer.code ? <strong>{offer.code}</strong> : null}
+          </div>
+        ) : null}
       </header>
       {collections.length || standaloneItems.length ? (
         <div className="referenceBrandShelf">
@@ -657,9 +690,15 @@ function BrandBlock({
               (id) => items.find((item) => item.id === id) ?? [],
             )[0];
             const cover = collection.imageUrl || firstItem?.imageUrl;
+            const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
+              collection.title,
+            )
+              ? 'rtl'
+              : 'ltr';
             return (
               <Link
                 className="referenceBrandCollectionCard"
+                data-text-direction={textDirection}
                 href={`/creators/${encodeURIComponent(handle)}/pages/${collection.id}`}
                 key={collection.id}
               >
@@ -668,9 +707,8 @@ function BrandBlock({
                     <Image alt="" fill sizes="220px" src={cover} unoptimized />
                   </span>
                 ) : null}
-                <span>
+                <span dir={textDirection}>
                   <strong>{collection.title}</strong>
-                  <small>{collection.recommendationIds.length} items</small>
                 </span>
               </Link>
             );
@@ -680,7 +718,6 @@ function BrandBlock({
               creatorId={creatorId}
               key={item.id}
               recommendation={item}
-              showSave
             />
           ))}
         </div>

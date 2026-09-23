@@ -5,12 +5,9 @@ export function Brand({ compact = false }: { compact?: boolean }) {
     <Link
       className={compact ? 'logo logoCompact' : 'logo'}
       href="/"
-      aria-label="Swave home"
+      aria-label="swavii home"
     >
-      <span aria-hidden="true" className="logoMark">
-        <span className="logoGlyph">S</span>
-      </span>
-      <span className="logoWordmark">Swave</span>
+      <span className="logoWordmark">swavii</span>
     </Link>
   );
 }

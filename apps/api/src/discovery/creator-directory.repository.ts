@@ -28,6 +28,7 @@ interface CreatorCardRow {
   storefrontSections?: CreatorStorefront['storefrontSections'];
   curatedSections?: CreatorStorefront['curatedSections'];
   contentOrder?: CreatorStorefront['contentOrder'];
+  labels?: CreatorStorefront['labels'];
   theme?: CreatorStorefront['theme'];
 }
 
@@ -196,6 +197,7 @@ export class CreatorDirectoryRepository {
           '[]'::jsonb
         ) as "curatedSections",
         coalesce((select content_order from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "contentOrder",
+        coalesce((select navigation_labels from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as labels,
         (select theme from app.creator_storefront_preferences where creator_id = creator.id) as theme,
         (
           select count(*)::integer
@@ -228,6 +230,7 @@ export class CreatorDirectoryRepository {
           storefrontSections: row.storefrontSections ?? [],
           curatedSections: row.curatedSections ?? [],
           contentOrder: Array.isArray(row.contentOrder) ? row.contentOrder : [],
+          labels: Array.isArray(row.labels) ? row.labels : [],
           theme: row.theme ?? defaultStorefrontTheme,
         }
       : null;

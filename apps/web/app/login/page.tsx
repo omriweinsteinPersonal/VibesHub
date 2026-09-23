@@ -58,7 +58,7 @@ function LoginForm() {
     <main className="authPage">
       <section className="authIntro">
         <p className="eyebrow">COMMUNITY FIRST</p>
-        <h1>Welcome back to Swave</h1>
+        <h1>Welcome back to swavii</h1>
         <p>
           Save trusted recommendations, follow creators and manage your storefront in one
           place.
@@ -102,7 +102,7 @@ function LoginForm() {
           </button>
         </form>
         <p className="authSwitch">
-          New to Swave? <Link href="/join">Create an account</Link>
+          New to swavii? <Link href="/join">Create an account</Link>
         </p>
       </section>
     </main>

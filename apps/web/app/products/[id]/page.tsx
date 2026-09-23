@@ -2,10 +2,10 @@ import type { PublicRecommendationDetail } from '@vibeshub/contracts';
 import { notFound } from 'next/navigation';
 
 import { ApiError, publicApiRequest } from '../../../lib/api';
-import { EngagementProvider } from '../../_components/engagement';
+import { hasCreatorSession } from '../../../lib/server-session';
+import { Brand } from '../../_components/brand';
+import { CreatorShellHeader } from '../../_components/creator-shell-header';
 import { ProductDetailView } from '../../_components/product-detail';
-import { SiteFooter } from '../../_components/site-footer';
-import { SiteHeader } from '../../_components/site-header';
 
 export default async function ProductPage({
   params,
@@ -25,18 +25,22 @@ export default async function ProductPage({
     throw cause;
   }
 
+  const creatorSession = await hasCreatorSession(recommendation.creator.handle);
+
   return (
     <div className="editorialPage">
-      <SiteHeader />
+      {creatorSession ? (
+        <CreatorShellHeader />
+      ) : (
+        <header className="creatorShellHeader">
+          <div className="creatorShellHeaderInner">
+            <Brand />
+          </div>
+        </header>
+      )}
       <main>
-        <EngagementProvider
-          creatorIds={[recommendation.creator.id]}
-          productIds={[recommendation.productId]}
-        >
-          <ProductDetailView recommendation={recommendation} />
-        </EngagementProvider>
+        <ProductDetailView recommendation={recommendation} />
       </main>
-      <SiteFooter />
     </div>
   );
 }

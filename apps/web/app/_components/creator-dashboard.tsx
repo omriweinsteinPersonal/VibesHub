@@ -55,6 +55,12 @@ import { SiteFooter } from './site-footer';
 type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
+type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
+type CollectionManageEntry = {
+  kind: 'collection';
+  section: CuratedSection;
+  items: CreatorRecommendation[];
+};
 
 interface ProductEditor {
   additionalImages: Array<{ imageAssetId: string; url: string }>;
@@ -165,10 +171,11 @@ export function CreatorDashboard() {
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [curatedSections, setCuratedSections] = useState<CuratedSection[]>([]);
   const [contentOrder, setContentOrder] = useState<ContentLayer[]>([]);
+  const [storefrontLabels, setStorefrontLabels] = useState<StorefrontLabel[]>([]);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
-  const [dashboardView, setDashboardView] = useState<'recommendations' | 'connectors'>(
-    'recommendations',
-  );
+  const [dashboardView, setDashboardView] = useState<
+    'recommendations' | 'labels' | 'connectors'
+  >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -202,6 +209,7 @@ export function CreatorDashboard() {
       setBrands(loadedBrands);
       const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
       setConfiguration({ ...config, contentOrder: loadedOrder });
+      setStorefrontLabels(config.labels ?? []);
       setContentOrder(
         loadedOrder.filter(({ kind, id }) =>
           kind === 'collection' || kind === 'section'
@@ -806,6 +814,7 @@ export function CreatorDashboard() {
     nextCategories = selectedSections,
     nextCurated = curatedSections,
     nextOrder = contentOrder,
+    nextLabels = storefrontLabels,
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
@@ -856,6 +865,7 @@ export function CreatorDashboard() {
               }),
             ),
             contentOrder: normalizedOrder,
+            labels: nextLabels,
           }),
           headers: { 'if-match': `"${configuration.version}"` },
           method: 'PUT',
@@ -868,6 +878,7 @@ export function CreatorDashboard() {
       setSelectedSections(nextCategories);
       setCuratedSections(updated.curatedSections);
       setContentOrder(savedOrder);
+      setStorefrontLabels(updated.labels);
       setNotice('Storefront sections saved.');
       return true;
     } catch (cause) {
@@ -908,7 +919,7 @@ export function CreatorDashboard() {
     collections.flatMap(({ recommendationIds }) => recommendationIds),
   );
   const manageEntries: Array<
-    | { kind: 'collection'; section: CuratedSection; items: CreatorRecommendation[] }
+    | CollectionManageEntry
     | { kind: 'recommendation'; item: CreatorRecommendation }
     | { kind: 'discount'; item: CreatorDiscountCode }
   > = [
@@ -937,6 +948,36 @@ export function CreatorDashboard() {
       (right < 0 ? Number.MAX_SAFE_INTEGER : right)
     );
   });
+  const collectionEntries = manageEntries.filter(
+    (entry): entry is CollectionManageEntry => entry.kind === 'collection',
+  );
+  const standaloneRecommendations = manageEntries.flatMap((entry) =>
+    entry.kind === 'recommendation' ? [entry.item] : [],
+  );
+  const normalizedBrandName = (value: string) => value.trim().toLocaleLowerCase();
+  const groupedCollectionIds = new Set<string>();
+  const groupedRecommendationIds = new Set<string>();
+  const brandGroups = brands.map((managedBrand) => {
+    const brandName = normalizedBrandName(managedBrand.name);
+    const brandCollections = collectionEntries.filter(({ section, items }) =>
+      section.brandId === managedBrand.brandId ||
+      items.some((item) => normalizedBrandName(item.brandName) === brandName),
+    );
+    const brandItems = standaloneRecommendations.filter((item) =>
+      item.brandId === managedBrand.brandId ||
+      normalizedBrandName(item.brandName) === brandName,
+    );
+    brandCollections.forEach(({ section }) => groupedCollectionIds.add(section.id));
+    brandItems.forEach(({ id }) => groupedRecommendationIds.add(id));
+    return { brand: managedBrand, collections: brandCollections, items: brandItems };
+  });
+  const ungroupedEntries = manageEntries.filter((entry) =>
+    entry.kind === 'collection'
+      ? !groupedCollectionIds.has(entry.section.id)
+      : entry.kind === 'recommendation'
+        ? !groupedRecommendationIds.has(entry.item.id)
+        : true,
+  );
   return (
     <div className="creatorShellPage">
       <CreatorShellHeader />
@@ -972,6 +1013,13 @@ export function CreatorDashboard() {
         <div className="creatorDashboardWorkspace">
           <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
             <p className="eyebrow">MANAGE</p>
+            <button
+              aria-current={dashboardView === 'labels' ? 'page' : undefined}
+              onClick={() => setDashboardView('labels')}
+              type="button"
+            >
+              Storefront labels
+            </button>
             <button
               aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
               onClick={() => setDashboardView('recommendations')}
@@ -1270,7 +1318,7 @@ export function CreatorDashboard() {
                   <div className="creatorLoading">Loading recommendations…</div>
                 ) : null}
                 <div className="creatorManageList">
-                  {brands.map((managedBrand) => (
+                  {brandGroups.map(({ brand: managedBrand, collections: brandCollections, items: brandItems }) => (
                     <section
                       className="creatorManageCollection creatorBrandManageCard"
                       key={managedBrand.id}
@@ -1338,9 +1386,48 @@ export function CreatorDashboard() {
                           </button>
                         </div>
                       </header>
+                      {brandCollections.length || brandItems.length ? (
+                        <div className="creatorBrandManageContents">
+                          {brandCollections.map((entry) => (
+                            <CollectionManageCard
+                              brands={brands}
+                              editing={editingCollectionId === entry.section.id}
+                              entry={entry}
+                              key={entry.section.id}
+                              nested
+                              onArchiveItem={(item) => {
+                                if (window.confirm('Remove this recommendation from your storefront?')) void recommendationCommand(item, 'archive');
+                              }}
+                              onCreateBrand={async (input) => {
+                                const created = await apiRequest<CreatorBrand>('/creator/brands', { body: JSON.stringify(input), idempotent: true, method: 'POST' });
+                                setBrands((current) => [...current.filter(({ id }) => id !== created.id), created]);
+                                return created;
+                              }}
+                              onDelete={() => {
+                                if (!window.confirm(`Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`)) return;
+                                void saveCuratedSections(curatedSections.filter(({ id }) => id !== entry.section.id).map((section) => section.parentCollectionId === entry.section.id ? { ...section, parentCollectionId: null } : section)).then((saved) => { if (saved) setEditingCollectionId(null); });
+                              }}
+                              onEditItem={editProduct}
+                              onEditState={(editing) => setEditingCollectionId(editing ? entry.section.id : null)}
+                              onSave={(updated) => saveCuratedSections(curatedSections.map((section) => section.id === entry.section.id ? updated : section))}
+                              profileHandle={profile?.handle}
+                              recommendations={activeRecommendations}
+                              saving={saving}
+                            />
+                          ))}
+                          {brandItems.length ? (
+                            <div className="creatorBrandStandaloneItems">
+                              <p className="creatorBrandGroupLabel">INDIVIDUAL ITEMS</p>
+                              {brandItems.map((item) => (
+                                <RecommendationManageCard item={item} key={item.id} onArchive={() => { if (window.confirm('Remove this recommendation from your storefront?')) void recommendationCommand(item, 'archive'); }} onEdit={() => editProduct(item)} />
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : <p className="creatorManageCollectionEmpty">No recommendations have been added to this brand yet.</p>}
                     </section>
                   ))}
-                  {manageEntries.map((entry) =>
+                  {ungroupedEntries.map((entry) =>
                     entry.kind === 'collection' ? (
                       <section
                         aria-label={`${entry.section.title} collection`}
@@ -1506,6 +1593,15 @@ export function CreatorDashboard() {
                   ) : null}
                 </div>
               </section>
+            ) : dashboardView === 'labels' ? (
+              <StorefrontLabelsEditor
+                categories={categories}
+                key={storefrontLabels.map(({ id, title }) => `${id}:${title}`).join('|')}
+                labels={storefrontLabels}
+                onSave={(labels) => void saveSections(selectedSections, curatedSections, contentOrder, labels)}
+                recommendations={activeRecommendations}
+                saving={saving}
+              />
             ) : (
               <CreatorConnectorsEditor
                 key={profile ? `${profile.id}:${profile.version}` : 'loading'}
@@ -1518,6 +1614,65 @@ export function CreatorDashboard() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function CollectionManageCard({
+  brands,
+  editing,
+  entry,
+  nested = false,
+  onArchiveItem,
+  onCreateBrand,
+  onDelete,
+  onEditItem,
+  onEditState,
+  onSave,
+  profileHandle,
+  recommendations,
+  saving,
+}: {
+  brands: CreatorBrand[];
+  editing: boolean;
+  entry: CollectionManageEntry;
+  nested?: boolean;
+  onArchiveItem: (item: CreatorRecommendation) => void;
+  onCreateBrand: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
+  onDelete: () => void;
+  onEditItem: (item: CreatorRecommendation) => void;
+  onEditState: (editing: boolean) => void;
+  onSave: (updated: CuratedSection) => Promise<boolean>;
+  profileHandle: string | undefined;
+  recommendations: CreatorRecommendation[];
+  saving: boolean;
+}) {
+  return (
+    <section
+      aria-label={`${entry.section.title} collection`}
+      className={`creatorManageCollection${nested ? ' creatorManageNestedCollection' : ''}`}
+    >
+      <header className="creatorManageCollectionHeader">
+        <div>
+          <span className="eyebrow">COLLECTION</span>
+          <h3>{entry.section.title}</h3>
+          <p>{entry.items.length} {entry.items.length === 1 ? 'item' : 'items'}</p>
+        </div>
+        <div className="creatorManageCollectionActions">
+          {profileHandle ? <Link href={`/creators/${profileHandle}/pages/${entry.section.id}`} target="_blank">View page</Link> : null}
+          <button aria-label={`Edit ${entry.section.title} collection`} disabled={saving} onClick={() => onEditState(true)} title="Edit collection" type="button"><Pencil aria-hidden="true" size={16} /></button>
+          <button aria-label={`Delete ${entry.section.title} collection`} disabled={saving} onClick={onDelete} title="Delete collection" type="button"><Trash2 aria-hidden="true" size={16} /></button>
+        </div>
+      </header>
+      {editing ? (
+        <div className="creatorManageCollectionEditor">
+          <CuratedSectionForm brands={brands} initial={entry.section} kind="collection" onCancel={() => onEditState(false)} onCreateBrand={onCreateBrand} onSave={onSave} recommendations={recommendations} saving={saving} />
+        </div>
+      ) : entry.items.length ? (
+        <div className="creatorManageCollectionItems">
+          {entry.items.map((item) => <RecommendationManageCard item={item} key={item.id} onArchive={() => onArchiveItem(item)} onEdit={() => onEditItem(item)} />)}
+        </div>
+      ) : <p className="creatorManageCollectionEmpty">No active products in this collection. Edit it to add one.</p>}
+    </section>
   );
 }
 
@@ -1540,6 +1695,109 @@ function ComposerHeader({
         <X aria-hidden="true" size={16} />
       </button>
     </header>
+  );
+}
+
+function StorefrontLabelsEditor({
+  categories,
+  labels,
+  onSave,
+  recommendations,
+  saving,
+}: {
+  categories: CategoryCard[];
+  labels: StorefrontLabel[];
+  onSave: (labels: StorefrontLabel[]) => void;
+  recommendations: CreatorRecommendation[];
+  saving: boolean;
+}) {
+  const [draft, setDraft] = useState(labels);
+  const update = (id: string, patch: Partial<StorefrontLabel>) =>
+    setDraft((current) => current.map((label) => label.id === id ? { ...label, ...patch } : label));
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= draft.length) return;
+    const next = [...draft];
+    const [label] = next.splice(index, 1);
+    if (!label) return;
+    next.splice(target, 0, label);
+    setDraft(next);
+  };
+  return (
+    <section className="creatorLabelsEditor">
+      <div className="creatorSectionHeading">
+        <div>
+          <h2>Storefront labels</h2>
+          <p>Add category filters or create your own groups such as My favorites.</p>
+        </div>
+        <button
+          className="button secondary"
+          disabled={draft.length >= 12}
+          onClick={() => setDraft((current) => [...current, {
+            id: randomUuid(), title: 'New label', categorySlug: null, recommendationIds: [],
+          }])}
+          type="button"
+        >
+          <Plus aria-hidden="true" size={15} /> Add label
+        </button>
+      </div>
+      <div className="creatorLabelList">
+        {draft.map((label, index) => (
+          <article className="creatorLabelEditorCard" key={label.id}>
+            <div className="creatorLabelEditorTop">
+              <label>
+                Label name
+                <input maxLength={40} value={label.title} onChange={(event) => update(label.id, { title: event.target.value })} />
+              </label>
+              <label>
+                Filter by
+                <select
+                  value={label.categorySlug ?? 'custom'}
+                  onChange={(event) => update(label.id, event.target.value === 'custom'
+                    ? { categorySlug: null }
+                    : { categorySlug: event.target.value, recommendationIds: [] })}
+                >
+                  <option value="custom">Selected items</option>
+                  {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
+                </select>
+              </label>
+              <div className="creatorLabelActions">
+                <button aria-label="Move label left" disabled={index === 0} onClick={() => move(index, -1)} type="button"><ArrowUp aria-hidden="true" size={15} /></button>
+                <button aria-label="Move label right" disabled={index === draft.length - 1} onClick={() => move(index, 1)} type="button"><ArrowDown aria-hidden="true" size={15} /></button>
+                <button aria-label="Delete label" onClick={() => setDraft((current) => current.filter(({ id }) => id !== label.id))} type="button"><Trash2 aria-hidden="true" size={15} /></button>
+              </div>
+            </div>
+            {!label.categorySlug ? (
+              <fieldset className="creatorLabelItems">
+                <legend>Items shown under this label</legend>
+                {recommendations.map((item) => (
+                  <label key={item.id}>
+                    <input
+                      checked={label.recommendationIds.includes(item.id)}
+                      onChange={(event) => update(label.id, {
+                        recommendationIds: event.target.checked
+                          ? [...label.recommendationIds, item.id]
+                          : label.recommendationIds.filter((id) => id !== item.id),
+                      })}
+                      type="checkbox"
+                    />
+                    <span>{item.productName}</span>
+                  </label>
+                ))}
+              </fieldset>
+            ) : null}
+          </article>
+        ))}
+      </div>
+      <button
+        className="button primary"
+        disabled={saving || draft.some(({ title }) => !title.trim())}
+        onClick={() => onSave(draft.map((label) => ({ ...label, title: label.title.trim() })))}
+        type="button"
+      >
+        {saving ? 'Saving…' : 'Save labels'}
+      </button>
+    </section>
   );
 }
 

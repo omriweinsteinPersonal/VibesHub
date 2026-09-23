@@ -4,7 +4,7 @@ import type {
   CreatorProfileSettings,
   CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
-import { ArrowDown, ArrowUp, ExternalLink, Plus, X } from 'lucide-react';
+import { ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -24,15 +24,6 @@ export function CreatorConnectorsEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-
-  function move(from: number, to: number) {
-    setLinks((current) => {
-      const next = [...current];
-      const [item] = next.splice(from, 1);
-      if (item) next.splice(to, 0, item);
-      return next;
-    });
-  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,7 +86,7 @@ export function CreatorConnectorsEditor({
         <form onSubmit={(event) => void save(event)}>
           {links.length ? (
             <ol className="creatorConnectorList">
-              {links.map((link, index) => (
+              {links.map((link) => (
                 <li key={link.platform}>
                   <label>
                     <span>{connectorLabel(link.platform)}</span>
@@ -123,22 +114,6 @@ export function CreatorConnectorsEditor({
                   </label>
                   <div className="creatorConnectorActions">
                     <button
-                      aria-label={`Move ${connectorLabel(link.platform)} up`}
-                      disabled={saving || index === 0}
-                      onClick={() => move(index, index - 1)}
-                      type="button"
-                    >
-                      <ArrowUp size={16} />
-                    </button>
-                    <button
-                      aria-label={`Move ${connectorLabel(link.platform)} down`}
-                      disabled={saving || index === links.length - 1}
-                      onClick={() => move(index, index + 1)}
-                      type="button"
-                    >
-                      <ArrowDown size={16} />
-                    </button>
-                    <button
                       aria-label={`Remove ${connectorLabel(link.platform)}`}
                       disabled={saving}
                       onClick={() =>
@@ -148,7 +123,7 @@ export function CreatorConnectorsEditor({
                       }
                       type="button"
                     >
-                      <X size={16} />
+                      <Trash2 aria-hidden="true" size={16} />
                     </button>
                   </div>
                 </li>

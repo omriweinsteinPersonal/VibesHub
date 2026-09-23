@@ -21,6 +21,7 @@ interface CreatorIdentityRow {
 
 interface StorefrontSectionRow {
   contentOrder: CreatorStorefrontConfiguration['contentOrder'];
+  labels: CreatorStorefrontConfiguration['labels'];
   categoryId: string;
   categoryName: string;
   categorySlug: string;
@@ -293,6 +294,7 @@ export class CreatorStudioRepository {
         return { kind: 'invalid_recommendations' };
       const recommendationIds = [
         ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
+        ...new Set(input.labels.flatMap((label) => label.recommendationIds)),
       ];
       if (recommendationIds.length) {
         const [owned] = await sql<{ count: number }[]>`
@@ -340,7 +342,9 @@ export class CreatorStudioRepository {
       }
       await sql`
         update app.creator_storefront_preferences
-        set version = version + 1, content_order = ${sql.json(input.contentOrder)}
+        set version = version + 1,
+            content_order = ${sql.json(input.contentOrder)},
+            navigation_labels = ${sql.json(input.labels)}
         where creator_id = ${identity.id}
       `;
       return {
@@ -458,6 +462,7 @@ export class CreatorStudioRepository {
         section.position,
         preference.version
         , preference.content_order as "contentOrder"
+        , preference.navigation_labels as labels
       from app.creator_storefront_preferences preference
       left join app.creator_storefront_sections section
         on section.creator_id = preference.creator_id
@@ -487,6 +492,7 @@ export class CreatorStudioRepository {
     return {
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       curatedSections: curatedRows,
+      labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       sections: rows.flatMap((row) =>
         row.categoryId
           ? [

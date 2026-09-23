@@ -1,4 +1,5 @@
 import type { CreatorStorefront } from '@vibeshub/contracts';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -52,7 +53,8 @@ export default async function ProductPage({
           className="creatorProductPageBack"
           href={`/creators/${encodeURIComponent(handle)}`}
         >
-          ← Back to {storefront.displayName}
+          <ChevronLeft aria-hidden="true" size={16} />
+          Back
         </Link>
         <header>
           <p className="eyebrow">{collection?.title ?? storefront.displayName}</p>
@@ -69,7 +71,6 @@ export default async function ProductPage({
                 creatorId={storefront.id}
                 key={recommendation.id}
                 recommendation={recommendation}
-                showSave
               />
             ))}
           </div>
