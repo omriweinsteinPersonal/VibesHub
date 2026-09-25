@@ -3,6 +3,7 @@
 import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
@@ -19,6 +20,7 @@ export function RecommendationCardView({
   creatorId,
   recommendation,
 }: RecommendationCardViewProps) {
+  const [imageShape, setImageShape] = useState<'standard' | 'wide'>('standard');
   const attributedCreatorId = creatorId ?? creator?.id;
   const clips = recommendation.storyClips?.length
     ? recommendation.storyClips.map(({ url }) => publicAssetUrl(url))
@@ -49,7 +51,7 @@ export function RecommendationCardView({
         className="storeCardHitArea"
         href={`/products/${recommendation.id}`}
       />
-      <div className="storeProductImage">
+      <div className="storeProductImage" data-image-shape={imageShape}>
         <Image
           alt=""
           aria-hidden="true"
@@ -63,6 +65,10 @@ export function RecommendationCardView({
           alt={recommendation.productName}
           className="storeProductPrimaryImage"
           fill
+          onLoad={({ currentTarget }) => {
+            const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
+            setImageShape(ratio >= 1.6 ? 'wide' : 'standard');
+          }}
           sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
           src={publicAssetUrl(recommendation.imageUrl)}
           unoptimized

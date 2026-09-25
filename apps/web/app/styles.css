@@ -9359,6 +9359,13 @@ dt {
   object-fit: contain;
 }
 
+.compactProductCard
+  .storeProductImage[data-image-shape='wide']
+  .storeProductPrimaryImage {
+  object-fit: cover;
+  padding: 0;
+}
+
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard
   .storeProductDetails {
