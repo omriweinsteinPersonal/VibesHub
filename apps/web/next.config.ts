@@ -8,6 +8,21 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   transpilePackages: ['@vibeshub/design-tokens'],
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'vibes-hub-web.vercel.app',
+          },
+        ],
+        destination: 'https://swavii.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
