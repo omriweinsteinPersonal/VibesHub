@@ -33,6 +33,17 @@ export function RecommendationCardView({
   )
     ? 'rtl'
     : 'ltr';
+  const titleLines = title
+    ? title.firstLanguage === 'he'
+      ? [
+          { direction: 'rtl' as const, language: 'he', text: title.hebrew },
+          { direction: 'ltr' as const, language: 'en', text: title.english },
+        ]
+      : [
+          { direction: 'ltr' as const, language: 'en', text: title.english },
+          { direction: 'rtl' as const, language: 'he', text: title.hebrew },
+        ]
+    : null;
 
   return (
     <article
@@ -89,34 +100,41 @@ export function RecommendationCardView({
       <div className="storeProductDetails" dir={textDirection}>
         <div className="compactProductHeading">
           <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
-            {title ? (
-              <>
-                <span dir="ltr" lang="en">
-                  {title.english}
-                </span>
-                <span dir="rtl" lang="he">
-                  {title.hebrew}
-                </span>
-              </>
-            ) : (
-              recommendation.productName
-            )}
+            {titleLines
+              ? titleLines.map((line, index) => (
+                  <span
+                    className={
+                      index === 0 ? 'productTitlePrimary' : 'productTitleSecondary'
+                    }
+                    dir={line.direction}
+                    key={line.language}
+                    lang={line.language}
+                  >
+                    {line.text}
+                  </span>
+                ))
+              : recommendation.productName}
           </h3>
         </div>
-        {recommendation.price.amountMinor > 0 ? (
-          <p className="storePrice" dir={textDirection}>
-            {formatIls(recommendation.price.amountMinor)}
-          </p>
-        ) : null}
+        <div className="storePriceRow">
+          {recommendation.price.amountMinor > 0 ? (
+            <p
+              aria-label={`${formatPriceNumber(recommendation.price.amountMinor)} Israeli new shekels`}
+              className="storePrice"
+              dir="ltr"
+            >
+              <span aria-hidden="true">₪</span>
+              <span>{formatPriceNumber(recommendation.price.amountMinor)}</span>
+            </p>
+          ) : null}
+        </div>
       </div>
     </article>
   );
 }
 
-function formatIls(amountMinor: number): string {
+function formatPriceNumber(amountMinor: number): string {
   return new Intl.NumberFormat('he-IL', {
-    currency: 'ILS',
     maximumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
-    style: 'currency',
   }).format(amountMinor / 100);
 }

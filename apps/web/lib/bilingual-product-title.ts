@@ -1,13 +1,33 @@
 const hebrew = /[\u0590-\u05ff]/u;
 const latin = /[A-Za-z]/u;
 const separator = /^[|/\-\u2013\u2014]+$/u;
+const measurementUnits = new Set([
+  'cm',
+  'g',
+  'gb',
+  'kg',
+  'l',
+  'mah',
+  'ml',
+  'mm',
+  'tb',
+  'v',
+  'w',
+]);
 
-export function splitBilingualProductTitle(title: string) {
+export interface BilingualProductTitle {
+  english: string;
+  firstLanguage: 'en' | 'he';
+  hebrew: string;
+}
+
+export function splitBilingualProductTitle(title: string): BilingualProductTitle | null {
   if (!hebrew.test(title) || !latin.test(title)) return null;
 
   const english: string[] = [];
   const hebrewWords: string[] = [];
-  let previous: 'en' | 'he' = title.search(hebrew) < title.search(latin) ? 'he' : 'en';
+  const firstLanguage = title.search(hebrew) < title.search(latin) ? 'he' : 'en';
+  let previous: 'en' | 'he' = firstLanguage;
 
   for (const word of title.trim().split(/\s+/u)) {
     if (separator.test(word)) continue;
@@ -32,5 +52,19 @@ export function splitBilingualProductTitle(title: string) {
   }
 
   if (!english.length || !hebrewWords.length) return null;
-  return { english: english.join(' '), hebrew: hebrewWords.join(' ') };
+
+  const hasMeaningfulEnglish = english.some((word) => {
+    const letters = word.match(/[A-Za-z]+/gu)?.join('') ?? '';
+    if (!letters) return false;
+    if (measurementUnits.has(letters.toLowerCase())) return false;
+    return letters.length >= 2 || /\d/u.test(word);
+  });
+
+  if (!hasMeaningfulEnglish) return null;
+
+  return {
+    english: english.join(' '),
+    firstLanguage,
+    hebrew: hebrewWords.join(' '),
+  };
 }
