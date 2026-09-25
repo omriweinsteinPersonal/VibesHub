@@ -18,7 +18,7 @@ export function SiteFooter() {
         </div>
         <div className="footerColumn">
           <h3>Creators</h3>
-          <Link href="/auth?mode=signup&role=creator">Create your page</Link>
+          <Link href="/auth?mode=signup">Create your page</Link>
           <Link href="/auth?mode=login">Log in</Link>
         </div>
         <div className="footerColumn footerCreatorNote">

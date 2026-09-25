@@ -16,22 +16,21 @@ function AuthExperience() {
   const [mode, setMode] = useState<'login' | 'signup'>(
     searchParams.get('mode') === 'signup' ? 'signup' : 'login',
   );
-  const [role, setRole] = useState<'shopper' | 'creator'>(
-    searchParams.get('role') === 'creator' ? 'creator' : 'shopper',
-  );
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    searchParams.get('error')
+      ? 'We could not complete that login. Please try again.'
+      : '',
+  );
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const requestedNext = searchParams.get('next');
   const safeNext =
     requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
       ? requestedNext
-      : role === 'creator'
-        ? '/creator-home'
-        : '/account';
+      : '/creator-home';
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -56,12 +55,12 @@ function AuthExperience() {
         router.replace(destination);
         router.refresh();
       } else {
-        const next = role === 'creator' ? '/creator/apply' : '/account';
+        const next = '/creator/apply';
         const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { full_name: fullName, intended_role: role },
+            data: { full_name: fullName, intended_role: 'creator' },
             emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
           },
         });
@@ -82,7 +81,7 @@ function AuthExperience() {
   async function continueWithGoogle() {
     setError('');
     const next =
-      mode === 'signup' && role === 'creator'
+      mode === 'signup'
         ? '/creator/apply'
         : mode === 'login' && !requestedNext
           ? '/auth/continue'
@@ -103,16 +102,13 @@ function AuthExperience() {
         <section className="referenceAuthIntro">
           <p className="authEyebrow">
             <Sparkles aria-hidden="true" size={14} />
-            COMMUNITY FIRST
+            FOR CREATORS
           </p>
-          <h1>Join the Israeli creator marketplace</h1>
+          <h1>{mode === 'signup' ? 'Create your swavii page' : 'Welcome back'}</h1>
           <p>
-            Shoppers save the products they trust and unlock verified discount codes.
-            Creators open a storefront with recommendations, videos and codes in a few
-            minutes.
-          </p>
-          <p dir="rtl" lang="he">
-            קהילה של יוצרות ויוצרים ישראלים שממליצים רק על מה שהם באמת אוהבים.
+            {mode === 'signup'
+              ? 'Share your recommendations, links and videos from one simple page.'
+              : 'Log in to manage your page and recommendations.'}
           </p>
         </section>
         <section className="referenceAuthCard">
@@ -136,28 +132,6 @@ function AuthExperience() {
               Create account
             </button>
           </div>
-          {mode === 'signup' ? (
-            <div
-              className="referenceAuthTabs accountTypeTabs"
-              role="group"
-              aria-label="Account type"
-            >
-              <button
-                className={role === 'shopper' ? 'active' : ''}
-                onClick={() => setRole('shopper')}
-                type="button"
-              >
-                I&apos;m A Shopper
-              </button>
-              <button
-                className={role === 'creator' ? 'active' : ''}
-                onClick={() => setRole('creator')}
-                type="button"
-              >
-                I&apos;m A Creator
-              </button>
-            </div>
-          ) : null}
           <button
             className="referenceGoogleButton"
             onClick={() => void continueWithGoogle()}
@@ -210,7 +184,7 @@ function AuthExperience() {
                 ? 'Please wait…'
                 : mode === 'login'
                   ? 'Log in'
-                  : `Create ${role} account`}
+                  : 'Create your page'}
             </button>
           </form>
           <p className="referenceAuthTerms">

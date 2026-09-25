@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
   const response = NextResponse.redirect(new URL(next, request.url));
 
   if (!code)
-    return NextResponse.redirect(new URL('/login?error=missing_code', request.url));
+    return NextResponse.redirect(
+      new URL('/auth?mode=login&error=missing_code', request.url),
+    );
   const { publishableKey, url } = getSupabasePublicConfig();
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
@@ -27,6 +29,8 @@ export async function GET(request: NextRequest) {
   });
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   return error
-    ? NextResponse.redirect(new URL('/login?error=callback_failed', request.url))
+    ? NextResponse.redirect(
+        new URL('/auth?mode=login&error=callback_failed', request.url),
+      )
     : response;
 }

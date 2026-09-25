@@ -15,7 +15,7 @@ import {
 import { SiteFooter } from './_components/site-footer';
 import { SiteHeader } from './_components/site-header';
 
-const signupHref = '/auth?mode=signup&role=creator';
+const signupHref = '/auth?mode=signup';
 
 export default function HomePage() {
   return (

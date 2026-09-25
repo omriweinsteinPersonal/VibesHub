@@ -50,7 +50,7 @@ export default async function CreatorsPage({ searchParams }: CreatorsPageProps) 
           יכולה לחזור אליה.
         </p>
         <div className="creatorsHeroActions">
-          <Link className="button primary" href="/auth?mode=signup&role=creator">
+          <Link className="button primary" href="/auth?mode=signup">
             Join as a Creator
             <ArrowRight aria-hidden="true" size={16} />
           </Link>
