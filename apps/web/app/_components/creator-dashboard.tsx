@@ -281,6 +281,10 @@ export function CreatorDashboard() {
   }
 
   function closeComposer() {
+    productFetchRequest.current += 1;
+    setFetching(false);
+    setError('');
+    setNotice('');
     setComposer(null);
     setEditingProduct(null);
     setEditingDiscount(null);

@@ -102,6 +102,11 @@ export class AnalyticsRepository {
       `;
       if (!receipt) return 'duplicate';
 
+      const properties =
+        event.name === 'story.completed'
+          ? { durationMs: event.durationMs, watchedMs: event.watchedMs }
+          : {};
+
       await sql`
         insert into analytics.events (
           id,
@@ -130,14 +135,7 @@ export class AnalyticsRepository {
           ${'recommendationId' in event ? event.recommendationId : null},
           ${'productId' in event ? event.productId : null},
           ${'discountCodeId' in event ? event.discountCodeId : null},
-          ${
-            event.name === 'story.completed'
-              ? JSON.stringify({
-                  durationMs: event.durationMs,
-                  watchedMs: event.watchedMs,
-                })
-              : '{}'
-          }::jsonb
+          ${sql.json(properties)}
         )
       `;
 
