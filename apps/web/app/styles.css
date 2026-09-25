@@ -178,6 +178,62 @@ svg.lucide {
   z-index: 30;
 }
 
+.creatorNavigationProgress {
+  background: rgb(201 118 77 / 16%);
+  height: 2px;
+  inset: 0 0 auto;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 2000;
+}
+
+.creatorNavigationProgress > span {
+  animation: creatorNavigationProgress 1.05s ease-in-out infinite;
+  background: var(--vh-accent-strong);
+  display: block;
+  height: 100%;
+  transform: translateX(-120%);
+  width: 45%;
+}
+
+.creatorShellHeader a[data-pending='true'],
+.creatorBottomBar a[data-pending='true'] {
+  color: var(--vh-accent-strong);
+}
+
+.creatorLoadingDelayed {
+  opacity: 0;
+  transition: opacity 120ms ease;
+  visibility: hidden;
+}
+
+.creatorLoadingDelayed.isVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes creatorNavigationProgress {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creatorNavigationProgress > span {
+    animation: none;
+    transform: translateX(60%);
+  }
+
+  .creatorLoadingDelayed {
+    transition: none;
+  }
+}
+
 .creatorShellHeaderInner {
   align-items: center;
   display: grid;

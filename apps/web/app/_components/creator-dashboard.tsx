@@ -50,8 +50,7 @@ import {
 } from '../../lib/recommendation-media';
 import { randomUuid } from '../../lib/random-id';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
-import { CreatorShellHeader } from './creator-shell-header';
-import { SiteFooter } from './site-footer';
+import { DelayedLoading } from './delayed-loading';
 
 type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
@@ -987,301 +986,599 @@ export function CreatorDashboard() {
         : true,
   );
   return (
-    <div className="creatorShellPage">
-      <CreatorShellHeader />
-      <main className="creatorDashboardMain creatorDashboardMainWithSidebar">
-        <section className="creatorDashboardIntro">
-          <div>
-            <p className="eyebrow">CREATOR DASHBOARD</p>
-            <h1>{profile?.displayName ?? 'Your storefront'}</h1>
-            <p>Add and manage everything that appears on your public storefront.</p>
-          </div>
-        </section>
+    <main className="creatorDashboardMain creatorDashboardMainWithSidebar">
+      <section className="creatorDashboardIntro">
+        <div>
+          <p className="eyebrow">CREATOR DASHBOARD</p>
+          <h1>{profile?.displayName ?? 'Your storefront'}</h1>
+          <p>Add and manage everything that appears on your public storefront.</p>
+        </div>
+      </section>
 
-        {error ? (
-          <p className="formError" role="alert">
-            {error}
-          </p>
-        ) : null}
-        {notice ? (
-          <p className="formSuccess" role="status">
-            {notice}
-          </p>
-        ) : null}
+      {error ? (
+        <p className="formError" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {notice ? (
+        <p className="formSuccess" role="status">
+          {notice}
+        </p>
+      ) : null}
 
-        <div className="creatorDashboardWorkspace">
-          <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
-            <p className="eyebrow">MANAGE</p>
-            <button
-              aria-current={dashboardView === 'labels' ? 'page' : undefined}
-              onClick={() => setDashboardView('labels')}
-              type="button"
-            >
-              Storefront labels
-            </button>
-            <button
-              aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
-              onClick={() => setDashboardView('recommendations')}
-              type="button"
-            >
-              Recommendations
-            </button>
-            <button
-              aria-current={dashboardView === 'connectors' ? 'page' : undefined}
-              onClick={() => setDashboardView('connectors')}
-              type="button"
-            >
-              Social links
-            </button>
-          </nav>
-          <div className="creatorDashboardPanel">
-            {dashboardView === 'recommendations' ? (
-              <section className="creatorRecommendationSection">
-                <div className="creatorSectionHeading">
-                  <div>
-                    <h2>Recommendations</h2>
-                    <p>
-                      Add brands, collections and individual items. Every collection gets
-                      its own product page automatically.
-                    </p>
-                  </div>
-                  <button
-                    className="button primary"
-                    onClick={() => showComposer('choose')}
-                    type="button"
-                  >
-                    <Plus aria-hidden="true" size={16} />
-                    <span>Add recommendation</span>
-                  </button>
+      <div className="creatorDashboardWorkspace">
+        <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
+          <p className="eyebrow">MANAGE</p>
+          <button
+            aria-current={dashboardView === 'labels' ? 'page' : undefined}
+            onClick={() => setDashboardView('labels')}
+            type="button"
+          >
+            Storefront labels
+          </button>
+          <button
+            aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
+            onClick={() => setDashboardView('recommendations')}
+            type="button"
+          >
+            Recommendations
+          </button>
+          <button
+            aria-current={dashboardView === 'connectors' ? 'page' : undefined}
+            onClick={() => setDashboardView('connectors')}
+            type="button"
+          >
+            Social links
+          </button>
+        </nav>
+        <div className="creatorDashboardPanel">
+          {dashboardView === 'recommendations' ? (
+            <section className="creatorRecommendationSection">
+              <div className="creatorSectionHeading">
+                <div>
+                  <h2>Recommendations</h2>
+                  <p>
+                    Add brands, collections and individual items. Every collection gets
+                    its own product page automatically.
+                  </p>
                 </div>
+                <button
+                  className="button primary"
+                  onClick={() => showComposer('choose')}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" size={16} />
+                  <span>Add recommendation</span>
+                </button>
+              </div>
 
-                {composer ? (
-                  <div className="creatorComposer" id="creator-composer">
-                    {composer === 'choose' ? (
-                      <>
-                        <ComposerHeader
-                          title="Add recommendation"
-                          onClose={closeComposer}
-                        >
-                          Choose what you want to share with your audience.
-                        </ComposerHeader>
-                        <div className="creatorTypeGrid">
-                          <button onClick={() => setComposer('brand')} type="button">
-                            <span aria-hidden="true">
-                              <Sparkles size={16} />
-                            </span>
-                            <strong>Brand</strong>
-                            <small>
-                              Create a brand card. A discount code is optional.
-                            </small>
-                          </button>
-                          <button onClick={() => setComposer('product')} type="button">
-                            <span aria-hidden="true">
-                              <Tag size={16} />
-                            </span>
-                            <strong>Item</strong>
-                            <small>
-                              Recommend one specific product with its price, details and
-                              story clips.
-                            </small>
-                          </button>
-                          <button onClick={() => setComposer('collection')} type="button">
-                            <span aria-hidden="true">
-                              <LayoutGrid size={16} />
-                            </span>
-                            <strong>Collection</strong>
-                            <small>
-                              Group your favorite products in one named storefront row.
-                            </small>
+              {composer ? (
+                <div className="creatorComposer" id="creator-composer">
+                  {composer === 'choose' ? (
+                    <>
+                      <ComposerHeader title="Add recommendation" onClose={closeComposer}>
+                        Choose what you want to share with your audience.
+                      </ComposerHeader>
+                      <div className="creatorTypeGrid">
+                        <button onClick={() => setComposer('brand')} type="button">
+                          <span aria-hidden="true">
+                            <Sparkles size={16} />
+                          </span>
+                          <strong>Brand</strong>
+                          <small>Create a brand card. A discount code is optional.</small>
+                        </button>
+                        <button onClick={() => setComposer('product')} type="button">
+                          <span aria-hidden="true">
+                            <Tag size={16} />
+                          </span>
+                          <strong>Item</strong>
+                          <small>
+                            Recommend one specific product with its price, details and
+                            story clips.
+                          </small>
+                        </button>
+                        <button onClick={() => setComposer('collection')} type="button">
+                          <span aria-hidden="true">
+                            <LayoutGrid size={16} />
+                          </span>
+                          <strong>Collection</strong>
+                          <small>
+                            Group your favorite products in one named storefront row.
+                          </small>
+                        </button>
+                      </div>
+                    </>
+                  ) : null}
+                  {composer === 'product' ? (
+                    <ProductForm
+                      categories={categories}
+                      collections={curatedSections.filter(
+                        ({ kind }) => kind === 'collection',
+                      )}
+                      recommendations={activeRecommendations}
+                      editor={product}
+                      editing={Boolean(editingProduct)}
+                      fetching={fetching}
+                      photoError={
+                        error === 'Add a product photo to save this recommendation.' &&
+                        !product.imageAssetId &&
+                        !product.imageUrl
+                      }
+                      onAddStoryLink={addStoryLink}
+                      onCategoryCreated={(category) =>
+                        setCategories((current) => [...current, category])
+                      }
+                      onChange={setProduct}
+                      onChangeType={() => setComposer('choose')}
+                      onClose={closeComposer}
+                      onFetch={fetchProductDetails}
+                      onImages={selectProductImages}
+                      onValidationError={() => setNotice('')}
+                      onSave={saveProduct}
+                      onStory={selectStoryClip}
+                      saving={saving || uploading}
+                    />
+                  ) : null}
+                  {composer === 'brand' ? (
+                    <>
+                      <ComposerHeader
+                        title={editingBrand ? 'Edit brand' : 'Add brand'}
+                        onClose={closeComposer}
+                      >
+                        Add the brand once. Its discount details are optional and can be
+                        edited later.
+                      </ComposerHeader>
+                      <form
+                        className="creatorComposerBody creatorFormGrid"
+                        onSubmit={(event) => void saveBrand(event)}
+                      >
+                        <label>
+                          Brand website
+                          <input
+                            required
+                            type="url"
+                            placeholder="https://www.adidas.com"
+                            value={brand.websiteUrl}
+                            onBlur={() => {
+                              if (!brand.name.trim())
+                                setBrand((current) => ({
+                                  ...current,
+                                  name: brandNameFromUrl(current.websiteUrl),
+                                }));
+                            }}
+                            onChange={(event) =>
+                              setBrand({ ...brand, websiteUrl: event.target.value })
+                            }
+                          />
+                        </label>
+                        <label>
+                          Brand name
+                          <input
+                            required
+                            maxLength={120}
+                            value={brand.name}
+                            onChange={(event) =>
+                              setBrand({ ...brand, name: event.target.value })
+                            }
+                          />
+                          <small>
+                            Filled automatically from the website and remains editable.
+                          </small>
+                        </label>
+                        <label>
+                          Code <span className="fieldOptional">Optional</span>
+                          <input
+                            maxLength={50}
+                            value={brand.code}
+                            onChange={(event) =>
+                              setBrand({
+                                ...brand,
+                                code: event.target.value.toUpperCase(),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          Discount percent <span className="fieldOptional">Optional</span>
+                          <input
+                            min="1"
+                            max="100"
+                            type="number"
+                            value={brand.discountPercent}
+                            onChange={(event) =>
+                              setBrand({
+                                ...brand,
+                                discountPercent: event.target.value,
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          Expires <span className="fieldOptional">Optional</span>
+                          <input
+                            type="datetime-local"
+                            value={brand.expiresAt}
+                            onChange={(event) =>
+                              setBrand({ ...brand, expiresAt: event.target.value })
+                            }
+                          />
+                        </label>
+                        <label className="creatorFullField">
+                          Details <span className="fieldOptional">Optional</span>
+                          <textarea
+                            rows={3}
+                            value={brand.detailsHe}
+                            onChange={(event) =>
+                              setBrand({ ...brand, detailsHe: event.target.value })
+                            }
+                          />
+                        </label>
+                        <div className="creatorFullField">
+                          <button
+                            className="button primary"
+                            disabled={saving}
+                            type="submit"
+                          >
+                            {saving
+                              ? 'Saving…'
+                              : editingBrand
+                                ? 'Save brand'
+                                : 'Add brand'}
                           </button>
                         </div>
-                      </>
-                    ) : null}
-                    {composer === 'product' ? (
-                      <ProductForm
-                        categories={categories}
-                        collections={curatedSections.filter(
-                          ({ kind }) => kind === 'collection',
-                        )}
-                        recommendations={activeRecommendations}
-                        editor={product}
-                        editing={Boolean(editingProduct)}
-                        fetching={fetching}
-                        photoError={
-                          error === 'Add a product photo to save this recommendation.' &&
-                          !product.imageAssetId &&
-                          !product.imageUrl
-                        }
-                        onAddStoryLink={addStoryLink}
-                        onCategoryCreated={(category) =>
-                          setCategories((current) => [...current, category])
-                        }
-                        onChange={setProduct}
-                        onChangeType={() => setComposer('choose')}
-                        onClose={closeComposer}
-                        onFetch={fetchProductDetails}
-                        onImages={selectProductImages}
-                        onValidationError={() => setNotice('')}
-                        onSave={saveProduct}
-                        onStory={selectStoryClip}
-                        saving={saving || uploading}
-                      />
-                    ) : null}
-                    {composer === 'brand' ? (
-                      <>
-                        <ComposerHeader
-                          title={editingBrand ? 'Edit brand' : 'Add brand'}
-                          onClose={closeComposer}
+                      </form>
+                    </>
+                  ) : null}
+                  {composer === 'discount' ? (
+                    <DiscountForm
+                      brands={brands}
+                      collections={curatedSections.filter(
+                        ({ kind }) => kind === 'collection',
+                      )}
+                      editor={discount}
+                      editing={Boolean(editingDiscount)}
+                      onChange={setDiscount}
+                      onClose={closeComposer}
+                      onSave={saveDiscount}
+                      recommendations={activeRecommendations}
+                      saving={saving}
+                    />
+                  ) : null}
+                  {composer === 'collection' ? (
+                    <>
+                      <ComposerHeader title="New collection" onClose={closeComposer}>
+                        Curate products into one storefront row.
+                      </ComposerHeader>
+                      <div className="creatorComposerBody">
+                        <CuratedSectionForm
+                          brands={brands}
+                          kind="collection"
+                          recommendations={activeRecommendations}
+                          onAddNewItem={async (section, brandName) => {
+                            const saved = await saveSections(
+                              selectedSections,
+                              [...curatedSections, section],
+                              [...contentOrder, { kind: 'collection', id: section.id }],
+                            );
+                            if (!saved) return false;
+                            setProduct({
+                              ...emptyProduct,
+                              brandName,
+                              collectionIds: [section.id],
+                              categoryId: profile?.primaryCategory.id ?? '',
+                              categoryIds: profile?.primaryCategory.id
+                                ? [profile.primaryCategory.id]
+                                : [],
+                            });
+                            setComposer('product');
+                            return true;
+                          }}
+                          onCreateBrand={async (input) => {
+                            const created = await apiRequest<CreatorBrand>(
+                              '/creator/brands',
+                              {
+                                body: JSON.stringify(input),
+                                idempotent: true,
+                                method: 'POST',
+                              },
+                            );
+                            setBrands((current) => [
+                              ...current.filter(({ id }) => id !== created.id),
+                              created,
+                            ]);
+                            return created;
+                          }}
+                          onCancel={closeComposer}
+                          onSave={(section) =>
+                            saveSections(
+                              selectedSections,
+                              [...curatedSections, section],
+                              [...contentOrder, { kind: 'collection', id: section.id }],
+                            )
+                          }
+                          saving={saving}
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
+              <div className="creatorManageList">
+                {brandGroups.map(
+                  ({
+                    brand: managedBrand,
+                    collections: brandCollections,
+                    items: brandItems,
+                  }) => (
+                    <section
+                      className="creatorManageCollection creatorBrandManageCard"
+                      key={managedBrand.id}
+                    >
+                      <header className="creatorManageCollectionHeader">
+                        <button
+                          aria-expanded={expandedBrandId === managedBrand.id}
+                          aria-controls={`brand-contents-${managedBrand.id}`}
+                          className="creatorBrandToggle"
+                          onClick={() =>
+                            setExpandedBrandId((current) =>
+                              current === managedBrand.id ? null : managedBrand.id,
+                            )
+                          }
+                          type="button"
                         >
-                          Add the brand once. Its discount details are optional and can be
-                          edited later.
-                        </ComposerHeader>
-                        <form
-                          className="creatorComposerBody creatorFormGrid"
-                          onSubmit={(event) => void saveBrand(event)}
-                        >
-                          <label>
-                            Brand website
-                            <input
-                              required
-                              type="url"
-                              placeholder="https://www.adidas.com"
-                              value={brand.websiteUrl}
-                              onBlur={() => {
-                                if (!brand.name.trim())
-                                  setBrand((current) => ({
-                                    ...current,
-                                    name: brandNameFromUrl(current.websiteUrl),
-                                  }));
-                              }}
-                              onChange={(event) =>
-                                setBrand({ ...brand, websiteUrl: event.target.value })
-                              }
-                            />
-                          </label>
-                          <label>
-                            Brand name
-                            <input
-                              required
-                              maxLength={120}
-                              value={brand.name}
-                              onChange={(event) =>
-                                setBrand({ ...brand, name: event.target.value })
-                              }
-                            />
+                          <ChevronDown aria-hidden="true" size={18} />
+                          <span>
+                            <strong>{managedBrand.name}</strong>
                             <small>
-                              Filled automatically from the website and remains editable.
+                              {brandCollections.length} collections ?{' '}
+                              {
+                                new Set([
+                                  ...brandCollections.flatMap(({ items }) =>
+                                    items.map(({ id }) => id),
+                                  ),
+                                  ...brandItems.map(({ id }) => id),
+                                ]).size
+                              }{' '}
+                              items
                             </small>
-                          </label>
-                          <label>
-                            Code <span className="fieldOptional">Optional</span>
-                            <input
-                              maxLength={50}
-                              value={brand.code}
-                              onChange={(event) =>
-                                setBrand({
-                                  ...brand,
-                                  code: event.target.value.toUpperCase(),
-                                })
-                              }
-                            />
-                          </label>
-                          <label>
-                            Discount percent{' '}
-                            <span className="fieldOptional">Optional</span>
-                            <input
-                              min="1"
-                              max="100"
-                              type="number"
-                              value={brand.discountPercent}
-                              onChange={(event) =>
-                                setBrand({
-                                  ...brand,
-                                  discountPercent: event.target.value,
-                                })
-                              }
-                            />
-                          </label>
-                          <label>
-                            Expires <span className="fieldOptional">Optional</span>
-                            <input
-                              type="datetime-local"
-                              value={brand.expiresAt}
-                              onChange={(event) =>
-                                setBrand({ ...brand, expiresAt: event.target.value })
-                              }
-                            />
-                          </label>
-                          <label className="creatorFullField">
-                            Details <span className="fieldOptional">Optional</span>
-                            <textarea
-                              rows={3}
-                              value={brand.detailsHe}
-                              onChange={(event) =>
-                                setBrand({ ...brand, detailsHe: event.target.value })
-                              }
-                            />
-                          </label>
-                          <div className="creatorFullField">
-                            <button
-                              className="button primary"
-                              disabled={saving}
-                              type="submit"
-                            >
-                              {saving
-                                ? 'Saving…'
-                                : editingBrand
-                                  ? 'Save brand'
-                                  : 'Add brand'}
-                            </button>
+                          </span>
+                        </button>
+                        <div className="creatorManageCollectionActions">
+                          <a
+                            href={managedBrand.websiteUrl}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <ExternalLink size={16} />
+                          </a>
+                          <button
+                            aria-label={`Edit ${managedBrand.name}`}
+                            onClick={() => {
+                              const offer = discounts.find(
+                                (item) =>
+                                  item.brandId === managedBrand.id &&
+                                  item.scopeKind === 'brand',
+                              );
+                              setEditingBrand(managedBrand);
+                              setBrand({
+                                code: offer?.code ?? '',
+                                detailsHe: offer?.details?.value ?? '',
+                                discountPercent: offer?.discountPercent?.toString() ?? '',
+                                expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
+                                name: managedBrand.name,
+                                websiteUrl: managedBrand.websiteUrl,
+                              });
+                              setComposer('brand');
+                              window.scrollTo({ behavior: 'smooth', top: 120 });
+                            }}
+                            type="button"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            aria-label={`Delete ${managedBrand.name}`}
+                            disabled={saving}
+                            onClick={() => {
+                              if (
+                                !window.confirm(
+                                  `Remove the ${managedBrand.name} brand card? Its items and collections will remain.`,
+                                )
+                              )
+                                return;
+                              void apiRequest(`/creator/brands/${managedBrand.id}`, {
+                                headers: { 'if-match': `"${managedBrand.version}"` },
+                                method: 'DELETE',
+                              })
+                                .then(load)
+                                .catch((cause: unknown) => setError(messageFor(cause)));
+                            }}
+                            type="button"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </header>
+                      <div
+                        id={`brand-contents-${managedBrand.id}`}
+                        hidden={expandedBrandId !== managedBrand.id}
+                      >
+                        {brandCollections.length || brandItems.length ? (
+                          <div className="creatorBrandManageContents">
+                            {brandCollections.map((entry) => (
+                              <CollectionManageCard
+                                brands={brands}
+                                editing={editingCollectionId === entry.section.id}
+                                entry={entry}
+                                key={entry.section.id}
+                                nested
+                                onArchiveItem={(item) => {
+                                  if (
+                                    window.confirm(
+                                      'Remove this recommendation from your storefront?',
+                                    )
+                                  )
+                                    void recommendationCommand(item, 'archive');
+                                }}
+                                onCreateBrand={async (input) => {
+                                  const created = await apiRequest<CreatorBrand>(
+                                    '/creator/brands',
+                                    {
+                                      body: JSON.stringify(input),
+                                      idempotent: true,
+                                      method: 'POST',
+                                    },
+                                  );
+                                  setBrands((current) => [
+                                    ...current.filter(({ id }) => id !== created.id),
+                                    created,
+                                  ]);
+                                  return created;
+                                }}
+                                onDelete={() => {
+                                  if (
+                                    !window.confirm(
+                                      `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
+                                    )
+                                  )
+                                    return;
+                                  void saveCuratedSections(
+                                    curatedSections
+                                      .filter(({ id }) => id !== entry.section.id)
+                                      .map((section) =>
+                                        section.parentCollectionId === entry.section.id
+                                          ? { ...section, parentCollectionId: null }
+                                          : section,
+                                      ),
+                                  ).then((saved) => {
+                                    if (saved) setEditingCollectionId(null);
+                                  });
+                                }}
+                                onEditItem={editProduct}
+                                onEditState={(editing) =>
+                                  setEditingCollectionId(
+                                    editing ? entry.section.id : null,
+                                  )
+                                }
+                                onSave={(updated) =>
+                                  saveCuratedSections(
+                                    curatedSections.map((section) =>
+                                      section.id === entry.section.id ? updated : section,
+                                    ),
+                                  )
+                                }
+                                profileHandle={profile?.handle}
+                                recommendations={activeRecommendations}
+                                saving={saving}
+                              />
+                            ))}
+                            {brandItems.length ? (
+                              <details className="creatorBrandStandaloneItems creatorManageDisclosure">
+                                <summary>
+                                  Individual items <span>({brandItems.length})</span>
+                                </summary>
+                                {brandItems.map((item) => (
+                                  <RecommendationManageCard
+                                    item={item}
+                                    key={item.id}
+                                    onArchive={() => {
+                                      if (
+                                        window.confirm(
+                                          'Remove this recommendation from your storefront?',
+                                        )
+                                      )
+                                        void recommendationCommand(item, 'archive');
+                                    }}
+                                    onEdit={() => editProduct(item)}
+                                  />
+                                ))}
+                              </details>
+                            ) : null}
                           </div>
-                        </form>
-                      </>
-                    ) : null}
-                    {composer === 'discount' ? (
-                      <DiscountForm
-                        brands={brands}
-                        collections={curatedSections.filter(
-                          ({ kind }) => kind === 'collection',
+                        ) : (
+                          <p className="creatorManageCollectionEmpty">
+                            No recommendations have been added to this brand yet.
+                          </p>
                         )}
-                        editor={discount}
-                        editing={Boolean(editingDiscount)}
-                        onChange={setDiscount}
-                        onClose={closeComposer}
-                        onSave={saveDiscount}
-                        recommendations={activeRecommendations}
-                        saving={saving}
-                      />
-                    ) : null}
-                    {composer === 'collection' ? (
-                      <>
-                        <ComposerHeader title="New collection" onClose={closeComposer}>
-                          Curate products into one storefront row.
-                        </ComposerHeader>
-                        <div className="creatorComposerBody">
+                      </div>
+                    </section>
+                  ),
+                )}
+                {ungroupedEntries.map((entry) =>
+                  entry.kind === 'collection' ? (
+                    <section
+                      aria-label={`${entry.section.title} collection`}
+                      className="creatorManageCollection"
+                      key={entry.section.id}
+                    >
+                      <header className="creatorManageCollectionHeader">
+                        <div>
+                          <span className="eyebrow">COLLECTION</span>
+                          <h3>{entry.section.title}</h3>
+                          <p>
+                            {activeRecommendations.find(
+                              ({ brandId }) => brandId === entry.section.brandId,
+                            )?.brandName ?? 'Brand'}
+                            {' · '}
+                            {entry.items.length}{' '}
+                            {entry.items.length === 1 ? 'item' : 'items'}
+                          </p>
+                        </div>
+                        <div className="creatorManageCollectionActions">
+                          {profile ? (
+                            <Link
+                              href={`/creators/${profile.handle}/pages/${entry.section.id}`}
+                              target="_blank"
+                            >
+                              View page
+                            </Link>
+                          ) : null}
+                          <button
+                            aria-label={`Edit ${entry.section.title} collection`}
+                            disabled={saving}
+                            onClick={() => setEditingCollectionId(entry.section.id)}
+                            title="Edit collection"
+                            type="button"
+                          >
+                            <Pencil aria-hidden="true" size={16} />
+                          </button>
+                          <button
+                            aria-label={`Delete ${entry.section.title} collection`}
+                            disabled={saving}
+                            onClick={() => {
+                              if (
+                                !window.confirm(
+                                  `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
+                                )
+                              )
+                                return;
+                              void saveCuratedSections(
+                                curatedSections
+                                  .filter(({ id }) => id !== entry.section.id)
+                                  .map((section) =>
+                                    section.parentCollectionId === entry.section.id
+                                      ? { ...section, parentCollectionId: null }
+                                      : section,
+                                  ),
+                              ).then((saved) => {
+                                if (saved) setEditingCollectionId(null);
+                              });
+                            }}
+                            title="Delete collection"
+                            type="button"
+                          >
+                            <Trash2 aria-hidden="true" size={16} />
+                          </button>
+                        </div>
+                      </header>
+                      {editingCollectionId === entry.section.id ? (
+                        <div className="creatorManageCollectionEditor">
                           <CuratedSectionForm
                             brands={brands}
+                            initial={entry.section}
                             kind="collection"
-                            recommendations={activeRecommendations}
-                            onAddNewItem={async (section, brandName) => {
-                              const saved = await saveSections(
-                                selectedSections,
-                                [...curatedSections, section],
-                                [...contentOrder, { kind: 'collection', id: section.id }],
-                              );
-                              if (!saved) return false;
-                              setProduct({
-                                ...emptyProduct,
-                                brandName,
-                                collectionIds: [section.id],
-                                categoryId: profile?.primaryCategory.id ?? '',
-                                categoryIds: profile?.primaryCategory.id
-                                  ? [profile.primaryCategory.id]
-                                  : [],
-                              });
-                              setComposer('product');
-                              return true;
-                            }}
+                            onCancel={() => setEditingCollectionId(null)}
                             onCreateBrand={async (input) => {
                               const created = await apiRequest<CreatorBrand>(
                                 '/creator/brands',
@@ -1297,422 +1594,104 @@ export function CreatorDashboard() {
                               ]);
                               return created;
                             }}
-                            onCancel={closeComposer}
-                            onSave={(section) =>
-                              saveSections(
-                                selectedSections,
-                                [...curatedSections, section],
-                                [...contentOrder, { kind: 'collection', id: section.id }],
+                            onSave={(updated) =>
+                              saveCuratedSections(
+                                curatedSections.map((section) =>
+                                  section.id === entry.section.id ? updated : section,
+                                ),
                               )
                             }
+                            recommendations={activeRecommendations}
                             saving={saving}
                           />
                         </div>
-                      </>
-                    ) : null}
+                      ) : entry.items.length ? (
+                        <div className="creatorManageCollectionItems">
+                          {entry.items.map((item) => (
+                            <RecommendationManageCard
+                              item={item}
+                              key={item.id}
+                              onArchive={() => {
+                                if (
+                                  window.confirm(
+                                    'Remove this recommendation from your storefront?',
+                                  )
+                                )
+                                  void recommendationCommand(item, 'archive');
+                              }}
+                              onEdit={() => editProduct(item)}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="creatorManageCollectionEmpty">
+                          No active products in this collection. Edit it to add one.
+                        </p>
+                      )}
+                    </section>
+                  ) : entry.kind === 'recommendation' ? (
+                    <RecommendationManageCard
+                      item={entry.item}
+                      key={entry.item.id}
+                      onArchive={() => {
+                        if (
+                          window.confirm(
+                            'Remove this recommendation from your storefront?',
+                          )
+                        )
+                          void recommendationCommand(entry.item, 'archive');
+                      }}
+                      onEdit={() => editProduct(entry.item)}
+                    />
+                  ) : (
+                    <DiscountManageCard
+                      item={entry.item}
+                      key={entry.item.id}
+                      onArchive={() =>
+                        void apiRequest(
+                          `/creator/discount-codes/${entry.item.id}/archive`,
+                          {
+                            headers: { 'if-match': `"${entry.item.version}"` },
+                            idempotent: true,
+                            method: 'POST',
+                          },
+                        )
+                          .then(load)
+                          .catch((cause: unknown) => setError(messageFor(cause)))
+                      }
+                      onEdit={() => editDiscount(entry.item)}
+                      onToggle={() => void toggleDiscount(entry.item)}
+                    />
+                  ),
+                )}
+                {!loading && !manageEntries.length ? (
+                  <div className="creatorEmpty">
+                    No recommendations yet. Add your first one above.
                   </div>
                 ) : null}
-
-                {loading ? (
-                  <div className="creatorLoading">Loading recommendations…</div>
-                ) : null}
-                <div className="creatorManageList">
-                  {brandGroups.map(
-                    ({
-                      brand: managedBrand,
-                      collections: brandCollections,
-                      items: brandItems,
-                    }) => (
-                      <section
-                        className="creatorManageCollection creatorBrandManageCard"
-                        key={managedBrand.id}
-                      >
-                        <header className="creatorManageCollectionHeader">
-                          <button
-                            aria-expanded={expandedBrandId === managedBrand.id}
-                            aria-controls={`brand-contents-${managedBrand.id}`}
-                            className="creatorBrandToggle"
-                            onClick={() =>
-                              setExpandedBrandId((current) =>
-                                current === managedBrand.id ? null : managedBrand.id,
-                              )
-                            }
-                            type="button"
-                          >
-                            <ChevronDown aria-hidden="true" size={18} />
-                            <span>
-                              <strong>{managedBrand.name}</strong>
-                              <small>
-                                {brandCollections.length} collections ?{' '}
-                                {
-                                  new Set([
-                                    ...brandCollections.flatMap(({ items }) =>
-                                      items.map(({ id }) => id),
-                                    ),
-                                    ...brandItems.map(({ id }) => id),
-                                  ]).size
-                                }{' '}
-                                items
-                              </small>
-                            </span>
-                          </button>
-                          <div className="creatorManageCollectionActions">
-                            <a
-                              href={managedBrand.websiteUrl}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                            >
-                              <ExternalLink size={16} />
-                            </a>
-                            <button
-                              aria-label={`Edit ${managedBrand.name}`}
-                              onClick={() => {
-                                const offer = discounts.find(
-                                  (item) =>
-                                    item.brandId === managedBrand.id &&
-                                    item.scopeKind === 'brand',
-                                );
-                                setEditingBrand(managedBrand);
-                                setBrand({
-                                  code: offer?.code ?? '',
-                                  detailsHe: offer?.details?.value ?? '',
-                                  discountPercent:
-                                    offer?.discountPercent?.toString() ?? '',
-                                  expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
-                                  name: managedBrand.name,
-                                  websiteUrl: managedBrand.websiteUrl,
-                                });
-                                setComposer('brand');
-                                window.scrollTo({ behavior: 'smooth', top: 120 });
-                              }}
-                              type="button"
-                            >
-                              <Pencil size={16} />
-                            </button>
-                            <button
-                              aria-label={`Delete ${managedBrand.name}`}
-                              disabled={saving}
-                              onClick={() => {
-                                if (
-                                  !window.confirm(
-                                    `Remove the ${managedBrand.name} brand card? Its items and collections will remain.`,
-                                  )
-                                )
-                                  return;
-                                void apiRequest(`/creator/brands/${managedBrand.id}`, {
-                                  headers: { 'if-match': `"${managedBrand.version}"` },
-                                  method: 'DELETE',
-                                })
-                                  .then(load)
-                                  .catch((cause: unknown) => setError(messageFor(cause)));
-                              }}
-                              type="button"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </header>
-                        <div
-                          id={`brand-contents-${managedBrand.id}`}
-                          hidden={expandedBrandId !== managedBrand.id}
-                        >
-                          {brandCollections.length || brandItems.length ? (
-                            <div className="creatorBrandManageContents">
-                              {brandCollections.map((entry) => (
-                                <CollectionManageCard
-                                  brands={brands}
-                                  editing={editingCollectionId === entry.section.id}
-                                  entry={entry}
-                                  key={entry.section.id}
-                                  nested
-                                  onArchiveItem={(item) => {
-                                    if (
-                                      window.confirm(
-                                        'Remove this recommendation from your storefront?',
-                                      )
-                                    )
-                                      void recommendationCommand(item, 'archive');
-                                  }}
-                                  onCreateBrand={async (input) => {
-                                    const created = await apiRequest<CreatorBrand>(
-                                      '/creator/brands',
-                                      {
-                                        body: JSON.stringify(input),
-                                        idempotent: true,
-                                        method: 'POST',
-                                      },
-                                    );
-                                    setBrands((current) => [
-                                      ...current.filter(({ id }) => id !== created.id),
-                                      created,
-                                    ]);
-                                    return created;
-                                  }}
-                                  onDelete={() => {
-                                    if (
-                                      !window.confirm(
-                                        `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
-                                      )
-                                    )
-                                      return;
-                                    void saveCuratedSections(
-                                      curatedSections
-                                        .filter(({ id }) => id !== entry.section.id)
-                                        .map((section) =>
-                                          section.parentCollectionId === entry.section.id
-                                            ? { ...section, parentCollectionId: null }
-                                            : section,
-                                        ),
-                                    ).then((saved) => {
-                                      if (saved) setEditingCollectionId(null);
-                                    });
-                                  }}
-                                  onEditItem={editProduct}
-                                  onEditState={(editing) =>
-                                    setEditingCollectionId(
-                                      editing ? entry.section.id : null,
-                                    )
-                                  }
-                                  onSave={(updated) =>
-                                    saveCuratedSections(
-                                      curatedSections.map((section) =>
-                                        section.id === entry.section.id
-                                          ? updated
-                                          : section,
-                                      ),
-                                    )
-                                  }
-                                  profileHandle={profile?.handle}
-                                  recommendations={activeRecommendations}
-                                  saving={saving}
-                                />
-                              ))}
-                              {brandItems.length ? (
-                                <details className="creatorBrandStandaloneItems creatorManageDisclosure">
-                                  <summary>
-                                    Individual items <span>({brandItems.length})</span>
-                                  </summary>
-                                  {brandItems.map((item) => (
-                                    <RecommendationManageCard
-                                      item={item}
-                                      key={item.id}
-                                      onArchive={() => {
-                                        if (
-                                          window.confirm(
-                                            'Remove this recommendation from your storefront?',
-                                          )
-                                        )
-                                          void recommendationCommand(item, 'archive');
-                                      }}
-                                      onEdit={() => editProduct(item)}
-                                    />
-                                  ))}
-                                </details>
-                              ) : null}
-                            </div>
-                          ) : (
-                            <p className="creatorManageCollectionEmpty">
-                              No recommendations have been added to this brand yet.
-                            </p>
-                          )}
-                        </div>
-                      </section>
-                    ),
-                  )}
-                  {ungroupedEntries.map((entry) =>
-                    entry.kind === 'collection' ? (
-                      <section
-                        aria-label={`${entry.section.title} collection`}
-                        className="creatorManageCollection"
-                        key={entry.section.id}
-                      >
-                        <header className="creatorManageCollectionHeader">
-                          <div>
-                            <span className="eyebrow">COLLECTION</span>
-                            <h3>{entry.section.title}</h3>
-                            <p>
-                              {activeRecommendations.find(
-                                ({ brandId }) => brandId === entry.section.brandId,
-                              )?.brandName ?? 'Brand'}
-                              {' · '}
-                              {entry.items.length}{' '}
-                              {entry.items.length === 1 ? 'item' : 'items'}
-                            </p>
-                          </div>
-                          <div className="creatorManageCollectionActions">
-                            {profile ? (
-                              <Link
-                                href={`/creators/${profile.handle}/pages/${entry.section.id}`}
-                                target="_blank"
-                              >
-                                View page
-                              </Link>
-                            ) : null}
-                            <button
-                              aria-label={`Edit ${entry.section.title} collection`}
-                              disabled={saving}
-                              onClick={() => setEditingCollectionId(entry.section.id)}
-                              title="Edit collection"
-                              type="button"
-                            >
-                              <Pencil aria-hidden="true" size={16} />
-                            </button>
-                            <button
-                              aria-label={`Delete ${entry.section.title} collection`}
-                              disabled={saving}
-                              onClick={() => {
-                                if (
-                                  !window.confirm(
-                                    `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
-                                  )
-                                )
-                                  return;
-                                void saveCuratedSections(
-                                  curatedSections
-                                    .filter(({ id }) => id !== entry.section.id)
-                                    .map((section) =>
-                                      section.parentCollectionId === entry.section.id
-                                        ? { ...section, parentCollectionId: null }
-                                        : section,
-                                    ),
-                                ).then((saved) => {
-                                  if (saved) setEditingCollectionId(null);
-                                });
-                              }}
-                              title="Delete collection"
-                              type="button"
-                            >
-                              <Trash2 aria-hidden="true" size={16} />
-                            </button>
-                          </div>
-                        </header>
-                        {editingCollectionId === entry.section.id ? (
-                          <div className="creatorManageCollectionEditor">
-                            <CuratedSectionForm
-                              brands={brands}
-                              initial={entry.section}
-                              kind="collection"
-                              onCancel={() => setEditingCollectionId(null)}
-                              onCreateBrand={async (input) => {
-                                const created = await apiRequest<CreatorBrand>(
-                                  '/creator/brands',
-                                  {
-                                    body: JSON.stringify(input),
-                                    idempotent: true,
-                                    method: 'POST',
-                                  },
-                                );
-                                setBrands((current) => [
-                                  ...current.filter(({ id }) => id !== created.id),
-                                  created,
-                                ]);
-                                return created;
-                              }}
-                              onSave={(updated) =>
-                                saveCuratedSections(
-                                  curatedSections.map((section) =>
-                                    section.id === entry.section.id ? updated : section,
-                                  ),
-                                )
-                              }
-                              recommendations={activeRecommendations}
-                              saving={saving}
-                            />
-                          </div>
-                        ) : entry.items.length ? (
-                          <div className="creatorManageCollectionItems">
-                            {entry.items.map((item) => (
-                              <RecommendationManageCard
-                                item={item}
-                                key={item.id}
-                                onArchive={() => {
-                                  if (
-                                    window.confirm(
-                                      'Remove this recommendation from your storefront?',
-                                    )
-                                  )
-                                    void recommendationCommand(item, 'archive');
-                                }}
-                                onEdit={() => editProduct(item)}
-                              />
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="creatorManageCollectionEmpty">
-                            No active products in this collection. Edit it to add one.
-                          </p>
-                        )}
-                      </section>
-                    ) : entry.kind === 'recommendation' ? (
-                      <RecommendationManageCard
-                        item={entry.item}
-                        key={entry.item.id}
-                        onArchive={() => {
-                          if (
-                            window.confirm(
-                              'Remove this recommendation from your storefront?',
-                            )
-                          )
-                            void recommendationCommand(entry.item, 'archive');
-                        }}
-                        onEdit={() => editProduct(entry.item)}
-                      />
-                    ) : (
-                      <DiscountManageCard
-                        item={entry.item}
-                        key={entry.item.id}
-                        onArchive={() =>
-                          void apiRequest(
-                            `/creator/discount-codes/${entry.item.id}/archive`,
-                            {
-                              headers: { 'if-match': `"${entry.item.version}"` },
-                              idempotent: true,
-                              method: 'POST',
-                            },
-                          )
-                            .then(load)
-                            .catch((cause: unknown) => setError(messageFor(cause)))
-                        }
-                        onEdit={() => editDiscount(entry.item)}
-                        onToggle={() => void toggleDiscount(entry.item)}
-                      />
-                    ),
-                  )}
-                  {!loading && !manageEntries.length ? (
-                    <div className="creatorEmpty">
-                      No recommendations yet. Add your first one above.
-                    </div>
-                  ) : null}
-                </div>
-              </section>
-            ) : dashboardView === 'labels' ? (
-              <StorefrontLabelsEditor
-                categories={categories}
-                key={storefrontLabels.map(({ id, title }) => `${id}:${title}`).join('|')}
-                labels={storefrontLabels}
-                onSave={(labels) =>
-                  void saveSections(
-                    selectedSections,
-                    curatedSections,
-                    contentOrder,
-                    labels,
-                  )
-                }
-                recommendations={activeRecommendations}
-                saving={saving}
-              />
-            ) : (
-              <CreatorConnectorsEditor
-                key={profile ? `${profile.id}:${profile.version}` : 'loading'}
-                onSaved={setProfile}
-                profile={profile}
-              />
-            )}
-          </div>
+              </div>
+            </section>
+          ) : dashboardView === 'labels' ? (
+            <StorefrontLabelsEditor
+              categories={categories}
+              key={storefrontLabels.map(({ id, title }) => `${id}:${title}`).join('|')}
+              labels={storefrontLabels}
+              onSave={(labels) =>
+                void saveSections(selectedSections, curatedSections, contentOrder, labels)
+              }
+              recommendations={activeRecommendations}
+              saving={saving}
+            />
+          ) : (
+            <CreatorConnectorsEditor
+              key={profile ? `${profile.id}:${profile.version}` : 'loading'}
+              onSaved={setProfile}
+              profile={profile}
+            />
+          )}
         </div>
-      </main>
-      <SiteFooter />
-    </div>
+      </div>
+    </main>
   );
 }
 

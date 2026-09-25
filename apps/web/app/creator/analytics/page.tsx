@@ -11,9 +11,8 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
 import { publicAssetUrl } from '../../../lib/public-asset-url';
-import { CreatorShellHeader } from '../../_components/creator-shell-header';
+import { DelayedLoading } from '../../_components/delayed-loading';
 import { InstagramIcon } from '../../_components/instagram-icon';
-import { SiteFooter } from '../../_components/site-footer';
 
 export default function CreatorAnalyticsPage() {
   const [dashboard, setDashboard] = useState<CreatorAnalyticsDashboard | null>(null);
@@ -33,30 +32,26 @@ export default function CreatorAnalyticsPage() {
   }, []);
 
   return (
-    <div className="creatorShellPage">
-      <CreatorShellHeader />
-      <main className="creatorAnalyticsMain">
-        <header className="creatorAnalyticsHeading">
-          <div>
-            <p className="eyebrow">INSIGHTS</p>
-            <h1>Analytics</h1>
-            <p>How shoppers interact with your storefront — last 30 days.</p>
-          </div>
-          <Link
-            className="button secondary"
-            href={studio ? `/creator/${studio.handle}` : '/dashboard'}
-          >
-            View storefront
-          </Link>
-        </header>
-        {error ? <p className="formError">{error}</p> : null}
-        {!dashboard && !error ? (
-          <div className="creatorLoading">Loading your insights…</div>
-        ) : null}
-        {dashboard ? <AnalyticsDashboard dashboard={dashboard} /> : null}
-      </main>
-      <SiteFooter />
-    </div>
+    <main className="creatorAnalyticsMain">
+      <header className="creatorAnalyticsHeading">
+        <div>
+          <p className="eyebrow">INSIGHTS</p>
+          <h1>Analytics</h1>
+          <p>How shoppers interact with your storefront — last 30 days.</p>
+        </div>
+        <Link
+          className="button secondary"
+          href={studio ? `/creator/${studio.handle}` : '/dashboard'}
+        >
+          View storefront
+        </Link>
+      </header>
+      {error ? <p className="formError">{error}</p> : null}
+      {!dashboard && !error ? (
+        <DelayedLoading>Loading your insights…</DelayedLoading>
+      ) : null}
+      {dashboard ? <AnalyticsDashboard dashboard={dashboard} /> : null}
+    </main>
   );
 }
 

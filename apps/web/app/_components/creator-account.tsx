@@ -8,19 +8,25 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
-import { apiRequest, publicApiCollectionRequest } from '../../lib/api';
+import { ApiError, apiRequest, publicApiCollectionRequest } from '../../lib/api';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
   uploadCreatorImage,
 } from '../../lib/recommendation-media';
 import { publicAssetUrl } from '../../lib/public-asset-url';
-import { CreatorShellHeader } from './creator-shell-header';
+import { DelayedLoading } from './delayed-loading';
 import { useCreatorNavigation } from './creator-navigation-provider';
-import { SiteFooter } from './site-footer';
+
+interface AccountSummary {
+  capabilities: string[];
+  creator: { handle: string; id: string } | null;
+  email?: string;
+}
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
 type Platform = CreatorMediaKit['platforms'][number];
@@ -67,8 +73,10 @@ const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
   { label: 'Posts', value: 'posts' },
 ];
 
-export function CreatorAccount({ email }: { email?: string }) {
+export function CreatorAccount() {
+  const router = useRouter();
   const { setStorefrontHandle } = useCreatorNavigation();
+  const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
   const [mediaKit, setMediaKit] = useState<CreatorMediaKit | null>(null);
@@ -83,28 +91,64 @@ export function CreatorAccount({ email }: { email?: string }) {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      apiRequest<CreatorProfileSettings>('/creator/profile'),
-      apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
-      publicApiCollectionRequest<CategoryCard>('/categories'),
-    ])
-      .then(([loadedProfile, loadedMediaKit, categoryPage]) => {
+    void (async () => {
+      const [accountResult, profileResult, mediaKitResult, categoriesResult] =
+        await Promise.allSettled([
+          apiRequest<AccountSummary>('/me'),
+          apiRequest<CreatorProfileSettings>('/creator/profile'),
+          apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
+          publicApiCollectionRequest<CategoryCard>('/categories'),
+        ] as const);
+
+      if (!active) return;
+      if (accountResult.status === 'rejected') throw accountResult.reason;
+
+      const account = accountResult.value;
+      if (!account.creator) {
+        const isPlatformOperator = account.capabilities.some((capability) =>
+          ['admin:manage_platform', 'moderator:review_content'].includes(capability),
+        );
+        router.replace(isPlatformOperator ? '/admin/applications' : '/creator/apply');
+        return;
+      }
+
+      const rejected = [profileResult, mediaKitResult, categoriesResult].find(
+        (result) => result.status === 'rejected',
+      );
+      if (rejected?.status === 'rejected') throw rejected.reason;
+
+      if (
+        profileResult.status === 'fulfilled' &&
+        mediaKitResult.status === 'fulfilled' &&
+        categoriesResult.status === 'fulfilled'
+      ) {
+        const loadedProfile = profileResult.value;
+        const loadedMediaKit = mediaKitResult.value;
+        const categoryPage = categoriesResult.value;
         if (!active) return;
+        setEmail(account.email ?? '');
         setProfile(loadedProfile);
         setProfileEditor(toProfileEditor(loadedProfile));
         setMediaKit(loadedMediaKit);
         setMediaEditor(toMediaKitEditor(loadedMediaKit));
         setCategories(categoryPage.data);
         setUploadStage(loadedProfile.avatar ? 'ready' : 'idle');
-      })
-      .catch((cause: unknown) => active && setError(messageFor(cause)));
+      }
+    })().catch((cause: unknown) => {
+      if (!active) return;
+      if (cause instanceof ApiError && cause.status === 401) {
+        router.replace('/auth?mode=login&next=%2Faccount');
+        return;
+      }
+      setError(messageFor(cause));
+    });
     return () => {
       active = false;
       if (stagedAssetRef.current) {
         void deleteRecommendationImage(stagedAssetRef.current).catch(() => undefined);
       }
     };
-  }, []);
+  }, [router]);
 
   function updateProfile<K extends keyof ProfileEditor>(key: K, value: ProfileEditor[K]) {
     setProfileEditor((current) => (current ? { ...current, [key]: value } : current));
@@ -235,274 +279,266 @@ export function CreatorAccount({ email }: { email?: string }) {
   );
 
   return (
-    <div className="creatorShellPage">
-      <CreatorShellHeader />
-      <main className="creatorAccountMain">
-        <header className="creatorAccountHeading">
-          <div>
-            <h1>Your account</h1>
-            <p>{email}</p>
-          </div>
-          <div className="creatorAccountHeadingActions">
-            <span>Creator</span>
-            <Link className="button primary" href="/dashboard">
-              Creator dashboard
-            </Link>
-          </div>
-        </header>
+    <main className="creatorAccountMain">
+      <header className="creatorAccountHeading">
+        <div>
+          <h1>Your account</h1>
+          {email ? <p>{email}</p> : null}
+        </div>
+        <div className="creatorAccountHeadingActions">
+          <span>Creator</span>
+          <Link className="button primary" href="/dashboard">
+            Creator dashboard
+          </Link>
+        </div>
+      </header>
 
-        {error ? <p className="formError">{error}</p> : null}
-        {notice ? <p className="formSuccess">{notice}</p> : null}
-        {!profileEditor || !mediaEditor ? (
-          <div className="creatorLoading">Opening your account…</div>
-        ) : null}
+      {error ? <p className="formError">{error}</p> : null}
+      {notice ? <p className="formSuccess">{notice}</p> : null}
+      {!profileEditor || !mediaEditor ? (
+        <DelayedLoading>Opening your account…</DelayedLoading>
+      ) : null}
 
-        {profile && profileEditor ? (
-          <form className="creatorAccountCard" onSubmit={saveProfile}>
-            <h2>Profile</h2>
-            <section className="creatorAccountPhoto">
-              <span className="creatorAccountAvatar">
-                {profileEditor.avatarUrl ? (
-                  <Image
-                    alt=""
-                    fill
-                    sizes="96px"
-                    src={publicAssetUrl(profileEditor.avatarUrl)}
-                    unoptimized
+      {profile && profileEditor ? (
+        <form className="creatorAccountCard" onSubmit={saveProfile}>
+          <h2>Profile</h2>
+          <section className="creatorAccountPhoto">
+            <span className="creatorAccountAvatar">
+              {profileEditor.avatarUrl ? (
+                <Image
+                  alt=""
+                  fill
+                  sizes="96px"
+                  src={publicAssetUrl(profileEditor.avatarUrl)}
+                  unoptimized
+                />
+              ) : (
+                <b>{initials(profileEditor.displayName)}</b>
+              )}
+            </span>
+            <div>
+              <strong>Profile photo</strong>
+              <div className="creatorPhotoActions">
+                <label className="button secondary">
+                  <Upload aria-hidden="true" size={16} />
+                  {imageIsUploading ? 'Uploading…' : 'Change photo'}
+                  <input
+                    accept={creatorImageAccept}
+                    disabled={imageIsUploading || savingProfile}
+                    onChange={selectImage}
+                    type="file"
                   />
-                ) : (
-                  <b>{initials(profileEditor.displayName)}</b>
-                )}
-              </span>
-              <div>
-                <strong>Profile photo</strong>
-                <div className="creatorPhotoActions">
-                  <label className="button secondary">
-                    <Upload aria-hidden="true" size={16} />
-                    {imageIsUploading ? 'Uploading…' : 'Change photo'}
-                    <input
-                      accept={creatorImageAccept}
-                      disabled={imageIsUploading || savingProfile}
-                      onChange={selectImage}
-                      type="file"
-                    />
-                  </label>
-                  {profileEditor.avatarUrl ? (
-                    <button className="textButton" onClick={removeImage} type="button">
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
-                <small>Shown at the top of your storefront.</small>
+                </label>
+                {profileEditor.avatarUrl ? (
+                  <button className="textButton" onClick={removeImage} type="button">
+                    Remove
+                  </button>
+                ) : null}
               </div>
-            </section>
+              <small>Shown at the top of your storefront.</small>
+            </div>
+          </section>
+          <label>
+            Display name
+            <input
+              maxLength={100}
+              required
+              value={profileEditor.displayName}
+              onChange={(event) => updateProfile('displayName', event.target.value)}
+            />
+          </label>
+          <label>
+            Storefront handle
+            <input
+              maxLength={40}
+              pattern="[a-z0-9][a-z0-9-]*"
+              required
+              value={profileEditor.handle}
+              onChange={(event) =>
+                updateProfile('handle', event.target.value.toLowerCase())
+              }
+            />
+          </label>
+          <Link className="creatorInlineLink" href={`/creator/${profile.handle}`}>
+            View your storefront
+          </Link>
+          <label>
+            Main category
+            <select
+              required
+              value={profileEditor.primaryCategoryId}
+              onChange={(event) => updateProfile('primaryCategoryId', event.target.value)}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Instagram link
+            <input
+              value={profileEditor.instagramUrl}
+              onChange={(event) => updateProfile('instagramUrl', event.target.value)}
+              placeholder="@yourhandle or instagram.com/yourhandle"
+            />
+          </label>
+          <small>Shown as a “Follow on Instagram” button on your storefront.</small>
+          <label>
+            Bio (Hebrew)
+            <textarea
+              dir="rtl"
+              lang="he"
+              maxLength={1000}
+              required
+              rows={4}
+              value={profileEditor.bioHe}
+              onChange={(event) => updateProfile('bioHe', event.target.value)}
+            />
+          </label>
+          <button
+            className="button primary"
+            disabled={savingProfile || imageIsUploading}
+            type="submit"
+          >
+            {savingProfile ? 'Saving…' : 'Save changes'}
+          </button>
+        </form>
+      ) : null}
+
+      {mediaKit && mediaEditor ? (
+        <form className="creatorAccountCard creatorMediaKit" onSubmit={saveMediaKit}>
+          <h2>Media kit</h2>
+          <p>
+            Brands running campaigns on swavii match against these numbers. The more you
+            fill in, the more campaigns you&apos;ll appear in.
+          </p>
+          <div className="creatorFormGrid">
+            <NumberField
+              label="Followers"
+              value={mediaEditor.followers}
+              onChange={(value) => updateMedia('followers', value)}
+            />
+            <NumberField
+              label="Engagement rate (%)"
+              value={mediaEditor.engagementRate}
+              onChange={(value) => updateMedia('engagementRate', value)}
+              step="0.01"
+            />
+            <NumberField
+              label="Average story views"
+              value={mediaEditor.averageStoryViews}
+              onChange={(value) => updateMedia('averageStoryViews', value)}
+            />
+            <NumberField
+              label="Average reel views"
+              value={mediaEditor.averageReelViews}
+              onChange={(value) => updateMedia('averageReelViews', value)}
+            />
+            <NumberField
+              label="Audience age from"
+              value={mediaEditor.audienceAgeFrom}
+              onChange={(value) => updateMedia('audienceAgeFrom', value)}
+            />
+            <NumberField
+              label="Audience age to"
+              value={mediaEditor.audienceAgeTo}
+              onChange={(value) => updateMedia('audienceAgeTo', value)}
+            />
+            <NumberField
+              label="Rate per post (₪)"
+              value={mediaEditor.ratePerPostIls}
+              onChange={(value) => updateMedia('ratePerPostIls', value)}
+              step="0.01"
+            />
+            <NumberField
+              label="Rate per story (₪)"
+              value={mediaEditor.ratePerStoryIls}
+              onChange={(value) => updateMedia('ratePerStoryIls', value)}
+              step="0.01"
+            />
             <label>
-              Display name
-              <input
-                maxLength={100}
-                required
-                value={profileEditor.displayName}
-                onChange={(event) => updateProfile('displayName', event.target.value)}
-              />
-            </label>
-            <label>
-              Storefront handle
-              <input
-                maxLength={40}
-                pattern="[a-z0-9][a-z0-9-]*"
-                required
-                value={profileEditor.handle}
-                onChange={(event) =>
-                  updateProfile('handle', event.target.value.toLowerCase())
-                }
-              />
-            </label>
-            <Link className="creatorInlineLink" href={`/creator/${profile.handle}`}>
-              View your storefront
-            </Link>
-            <label>
-              Main category
+              Audience gender
               <select
-                required
-                value={profileEditor.primaryCategoryId}
+                value={mediaEditor.audienceGender ?? 'not_specified'}
                 onChange={(event) =>
-                  updateProfile('primaryCategoryId', event.target.value)
+                  updateMedia(
+                    'audienceGender',
+                    event.target.value as CreatorMediaKit['audienceGender'],
+                  )
                 }
               >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+                <option value="not_specified">Not specified</option>
+                <option value="female">Mostly women</option>
+                <option value="male">Mostly men</option>
+                <option value="mixed">Mixed</option>
               </select>
             </label>
             <label>
-              Instagram link
+              Audience location
               <input
-                value={profileEditor.instagramUrl}
-                onChange={(event) => updateProfile('instagramUrl', event.target.value)}
-                placeholder="@yourhandle or instagram.com/yourhandle"
+                value={mediaEditor.audienceLocation}
+                onChange={(event) => updateMedia('audienceLocation', event.target.value)}
+                placeholder="Israel"
               />
             </label>
-            <small>Shown as a “Follow on Instagram” button on your storefront.</small>
+          </div>
+          <ChoiceGroup
+            label="Platforms"
+            options={platformOptions}
+            selected={mediaEditor.platforms}
+            onToggle={(value) =>
+              updateMedia('platforms', toggle(mediaEditor.platforms, value))
+            }
+          />
+          <ChoiceGroup
+            label="Content types"
+            options={contentTypeOptions}
+            selected={mediaEditor.contentTypes}
+            onToggle={(value) =>
+              updateMedia('contentTypes', toggle(mediaEditor.contentTypes, value))
+            }
+          />
+          <div className="creatorFormGrid">
             <label>
-              Bio (Hebrew)
-              <textarea
-                dir="rtl"
-                lang="he"
-                maxLength={1000}
-                required
-                rows={4}
-                value={profileEditor.bioHe}
-                onChange={(event) => updateProfile('bioHe', event.target.value)}
+              Booking email
+              <input
+                type="email"
+                value={mediaEditor.bookingEmail}
+                onChange={(event) => updateMedia('bookingEmail', event.target.value)}
               />
             </label>
-            <button
-              className="button primary"
-              disabled={savingProfile || imageIsUploading}
-              type="submit"
-            >
-              {savingProfile ? 'Saving…' : 'Save changes'}
-            </button>
-          </form>
-        ) : null}
-
-        {mediaKit && mediaEditor ? (
-          <form className="creatorAccountCard creatorMediaKit" onSubmit={saveMediaKit}>
-            <h2>Media kit</h2>
-            <p>
-              Brands running campaigns on swavii match against these numbers. The more you
-              fill in, the more campaigns you&apos;ll appear in.
-            </p>
-            <div className="creatorFormGrid">
-              <NumberField
-                label="Followers"
-                value={mediaEditor.followers}
-                onChange={(value) => updateMedia('followers', value)}
+            <label>
+              Agent / agency name
+              <input
+                value={mediaEditor.agentAgencyName}
+                onChange={(event) => updateMedia('agentAgencyName', event.target.value)}
               />
-              <NumberField
-                label="Engagement rate (%)"
-                value={mediaEditor.engagementRate}
-                onChange={(value) => updateMedia('engagementRate', value)}
-                step="0.01"
+            </label>
+            <label>
+              Agent email
+              <input
+                type="email"
+                value={mediaEditor.agentEmail}
+                onChange={(event) => updateMedia('agentEmail', event.target.value)}
               />
-              <NumberField
-                label="Average story views"
-                value={mediaEditor.averageStoryViews}
-                onChange={(value) => updateMedia('averageStoryViews', value)}
+            </label>
+            <label>
+              Agent phone
+              <input
+                type="tel"
+                value={mediaEditor.agentPhone}
+                onChange={(event) => updateMedia('agentPhone', event.target.value)}
               />
-              <NumberField
-                label="Average reel views"
-                value={mediaEditor.averageReelViews}
-                onChange={(value) => updateMedia('averageReelViews', value)}
-              />
-              <NumberField
-                label="Audience age from"
-                value={mediaEditor.audienceAgeFrom}
-                onChange={(value) => updateMedia('audienceAgeFrom', value)}
-              />
-              <NumberField
-                label="Audience age to"
-                value={mediaEditor.audienceAgeTo}
-                onChange={(value) => updateMedia('audienceAgeTo', value)}
-              />
-              <NumberField
-                label="Rate per post (₪)"
-                value={mediaEditor.ratePerPostIls}
-                onChange={(value) => updateMedia('ratePerPostIls', value)}
-                step="0.01"
-              />
-              <NumberField
-                label="Rate per story (₪)"
-                value={mediaEditor.ratePerStoryIls}
-                onChange={(value) => updateMedia('ratePerStoryIls', value)}
-                step="0.01"
-              />
-              <label>
-                Audience gender
-                <select
-                  value={mediaEditor.audienceGender ?? 'not_specified'}
-                  onChange={(event) =>
-                    updateMedia(
-                      'audienceGender',
-                      event.target.value as CreatorMediaKit['audienceGender'],
-                    )
-                  }
-                >
-                  <option value="not_specified">Not specified</option>
-                  <option value="female">Mostly women</option>
-                  <option value="male">Mostly men</option>
-                  <option value="mixed">Mixed</option>
-                </select>
-              </label>
-              <label>
-                Audience location
-                <input
-                  value={mediaEditor.audienceLocation}
-                  onChange={(event) =>
-                    updateMedia('audienceLocation', event.target.value)
-                  }
-                  placeholder="Israel"
-                />
-              </label>
-            </div>
-            <ChoiceGroup
-              label="Platforms"
-              options={platformOptions}
-              selected={mediaEditor.platforms}
-              onToggle={(value) =>
-                updateMedia('platforms', toggle(mediaEditor.platforms, value))
-              }
-            />
-            <ChoiceGroup
-              label="Content types"
-              options={contentTypeOptions}
-              selected={mediaEditor.contentTypes}
-              onToggle={(value) =>
-                updateMedia('contentTypes', toggle(mediaEditor.contentTypes, value))
-              }
-            />
-            <div className="creatorFormGrid">
-              <label>
-                Booking email
-                <input
-                  type="email"
-                  value={mediaEditor.bookingEmail}
-                  onChange={(event) => updateMedia('bookingEmail', event.target.value)}
-                />
-              </label>
-              <label>
-                Agent / agency name
-                <input
-                  value={mediaEditor.agentAgencyName}
-                  onChange={(event) => updateMedia('agentAgencyName', event.target.value)}
-                />
-              </label>
-              <label>
-                Agent email
-                <input
-                  type="email"
-                  value={mediaEditor.agentEmail}
-                  onChange={(event) => updateMedia('agentEmail', event.target.value)}
-                />
-              </label>
-              <label>
-                Agent phone
-                <input
-                  type="tel"
-                  value={mediaEditor.agentPhone}
-                  onChange={(event) => updateMedia('agentPhone', event.target.value)}
-                />
-              </label>
-            </div>
-            <button className="button primary" disabled={savingMedia} type="submit">
-              {savingMedia ? 'Saving…' : 'Save media kit'}
-            </button>
-          </form>
-        ) : null}
-      </main>
-      <SiteFooter />
-    </div>
+            </label>
+          </div>
+          <button className="button primary" disabled={savingMedia} type="submit">
+            {savingMedia ? 'Saving…' : 'Save media kit'}
+          </button>
+        </form>
+      ) : null}
+    </main>
   );
 }
 

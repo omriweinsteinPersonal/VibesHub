@@ -7,6 +7,7 @@ import { DM_Sans, Instrument_Serif } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { CreatorNavigationProvider } from './_components/creator-navigation-provider';
+import { CreatorWorkspaceFrame } from './_components/creator-workspace-frame';
 
 const bodyFont = DM_Sans({
   display: 'swap',
@@ -40,7 +41,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html className={`${bodyFont.variable} ${displayFont.variable}`} lang="en">
       <body>
-        <CreatorNavigationProvider>{children}</CreatorNavigationProvider>
+        <CreatorNavigationProvider>
+          <CreatorWorkspaceFrame>{children}</CreatorWorkspaceFrame>
+        </CreatorNavigationProvider>
       </body>
     </html>
   );
