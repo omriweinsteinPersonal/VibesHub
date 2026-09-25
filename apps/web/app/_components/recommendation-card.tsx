@@ -7,6 +7,7 @@ import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { SaveProductButton } from './engagement';
+import { StoryVideo } from './story-video';
 
 interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
@@ -24,6 +25,11 @@ export function RecommendationCardView({
   showSave = false,
 }: RecommendationCardViewProps) {
   const attributedCreatorId = creatorId ?? creator?.id;
+  const clips = recommendation.storyClips?.length
+    ? recommendation.storyClips.map(({ url }) => publicAssetUrl(url))
+    : recommendation.videoUrl
+      ? [publicAssetUrl(recommendation.videoUrl)]
+      : [];
   const title = splitBilingualProductTitle(recommendation.productName);
   const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
     recommendation.productName,
@@ -56,6 +62,16 @@ export function RecommendationCardView({
           src={publicAssetUrl(recommendation.imageUrl)}
           unoptimized
         />
+        {clips.length ? (
+          <StoryVideo
+            creatorId={attributedCreatorId}
+            posterUrl={publicAssetUrl(recommendation.imageUrl)}
+            productId={recommendation.productId}
+            productName={recommendation.productName}
+            recommendationId={recommendation.id}
+            videoUrls={clips}
+          />
+        ) : null}
       </div>
       <div className="storeProductDetails" dir={textDirection}>
         <div className="compactProductHeading">

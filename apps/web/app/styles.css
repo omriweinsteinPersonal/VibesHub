@@ -3406,9 +3406,10 @@ h1 em {
   color: var(--vh-white);
   display: flex;
   gap: 18px;
-  justify-content: space-between;
+  justify-content: flex-end;
   left: 0;
-  padding: 24px 20px 18px;
+  padding: 14px 12px 0;
+  pointer-events: none;
   position: absolute;
   right: 0;
   text-shadow: 0 1px 12px rgb(0 0 0 / 70%);
@@ -3434,6 +3435,7 @@ h1 em {
 }
 
 .storyViewerClose {
+  pointer-events: auto;
   align-items: center;
   background: rgb(0 0 0 / 35%);
   border: 1px solid rgb(255 255 255 / 45%);
@@ -9278,6 +9280,26 @@ dt {
   margin-left: -16px;
 }
 
+/* Quiet branding belongs to the visitor page, never the desktop editor shell. */
+.storefrontVisitorHeader .logo .logoWordmark,
+.storefrontDetailHeader .logo .logoWordmark {
+  font-size: 1.5rem;
+}
+
+.storefrontDetailHeader .creatorShellActions {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .storefrontWorkspaceHeader .logo .logoWordmark {
+    font-size: 1.5rem;
+  }
+
+  .storefrontWorkspaceHeader .creatorShellActions {
+    display: none;
+  }
+}
+
 .productDetailGallery {
   min-width: 0;
   width: 100%;
@@ -9331,3 +9353,283 @@ dt {
     max-height: 260px;
   }
 }
+
+/* Compact recommendation management, independent of marketing headings. */
+.creatorRecommendationSection > .creatorSectionHeading {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  max-width: none;
+}
+
+.creatorRecommendationSection > .creatorSectionHeading > .button {
+  align-self: flex-start;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 18px;
+  white-space: nowrap;
+  width: auto;
+}
+
+.creatorBrandToggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.creatorBrandToggle > span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.creatorBrandToggle strong {
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.creatorBrandToggle small {
+  color: var(--vh-muted);
+  font-size: .75rem;
+}
+
+.creatorBrandToggle[aria-expanded='false'] > svg {
+  transform: rotate(-90deg);
+}
+
+.creatorBrandManageCard > [hidden] {
+  display: none;
+}
+
+/* Dense management rows with readable labels and progressive disclosure. */
+.creatorBrandManageCard.creatorManageCollection {
+  padding: 10px 14px;
+}
+.creatorBrandManageCard > .creatorManageCollectionHeader,
+.creatorManageNestedCollection > .creatorManageCollectionHeader {
+  margin-bottom: 0;
+}
+.creatorBrandToggle strong { font-size: 1.35rem; }
+.creatorBrandToggle small { font-size: .85rem; }
+.creatorManageNestedCollection.creatorManageCollection { padding: 10px 12px; }
+.creatorManageNestedCollection .creatorBrandToggle strong { font-size: 1.05rem; }
+.creatorManageDisclosure > summary {
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 10px 0;
+}
+.creatorManageDisclosure > summary span { color: var(--vh-muted); }
+.creatorCompactPicker { align-self: start; display: grid; gap: 6px; min-width: 0; }
+.creatorCompactPicker > span { font-size: .85rem; }
+.creatorCompactPicker small { color: var(--vh-muted); }
+.creatorCompactPicker details {
+  background: white;
+  border: 1px solid #dfd4c8;
+  border-radius: 10px;
+  min-width: 0;
+}
+.creatorCompactPicker summary {
+  cursor: pointer;
+  font-size: .9rem;
+  line-height: 1.4;
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+.creatorCompactPickerPanel { border-top: 1px solid #eee6dd; padding: 10px; }
+.creatorCompactPickerPanel > p { color: var(--vh-muted); font-size: .8rem; margin: 0 0 8px; }
+.creatorCompactPicker .creatorPickerOptions {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.creatorCompactPicker .creatorPickerOptions > label {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
+  flex: 0 0 auto;
+  font-size: .9rem;
+  gap: 8px;
+  justify-content: flex-start;
+  min-height: 34px;
+  padding: 6px;
+}
+.creatorCompactPicker .creatorPickerOptions input[type='checkbox'] {
+  height: 16px;
+  min-height: 0;
+  padding: 0;
+  width: 16px;
+}
+
+/* Storefront labels: compact overview, fields only when editing. */
+.creatorLabelsEditor { gap: 16px; }
+.creatorLabelsEditor > .creatorSectionHeading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 0;
+  max-width: none;
+}
+.creatorLabelsEditor > .creatorSectionHeading h2 {
+  font-size: clamp(1.65rem, 3vw, 2rem);
+  line-height: 1.15;
+}
+.creatorLabelsEditor > .creatorSectionHeading p { margin: 6px 0 0; }
+.creatorLabelsEditor > .creatorSectionHeading .button { flex: 0 0 auto; white-space: nowrap; width: auto; }
+.creatorLabelsEditor > .button { justify-self: start; min-width: 130px; width: auto; }
+.creatorLabelList { gap: 8px; }
+.creatorLabelEditorCard { border-radius: 10px; padding: 8px 12px; }
+.creatorLabelSummaryRow { align-items: center; display: flex; gap: 8px; }
+.creatorLabelToggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 0;
+  text-align: left;
+}
+.creatorLabelToggle > span { display: grid; gap: 3px; min-width: 0; }
+.creatorLabelToggle strong { font-size: 1rem; font-weight: 500; overflow-wrap: anywhere; }
+.creatorLabelToggle small { color: var(--vh-muted); font-size: .8rem; }
+.creatorLabelToggle[aria-expanded='false'] > svg { transform: rotate(-90deg); }
+.creatorLabelActions { flex: 0 0 auto; }
+.creatorLabelActions button { background: transparent; border: 0; border-radius: 6px; cursor: pointer; height: 34px; width: 30px; }
+.creatorLabelEditorTop { border-top: 1px solid #eee6dd; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 8px; padding-top: 12px; }
+.creatorLabelItems { display: grid; gap: 4px; max-height: 220px; overflow-y: auto; }
+.creatorLabelItems label { border: 0; border-radius: 5px; font-size: .85rem; max-width: none; }
+@media (max-width: 560px) {
+  .creatorLabelEditorTop { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Keep label product choices aligned despite generic dashboard input styles. */
+.creatorLabelsEditor .creatorLabelItems {
+  display: block;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 0 4px 2px 0;
+}
+.creatorLabelsEditor .creatorLabelItems label {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 18px 40px minmax(0, 1fr);
+  margin: 3px 0;
+  max-width: none;
+  min-height: 56px;
+  padding: 7px 9px;
+  cursor: pointer;
+  width: 100%;
+}
+.creatorLabelsEditor .creatorLabelItems input[type='checkbox'] {
+  accent-color: var(--vh-accent);
+  align-self: center;
+  flex: none;
+  height: 18px;
+  margin: 0;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  width: 18px;
+}
+.creatorLabelsEditor .creatorLabelItems img {
+  border-radius: 5px;
+  height: 40px;
+  object-fit: cover;
+  width: 40px;
+}
+.creatorLabelsEditor .creatorLabelItems span {
+  font-size: .9rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-align: start;
+  white-space: normal;
+}
+.creatorLabelsEditor .creatorLabelItems label:hover { background: #faf6f1; }
+.creatorLabelsEditor .creatorLabelItems label:has(input:checked) { background: #f5e8dc; border-color: #c78a68; }
+.creatorLabelEmpty { color: var(--vh-muted); font-size: .85rem; }
+
+/* One story launcher per product, above the card's detail link. */
+.compactProductCard .storeProductImage .storyPreviewCircle,
+.productDetailMedia .storyPreviewCircle {
+  background: transparent;
+  border: 0;
+  bottom: 8px;
+  box-shadow: none;
+  height: 40px;
+  left: 8px;
+  padding: 0;
+  top: auto;
+  width: 40px;
+  z-index: 3;
+}
+.compactProductCard .storyPreviewCircle .storyPreviewThumb,
+.productDetailMedia .storyPreviewCircle .storyPreviewThumb {
+  height: 100%;
+  width: 100%;
+}
+.storyViewerBackdrop { z-index: 2000; }
+.storyViewer {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  width: min(560px, calc(100vw - 32px), calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  max-width: calc(100vw - 32px);
+}
+
+.storefrontDesignTabs { display: flex; gap: 6px; margin: 16px 0; }
+.storefrontDesignTabs button { flex: 1; border: 1px solid #ded5ca; border-radius: 8px; background: transparent; padding: 9px; cursor: pointer; }
+.storefrontDesignTabs button[aria-pressed='true'] { background: #eee4d6; font-weight: 600; }
+.storefrontContentEditor { display: grid; gap: 12px; }
+.storefrontContentEditor > p { color: #75695f; font-size: .85rem; }
+.storefrontTitleEditor { border: 1px solid #ded5ca; border-radius: 10px; overflow: hidden; }
+.storefrontTitleSelect { background: transparent; border: 0; cursor: pointer; padding: 12px; text-align: start; width: 100%; overflow-wrap: anywhere; }
+.storefrontTitleEditor fieldset { border: 0; display: grid; gap: 12px; margin: 0; padding: 12px; }
+.storefrontTitleEditor label { display: grid; gap: 5px; font-size: .85rem; }
+.storefrontTitleEditor select, .storefrontTitleEditor textarea { min-width: 0; width: 100%; border: 1px solid #ded5ca; border-radius: 6px; padding: 8px; font: inherit; }
+.referenceStorefrontProducts .storefrontContentTitle { color: var(--sf-text); font-family: var(--font-vh-display), Georgia, serif; line-height: 1.25; margin: 20px 0 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.referenceStorefrontProducts .storefrontContentTitle-small { font-size: 1.1rem; }
+.referenceStorefrontProducts .storefrontContentTitle-medium { font-size: 1.5rem; }
+.referenceStorefrontProducts .storefrontContentTitle-large { font-size: 2rem; }
+
+.referenceStorefrontProducts .storefrontContentText-paragraph { font-family: var(--font-vh-body), sans-serif; line-height: 1.6; }
+.referenceStorefrontProducts .storefrontContentText-paragraph.storefrontContentTitle-small { font-size: .85rem; }
+.referenceStorefrontProducts .storefrontContentText-paragraph.storefrontContentTitle-medium { font-size: 1rem; }
+.referenceStorefrontProducts .storefrontContentText-paragraph.storefrontContentTitle-large { font-size: 1.2rem; }
+
+.storefrontLayerList { display: grid; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.storefrontLayerList li { display: flex; align-items: center; border: 1px solid #ded5ca; border-radius: 8px; padding: 5px; }
+.storefrontLayerList li[data-selected='true'] { border-color: #8b6248; background: #f5eee5; }
+.storefrontLayerList button { background: transparent; border: 0; padding: 8px; cursor: pointer; }
+.storefrontLayerList button:first-child { display: grid; gap: 3px; flex: 1; min-width: 0; text-align: left; }
+.storefrontLayerList small { color: #75695f; }
+.storefrontLayerList span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.creatorStorefrontCanvas[data-editing-content='true'] [data-editor-block] { cursor: pointer; }
+.creatorStorefrontCanvas[data-editing-content='true'] [data-editor-block]:hover { outline: 1px dashed #8b6248; outline-offset: 2px; }
+.creatorStorefrontCanvas[data-editing-content='true'] [data-selected='true'] { outline: 2px solid #8b6248; outline-offset: 2px; }

@@ -530,6 +530,24 @@ export const storefrontThemeConfigurationSchema = z
   })
   .strict();
 
+export const storefrontTitleSchema = z.object({
+  id: idSchema,
+  text: z.string().trim().min(1).max(2000),
+  format: z.enum(['heading', 'paragraph']).optional(),
+  align: z.enum(['start', 'center', 'end']),
+  size: z.enum(['small', 'medium', 'large']),
+  beforeId: idSchema.nullable(),
+  appearance: z.enum(['plain', 'card']).optional(),
+  background: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  padding: z.enum(['small', 'medium', 'large']).optional(),
+  radius: z.enum(['square', 'rounded', 'soft']).optional(),
+}).strict();
+export const storefrontTitlesSchema = z.array(storefrontTitleSchema).max(24).refine(
+  (titles) => new Set(titles.map(({ id }) => id)).size === titles.length,
+  'Each title must have a unique id',
+);
+export type StorefrontTitle = z.infer<typeof storefrontTitleSchema>;
+
 export const creatorStorefrontSchema = z
   .object({
     avatarUrl: publicAssetUrlSchema.nullable(),
@@ -597,6 +615,8 @@ export const creatorStorefrontSchema = z
       )
       .max(200)
       .default([]),
+    titles: storefrontTitlesSchema.optional(),
+    brandOrder: z.array(idSchema).max(100).refine((ids) => new Set(ids).size === ids.length, 'Duplicate brand').optional(),
     labels: z
       .array(
         z
@@ -1021,6 +1041,8 @@ export const creatorStorefrontConfigurationSchema = z
       )
       .max(200)
       .default([]),
+    titles: storefrontTitlesSchema.optional(),
+    brandOrder: z.array(idSchema).max(100).refine((ids) => new Set(ids).size === ids.length, 'Duplicate brand').optional(),
     labels: z
       .array(
         z
@@ -1072,6 +1094,8 @@ export const creatorStorefrontConfigurationInputSchema = z
         (sections) => new Set(sections.map(({ id }) => id)).size === sections.length,
         'Each custom section can be selected once',
       ),
+    titles: storefrontTitlesSchema.optional(),
+    brandOrder: z.array(idSchema).max(100).refine((ids) => new Set(ids).size === ids.length, 'Duplicate brand').optional(),
     labels: z
       .array(
         z

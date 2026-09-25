@@ -439,3 +439,31 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 });
+
+
+describe('storefront text blocks', () => {
+  it('distinguishes unrelated updates from explicitly removing all text', () => {
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [] }).titles).toBeUndefined();
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], titles: [] }).titles).toEqual([]);
+  });
+  it('preserves paragraphs and positioning and rejects duplicate block identities', () => {
+    const text = { id: '11111111-1111-4111-8111-111111111111', text: 'First line\nSecond line', format: 'paragraph', align: 'start', size: 'medium', beforeId: '22222222-2222-4222-8222-222222222222' };
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], titles: [text] }).titles).toEqual([text]);
+    expect(creatorStorefrontConfigurationInputSchema.safeParse({ categoryIds: [], titles: [text, text] }).success).toBe(false);
+  });
+});
+
+
+describe('storefront block editor', () => {
+  it('keeps unrelated writes separate from resetting the brand order', () => {
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [] }).brandOrder).toBeUndefined();
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], brandOrder: [] }).brandOrder).toEqual([]);
+  });
+  it('round trips a text card and rejects unsafe CSS values and duplicate brands', () => {
+    const id = '11111111-1111-4111-8111-111111111111';
+    const text = { id, text: 'New collection', align: 'center', size: 'small', beforeId: null, appearance: 'card', background: '#f1e8dc', padding: 'small', radius: 'rounded' };
+    expect(creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], titles: [text], brandOrder: [id] }).titles).toEqual([text]);
+    expect(creatorStorefrontConfigurationInputSchema.safeParse({ categoryIds: [], titles: [{ ...text, background: 'url(https://example.com)' }] }).success).toBe(false);
+    expect(creatorStorefrontConfigurationInputSchema.safeParse({ categoryIds: [], brandOrder: [id,id] }).success).toBe(false);
+  });
+});

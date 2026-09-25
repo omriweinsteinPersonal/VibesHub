@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { ApiError, publicApiRequest } from '../../../lib/api';
 import { hasCreatorSession } from '../../../lib/server-session';
-import { Brand } from '../../_components/brand';
-import { CreatorShellHeader } from '../../_components/creator-shell-header';
+import { StorefrontHeader } from '../../_components/storefront-header';
 import { ProductDetailView } from '../../_components/product-detail';
 
 export default async function ProductPage({
@@ -29,15 +28,7 @@ export default async function ProductPage({
 
   return (
     <div className="editorialPage">
-      {creatorSession ? (
-        <CreatorShellHeader />
-      ) : (
-        <header className="creatorShellHeader">
-          <div className="creatorShellHeaderInner">
-            <Brand />
-          </div>
-        </header>
-      )}
+      <StorefrontHeader creatorSession={creatorSession} />
       <main>
         <ProductDetailView recommendation={recommendation} />
       </main>

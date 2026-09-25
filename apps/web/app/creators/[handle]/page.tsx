@@ -11,11 +11,9 @@ import { notFound } from 'next/navigation';
 import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../../lib/api';
 import { loadStorefrontRecommendations } from '../../../lib/storefront-recommendations';
 import { hasCreatorSession } from '../../../lib/server-session';
-import { CreatorShellHeader } from '../../_components/creator-shell-header';
+import { StorefrontHeader } from '../../_components/storefront-header';
 import { CreatorStorefrontView } from '../../_components/creator-storefront';
 import { StorefrontPhonePreview } from '../../_components/storefront-phone-preview';
-import { SiteFooter } from '../../_components/site-footer';
-import { SiteHeader } from '../../_components/site-header';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +32,7 @@ export default async function CreatorStorefrontPage({
   searchParams,
 }: CreatorStorefrontPageProps) {
   const { handle } = await params;
-  const previewOnly = (await searchParams).mobilePreview === '1';
+  await searchParams;
   const creatorSession = await hasCreatorSession(handle);
 
   let storefront: CreatorStorefront;
@@ -58,10 +56,14 @@ export default async function CreatorStorefrontPage({
   }
 
   return (
-    <div className="editorialPage">
-      {previewOnly ? null : creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
+    <div className="editorialPage storefrontPage">
+      <StorefrontHeader creatorSession={creatorSession} workspace />
       <main>
         <StorefrontPhonePreview
+          contentTargets={[
+            ...storefront.brands.map(({ id, name }) => ({ id, title: name, kind: 'brand' })),
+            ...storefront.curatedSections.filter(({ brandId, kind }) => !brandId && kind !== 'page').map(({ id, title }) => ({ id, title })),
+          ]}
           creatorId={storefront.id}
           editable={creatorSession}
           previewUrl={`/creators/${encodeURIComponent(handle)}?mobilePreview=1`}
@@ -76,15 +78,14 @@ export default async function CreatorStorefrontPage({
           />
         </StorefrontPhonePreview>
       </main>
-      {previewOnly ? null : <SiteFooter />}
     </div>
   );
 }
 
 function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) {
   return (
-    <div className="editorialPage">
-      {creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
+    <div className="editorialPage storefrontPage">
+      <StorefrontHeader creatorSession={creatorSession} workspace />
       <main>
         <section className="directoryHero">
           <p className="eyebrow">CREATOR STOREFRONT</p>
@@ -95,7 +96,6 @@ function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) 
           </Link>
         </section>
       </main>
-      <SiteFooter />
     </div>
   );
 }

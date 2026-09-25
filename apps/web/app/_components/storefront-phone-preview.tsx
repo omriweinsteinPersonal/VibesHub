@@ -3,11 +3,13 @@
 import {
   defaultStorefrontTheme,
   type StorefrontTheme,
+  type StorefrontTitle,
   type StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
+import { StorefrontContentEditor } from './storefront-content-editor';
 import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = keyof StorefrontTheme;
@@ -90,6 +92,7 @@ function desktopSnapshot() {
 
 export function StorefrontPhonePreview({
   children,
+  contentTargets,
   creatorId,
   editable = false,
   previewUrl,
@@ -97,6 +100,7 @@ export function StorefrontPhonePreview({
   title,
 }: {
   children: ReactNode;
+  contentTargets: Array<{ id: string; title: string; kind?: string }>;
   creatorId: string;
   editable?: boolean;
   previewUrl: string;
@@ -104,6 +108,10 @@ export function StorefrontPhonePreview({
   title: string;
 }) {
   const showPhone = useSyncExternalStore(subscribe, desktopSnapshot, () => false);
+  const [tab, setTab] = useState<'design' | 'content'>('design');
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [previewBrandOrder, setPreviewBrandOrder] = useState<string[] | null>(null);
+  const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[] | null>(null);
   const [canEdit, setCanEdit] = useState(editable);
   const frame = useRef<HTMLIFrameElement>(null);
   const [configuration, setConfiguration] = useState<StorefrontThemeConfiguration | null>(
@@ -153,10 +161,10 @@ export function StorefrontPhonePreview({
   useEffect(() => {
     if (!showPhone) return;
     frame.current?.contentWindow?.postMessage(
-      { type: 'swave:theme-preview', creatorId, theme: draft },
+      { type: 'swave:theme-preview', creatorId, theme: draft, titles: previewTitles, brandOrder: previewBrandOrder, selectedBlock, editingContent: tab === 'content' },
       window.location.origin,
     );
-  }, [creatorId, draft, showPhone]);
+  }, [creatorId, draft, previewTitles, previewBrandOrder, selectedBlock, tab, showPhone]);
 
   useEffect(() => {
     if (!canEdit || !showPhone) return;
@@ -169,8 +177,10 @@ export function StorefrontPhonePreview({
       const data = event.data as {
         creatorId?: string;
         section?: ThemeSection;
+        blockId?: string;
         type?: string;
       };
+      if (data.type === 'swave:block-select' && data.creatorId === creatorId && data.blockId) { setSelectedBlock(data.blockId); setTab('content'); return; }
       if (
         data.type === 'swave:theme-select' &&
         data.creatorId === creatorId &&
@@ -221,6 +231,12 @@ export function StorefrontPhonePreview({
               you save.
             </p>
           </div>
+          <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
+            <button type="button" aria-pressed={tab === 'design'} onClick={() => setTab('design')}>Design</button>
+            <button type="button" aria-pressed={tab === 'content'} onClick={() => setTab('content')}>Content</button>
+          </div>
+          <div hidden={tab !== 'content'}><StorefrontContentEditor creatorId={creatorId} targets={contentTargets} selectedId={selectedBlock} onSelect={setSelectedBlock} onPreview={(next) => { setPreviewTitles(next.titles); setPreviewBrandOrder(next.brandOrder); }} /></div>
+          <div hidden={tab !== 'design'}>
           <div className="storefrontPaletteList" role="group" aria-label="Color palettes">
             {palettes.map(({ name, theme: palette }) => (
               <button
@@ -333,6 +349,7 @@ export function StorefrontPhonePreview({
               {saving ? 'Saving…' : 'Save design'}
             </button>
           </div>
+          </div>
         </aside>
       ) : null}
       <div className="storefrontPhoneStage">
@@ -342,7 +359,7 @@ export function StorefrontPhonePreview({
             className="storefrontPhoneScreen"
             onLoad={() =>
               frame.current?.contentWindow?.postMessage(
-                { type: 'swave:theme-preview', creatorId, theme: draft },
+                { type: 'swave:theme-preview', creatorId, theme: draft, titles: previewTitles, brandOrder: previewBrandOrder, selectedBlock, editingContent: tab === 'content' },
                 window.location.origin,
               )
             }

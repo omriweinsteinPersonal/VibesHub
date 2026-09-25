@@ -22,6 +22,8 @@ interface CreatorIdentityRow {
 interface StorefrontSectionRow {
   contentOrder: CreatorStorefrontConfiguration['contentOrder'];
   labels: CreatorStorefrontConfiguration['labels'];
+  titles: CreatorStorefrontConfiguration['titles'];
+  brandOrder: string[];
   categoryId: string;
   categoryName: string;
   categorySlug: string;
@@ -344,7 +346,9 @@ export class CreatorStudioRepository {
         update app.creator_storefront_preferences
         set version = version + 1,
             content_order = ${sql.json(input.contentOrder)},
-            navigation_labels = ${sql.json(input.labels)}
+            navigation_labels = ${sql.json(input.labels)},
+            titles = coalesce(${input.titles === undefined ? null : sql.json(input.titles)}, titles),
+            brand_order = coalesce(${input.brandOrder === undefined ? null : sql.json(input.brandOrder)}, brand_order)
         where creator_id = ${identity.id}
       `;
       return {
@@ -463,6 +467,8 @@ export class CreatorStudioRepository {
         preference.version
         , preference.content_order as "contentOrder"
         , preference.navigation_labels as labels
+        , preference.titles as titles
+        , preference.brand_order as "brandOrder"
       from app.creator_storefront_preferences preference
       left join app.creator_storefront_sections section
         on section.creator_id = preference.creator_id
@@ -493,6 +499,8 @@ export class CreatorStudioRepository {
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       curatedSections: curatedRows,
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
+      titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
+      brandOrder: rows[0]?.brandOrder ?? [],
       sections: rows.flatMap((row) =>
         row.categoryId
           ? [

@@ -190,10 +190,6 @@ export function StoryVideo({
                   ))}
                 </div>
                 <div className="storyViewerHeader">
-                  <div>
-                    <p>Creator story</p>
-                    <strong>{productName}</strong>
-                  </div>
                   <button
                     aria-label="Close video preview"
                     className="storyViewerClose"

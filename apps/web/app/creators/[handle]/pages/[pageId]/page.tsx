@@ -6,11 +6,9 @@ import { notFound } from 'next/navigation';
 import { publicApiRequest } from '../../../../../lib/api';
 import { hasCreatorSession } from '../../../../../lib/server-session';
 import { loadStorefrontRecommendations } from '../../../../../lib/storefront-recommendations';
-import { CreatorShellHeader } from '../../../../_components/creator-shell-header';
+import { StorefrontHeader } from '../../../../_components/storefront-header';
 import { EngagementProvider } from '../../../../_components/engagement';
 import { RecommendationCardView } from '../../../../_components/recommendation-card';
-import { SiteFooter } from '../../../../_components/site-footer';
-import { SiteHeader } from '../../../../_components/site-header';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +36,7 @@ export default async function ProductPage({
 
   return (
     <div className="editorialPage">
-      {creatorSession ? <CreatorShellHeader /> : <SiteHeader />}
+      <StorefrontHeader creatorSession={creatorSession} />
       <main
         className="creatorProductPage"
         style={
@@ -57,7 +55,7 @@ export default async function ProductPage({
           Back
         </Link>
         <header>
-          <p className="eyebrow">{collection?.title ?? storefront.displayName}</p>
+          {collection ? <p className="eyebrow">{collection.title}</p> : null}
           <h1>{page.title}</h1>
           {page.description ? <p>{page.description}</p> : null}
         </header>
@@ -76,7 +74,6 @@ export default async function ProductPage({
           </div>
         </EngagementProvider>
       </main>
-      <SiteFooter />
     </div>
   );
 }

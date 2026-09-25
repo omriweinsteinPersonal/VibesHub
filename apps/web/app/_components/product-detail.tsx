@@ -22,6 +22,9 @@ export function ProductDetailView({
     ? recommendation.images
     : [{ id: null, url: recommendation.imageUrl }];
   const shownImage = images[activeImage] ?? images[0]!;
+  const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
+    recommendation.productName,
+  ) ? 'rtl' : 'ltr';
   const brand = merchantNameFromHostname(
     recommendation.merchantHostname,
     recommendation.brandName,
@@ -59,6 +62,16 @@ export function ProductDetailView({
               src={publicAssetUrl(shownImage.url)}
               unoptimized
             />
+            {clips.length ? (
+              <StoryVideo
+                creatorId={recommendation.creator.id}
+                posterUrl={publicAssetUrl(recommendation.imageUrl)}
+                productId={recommendation.productId}
+                productName={recommendation.productName}
+                recommendationId={recommendation.id}
+                videoUrls={clips}
+              />
+            ) : null}
             {images.length > 1 ? (
               <>
                 <button
@@ -104,9 +117,9 @@ export function ProductDetailView({
         </div>
 
         <div className="productDetailInformation">
-          <h1>{recommendation.productName}</h1>
+          <h1 dir={textDirection} style={{ textAlign: 'start' }}>{recommendation.productName}</h1>
           {recommendation.price.amountMinor > 0 ? (
-            <p className="productDetailPrice">
+            <p className="productDetailPrice" dir={textDirection} style={{ textAlign: 'start' }}>
               {new Intl.NumberFormat('he-IL', {
                 currency: 'ILS',
                 maximumFractionDigits:
@@ -150,7 +163,7 @@ export function ProductDetailView({
 
           {recommendation.review.value !== 'לא צורפה ביקורת' ? (
             <section className="productDetailDescription">
-              <h2>About this recommendation</h2>
+              <h2>About this product</h2>
               <p
                 dir={recommendation.review.direction}
                 lang={recommendation.review.language}
