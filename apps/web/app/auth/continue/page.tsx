@@ -3,32 +3,24 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 
+import {
+  destinationForAccount,
+  safeInternalPath,
+  type AuthenticatedAccount,
+} from '../../../lib/account-destination';
 import { apiRequest } from '../../../lib/api';
+import { Brand } from '../../_components/brand';
 
 function ContinueAfterLogin() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedNext = searchParams.get('next');
-  const safeNext =
-    requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
-      ? requestedNext
-      : '/creator-home';
+  const safeNext = safeInternalPath(requestedNext, '/creator-home');
 
   useEffect(() => {
-    void apiRequest<{
-      capabilities: string[];
-      creator: { handle: string; id: string } | null;
-    }>('/me')
+    void apiRequest<AuthenticatedAccount>('/me')
       .then((account) => {
-        const destination = account.creator
-          ? safeNext
-          : account.capabilities.some((capability) =>
-                ['admin:manage_platform', 'moderator:review_content'].includes(
-                  capability,
-                ),
-              )
-            ? '/admin/applications'
-            : '/creator/apply';
+        const destination = destinationForAccount(account, safeNext);
         router.replace(destination);
         router.refresh();
       })
@@ -38,13 +30,26 @@ function ContinueAfterLogin() {
       });
   }, [router, safeNext]);
 
-  return <main className="creatorLoading">Opening your creator account...</main>;
+  return <AuthTransition message="Preparing your creator studio…" />;
 }
 
 export default function ContinueAfterLoginPage() {
   return (
-    <Suspense fallback={<main className="creatorLoading">Signing you in...</main>}>
+    <Suspense fallback={<AuthTransition message="Signing you in…" />}>
       <ContinueAfterLogin />
     </Suspense>
+  );
+}
+
+function AuthTransition({ message }: { message: string }) {
+  return (
+    <main aria-busy="true" className="authTransitionMain">
+      <Brand />
+      <section aria-live="polite" className="authTransitionCard">
+        <span aria-hidden="true" className="authTransitionSpinner" />
+        <h1>{message}</h1>
+        <p>Your page will open in a moment.</p>
+      </section>
+    </main>
   );
 }

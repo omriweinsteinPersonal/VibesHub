@@ -31,7 +31,12 @@ export default function CreatorHomePage() {
   return (
     <main className="creatorHomeMain">
       {error ? <p className="formError">{error}</p> : null}
-      {!summary && !error ? <DelayedLoading>Opening your studio…</DelayedLoading> : null}
+      {!summary && !error ? (
+        <DelayedLoading delay={180}>
+          <span className="srOnly">Opening your studio…</span>
+          <CreatorHomeSkeleton />
+        </DelayedLoading>
+      ) : null}
       {summary ? (
         <>
           <section className="creatorWelcome">
@@ -120,6 +125,27 @@ export default function CreatorHomePage() {
         </>
       ) : null}
     </main>
+  );
+}
+
+function CreatorHomeSkeleton() {
+  return (
+    <div aria-hidden="true" className="creatorHomeSkeleton">
+      <section className="creatorHomeSkeletonIntro">
+        <span className="creatorSkeletonLine short" />
+        <div>
+          <span className="creatorSkeletonAvatar" />
+          <span className="creatorSkeletonLine title" />
+        </div>
+        <span className="creatorSkeletonLine medium" />
+        <span className="creatorSkeletonPill" />
+      </section>
+      <section className="creatorHomeSkeletonGrid">
+        {Array.from({ length: 4 }, (_, index) => (
+          <span className="creatorSkeletonCard" key={index} />
+        ))}
+      </section>
+    </div>
   );
 }
 

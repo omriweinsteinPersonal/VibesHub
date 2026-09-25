@@ -6,6 +6,11 @@ import { Sparkles } from 'lucide-react';
 import { Suspense, useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
+import {
+  destinationForAccount,
+  safeInternalPath,
+  type AuthenticatedAccount,
+} from '../../lib/account-destination';
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -26,11 +31,9 @@ function AuthExperience() {
   );
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const requestedNext = searchParams.get('next');
-  const safeNext =
-    requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
-      ? requestedNext
-      : '/creator-home';
+  const safeNext = safeInternalPath(requestedNext, '/creator-home');
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -45,19 +48,8 @@ function AuthExperience() {
           password,
         });
         if (authError) throw authError;
-        const account = await apiRequest<{
-          capabilities: string[];
-          creator: { handle: string; id: string } | null;
-        }>('/me');
-        const destination = account.creator
-          ? safeNext
-          : account.capabilities.some((capability) =>
-                ['admin:manage_platform', 'moderator:review_content'].includes(
-                  capability,
-                ),
-              )
-            ? '/admin/applications'
-            : '/creator/apply';
+        const account = await apiRequest<AuthenticatedAccount>('/me');
+        const destination = destinationForAccount(account, safeNext);
         router.replace(destination);
         router.refresh();
       } else {
@@ -86,17 +78,18 @@ function AuthExperience() {
 
   async function continueWithGoogle() {
     setError('');
-    const continuation = new URLSearchParams({
-      next: mode === 'signup' ? '/creator/apply' : safeNext,
-    });
-    const next = `/auth/continue?${continuation.toString()}`;
+    setOauthLoading(true);
+    const next = mode === 'signup' ? '/creator/apply' : safeNext;
     const { error: authError } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
-    if (authError) setError(authError.message);
+    if (authError) {
+      setError(authError.message);
+      setOauthLoading(false);
+    }
   }
 
   return (
@@ -140,11 +133,15 @@ function AuthExperience() {
             </button>
           </div>
           <button
+            aria-busy={oauthLoading}
             className="referenceGoogleButton"
+            disabled={oauthLoading || loading}
             onClick={() => void continueWithGoogle()}
             type="button"
           >
-            {mode === 'login' ? 'Continue' : 'Sign up'} with Google
+            {oauthLoading
+              ? 'Opening Google…'
+              : `${mode === 'login' ? 'Continue' : 'Sign up'} with Google`}
           </button>
           <div className="separator">OR</div>
           <form onSubmit={submit}>

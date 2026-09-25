@@ -17,9 +17,10 @@ import { apiRequest } from '../../lib/api';
 
 interface CreatorNavigationContextValue {
   clearStorefrontHref: () => void;
+  creatorProfile: CreatorProfileSettings | null;
   ensureStorefrontHref: () => Promise<void>;
   pendingHref: string | null;
-  setStorefrontHandle: (handle: string) => void;
+  setCreatorProfile: (profile: CreatorProfileSettings) => void;
   startNavigation: (href: string) => void;
   storefrontHref: string | null;
 }
@@ -35,6 +36,8 @@ export function CreatorNavigationProvider({ children }: { children: ReactNode })
     fromPath: string;
     href: string;
   } | null>(null);
+  const [creatorProfile, setCreatorProfileState] =
+    useState<CreatorProfileSettings | null>(null);
   const [storefrontHref, setStorefrontHref] = useState<string | null>(null);
   const requestRef = useRef<Promise<void> | null>(null);
   const pendingHref =
@@ -47,11 +50,13 @@ export function CreatorNavigationProvider({ children }: { children: ReactNode })
     [pathname],
   );
 
-  const setStorefrontHandle = useCallback((handle: string) => {
-    setStorefrontHref(`/creator/${encodeURIComponent(handle)}`);
+  const setCreatorProfile = useCallback((profile: CreatorProfileSettings) => {
+    setCreatorProfileState(profile);
+    setStorefrontHref(`/creator/${encodeURIComponent(profile.handle)}`);
   }, []);
 
   const clearStorefrontHref = useCallback(() => {
+    setCreatorProfileState(null);
     setStorefrontHref(null);
   }, []);
 
@@ -108,34 +113,36 @@ export function CreatorNavigationProvider({ children }: { children: ReactNode })
   }, [router, storefrontHref]);
 
   const ensureStorefrontHref = useCallback(async () => {
-    if (storefrontHref || requestRef.current) {
+    if (creatorProfile || requestRef.current) {
       await requestRef.current;
       return;
     }
 
     requestRef.current = apiRequest<CreatorProfileSettings>('/creator/profile')
-      .then(({ handle }) => setStorefrontHandle(handle))
+      .then(setCreatorProfile)
       .finally(() => {
         requestRef.current = null;
       });
 
     await requestRef.current;
-  }, [setStorefrontHandle, storefrontHref]);
+  }, [creatorProfile, setCreatorProfile]);
 
   const value = useMemo(
     () => ({
       clearStorefrontHref,
+      creatorProfile,
       ensureStorefrontHref,
       pendingHref,
-      setStorefrontHandle,
+      setCreatorProfile,
       startNavigation,
       storefrontHref,
     }),
     [
       clearStorefrontHref,
+      creatorProfile,
       ensureStorefrontHref,
       pendingHref,
-      setStorefrontHandle,
+      setCreatorProfile,
       startNavigation,
       storefrontHref,
     ],

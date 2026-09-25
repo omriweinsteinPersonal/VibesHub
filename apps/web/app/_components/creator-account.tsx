@@ -75,7 +75,7 @@ const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
 
 export function CreatorAccount() {
   const router = useRouter();
-  const { setStorefrontHandle } = useCreatorNavigation();
+  const { setCreatorProfile } = useCreatorNavigation();
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
@@ -222,7 +222,7 @@ export function CreatorAccount() {
       stagedAssetRef.current = null;
       setProfile(updated);
       setProfileEditor(toProfileEditor(updated));
-      setStorefrontHandle(updated.handle);
+      setCreatorProfile(updated);
       setNotice('Your profile changes are live.');
       if (previousAvatarAssetId && previousAvatarAssetId !== updated.avatar?.assetId) {
         await deleteRecommendationImage(previousAvatarAssetId).catch(() => undefined);

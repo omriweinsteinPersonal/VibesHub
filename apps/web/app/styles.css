@@ -213,6 +213,132 @@ svg.lucide {
   visibility: visible;
 }
 
+.referenceGoogleButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.authTransitionMain {
+  align-items: center;
+  background:
+    radial-gradient(circle at 50% 32%, rgb(201 118 77 / 10%), transparent 34%), #fffefa;
+  display: flex;
+  flex-direction: column;
+  gap: 54px;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.authTransitionCard {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 420px;
+  text-align: center;
+}
+
+.authTransitionCard h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 24px 0 8px;
+}
+
+.authTransitionCard p {
+  color: #7d7168;
+  margin: 0;
+}
+
+.authTransitionSpinner {
+  animation: authTransitionSpin 800ms linear infinite;
+  border: 2px solid #eadfd5;
+  border-radius: 50%;
+  border-top-color: var(--vh-accent-strong);
+  height: 34px;
+  width: 34px;
+}
+
+.creatorHomeSkeleton {
+  display: grid;
+  gap: 28px;
+}
+
+.creatorHomeSkeletonIntro {
+  display: grid;
+  gap: 20px;
+}
+
+.creatorHomeSkeletonIntro > div {
+  align-items: center;
+  display: flex;
+  gap: 22px;
+}
+
+.creatorSkeletonAvatar,
+.creatorSkeletonCard,
+.creatorSkeletonLine,
+.creatorSkeletonPill {
+  animation: creatorSkeletonPulse 1.25s ease-in-out infinite alternate;
+  background: #f4eee7;
+  display: block;
+}
+
+.creatorSkeletonAvatar {
+  border-radius: 50%;
+  flex: 0 0 auto;
+  height: 84px;
+  width: 84px;
+}
+
+.creatorSkeletonLine {
+  border-radius: 999px;
+  height: 16px;
+  width: 100%;
+}
+
+.creatorSkeletonLine.short {
+  height: 10px;
+  width: 116px;
+}
+
+.creatorSkeletonLine.title {
+  height: 42px;
+  max-width: 440px;
+}
+
+.creatorSkeletonLine.medium {
+  max-width: 340px;
+}
+
+.creatorSkeletonPill {
+  border-radius: 999px;
+  height: 36px;
+  width: 160px;
+}
+
+.creatorHomeSkeletonGrid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.creatorSkeletonCard {
+  border: 1px solid #eee6dd;
+  border-radius: 30px;
+  min-height: 250px;
+}
+
+@keyframes authTransitionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes creatorSkeletonPulse {
+  to {
+    background: #ebe1d7;
+  }
+}
+
 @keyframes creatorNavigationProgress {
   0% {
     transform: translateX(-120%);
@@ -231,6 +357,14 @@ svg.lucide {
 
   .creatorLoadingDelayed {
     transition: none;
+  }
+
+  .authTransitionSpinner,
+  .creatorSkeletonAvatar,
+  .creatorSkeletonCard,
+  .creatorSkeletonLine,
+  .creatorSkeletonPill {
+    animation: none;
   }
 }
 

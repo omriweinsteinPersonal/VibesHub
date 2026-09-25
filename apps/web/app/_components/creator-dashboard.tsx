@@ -50,6 +50,7 @@ import {
 } from '../../lib/recommendation-media';
 import { randomUuid } from '../../lib/random-id';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
+import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
 
 type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
@@ -143,8 +144,10 @@ const emptyDiscount: DiscountEditor = {
 };
 
 export function CreatorDashboard() {
+  const { creatorProfile, setCreatorProfile } = useCreatorNavigation();
   const [categories, setCategories] = useState<CategoryCard[]>([]);
-  const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
+  const [loadedProfile, setLoadedProfile] = useState<CreatorProfileSettings | null>(null);
+  const profile = loadedProfile ?? creatorProfile;
   const [recommendations, setRecommendations] = useState<CreatorRecommendation[]>([]);
   const [discounts, setDiscounts] = useState<CreatorDiscountCode[]>([]);
   const [brands, setBrands] = useState<CreatorBrand[]>([]);
@@ -204,7 +207,8 @@ export function CreatorDashboard() {
         apiRequest<CreatorBrand[]>('/creator/brands'),
       ]);
       setCategories(categoryPage.data);
-      setProfile(loadedProfile);
+      setLoadedProfile(loadedProfile);
+      setCreatorProfile(loadedProfile);
       setRecommendations(loadedRecommendations);
       setDiscounts(discountPage.data);
       setBrands(loadedBrands);
@@ -252,7 +256,7 @@ export function CreatorDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setCreatorProfile]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -990,7 +994,9 @@ export function CreatorDashboard() {
       <section className="creatorDashboardIntro">
         <div>
           <p className="eyebrow">CREATOR DASHBOARD</p>
-          <h1>{profile?.displayName ?? 'Your storefront'}</h1>
+          <h1 aria-busy={!profile}>
+            {profile?.displayName ?? <span aria-hidden="true">&nbsp;</span>}
+          </h1>
           <p>Add and manage everything that appears on your public storefront.</p>
         </div>
       </section>
@@ -1685,7 +1691,10 @@ export function CreatorDashboard() {
           ) : (
             <CreatorConnectorsEditor
               key={profile ? `${profile.id}:${profile.version}` : 'loading'}
-              onSaved={setProfile}
+              onSaved={(updatedProfile) => {
+                setLoadedProfile(updatedProfile);
+                setCreatorProfile(updatedProfile);
+              }}
               profile={profile}
             />
           )}
