@@ -9,6 +9,8 @@ import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { StoryVideo } from './story-video';
 
+const measurementWithValue = /(\d+(?:[.,]\d+)?\s*(?:cm|g|gb|kg|l|mah|ml|mm|tb|v|w)\b)/giu;
+
 interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
   creatorId?: string;
@@ -113,7 +115,7 @@ export function RecommendationCardView({
                     {line.text}
                   </span>
                 ))
-              : recommendation.productName}
+              : isolateMeasurements(recommendation.productName)}
           </h3>
         </div>
         <div className="storePriceRow">
@@ -137,4 +139,16 @@ function formatPriceNumber(amountMinor: number): string {
   return new Intl.NumberFormat('he-IL', {
     maximumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
   }).format(amountMinor / 100);
+}
+
+function isolateMeasurements(title: string) {
+  return title.split(measurementWithValue).map((part, index) =>
+    /^\d/u.test(part) ? (
+      <bdi dir="ltr" key={`${part}-${index}`}>
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
 }

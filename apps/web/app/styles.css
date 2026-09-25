@@ -9450,8 +9450,10 @@ dt {
   .compactProductCard
   .storePriceRow {
   align-items: end;
+  direction: ltr;
   display: flex;
   flex: 1;
+  justify-content: flex-start;
   min-height: 1em;
 }
 
