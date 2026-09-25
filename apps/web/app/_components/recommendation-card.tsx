@@ -51,7 +51,17 @@ export function RecommendationCardView({
       />
       <div className="storeProductImage">
         <Image
+          alt=""
+          aria-hidden="true"
+          className="storeProductImageBackdrop"
+          fill
+          sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
+          src={publicAssetUrl(recommendation.imageUrl)}
+          unoptimized
+        />
+        <Image
           alt={recommendation.productName}
+          className="storeProductPrimaryImage"
           fill
           sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
           src={publicAssetUrl(recommendation.imageUrl)}

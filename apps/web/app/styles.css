@@ -3478,6 +3478,18 @@ h1 em {
   object-fit: cover;
   transition: transform 450ms ease;
 }
+
+.storeProductImage .storeProductImageBackdrop {
+  filter: blur(18px) saturate(0.82);
+  object-fit: cover;
+  opacity: 0.2;
+  transform: scale(1.12);
+}
+
+.storeProductImage .storeProductPrimaryImage {
+  object-fit: contain;
+  padding: clamp(6px, 4%, 12px);
+}
 .productGalleryArrow {
   align-items: center;
   background: rgb(255 255 255 / 92%);
@@ -3522,8 +3534,12 @@ h1 em {
   background: var(--vh-ink);
 }
 
-.storeProductCard:hover .storeProductImage img {
-  transform: scale(1.025);
+.storeProductCard:hover .storeProductImage .storeProductImageBackdrop {
+  transform: scale(1.15);
+}
+
+.storeProductCard:hover .storeProductImage .storeProductPrimaryImage {
+  transform: scale(1.015);
 }
 
 .storyPreview {
@@ -7789,7 +7805,8 @@ dt {
 }
 
 .productDetailThumbnails img {
-  object-fit: cover;
+  object-fit: contain;
+  padding: 3px;
 }
 
 .productDetailInformation .eyebrow {
@@ -9268,8 +9285,15 @@ dt {
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard
   .storeProductImage
-  img {
+  .storeProductImageBackdrop {
   object-fit: cover;
+}
+
+:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
+  .compactProductCard
+  .storeProductImage
+  .storeProductPrimaryImage {
+  object-fit: contain;
 }
 
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
