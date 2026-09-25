@@ -24,7 +24,9 @@ export function ProductDetailView({
   const shownImage = images[activeImage] ?? images[0]!;
   const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
     recommendation.productName,
-  ) ? 'rtl' : 'ltr';
+  )
+    ? 'rtl'
+    : 'ltr';
   const brand = merchantNameFromHostname(
     recommendation.merchantHostname,
     recommendation.brandName,
@@ -117,9 +119,15 @@ export function ProductDetailView({
         </div>
 
         <div className="productDetailInformation">
-          <h1 dir={textDirection} style={{ textAlign: 'start' }}>{recommendation.productName}</h1>
+          <h1 dir={textDirection} style={{ textAlign: 'start' }}>
+            {recommendation.productName}
+          </h1>
           {recommendation.price.amountMinor > 0 ? (
-            <p className="productDetailPrice" dir={textDirection} style={{ textAlign: 'start' }}>
+            <p
+              className="productDetailPrice"
+              dir={textDirection}
+              style={{ textAlign: 'start' }}
+            >
               {new Intl.NumberFormat('he-IL', {
                 currency: 'ILS',
                 maximumFractionDigits:

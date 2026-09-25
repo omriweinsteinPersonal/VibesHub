@@ -965,13 +965,15 @@ export function CreatorDashboard() {
   const groupedRecommendationIds = new Set<string>();
   const brandGroups = brands.map((managedBrand) => {
     const brandName = normalizedBrandName(managedBrand.name);
-    const brandCollections = collectionEntries.filter(({ section, items }) =>
-      section.brandId === managedBrand.brandId ||
-      items.some((item) => normalizedBrandName(item.brandName) === brandName),
+    const brandCollections = collectionEntries.filter(
+      ({ section, items }) =>
+        section.brandId === managedBrand.brandId ||
+        items.some((item) => normalizedBrandName(item.brandName) === brandName),
     );
-    const brandItems = standaloneRecommendations.filter((item) =>
-      item.brandId === managedBrand.brandId ||
-      normalizedBrandName(item.brandName) === brandName,
+    const brandItems = standaloneRecommendations.filter(
+      (item) =>
+        item.brandId === managedBrand.brandId ||
+        normalizedBrandName(item.brandName) === brandName,
     );
     brandCollections.forEach(({ section }) => groupedCollectionIds.add(section.id));
     brandItems.forEach(({ id }) => groupedRecommendationIds.add(id));
@@ -1315,126 +1317,208 @@ export function CreatorDashboard() {
                   <div className="creatorLoading">Loading recommendations…</div>
                 ) : null}
                 <div className="creatorManageList">
-                  {brandGroups.map(({ brand: managedBrand, collections: brandCollections, items: brandItems }) => (
-                    <section
-                      className="creatorManageCollection creatorBrandManageCard"
-                      key={managedBrand.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <button
-                          aria-expanded={expandedBrandId === managedBrand.id}
-                          aria-controls={`brand-contents-${managedBrand.id}`}
-                          className="creatorBrandToggle"
-                          onClick={() => setExpandedBrandId((current) => current === managedBrand.id ? null : managedBrand.id)}
-                          type="button"
-                        >
-                          <ChevronDown aria-hidden="true" size={18} />
-                          <span>
-                            <strong>{managedBrand.name}</strong>
-                            <small>
-                              {brandCollections.length} collections ?{' '}
-                              {new Set([...brandCollections.flatMap(({ items }) => items.map(({ id }) => id)), ...brandItems.map(({ id }) => id)]).size} items
-                            </small>
-                          </span>
-                        </button>
-                        <div className="creatorManageCollectionActions">
-                          <a
-                            href={managedBrand.websiteUrl}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                            <ExternalLink size={16} />
-                          </a>
+                  {brandGroups.map(
+                    ({
+                      brand: managedBrand,
+                      collections: brandCollections,
+                      items: brandItems,
+                    }) => (
+                      <section
+                        className="creatorManageCollection creatorBrandManageCard"
+                        key={managedBrand.id}
+                      >
+                        <header className="creatorManageCollectionHeader">
                           <button
-                            aria-label={`Edit ${managedBrand.name}`}
-                            onClick={() => {
-                              const offer = discounts.find(
-                                (item) =>
-                                  item.brandId === managedBrand.id &&
-                                  item.scopeKind === 'brand',
-                              );
-                              setEditingBrand(managedBrand);
-                              setBrand({
-                                code: offer?.code ?? '',
-                                detailsHe: offer?.details?.value ?? '',
-                                discountPercent: offer?.discountPercent?.toString() ?? '',
-                                expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
-                                name: managedBrand.name,
-                                websiteUrl: managedBrand.websiteUrl,
-                              });
-                              setComposer('brand');
-                              window.scrollTo({ behavior: 'smooth', top: 120 });
-                            }}
-                            type="button"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${managedBrand.name}`}
-                            disabled={saving}
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `Remove the ${managedBrand.name} brand card? Its items and collections will remain.`,
-                                )
+                            aria-expanded={expandedBrandId === managedBrand.id}
+                            aria-controls={`brand-contents-${managedBrand.id}`}
+                            className="creatorBrandToggle"
+                            onClick={() =>
+                              setExpandedBrandId((current) =>
+                                current === managedBrand.id ? null : managedBrand.id,
                               )
-                                return;
-                              void apiRequest(`/creator/brands/${managedBrand.id}`, {
-                                headers: { 'if-match': `"${managedBrand.version}"` },
-                                method: 'DELETE',
-                              })
-                                .then(load)
-                                .catch((cause: unknown) => setError(messageFor(cause)));
-                            }}
+                            }
                             type="button"
                           >
-                            <Trash2 size={16} />
+                            <ChevronDown aria-hidden="true" size={18} />
+                            <span>
+                              <strong>{managedBrand.name}</strong>
+                              <small>
+                                {brandCollections.length} collections ?{' '}
+                                {
+                                  new Set([
+                                    ...brandCollections.flatMap(({ items }) =>
+                                      items.map(({ id }) => id),
+                                    ),
+                                    ...brandItems.map(({ id }) => id),
+                                  ]).size
+                                }{' '}
+                                items
+                              </small>
+                            </span>
                           </button>
-                        </div>
-                      </header>
-                      <div id={`brand-contents-${managedBrand.id}`} hidden={expandedBrandId !== managedBrand.id}>
-                      {brandCollections.length || brandItems.length ? (
-                        <div className="creatorBrandManageContents">
-                          {brandCollections.map((entry) => (
-                            <CollectionManageCard
-                              brands={brands}
-                              editing={editingCollectionId === entry.section.id}
-                              entry={entry}
-                              key={entry.section.id}
-                              nested
-                              onArchiveItem={(item) => {
-                                if (window.confirm('Remove this recommendation from your storefront?')) void recommendationCommand(item, 'archive');
+                          <div className="creatorManageCollectionActions">
+                            <a
+                              href={managedBrand.websiteUrl}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                            <button
+                              aria-label={`Edit ${managedBrand.name}`}
+                              onClick={() => {
+                                const offer = discounts.find(
+                                  (item) =>
+                                    item.brandId === managedBrand.id &&
+                                    item.scopeKind === 'brand',
+                                );
+                                setEditingBrand(managedBrand);
+                                setBrand({
+                                  code: offer?.code ?? '',
+                                  detailsHe: offer?.details?.value ?? '',
+                                  discountPercent:
+                                    offer?.discountPercent?.toString() ?? '',
+                                  expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
+                                  name: managedBrand.name,
+                                  websiteUrl: managedBrand.websiteUrl,
+                                });
+                                setComposer('brand');
+                                window.scrollTo({ behavior: 'smooth', top: 120 });
                               }}
-                              onCreateBrand={async (input) => {
-                                const created = await apiRequest<CreatorBrand>('/creator/brands', { body: JSON.stringify(input), idempotent: true, method: 'POST' });
-                                setBrands((current) => [...current.filter(({ id }) => id !== created.id), created]);
-                                return created;
+                              type="button"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              aria-label={`Delete ${managedBrand.name}`}
+                              disabled={saving}
+                              onClick={() => {
+                                if (
+                                  !window.confirm(
+                                    `Remove the ${managedBrand.name} brand card? Its items and collections will remain.`,
+                                  )
+                                )
+                                  return;
+                                void apiRequest(`/creator/brands/${managedBrand.id}`, {
+                                  headers: { 'if-match': `"${managedBrand.version}"` },
+                                  method: 'DELETE',
+                                })
+                                  .then(load)
+                                  .catch((cause: unknown) => setError(messageFor(cause)));
                               }}
-                              onDelete={() => {
-                                if (!window.confirm(`Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`)) return;
-                                void saveCuratedSections(curatedSections.filter(({ id }) => id !== entry.section.id).map((section) => section.parentCollectionId === entry.section.id ? { ...section, parentCollectionId: null } : section)).then((saved) => { if (saved) setEditingCollectionId(null); });
-                              }}
-                              onEditItem={editProduct}
-                              onEditState={(editing) => setEditingCollectionId(editing ? entry.section.id : null)}
-                              onSave={(updated) => saveCuratedSections(curatedSections.map((section) => section.id === entry.section.id ? updated : section))}
-                              profileHandle={profile?.handle}
-                              recommendations={activeRecommendations}
-                              saving={saving}
-                            />
-                          ))}
-                          {brandItems.length ? (
-                            <details className="creatorBrandStandaloneItems creatorManageDisclosure">
-                              <summary>Individual items <span>({brandItems.length})</span></summary>
-                              {brandItems.map((item) => (
-                                <RecommendationManageCard item={item} key={item.id} onArchive={() => { if (window.confirm('Remove this recommendation from your storefront?')) void recommendationCommand(item, 'archive'); }} onEdit={() => editProduct(item)} />
+                              type="button"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </header>
+                        <div
+                          id={`brand-contents-${managedBrand.id}`}
+                          hidden={expandedBrandId !== managedBrand.id}
+                        >
+                          {brandCollections.length || brandItems.length ? (
+                            <div className="creatorBrandManageContents">
+                              {brandCollections.map((entry) => (
+                                <CollectionManageCard
+                                  brands={brands}
+                                  editing={editingCollectionId === entry.section.id}
+                                  entry={entry}
+                                  key={entry.section.id}
+                                  nested
+                                  onArchiveItem={(item) => {
+                                    if (
+                                      window.confirm(
+                                        'Remove this recommendation from your storefront?',
+                                      )
+                                    )
+                                      void recommendationCommand(item, 'archive');
+                                  }}
+                                  onCreateBrand={async (input) => {
+                                    const created = await apiRequest<CreatorBrand>(
+                                      '/creator/brands',
+                                      {
+                                        body: JSON.stringify(input),
+                                        idempotent: true,
+                                        method: 'POST',
+                                      },
+                                    );
+                                    setBrands((current) => [
+                                      ...current.filter(({ id }) => id !== created.id),
+                                      created,
+                                    ]);
+                                    return created;
+                                  }}
+                                  onDelete={() => {
+                                    if (
+                                      !window.confirm(
+                                        `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
+                                      )
+                                    )
+                                      return;
+                                    void saveCuratedSections(
+                                      curatedSections
+                                        .filter(({ id }) => id !== entry.section.id)
+                                        .map((section) =>
+                                          section.parentCollectionId === entry.section.id
+                                            ? { ...section, parentCollectionId: null }
+                                            : section,
+                                        ),
+                                    ).then((saved) => {
+                                      if (saved) setEditingCollectionId(null);
+                                    });
+                                  }}
+                                  onEditItem={editProduct}
+                                  onEditState={(editing) =>
+                                    setEditingCollectionId(
+                                      editing ? entry.section.id : null,
+                                    )
+                                  }
+                                  onSave={(updated) =>
+                                    saveCuratedSections(
+                                      curatedSections.map((section) =>
+                                        section.id === entry.section.id
+                                          ? updated
+                                          : section,
+                                      ),
+                                    )
+                                  }
+                                  profileHandle={profile?.handle}
+                                  recommendations={activeRecommendations}
+                                  saving={saving}
+                                />
                               ))}
-                            </details>
-                          ) : null}
+                              {brandItems.length ? (
+                                <details className="creatorBrandStandaloneItems creatorManageDisclosure">
+                                  <summary>
+                                    Individual items <span>({brandItems.length})</span>
+                                  </summary>
+                                  {brandItems.map((item) => (
+                                    <RecommendationManageCard
+                                      item={item}
+                                      key={item.id}
+                                      onArchive={() => {
+                                        if (
+                                          window.confirm(
+                                            'Remove this recommendation from your storefront?',
+                                          )
+                                        )
+                                          void recommendationCommand(item, 'archive');
+                                      }}
+                                      onEdit={() => editProduct(item)}
+                                    />
+                                  ))}
+                                </details>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="creatorManageCollectionEmpty">
+                              No recommendations have been added to this brand yet.
+                            </p>
+                          )}
                         </div>
-                      ) : <p className="creatorManageCollectionEmpty">No recommendations have been added to this brand yet.</p>}
-                      </div>
-                    </section>
-                  ))}
+                      </section>
+                    ),
+                  )}
                   {ungroupedEntries.map((entry) =>
                     entry.kind === 'collection' ? (
                       <section
@@ -1606,7 +1690,14 @@ export function CreatorDashboard() {
                 categories={categories}
                 key={storefrontLabels.map(({ id, title }) => `${id}:${title}`).join('|')}
                 labels={storefrontLabels}
-                onSave={(labels) => void saveSections(selectedSections, curatedSections, contentOrder, labels)}
+                onSave={(labels) =>
+                  void saveSections(
+                    selectedSections,
+                    curatedSections,
+                    contentOrder,
+                    labels,
+                  )
+                }
                 recommendations={activeRecommendations}
                 saving={saving}
               />
@@ -1661,26 +1752,78 @@ function CollectionManageCard({
       className={`creatorManageCollection${nested ? ' creatorManageNestedCollection' : ''}`}
     >
       <header className="creatorManageCollectionHeader">
-        <button className="creatorBrandToggle" type="button" aria-expanded={expanded} aria-controls={`collection-items-${entry.section.id}`} onClick={() => setExpanded((value) => !value)}>
+        <button
+          className="creatorBrandToggle"
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={`collection-items-${entry.section.id}`}
+          onClick={() => setExpanded((value) => !value)}
+        >
           <ChevronDown aria-hidden="true" size={16} />
-          <span><strong>{entry.section.title}</strong><small>{entry.items.length} items</small></span>
+          <span>
+            <strong>{entry.section.title}</strong>
+            <small>{entry.items.length} items</small>
+          </span>
         </button>
         <div className="creatorManageCollectionActions">
-          {profileHandle ? <Link href={`/creators/${profileHandle}/pages/${entry.section.id}`} target="_blank">View page</Link> : null}
-          <button aria-label={`Edit ${entry.section.title} collection`} disabled={saving} onClick={() => onEditState(true)} title="Edit collection" type="button"><Pencil aria-hidden="true" size={16} /></button>
-          <button aria-label={`Delete ${entry.section.title} collection`} disabled={saving} onClick={onDelete} title="Delete collection" type="button"><Trash2 aria-hidden="true" size={16} /></button>
+          {profileHandle ? (
+            <Link
+              href={`/creators/${profileHandle}/pages/${entry.section.id}`}
+              target="_blank"
+            >
+              View page
+            </Link>
+          ) : null}
+          <button
+            aria-label={`Edit ${entry.section.title} collection`}
+            disabled={saving}
+            onClick={() => onEditState(true)}
+            title="Edit collection"
+            type="button"
+          >
+            <Pencil aria-hidden="true" size={16} />
+          </button>
+          <button
+            aria-label={`Delete ${entry.section.title} collection`}
+            disabled={saving}
+            onClick={onDelete}
+            title="Delete collection"
+            type="button"
+          >
+            <Trash2 aria-hidden="true" size={16} />
+          </button>
         </div>
       </header>
       <div id={`collection-items-${entry.section.id}`} hidden={!expanded && !editing}>
-      {editing ? (
-        <div className="creatorManageCollectionEditor">
-          <CuratedSectionForm brands={brands} initial={entry.section} kind="collection" onCancel={() => onEditState(false)} onCreateBrand={onCreateBrand} onSave={onSave} recommendations={recommendations} saving={saving} />
-        </div>
-      ) : entry.items.length ? (
-        <div className="creatorManageCollectionItems">
-          {entry.items.map((item) => <RecommendationManageCard item={item} key={item.id} onArchive={() => onArchiveItem(item)} onEdit={() => onEditItem(item)} />)}
-        </div>
-      ) : <p className="creatorManageCollectionEmpty">No active products in this collection. Edit it to add one.</p>}
+        {editing ? (
+          <div className="creatorManageCollectionEditor">
+            <CuratedSectionForm
+              brands={brands}
+              initial={entry.section}
+              kind="collection"
+              onCancel={() => onEditState(false)}
+              onCreateBrand={onCreateBrand}
+              onSave={onSave}
+              recommendations={recommendations}
+              saving={saving}
+            />
+          </div>
+        ) : entry.items.length ? (
+          <div className="creatorManageCollectionItems">
+            {entry.items.map((item) => (
+              <RecommendationManageCard
+                item={item}
+                key={item.id}
+                onArchive={() => onArchiveItem(item)}
+                onEdit={() => onEditItem(item)}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="creatorManageCollectionEmpty">
+            No active products in this collection. Edit it to add one.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -1724,7 +1867,9 @@ function StorefrontLabelsEditor({
   const [draft, setDraft] = useState(labels);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const update = (id: string, patch: Partial<StorefrontLabel>) =>
-    setDraft((current) => current.map((label) => label.id === id ? { ...label, ...patch } : label));
+    setDraft((current) =>
+      current.map((label) => (label.id === id ? { ...label, ...patch } : label)),
+    );
   const move = (index: number, direction: -1 | 1) => {
     const target = index + direction;
     if (target < 0 || target >= draft.length) return;
@@ -1746,7 +1891,10 @@ function StorefrontLabelsEditor({
           disabled={draft.length >= 12}
           onClick={() => {
             const id = randomUuid();
-            setDraft((current) => [...current, { id, title: 'New label', categorySlug: null, recommendationIds: [] }]);
+            setDraft((current) => [
+              ...current,
+              { id, title: 'New label', categorySlug: null, recommendationIds: [] },
+            ]);
             setExpandedId(id);
           }}
           type="button"
@@ -1758,57 +1906,121 @@ function StorefrontLabelsEditor({
         {draft.map((label, index) => (
           <article className="creatorLabelEditorCard" key={label.id}>
             <div className="creatorLabelSummaryRow">
-              <button className="creatorLabelToggle" type="button" aria-expanded={expandedId === label.id} aria-controls={`label-fields-${label.id}`} onClick={() => setExpandedId((current) => current === label.id ? null : label.id)}>
+              <button
+                className="creatorLabelToggle"
+                type="button"
+                aria-expanded={expandedId === label.id}
+                aria-controls={`label-fields-${label.id}`}
+                onClick={() =>
+                  setExpandedId((current) => (current === label.id ? null : label.id))
+                }
+              >
                 <ChevronDown aria-hidden="true" size={16} />
-                <span><strong>{label.title || 'Untitled label'}</strong><small>{label.categorySlug ? categories.find(({ slug }) => slug === label.categorySlug)?.name ?? label.categorySlug : `${label.recommendationIds.length} selected items`}</small></span>
+                <span>
+                  <strong>{label.title || 'Untitled label'}</strong>
+                  <small>
+                    {label.categorySlug
+                      ? (categories.find(({ slug }) => slug === label.categorySlug)
+                          ?.name ?? label.categorySlug)
+                      : `${label.recommendationIds.length} selected items`}
+                  </small>
+                </span>
               </button>
               <div className="creatorLabelActions">
-                <button aria-label={`Move ${label.title} up`} disabled={index === 0} onClick={() => move(index, -1)} type="button"><ArrowUp aria-hidden="true" size={15} /></button>
-                <button aria-label={`Move ${label.title} down`} disabled={index === draft.length - 1} onClick={() => move(index, 1)} type="button"><ArrowDown aria-hidden="true" size={15} /></button>
-                <button aria-label={`Delete ${label.title}`} onClick={() => setDraft((current) => current.filter(({ id }) => id !== label.id))} type="button"><Trash2 aria-hidden="true" size={15} /></button>
+                <button
+                  aria-label={`Move ${label.title} up`}
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                  type="button"
+                >
+                  <ArrowUp aria-hidden="true" size={15} />
+                </button>
+                <button
+                  aria-label={`Move ${label.title} down`}
+                  disabled={index === draft.length - 1}
+                  onClick={() => move(index, 1)}
+                  type="button"
+                >
+                  <ArrowDown aria-hidden="true" size={15} />
+                </button>
+                <button
+                  aria-label={`Delete ${label.title}`}
+                  onClick={() =>
+                    setDraft((current) => current.filter(({ id }) => id !== label.id))
+                  }
+                  type="button"
+                >
+                  <Trash2 aria-hidden="true" size={15} />
+                </button>
               </div>
             </div>
             <div id={`label-fields-${label.id}`} hidden={expandedId !== label.id}>
-            <div className="creatorLabelEditorTop">
-              <label>
-                Label name
-                <input maxLength={40} value={label.title} onChange={(event) => update(label.id, { title: event.target.value })} />
-              </label>
-              <label>
-                Filter by
-                <select
-                  value={label.categorySlug ?? 'custom'}
-                  onChange={(event) => update(label.id, event.target.value === 'custom'
-                    ? { categorySlug: null }
-                    : { categorySlug: event.target.value, recommendationIds: [] })}
-                >
-                  <option value="custom">Selected items</option>
-                  {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
-                </select>
-              </label>
-
-            </div>
-            {!label.categorySlug ? (
-              <fieldset className="creatorLabelItems">
-                <legend>Choose items ? {label.recommendationIds.length} selected</legend>
-                {!recommendations.length ? <p className="creatorLabelEmpty">Add recommendations first to select items for this label.</p> : null}
-                {recommendations.map((item) => (
-                  <label key={item.id}>
-                    <input
-                      checked={label.recommendationIds.includes(item.id)}
-                      onChange={(event) => update(label.id, {
-                        recommendationIds: event.target.checked
-                          ? [...label.recommendationIds, item.id]
-                          : label.recommendationIds.filter((id) => id !== item.id),
-                      })}
-                      type="checkbox"
-                    />
-                    <Image alt="" height={40} width={40} src={item.imageUrl} unoptimized />
-                    <span dir="auto">{item.productName}</span>
-                  </label>
-                ))}
-              </fieldset>
-            ) : null}
+              <div className="creatorLabelEditorTop">
+                <label>
+                  Label name
+                  <input
+                    maxLength={40}
+                    value={label.title}
+                    onChange={(event) => update(label.id, { title: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Filter by
+                  <select
+                    value={label.categorySlug ?? 'custom'}
+                    onChange={(event) =>
+                      update(
+                        label.id,
+                        event.target.value === 'custom'
+                          ? { categorySlug: null }
+                          : { categorySlug: event.target.value, recommendationIds: [] },
+                      )
+                    }
+                  >
+                    <option value="custom">Selected items</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.slug}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              {!label.categorySlug ? (
+                <fieldset className="creatorLabelItems">
+                  <legend>
+                    Choose items ? {label.recommendationIds.length} selected
+                  </legend>
+                  {!recommendations.length ? (
+                    <p className="creatorLabelEmpty">
+                      Add recommendations first to select items for this label.
+                    </p>
+                  ) : null}
+                  {recommendations.map((item) => (
+                    <label key={item.id}>
+                      <input
+                        checked={label.recommendationIds.includes(item.id)}
+                        onChange={(event) =>
+                          update(label.id, {
+                            recommendationIds: event.target.checked
+                              ? [...label.recommendationIds, item.id]
+                              : label.recommendationIds.filter((id) => id !== item.id),
+                          })
+                        }
+                        type="checkbox"
+                      />
+                      <Image
+                        alt=""
+                        height={40}
+                        width={40}
+                        src={item.imageUrl}
+                        unoptimized
+                      />
+                      <span dir="auto">{item.productName}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              ) : null}
             </div>
           </article>
         ))}
@@ -1816,7 +2028,9 @@ function StorefrontLabelsEditor({
       <button
         className="button primary"
         disabled={saving || draft.some(({ title }) => !title.trim())}
-        onClick={() => onSave(draft.map((label) => ({ ...label, title: label.title.trim() })))}
+        onClick={() =>
+          onSave(draft.map((label) => ({ ...label, title: label.title.trim() })))
+        }
         type="button"
       >
         {saving ? 'Saving…' : 'Save labels'}
@@ -2051,96 +2265,122 @@ function ProductForm({
               onChange={(event) => update('priceIls', event.target.value)}
             />
           </label>
-          <div className="creatorCompactPicker"><span>Categories <small>Optional</small></span>
-            <details><summary>{categories.filter(({ id }) => editor.categoryIds.includes(id)).map(({ name }) => name).join(', ') || 'Select categories'}</summary><div className="creatorCompactPickerPanel">
-            <div className="creatorPickerOptions">
-              {categories.map((category) => (
-                <label key={category.id}>
-                  <input
-                    checked={editor.categoryIds.includes(category.id)}
-                    onChange={(event) => {
-                      const categoryIds = event.target.checked
-                        ? [...editor.categoryIds, category.id]
-                        : editor.categoryIds.filter((id) => id !== category.id);
-                      onChange({
-                        ...editor,
-                        categoryId: categoryIds[0] ?? editor.categoryId,
-                        categoryIds,
-                      });
-                    }}
-                    type="checkbox"
-                  />
-                  {category.name}
-                </label>
-              ))}
-            </div>
-            <span className="creatorCustomCategory">
-              <input
-                aria-label="New category name"
-                maxLength={100}
-                placeholder="Add your own category"
-                value={customCategoryName}
-                onChange={(event) => setCustomCategoryName(event.target.value)}
-              />
-              <button
-                className="button secondary"
-                disabled={creatingCategory || !customCategoryName.trim()}
-                onClick={() => {
-                  setCreatingCategory(true);
-                  void apiRequest<CategoryCard>('/creator/categories', {
-                    body: JSON.stringify({ name: customCategoryName }),
-                    method: 'POST',
-                  })
-                    .then((category) => {
-                      onCategoryCreated(category);
-                      onChange({
-                        ...editor,
-                        categoryId: category.id,
-                        categoryIds: [...editor.categoryIds, category.id],
-                      });
-                      setCustomCategoryName('');
-                    })
-                    .finally(() => setCreatingCategory(false));
-                }}
-                type="button"
-              >
-                <Plus aria-hidden="true" size={14} />{' '}
-                {creatingCategory ? 'Adding…' : 'Add'}
-              </button>
+          <div className="creatorCompactPicker">
+            <span>
+              Categories <small>Optional</small>
             </span>
-          </div></details></div>
-          <div className="creatorCompactPicker"><span>Collections <small>Optional</small></span>
-            <details><summary>{matchingCollections.filter(({ id }) => editor.collectionIds.includes(id)).map(({ title }) => title).join(', ') || 'Select collections'}</summary><div className="creatorCompactPickerPanel">
-            <p>An item can belong to multiple collections from the same brand.</p>
-            <div className="creatorPickerOptions">
-              {matchingCollections.length ? (
-                matchingCollections.map((collection) => (
-                  <label key={collection.id}>
-                    <input
-                      checked={editor.collectionIds.includes(collection.id)}
-                      disabled={
-                        collection.recommendationIds.length >= 20 &&
-                        !editor.collectionIds.includes(collection.id)
-                      }
-                      onChange={(event) =>
-                        update(
-                          'collectionIds',
-                          event.target.checked
-                            ? [...editor.collectionIds, collection.id]
-                            : editor.collectionIds.filter((id) => id !== collection.id),
-                        )
-                      }
-                      type="checkbox"
-                    />
-                    {collection.title}
-                    {collection.recommendationIds.length >= 20 ? ' (full)' : ''}
-                  </label>
-                ))
-              ) : (
-                <small>No collections exist for this brand yet.</small>
-              )}
-            </div>
-          </div></details></div>
+            <details>
+              <summary>
+                {categories
+                  .filter(({ id }) => editor.categoryIds.includes(id))
+                  .map(({ name }) => name)
+                  .join(', ') || 'Select categories'}
+              </summary>
+              <div className="creatorCompactPickerPanel">
+                <div className="creatorPickerOptions">
+                  {categories.map((category) => (
+                    <label key={category.id}>
+                      <input
+                        checked={editor.categoryIds.includes(category.id)}
+                        onChange={(event) => {
+                          const categoryIds = event.target.checked
+                            ? [...editor.categoryIds, category.id]
+                            : editor.categoryIds.filter((id) => id !== category.id);
+                          onChange({
+                            ...editor,
+                            categoryId: categoryIds[0] ?? editor.categoryId,
+                            categoryIds,
+                          });
+                        }}
+                        type="checkbox"
+                      />
+                      {category.name}
+                    </label>
+                  ))}
+                </div>
+                <span className="creatorCustomCategory">
+                  <input
+                    aria-label="New category name"
+                    maxLength={100}
+                    placeholder="Add your own category"
+                    value={customCategoryName}
+                    onChange={(event) => setCustomCategoryName(event.target.value)}
+                  />
+                  <button
+                    className="button secondary"
+                    disabled={creatingCategory || !customCategoryName.trim()}
+                    onClick={() => {
+                      setCreatingCategory(true);
+                      void apiRequest<CategoryCard>('/creator/categories', {
+                        body: JSON.stringify({ name: customCategoryName }),
+                        method: 'POST',
+                      })
+                        .then((category) => {
+                          onCategoryCreated(category);
+                          onChange({
+                            ...editor,
+                            categoryId: category.id,
+                            categoryIds: [...editor.categoryIds, category.id],
+                          });
+                          setCustomCategoryName('');
+                        })
+                        .finally(() => setCreatingCategory(false));
+                    }}
+                    type="button"
+                  >
+                    <Plus aria-hidden="true" size={14} />{' '}
+                    {creatingCategory ? 'Adding…' : 'Add'}
+                  </button>
+                </span>
+              </div>
+            </details>
+          </div>
+          <div className="creatorCompactPicker">
+            <span>
+              Collections <small>Optional</small>
+            </span>
+            <details>
+              <summary>
+                {matchingCollections
+                  .filter(({ id }) => editor.collectionIds.includes(id))
+                  .map(({ title }) => title)
+                  .join(', ') || 'Select collections'}
+              </summary>
+              <div className="creatorCompactPickerPanel">
+                <p>An item can belong to multiple collections from the same brand.</p>
+                <div className="creatorPickerOptions">
+                  {matchingCollections.length ? (
+                    matchingCollections.map((collection) => (
+                      <label key={collection.id}>
+                        <input
+                          checked={editor.collectionIds.includes(collection.id)}
+                          disabled={
+                            collection.recommendationIds.length >= 20 &&
+                            !editor.collectionIds.includes(collection.id)
+                          }
+                          onChange={(event) =>
+                            update(
+                              'collectionIds',
+                              event.target.checked
+                                ? [...editor.collectionIds, collection.id]
+                                : editor.collectionIds.filter(
+                                    (id) => id !== collection.id,
+                                  ),
+                            )
+                          }
+                          type="checkbox"
+                        />
+                        {collection.title}
+                        {collection.recommendationIds.length >= 20 ? ' (full)' : ''}
+                      </label>
+                    ))
+                  ) : (
+                    <small>No collections exist for this brand yet.</small>
+                  )}
+                </div>
+              </div>
+            </details>
+          </div>
           <label>
             Discount code
             <input

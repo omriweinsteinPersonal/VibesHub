@@ -7,7 +7,10 @@ import { CreatorShellHeader } from './creator-shell-header';
 const subscribe = () => () => {};
 const isEmbedded = () => window.self !== window.top;
 
-export function StorefrontHeader({ creatorSession, workspace = false }: {
+export function StorefrontHeader({
+  creatorSession,
+  workspace = false,
+}: {
   creatorSession: boolean;
   workspace?: boolean;
 }) {
@@ -15,7 +18,9 @@ export function StorefrontHeader({ creatorSession, workspace = false }: {
   if (embedded || !creatorSession) {
     return (
       <header className="creatorShellHeader storefrontVisitorHeader">
-        <div className="creatorShellHeaderInner"><Brand /></div>
+        <div className="creatorShellHeaderInner">
+          <Brand />
+        </div>
       </header>
     );
   }

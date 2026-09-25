@@ -161,7 +161,15 @@ export function StorefrontPhonePreview({
   useEffect(() => {
     if (!showPhone) return;
     frame.current?.contentWindow?.postMessage(
-      { type: 'swave:theme-preview', creatorId, theme: draft, titles: previewTitles, brandOrder: previewBrandOrder, selectedBlock, editingContent: tab === 'content' },
+      {
+        type: 'swave:theme-preview',
+        creatorId,
+        theme: draft,
+        titles: previewTitles,
+        brandOrder: previewBrandOrder,
+        selectedBlock,
+        editingContent: tab === 'content',
+      },
       window.location.origin,
     );
   }, [creatorId, draft, previewTitles, previewBrandOrder, selectedBlock, tab, showPhone]);
@@ -180,7 +188,15 @@ export function StorefrontPhonePreview({
         blockId?: string;
         type?: string;
       };
-      if (data.type === 'swave:block-select' && data.creatorId === creatorId && data.blockId) { setSelectedBlock(data.blockId); setTab('content'); return; }
+      if (
+        data.type === 'swave:block-select' &&
+        data.creatorId === creatorId &&
+        data.blockId
+      ) {
+        setSelectedBlock(data.blockId);
+        setTab('content');
+        return;
+      }
       if (
         data.type === 'swave:theme-select' &&
         data.creatorId === creatorId &&
@@ -232,123 +248,150 @@ export function StorefrontPhonePreview({
             </p>
           </div>
           <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
-            <button type="button" aria-pressed={tab === 'design'} onClick={() => setTab('design')}>Design</button>
-            <button type="button" aria-pressed={tab === 'content'} onClick={() => setTab('content')}>Content</button>
+            <button
+              type="button"
+              aria-pressed={tab === 'design'}
+              onClick={() => setTab('design')}
+            >
+              Design
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === 'content'}
+              onClick={() => setTab('content')}
+            >
+              Content
+            </button>
           </div>
-          <div hidden={tab !== 'content'}><StorefrontContentEditor creatorId={creatorId} targets={contentTargets} selectedId={selectedBlock} onSelect={setSelectedBlock} onPreview={(next) => { setPreviewTitles(next.titles); setPreviewBrandOrder(next.brandOrder); }} /></div>
+          <div hidden={tab !== 'content'}>
+            <StorefrontContentEditor
+              creatorId={creatorId}
+              targets={contentTargets}
+              selectedId={selectedBlock}
+              onSelect={setSelectedBlock}
+              onPreview={(next) => {
+                setPreviewTitles(next.titles);
+                setPreviewBrandOrder(next.brandOrder);
+              }}
+            />
+          </div>
           <div hidden={tab !== 'design'}>
-          <div className="storefrontPaletteList" role="group" aria-label="Color palettes">
-            {palettes.map(({ name, theme: palette }) => (
+            <div
+              className="storefrontPaletteList"
+              role="group"
+              aria-label="Color palettes"
+            >
+              {palettes.map(({ name, theme: palette }) => (
+                <button
+                  aria-pressed={JSON.stringify(draft) === JSON.stringify(palette)}
+                  key={name}
+                  onClick={() => {
+                    setDraft(palette);
+                    setNotice('');
+                  }}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="storefrontPaletteSwatches">
+                    <i style={{ background: palette.profileBackground }} />
+                    <i style={{ background: palette.recommendationsBackground }} />
+                    <i style={{ background: palette.accentColor }} />
+                  </span>
+                  {name}
+                </button>
+              ))}
+            </div>
+            <div className="storefrontDesignFields">
+              {groups.map((group) => (
+                <section
+                  className={selected === group.id ? 'isSelected' : ''}
+                  key={group.id}
+                >
+                  <button
+                    aria-expanded={selected === group.id}
+                    onClick={() => setSelected(group.id)}
+                    type="button"
+                  >
+                    {group.title}
+                    <span aria-hidden="true">{selected === group.id ? '−' : '+'}</span>
+                  </button>
+                  {selected === group.id ? (
+                    <div className="storefrontColorFields">
+                      {group.fields.map(({ key, label }) => (
+                        <label key={key}>
+                          <span>{label}</span>
+                          <span className="storefrontColorControl">
+                            <input
+                              aria-label={`${group.title}: ${label}`}
+                              onChange={(event) => {
+                                setDraft((current) => ({
+                                  ...current,
+                                  [key]: event.target.value,
+                                }));
+                                setNotice('');
+                              }}
+                              type="color"
+                              value={draft[key]}
+                            />
+                            <output>{draft[key].toUpperCase()}</output>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
+              ))}
+            </div>
+            {[
+              draft.profileBackground,
+              draft.recommendationsBackground,
+              draft.productBackground,
+              draft.discountBackground,
+              draft.collectionBackground,
+            ].some((color) => contrastRatio(draft.textColor, color) < 4.5) ? (
+              <p className="storefrontContrastNotice">
+                Some text and background colors need more contrast to stay readable.
+              </p>
+            ) : null}
+            {error ? (
+              <p className="formError" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {notice ? (
+              <p className="storefrontDesignNotice" role="status">
+                {notice}
+              </p>
+            ) : null}
+            <div className="storefrontDesignActions">
               <button
-                aria-pressed={JSON.stringify(draft) === JSON.stringify(palette)}
-                key={name}
+                disabled={!changed || saving}
                 onClick={() => {
-                  setDraft(palette);
+                  setDraft(configuration?.theme ?? theme);
                   setNotice('');
                 }}
                 type="button"
               >
-                <span aria-hidden="true" className="storefrontPaletteSwatches">
-                  <i style={{ background: palette.profileBackground }} />
-                  <i style={{ background: palette.recommendationsBackground }} />
-                  <i style={{ background: palette.accentColor }} />
-                </span>
-                {name}
+                Undo changes
               </button>
-            ))}
-          </div>
-          <div className="storefrontDesignFields">
-            {groups.map((group) => (
-              <section
-                className={selected === group.id ? 'isSelected' : ''}
-                key={group.id}
+              <button
+                disabled={saving}
+                onClick={() => {
+                  setDraft(defaultStorefrontTheme);
+                  setNotice('');
+                }}
+                type="button"
               >
-                <button
-                  aria-expanded={selected === group.id}
-                  onClick={() => setSelected(group.id)}
-                  type="button"
-                >
-                  {group.title}
-                  <span aria-hidden="true">{selected === group.id ? '−' : '+'}</span>
-                </button>
-                {selected === group.id ? (
-                  <div className="storefrontColorFields">
-                    {group.fields.map(({ key, label }) => (
-                      <label key={key}>
-                        <span>{label}</span>
-                        <span className="storefrontColorControl">
-                          <input
-                            aria-label={`${group.title}: ${label}`}
-                            onChange={(event) => {
-                              setDraft((current) => ({
-                                ...current,
-                                [key]: event.target.value,
-                              }));
-                              setNotice('');
-                            }}
-                            type="color"
-                            value={draft[key]}
-                          />
-                          <output>{draft[key].toUpperCase()}</output>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-            ))}
-          </div>
-          {[
-            draft.profileBackground,
-            draft.recommendationsBackground,
-            draft.productBackground,
-            draft.discountBackground,
-            draft.collectionBackground,
-          ].some((color) => contrastRatio(draft.textColor, color) < 4.5) ? (
-            <p className="storefrontContrastNotice">
-              Some text and background colors need more contrast to stay readable.
-            </p>
-          ) : null}
-          {error ? (
-            <p className="formError" role="alert">
-              {error}
-            </p>
-          ) : null}
-          {notice ? (
-            <p className="storefrontDesignNotice" role="status">
-              {notice}
-            </p>
-          ) : null}
-          <div className="storefrontDesignActions">
-            <button
-              disabled={!changed || saving}
-              onClick={() => {
-                setDraft(configuration?.theme ?? theme);
-                setNotice('');
-              }}
-              type="button"
-            >
-              Undo changes
-            </button>
-            <button
-              disabled={saving}
-              onClick={() => {
-                setDraft(defaultStorefrontTheme);
-                setNotice('');
-              }}
-              type="button"
-            >
-              Reset colors
-            </button>
-            <button
-              className="button primary"
-              disabled={!configuration || !changed || saving}
-              onClick={() => void save()}
-              type="button"
-            >
-              {saving ? 'Saving…' : 'Save design'}
-            </button>
-          </div>
+                Reset colors
+              </button>
+              <button
+                className="button primary"
+                disabled={!configuration || !changed || saving}
+                onClick={() => void save()}
+                type="button"
+              >
+                {saving ? 'Saving…' : 'Save design'}
+              </button>
+            </div>
           </div>
         </aside>
       ) : null}
@@ -359,7 +402,15 @@ export function StorefrontPhonePreview({
             className="storefrontPhoneScreen"
             onLoad={() =>
               frame.current?.contentWindow?.postMessage(
-                { type: 'swave:theme-preview', creatorId, theme: draft, titles: previewTitles, brandOrder: previewBrandOrder, selectedBlock, editingContent: tab === 'content' },
+                {
+                  type: 'swave:theme-preview',
+                  creatorId,
+                  theme: draft,
+                  titles: previewTitles,
+                  brandOrder: previewBrandOrder,
+                  selectedBlock,
+                  editingContent: tab === 'content',
+                },
                 window.location.origin,
               )
             }

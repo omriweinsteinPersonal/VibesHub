@@ -50,10 +50,14 @@ export function CreatorStorefrontView({
   recommendations: RecommendationCard[];
   storefront: CreatorStorefront;
 }) {
-  const [previewBrandOrder, setPreviewBrandOrder] = useState<string[]>(storefront.brandOrder ?? []);
+  const [previewBrandOrder, setPreviewBrandOrder] = useState<string[]>(
+    storefront.brandOrder ?? [],
+  );
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState(false);
-  const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[]>(storefront.titles ?? []);
+  const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[]>(
+    storefront.titles ?? [],
+  );
   const [query, setQuery] = useState('');
   const [activeLabelId, setActiveLabelId] = useState<string | null>(null);
   const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
@@ -73,13 +77,25 @@ export function CreatorStorefrontView({
     const receive = (event: MessageEvent) => {
       if (event.origin !== window.location.origin || event.source !== window.parent)
         return;
-      const data = event.data as { creatorId?: string; theme?: unknown; titles?: unknown; brandOrder?: unknown; selectedBlock?: string | null; editingContent?: boolean; type?: string };
+      const data = event.data as {
+        creatorId?: string;
+        theme?: unknown;
+        titles?: unknown;
+        brandOrder?: unknown;
+        selectedBlock?: string | null;
+        editingContent?: boolean;
+        type?: string;
+      };
       if (data.type !== 'swave:theme-preview' || data.creatorId !== storefront.id) return;
       const parsed = storefrontThemeSchema.safeParse(data.theme);
       if (parsed.success) setPreviewTheme(parsed.data);
       const titles = storefrontTitlesSchema.safeParse(data.titles);
       if (titles.success) setPreviewTitles(titles.data);
-      if (Array.isArray(data.brandOrder) && data.brandOrder.every((id) => typeof id === 'string')) setPreviewBrandOrder(data.brandOrder);
+      if (
+        Array.isArray(data.brandOrder) &&
+        data.brandOrder.every((id) => typeof id === 'string')
+      )
+        setPreviewBrandOrder(data.brandOrder);
       setSelectedBlock(data.selectedBlock ?? null);
       setEditingContent(data.editingContent === true);
     };
@@ -167,10 +183,13 @@ export function CreatorStorefrontView({
     const term = query.trim().toLocaleLowerCase('he-IL');
     const label = labels.find(({ id }) => id === activeLabelId);
     return recommendations.filter((item) => {
-      const matchesLabel = !label || (label.categorySlug
-        ? item.category.slug === label.categorySlug
-        : label.recommendationIds.includes(item.id));
-      const matchesSearch = !term ||
+      const matchesLabel =
+        !label ||
+        (label.categorySlug
+          ? item.category.slug === label.categorySlug
+          : label.recommendationIds.includes(item.id));
+      const matchesSearch =
+        !term ||
         [item.productName, item.brandName, item.review.value, item.category.name].some(
           (value) => value.toLocaleLowerCase('he-IL').includes(term),
         );
@@ -284,14 +303,45 @@ export function CreatorStorefrontView({
     setOrder(nextOrder);
     void saveOrder(nextOrder, order);
   }
-  const validTargets = new Set([...storefront.brands.map(({ id }) => id), ...rows.map(({ key }) => key)]);
+  const validTargets = new Set([
+    ...storefront.brands.map(({ id }) => id),
+    ...rows.map(({ key }) => key),
+  ]);
   function renderTitles(beforeId: string | null) {
-    return previewTitles.filter((title) => beforeId === null
-      ? title.beforeId === null || !validTargets.has(title.beforeId)
-      : title.beforeId === beforeId).map((title) => {
-      const Tag = title.format === 'paragraph' ? 'p' : 'h2';
-      return <Tag key={title.id} dir="auto" className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`} data-editor-block={title.id} data-selected={selectedBlock === title.id} style={{ textAlign: title.align, ...(title.appearance === 'card' ? { background: title.background ?? '#f1e8dc', padding: {small:12,medium:20,large:28}[title.padding ?? 'small'], borderRadius: {square:0,rounded:10,soft:20}[title.radius ?? 'rounded'] } : {}) }}>{title.text}</Tag>;
-    });
+    return previewTitles
+      .filter((title) =>
+        beforeId === null
+          ? title.beforeId === null || !validTargets.has(title.beforeId)
+          : title.beforeId === beforeId,
+      )
+      .map((title) => {
+        const Tag = title.format === 'paragraph' ? 'p' : 'h2';
+        return (
+          <Tag
+            key={title.id}
+            dir="auto"
+            className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
+            data-editor-block={title.id}
+            data-selected={selectedBlock === title.id}
+            style={{
+              textAlign: title.align,
+              ...(title.appearance === 'card'
+                ? {
+                    background: title.background ?? '#f1e8dc',
+                    padding: { small: 12, medium: 20, large: 28 }[
+                      title.padding ?? 'small'
+                    ],
+                    borderRadius: { square: 0, rounded: 10, soft: 20 }[
+                      title.radius ?? 'rounded'
+                    ],
+                  }
+                : {}),
+            }}
+          >
+            {title.text}
+          </Tag>
+        );
+      });
   }
   return (
     <EngagementProvider
@@ -310,9 +360,21 @@ export function CreatorStorefrontView({
             return;
           const target = event.target as HTMLElement;
           const block = target.closest<HTMLElement>('[data-editor-block]');
-          if (block && !target.closest('input, button') && (editingContent || !target.closest('a'))) {
-            event.preventDefault(); event.stopPropagation();
-            window.parent.postMessage({ type: 'swave:block-select', creatorId: storefront.id, blockId: block.dataset.editorBlock }, window.location.origin);
+          if (
+            block &&
+            !target.closest('input, button') &&
+            (editingContent || !target.closest('a'))
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            window.parent.postMessage(
+              {
+                type: 'swave:block-select',
+                creatorId: storefront.id,
+                blockId: block.dataset.editorBlock,
+              },
+              window.location.origin,
+            );
             return;
           }
           if (target.closest('.referenceCollectionPages, .referenceStandalonePages'))
@@ -452,37 +514,49 @@ export function CreatorStorefrontView({
               />
             </label>
           </header>
-          {storefront.brands.filter((brand) => filtered.some(
-            (item) => item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase(),
-          )).sort((a,b) => {
-            const ai=previewBrandOrder.indexOf(a.id), bi=previewBrandOrder.indexOf(b.id);
-            return (ai < 0 ? 1000 : ai) - (bi < 0 ? 1000 : bi);
-          }).map((brand) => (
-            <Fragment key={brand.id}>
-            {renderTitles(brand.id)}
-            <div data-editor-block={brand.id} data-selected={selectedBlock === brand.id}>
-            <BrandBlock
-              brand={brand}
-              collections={storefront.curatedSections.filter(
-                (section) =>
-                  section.kind === 'collection' && section.brandId === brand.brandId,
-              )}
-              creatorId={storefront.id}
-              handle={storefront.handle}
-              items={filtered.filter(
+          {storefront.brands
+            .filter((brand) =>
+              filtered.some(
                 (item) =>
                   item.brandName.toLocaleLowerCase() === brand.name.toLocaleLowerCase(),
-              )}
-              offer={
-                codes.find(
-                  (code) => code.brandId === brand.id && code.scopeKind === 'brand',
-                ) ?? null
-              }
-              key={brand.id}
-            />
-            </div>
-            </Fragment>
-          ))}
+              ),
+            )
+            .sort((a, b) => {
+              const ai = previewBrandOrder.indexOf(a.id),
+                bi = previewBrandOrder.indexOf(b.id);
+              return (ai < 0 ? 1000 : ai) - (bi < 0 ? 1000 : bi);
+            })
+            .map((brand) => (
+              <Fragment key={brand.id}>
+                {renderTitles(brand.id)}
+                <div
+                  data-editor-block={brand.id}
+                  data-selected={selectedBlock === brand.id}
+                >
+                  <BrandBlock
+                    brand={brand}
+                    collections={storefront.curatedSections.filter(
+                      (section) =>
+                        section.kind === 'collection' &&
+                        section.brandId === brand.brandId,
+                    )}
+                    creatorId={storefront.id}
+                    handle={storefront.handle}
+                    items={filtered.filter(
+                      (item) =>
+                        item.brandName.toLocaleLowerCase() ===
+                        brand.name.toLocaleLowerCase(),
+                    )}
+                    offer={
+                      codes.find(
+                        (code) => code.brandId === brand.id && code.scopeKind === 'brand',
+                      ) ?? null
+                    }
+                    key={brand.id}
+                  />
+                </div>
+              </Fragment>
+            ))}
           {storefront.curatedSections.some(
             (section) => section.kind === 'page' && !section.parentCollectionId,
           ) ? (
@@ -509,168 +583,177 @@ export function CreatorStorefrontView({
             </p>
           ) : null}
           {!blocks.length &&
-          !storefront.curatedSections.some(({ kind }) => kind === 'page') ? (
-            null
-          ) : (
-            blocks.map(({ key, layer, row, code }) => {
-              const productContent = row ? (
-                <StorefrontRow
-                  creatorId={storefront.id}
-                  framed={row.framed}
-                  pages={storefront.curatedSections.filter(
-                    (section) =>
-                      section.kind === 'page' && section.parentCollectionId === row.key,
-                  )}
-                  recommendations={row.items}
-                  storefrontHandle={storefront.handle}
-                  title={row.title}
-                />
-              ) : code ? (
-                <DiscountBlock code={code} />
-              ) : null;
-              const content = <>{renderTitles(row?.key ?? code?.id ?? key)}{productContent}</>;
-              if (!canEdit || !configuration || !layer || query)
-                return <div key={key}>{content}</div>;
-              const layerKey = `${layer.kind}:${layer.id}`;
-              const draggableBlocks = blocks.filter(({ layer: item }) => item);
-              const position = draggableBlocks.findIndex(
-                ({ layer: item }) => item?.kind === layer.kind && item.id === layer.id,
-              );
-              const label = row?.title ?? code?.merchantName ?? 'Recommendation';
-              return (
-                <div
-                  aria-label={`${label}. Drag to change its position, or use the arrow keys.`}
-                  className="storefrontDraggableBlock"
-                  data-dragging={dragSource === layerKey}
-                  data-drop-target={dropTarget === layerKey}
-                  data-storefront-layer={layerKey}
-                  key={key}
-                  onClickCapture={(event) => {
-                    if (!suppressClick.current) return;
-                    event.preventDefault();
-                    event.stopPropagation();
-                    suppressClick.current = false;
-                  }}
-                  onContextMenu={(event) => event.preventDefault()}
-                  onDragStartCapture={(event) => event.preventDefault()}
-                  onKeyDown={(event) => {
-                    if (event.target !== event.currentTarget || savingOrder) return;
-                    const offset =
-                      event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
-                    if (!offset) return;
-                    const target = draggableBlocks[position + offset]?.layer;
-                    if (!target) return;
-                    event.preventDefault();
-                    void moveLayer(layerKey, `${target.kind}:${target.id}`);
-                  }}
-                  onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
-                    if (
-                      savingOrder ||
-                      (event.pointerType === 'mouse' && event.button !== 0)
-                    )
-                      return;
-                    const pointerId = event.pointerId;
-                    const isTouch = event.pointerType === 'touch';
-                    const gesture = {
-                      source: layerKey,
-                      startX: event.clientX,
-                      startY: event.clientY,
-                      active: false,
-                      order,
-                      changed: false,
-                    };
-                    const pressTimer = window.setTimeout(() => {
-                      gesture.active = true;
-                      setDragSource(layerKey);
-                    }, 280);
-                    const cleanup = () => {
-                      window.clearTimeout(pressTimer);
-                      window.removeEventListener('pointermove', onMove);
-                      window.removeEventListener('pointerup', onUp);
-                      window.removeEventListener('pointercancel', onCancel);
-                      window.removeEventListener('touchmove', onTouchMove);
-                      window.removeEventListener('touchend', onTouchEnd);
-                      window.removeEventListener('touchcancel', onTouchCancel);
-                      setDragSource(null);
-                      setDropTarget(null);
-                    };
-                    const updatePosition = (x: number, y: number) => {
-                      if (!gesture.active) {
-                        if (Math.hypot(x - gesture.startX, y - gesture.startY) > 8)
-                          window.clearTimeout(pressTimer);
+          !storefront.curatedSections.some(({ kind }) => kind === 'page')
+            ? null
+            : blocks.map(({ key, layer, row, code }) => {
+                const productContent = row ? (
+                  <StorefrontRow
+                    creatorId={storefront.id}
+                    framed={row.framed}
+                    pages={storefront.curatedSections.filter(
+                      (section) =>
+                        section.kind === 'page' && section.parentCollectionId === row.key,
+                    )}
+                    recommendations={row.items}
+                    storefrontHandle={storefront.handle}
+                    title={row.title}
+                  />
+                ) : code ? (
+                  <DiscountBlock code={code} />
+                ) : null;
+                const content = (
+                  <>
+                    {renderTitles(row?.key ?? code?.id ?? key)}
+                    {productContent}
+                  </>
+                );
+                if (!canEdit || !configuration || !layer || query)
+                  return <div key={key}>{content}</div>;
+                const layerKey = `${layer.kind}:${layer.id}`;
+                const draggableBlocks = blocks.filter(({ layer: item }) => item);
+                const position = draggableBlocks.findIndex(
+                  ({ layer: item }) => item?.kind === layer.kind && item.id === layer.id,
+                );
+                const label = row?.title ?? code?.merchantName ?? 'Recommendation';
+                return (
+                  <div
+                    aria-label={`${label}. Drag to change its position, or use the arrow keys.`}
+                    className="storefrontDraggableBlock"
+                    data-dragging={dragSource === layerKey}
+                    data-drop-target={dropTarget === layerKey}
+                    data-storefront-layer={layerKey}
+                    key={key}
+                    onClickCapture={(event) => {
+                      if (!suppressClick.current) return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      suppressClick.current = false;
+                    }}
+                    onContextMenu={(event) => event.preventDefault()}
+                    onDragStartCapture={(event) => event.preventDefault()}
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget || savingOrder) return;
+                      const offset =
+                        event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+                      if (!offset) return;
+                      const target = draggableBlocks[position + offset]?.layer;
+                      if (!target) return;
+                      event.preventDefault();
+                      void moveLayer(layerKey, `${target.kind}:${target.id}`);
+                    }}
+                    onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
+                      if (
+                        savingOrder ||
+                        (event.pointerType === 'mouse' && event.button !== 0)
+                      )
                         return;
-                      }
-                      const target =
-                        document
-                          .elementFromPoint(x, y)
-                          ?.closest<HTMLElement>('[data-storefront-layer]')?.dataset
-                          .storefrontLayer ?? null;
-                      if (target && target !== layerKey) {
-                        const nextOrder = reorderLayers(gesture.order, layerKey, target);
-                        if (nextOrder !== gesture.order) {
-                          gesture.order = nextOrder;
-                          gesture.changed = true;
-                          setOrder(nextOrder);
+                      const pointerId = event.pointerId;
+                      const isTouch = event.pointerType === 'touch';
+                      const gesture = {
+                        source: layerKey,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        active: false,
+                        order,
+                        changed: false,
+                      };
+                      const pressTimer = window.setTimeout(() => {
+                        gesture.active = true;
+                        setDragSource(layerKey);
+                      }, 280);
+                      const cleanup = () => {
+                        window.clearTimeout(pressTimer);
+                        window.removeEventListener('pointermove', onMove);
+                        window.removeEventListener('pointerup', onUp);
+                        window.removeEventListener('pointercancel', onCancel);
+                        window.removeEventListener('touchmove', onTouchMove);
+                        window.removeEventListener('touchend', onTouchEnd);
+                        window.removeEventListener('touchcancel', onTouchCancel);
+                        setDragSource(null);
+                        setDropTarget(null);
+                      };
+                      const updatePosition = (x: number, y: number) => {
+                        if (!gesture.active) {
+                          if (Math.hypot(x - gesture.startX, y - gesture.startY) > 8)
+                            window.clearTimeout(pressTimer);
+                          return;
                         }
-                      }
-                      setDropTarget(target);
-                      if (y < 64) window.scrollBy(0, -18);
-                      else if (y > window.innerHeight - 64) window.scrollBy(0, 18);
-                    };
-                    const onMove = (pointer: globalThis.PointerEvent) => {
-                      if (pointer.pointerId === pointerId)
-                        updatePosition(pointer.clientX, pointer.clientY);
-                    };
-                    const finish = () => {
-                      const active = gesture.active;
-                      cleanup();
-                      if (active) {
-                        suppressClick.current = true;
-                        if (gesture.changed) void saveOrder(gesture.order, order);
-                        window.setTimeout(() => {
-                          suppressClick.current = false;
-                        }, 400);
-                      }
-                    };
-                    const onUp = (pointer: globalThis.PointerEvent) => {
-                      if (pointer.pointerId === pointerId) finish();
-                    };
-                    const onCancel = (pointer: globalThis.PointerEvent) => {
-                      if (pointer.pointerId === pointerId) {
-                        if (isTouch && gesture.active) return;
+                        const target =
+                          document
+                            .elementFromPoint(x, y)
+                            ?.closest<HTMLElement>('[data-storefront-layer]')?.dataset
+                            .storefrontLayer ?? null;
+                        if (target && target !== layerKey) {
+                          const nextOrder = reorderLayers(
+                            gesture.order,
+                            layerKey,
+                            target,
+                          );
+                          if (nextOrder !== gesture.order) {
+                            gesture.order = nextOrder;
+                            gesture.changed = true;
+                            setOrder(nextOrder);
+                          }
+                        }
+                        setDropTarget(target);
+                        if (y < 64) window.scrollBy(0, -18);
+                        else if (y > window.innerHeight - 64) window.scrollBy(0, 18);
+                      };
+                      const onMove = (pointer: globalThis.PointerEvent) => {
+                        if (pointer.pointerId === pointerId)
+                          updatePosition(pointer.clientX, pointer.clientY);
+                      };
+                      const finish = () => {
+                        const active = gesture.active;
                         cleanup();
-                        if (gesture.changed) setOrder(order);
-                      }
-                    };
-                    const onTouchMove = (touch: TouchEvent) => {
-                      if (!isTouch) return;
-                      if (gesture.active) touch.preventDefault();
-                      const point = touch.touches[0];
-                      if (point) updatePosition(point.clientX, point.clientY);
-                    };
-                    const onTouchEnd = () => {
-                      if (isTouch) finish();
-                    };
-                    const onTouchCancel = () => {
-                      if (isTouch) {
-                        cleanup();
-                        if (gesture.changed) setOrder(order);
-                      }
-                    };
-                    window.addEventListener('pointermove', onMove);
-                    window.addEventListener('pointerup', onUp);
-                    window.addEventListener('pointercancel', onCancel);
-                    window.addEventListener('touchmove', onTouchMove, { passive: false });
-                    window.addEventListener('touchend', onTouchEnd);
-                    window.addEventListener('touchcancel', onTouchCancel);
-                  }}
-                  tabIndex={0}
-                >
-                  {content}
-                </div>
-              );
-            })
-          )}
+                        if (active) {
+                          suppressClick.current = true;
+                          if (gesture.changed) void saveOrder(gesture.order, order);
+                          window.setTimeout(() => {
+                            suppressClick.current = false;
+                          }, 400);
+                        }
+                      };
+                      const onUp = (pointer: globalThis.PointerEvent) => {
+                        if (pointer.pointerId === pointerId) finish();
+                      };
+                      const onCancel = (pointer: globalThis.PointerEvent) => {
+                        if (pointer.pointerId === pointerId) {
+                          if (isTouch && gesture.active) return;
+                          cleanup();
+                          if (gesture.changed) setOrder(order);
+                        }
+                      };
+                      const onTouchMove = (touch: TouchEvent) => {
+                        if (!isTouch) return;
+                        if (gesture.active) touch.preventDefault();
+                        const point = touch.touches[0];
+                        if (point) updatePosition(point.clientX, point.clientY);
+                      };
+                      const onTouchEnd = () => {
+                        if (isTouch) finish();
+                      };
+                      const onTouchCancel = () => {
+                        if (isTouch) {
+                          cleanup();
+                          if (gesture.changed) setOrder(order);
+                        }
+                      };
+                      window.addEventListener('pointermove', onMove);
+                      window.addEventListener('pointerup', onUp);
+                      window.addEventListener('pointercancel', onCancel);
+                      window.addEventListener('touchmove', onTouchMove, {
+                        passive: false,
+                      });
+                      window.addEventListener('touchend', onTouchEnd);
+                      window.addEventListener('touchcancel', onTouchCancel);
+                    }}
+                    tabIndex={0}
+                  >
+                    {content}
+                  </div>
+                );
+              })}
           {renderTitles(null)}
         </section>
       </div>

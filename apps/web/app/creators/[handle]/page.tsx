@@ -61,8 +61,14 @@ export default async function CreatorStorefrontPage({
       <main>
         <StorefrontPhonePreview
           contentTargets={[
-            ...storefront.brands.map(({ id, name }) => ({ id, title: name, kind: 'brand' })),
-            ...storefront.curatedSections.filter(({ brandId, kind }) => !brandId && kind !== 'page').map(({ id, title }) => ({ id, title })),
+            ...storefront.brands.map(({ id, name }) => ({
+              id,
+              title: name,
+              kind: 'brand',
+            })),
+            ...storefront.curatedSections
+              .filter(({ brandId, kind }) => !brandId && kind !== 'page')
+              .map(({ id, title }) => ({ id, title })),
           ]}
           creatorId={storefront.id}
           editable={creatorSession}
