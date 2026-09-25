@@ -29,8 +29,6 @@ import { ApplicationRepository } from './creator-applications/application.reposi
 import { ApplicationService } from './creator-applications/application.service.js';
 import { Database } from './database.js';
 import { HealthController } from './health.controller.js';
-import { EngagementController } from './engagement/engagement.controller.js';
-import { EngagementRepository } from './engagement/engagement.repository.js';
 import { IdempotencyService } from './idempotency.service.js';
 import {
   CreatorMediaController,
@@ -80,7 +78,6 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     CreatorProfileController,
     CreatorStudioController,
     AccountController,
-    EngagementController,
     ApplicationController,
     AdminApplicationController,
     AdminMerchantDomainController,
@@ -93,7 +90,6 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     AccountRepository,
     AnalyticsRepository,
     AnalyticsService,
-    EngagementRepository,
     ApplicationRepository,
     ApplicationService,
     CreatorProfileRepository,

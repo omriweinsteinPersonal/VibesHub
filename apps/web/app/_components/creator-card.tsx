@@ -2,16 +2,14 @@ import type { CreatorCard } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BadgeCheck } from 'lucide-react';
-import type { ReactNode } from 'react';
 
 import { publicAssetUrl } from '../../lib/public-asset-url';
 
 interface CreatorCardViewProps {
-  actions?: ReactNode;
   creator: CreatorCard;
 }
 
-export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
+export function CreatorCardView({ creator }: CreatorCardViewProps) {
   return (
     <article className="creatorCard storeProductCard">
       <Link
@@ -54,7 +52,6 @@ export function CreatorCardView({ actions, creator }: CreatorCardViewProps) {
             View Profile
           </Link>
         </footer>
-        {actions ? <div className="creatorCardActions">{actions}</div> : null}
       </div>
     </article>
   );

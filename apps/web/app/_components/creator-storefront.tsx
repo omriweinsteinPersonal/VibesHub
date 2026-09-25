@@ -36,7 +36,6 @@ import { storefrontEditOrder, type StorefrontLayer } from '../../lib/storefront-
 import { textOnAccent } from '../../lib/storefront-theme';
 import { StorefrontViewTracker, TrackedInstagramLink } from './analytics-events';
 import { CreatorConnectorIcon } from './creator-connector-icon';
-import { EngagementProvider } from './engagement';
 import { RecommendationCardView } from './recommendation-card';
 
 export function CreatorStorefrontView({
@@ -344,10 +343,7 @@ export function CreatorStorefrontView({
       });
   }
   return (
-    <EngagementProvider
-      creatorIds={[storefront.id]}
-      productIds={recommendations.map(({ productId }) => productId)}
-    >
+    <>
       <div
         className="creatorStorefrontCanvas"
         data-editing-content={canEdit && editingContent}
@@ -757,7 +753,7 @@ export function CreatorStorefrontView({
           {renderTitles(null)}
         </section>
       </div>
-    </EngagementProvider>
+    </>
   );
 }
 
@@ -957,7 +953,6 @@ function StorefrontRow({
               creatorId={creatorId}
               key={recommendation.id}
               recommendation={recommendation}
-              showSave
             />
           ))}
         </div>

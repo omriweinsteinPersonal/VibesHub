@@ -13,8 +13,6 @@ import {
   creatorDiscountCodeInputSchema,
   discoveryRecommendationQuerySchema,
   directionalTextSchema,
-  engagementStateInputSchema,
-  engagementListQuerySchema,
   moneySchema,
   merchantDomainApprovalInputSchema,
   merchantDomainQueueQuerySchema,
@@ -358,21 +356,6 @@ describe('shared API contracts', () => {
     });
     expect(() => discoveryRecommendationQuerySchema.parse({ sort: 'price' })).toThrow();
     expect(() => globalSearchQuerySchema.parse({ q: 'a' })).toThrow();
-  });
-
-  it('bounds shopper engagement batches and pagination', () => {
-    const creatorId = '01989f72-07e4-7f32-9b42-1ba55d4ca010';
-    const productId = '01989f72-07e4-7f32-9b42-1ba55d4ca011';
-
-    expect(
-      engagementStateInputSchema.parse({
-        creatorIds: [creatorId],
-        productIds: [productId],
-      }),
-    ).toEqual({ creatorIds: [creatorId], productIds: [productId] });
-    expect(engagementListQuerySchema.parse({ limit: '12' })).toEqual({ limit: 12 });
-    expect(() => engagementStateInputSchema.parse({})).toThrow();
-    expect(() => engagementListQuerySchema.parse({ limit: '100' })).toThrow();
   });
 
   it('normalizes bounded merchant-domain queue filters', () => {

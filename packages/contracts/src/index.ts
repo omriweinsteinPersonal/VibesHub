@@ -724,51 +724,6 @@ export const globalSearchResultsSchema = z
   })
   .strict();
 
-export const engagementListQuerySchema = z
-  .object({
-    cursor: z.preprocess(emptyStringToUndefined, z.string().trim().max(1_024).optional()),
-    limit: z.coerce.number().int().min(1).max(48).default(24),
-  })
-  .strict();
-
-export const engagementStateInputSchema = z
-  .object({
-    creatorIds: z.array(idSchema).max(48).default([]),
-    productIds: z.array(idSchema).max(48).default([]),
-  })
-  .strict()
-  .refine((value) => value.creatorIds.length > 0 || value.productIds.length > 0, {
-    message: 'At least one creator or product is required',
-  });
-
-export const engagementStateSchema = z
-  .object({
-    followedCreatorIds: z.array(idSchema),
-    savedProductIds: z.array(idSchema),
-  })
-  .strict();
-
-export const saveProductInputSchema = z
-  .object({
-    sourceRecommendationId: idSchema.nullable().optional(),
-  })
-  .strict();
-
-export const savedProductSchema = z
-  .object({
-    productId: idSchema,
-    recommendation: recommendationCardSchema,
-    savedAt: z.iso.datetime(),
-  })
-  .strict();
-
-export const followedCreatorSchema = z
-  .object({
-    creator: creatorCardSchema,
-    followedAt: z.iso.datetime(),
-  })
-  .strict();
-
 export const merchantDomainReviewStatusSchema = z.enum([
   'pending',
   'approved',
@@ -855,31 +810,12 @@ export const operationSchema = z.object({
 });
 
 export const capabilitySchema = z.enum([
-  'shopper:read',
-  'shopper:save',
   'creator:manage_profile',
   'creator:manage_content',
   'creator:view_analytics',
   'moderator:review_content',
   'admin:manage_platform',
 ]);
-
-export const accountProfileSchema = z
-  .object({
-    displayName: z.string().trim().min(1).max(100),
-    interfaceLocale: z.enum(['en', 'he']),
-    timezone: z.string().trim().min(1).max(100),
-    version: z.int().positive(),
-  })
-  .strict();
-
-export const accountProfilePatchSchema = accountProfileSchema
-  .pick({ displayName: true, interfaceLocale: true, timezone: true })
-  .partial()
-  .refine(
-    (value) => Object.keys(value).length > 0,
-    'At least one profile field is required',
-  );
 
 export const socialPlatformSchema = z.enum([
   'instagram',
@@ -1246,12 +1182,6 @@ export type PublicRecommendationDetail = z.infer<typeof publicRecommendationDeta
 export type GlobalSearchQuery = z.infer<typeof globalSearchQuerySchema>;
 export type GlobalSearchResults = z.infer<typeof globalSearchResultsSchema>;
 export type RecommendationCreator = z.infer<typeof recommendationCreatorSchema>;
-export type EngagementListQuery = z.infer<typeof engagementListQuerySchema>;
-export type EngagementStateInput = z.infer<typeof engagementStateInputSchema>;
-export type EngagementState = z.infer<typeof engagementStateSchema>;
-export type SaveProductInput = z.infer<typeof saveProductInputSchema>;
-export type SavedProduct = z.infer<typeof savedProductSchema>;
-export type FollowedCreator = z.infer<typeof followedCreatorSchema>;
 export type MerchantDomainApprovalInput = z.infer<
   typeof merchantDomainApprovalInputSchema
 >;
@@ -1284,8 +1214,6 @@ export type StoryClip = z.infer<typeof storyClipSchema>;
 export type StoryClipInput = z.infer<typeof storyClipInputSchema>;
 export type RecommendationImage = z.infer<typeof recommendationImageSchema>;
 export type RecommendationImageInput = z.infer<typeof recommendationImageInputSchema>;
-export type AccountProfile = z.infer<typeof accountProfileSchema>;
-export type AccountProfilePatch = z.infer<typeof accountProfilePatchSchema>;
 export type Capability = z.infer<typeof capabilitySchema>;
 export type CreatorApplicationInput = z.infer<typeof creatorApplicationInputSchema>;
 export type CreatorApplicationPatch = z.infer<typeof creatorApplicationPatchSchema>;

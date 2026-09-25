@@ -40,7 +40,7 @@ export default function LoginScreen() {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { intended_role: 'shopper' } },
+          options: { data: { intended_role: 'creator' } },
         });
         if (authError) throw authError;
         if (data.session) router.replace('/');
@@ -62,9 +62,9 @@ export default function LoginScreen() {
         <Pressable accessibilityRole="button" onPress={() => router.back()}>
           <Text style={styles.back}>← Back</Text>
         </Pressable>
-        <Text style={styles.eyebrow}>SWAVII COMMUNITY</Text>
+        <Text style={styles.eyebrow}>FOR CREATORS</Text>
         <Text style={styles.title}>
-          {mode === 'login' ? 'Welcome back' : 'Create your account'}
+          {mode === 'login' ? 'Welcome back' : 'Create your creator account'}
         </Text>
         <View style={styles.segmented}>
           <Pressable
@@ -102,7 +102,7 @@ export default function LoginScreen() {
         {message ? <Text style={styles.success}>{message}</Text> : null}
         <Pressable disabled={loading} onPress={submit} style={styles.submit}>
           <Text style={styles.submitText}>
-            {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'}
+            {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create your page'}
           </Text>
         </Pressable>
       </KeyboardAvoidingView>

@@ -1,21 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type {
-  AccountProfile,
-  AccountProfilePatch,
-  CreatorApplicationStatus,
-} from '@vibeshub/contracts';
+import type { CreatorApplicationStatus } from '@vibeshub/contracts';
 
 import { Database } from '../database.js';
 import type { RequestActor } from '../auth/auth.types.js';
 
-interface AccountProfileRow {
-  displayName: string;
-  interfaceLocale: 'en' | 'he';
-  timezone: string;
-  version: number;
-}
-
-interface AccountSummaryRow extends AccountProfileRow {
+interface AccountSummaryRow {
   applicationId: string | null;
   applicationStatus: CreatorApplicationStatus | null;
   creatorHandle: string | null;
@@ -28,7 +17,6 @@ export interface AccountSummary {
   creator: { handle: string; id: string } | null;
   email?: string;
   id: string;
-  profile: AccountProfile;
 }
 
 @Injectable()
@@ -38,10 +26,6 @@ export class AccountRepository {
   async getSummary(actor: RequestActor): Promise<AccountSummary> {
     const [row] = await this.database.sql<AccountSummaryRow[]>`
       select
-        p.display_name as "displayName",
-        p.interface_locale as "interfaceLocale",
-        p.timezone,
-        p.version,
         a.id as "applicationId",
         a.status as "applicationStatus",
         c.id as "creatorId",
@@ -64,50 +48,8 @@ export class AccountRepository {
           ? { handle: row.creatorHandle, id: row.creatorId }
           : null,
       id: actor.userId,
-      profile: {
-        displayName: row.displayName,
-        interfaceLocale: row.interfaceLocale,
-        timezone: row.timezone,
-        version: row.version,
-      },
     };
     if (actor.email) summary.email = actor.email;
     return summary;
-  }
-
-  async getProfile(userId: string): Promise<AccountProfile> {
-    const [row] = await this.database.sql<AccountProfileRow[]>`
-      select
-        display_name as "displayName",
-        interface_locale as "interfaceLocale",
-        timezone,
-        version
-      from app.user_profiles
-      where user_id = ${userId}
-    `;
-    if (!row) throw new Error('Account profile is missing');
-    return row;
-  }
-
-  async updateProfile(
-    userId: string,
-    patch: AccountProfilePatch,
-  ): Promise<AccountProfile> {
-    const [row] = await this.database.sql<AccountProfileRow[]>`
-      update app.user_profiles
-      set
-        display_name = coalesce(${patch.displayName ?? null}, display_name),
-        interface_locale = coalesce(${patch.interfaceLocale ?? null}, interface_locale),
-        timezone = coalesce(${patch.timezone ?? null}, timezone),
-        version = version + 1
-      where user_id = ${userId}
-      returning
-        display_name as "displayName",
-        interface_locale as "interfaceLocale",
-        timezone,
-        version
-    `;
-    if (!row) throw new Error('Account profile is missing');
-    return row;
   }
 }

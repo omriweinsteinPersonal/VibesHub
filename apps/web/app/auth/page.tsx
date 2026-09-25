@@ -45,13 +45,19 @@ function AuthExperience() {
           password,
         });
         if (authError) throw authError;
-        let destination = safeNext;
-        if (!requestedNext) {
-          const account = await apiRequest<{
-            creator: { handle: string; id: string } | null;
-          }>('/me');
-          destination = account.creator ? '/creator-home' : '/account';
-        }
+        const account = await apiRequest<{
+          capabilities: string[];
+          creator: { handle: string; id: string } | null;
+        }>('/me');
+        const destination = account.creator
+          ? safeNext
+          : account.capabilities.some((capability) =>
+                ['admin:manage_platform', 'moderator:review_content'].includes(
+                  capability,
+                ),
+              )
+            ? '/admin/applications'
+            : '/creator/apply';
         router.replace(destination);
         router.refresh();
       } else {
@@ -80,12 +86,10 @@ function AuthExperience() {
 
   async function continueWithGoogle() {
     setError('');
-    const next =
-      mode === 'signup'
-        ? '/creator/apply'
-        : mode === 'login' && !requestedNext
-          ? '/auth/continue'
-          : safeNext;
+    const continuation = new URLSearchParams({
+      next: mode === 'signup' ? '/creator/apply' : safeNext,
+    });
+    const next = `/auth/continue?${continuation.toString()}`;
     const { error: authError } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider: 'google',
       options: {

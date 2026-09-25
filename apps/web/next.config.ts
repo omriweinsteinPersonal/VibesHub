@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/account/saved',
+        destination: '/discover',
+        permanent: false,
+      },
+      {
+        source: '/account/following',
+        destination: '/creators',
+        permanent: false,
+      },
+      {
         source: '/:path*',
         has: [
           {

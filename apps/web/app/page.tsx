@@ -4,7 +4,6 @@ import {
   BarChart3,
   Check,
   ExternalLink,
-  Heart,
   LayoutGrid,
   Palette,
   Plus,
@@ -77,21 +76,15 @@ export default function HomePage() {
               <div className="creatorDemoTabs">
                 <strong>Latest</strong>
                 <span>Fashion</span>
-                <span>Favorites</span>
+                <span>Collections</span>
               </div>
               <div className="creatorDemoGrid">
                 <article className="creatorDemoCard creatorDemoCardWarm">
-                  <button aria-label="Save example product">
-                    <Heart size={15} />
-                  </button>
                   <div className="creatorDemoProductShape creatorDemoBag" />
                   <p>Everyday shoulder bag</p>
                   <strong>₪189</strong>
                 </article>
                 <article className="creatorDemoCard creatorDemoCardCool">
-                  <button aria-label="Save example product">
-                    <Heart size={15} />
-                  </button>
                   <div className="creatorDemoProductShape creatorDemoShoe" />
                   <p>My favorite sneakers</p>
                   <strong>₪329</strong>

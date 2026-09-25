@@ -26,11 +26,11 @@ export default function HomeScreen() {
             onPress={() => router.push('/login')}
             style={styles.profileButton}
           >
-            <Text style={styles.profileButtonText}>Join</Text>
+            <Text style={styles.profileButtonText}>For creators</Text>
           </Pressable>
         </View>
 
-        <Text style={styles.eyebrow}>ISRAEL&apos;S CREATOR MARKETPLACE</Text>
+        <Text style={styles.eyebrow}>CREATOR RECOMMENDATIONS</Text>
         <Text style={styles.title}>Discover what your favorite creators recommend</Text>
         <Text style={styles.subtitle}>
           Authentic recommendations, exclusive discounts and products loved by Israeli
@@ -58,7 +58,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         <Text style={styles.sectionEyebrow}>TRENDING NOW</Text>
-        <Text style={styles.sectionTitle}>Recommendations worth saving</Text>
+        <Text style={styles.sectionTitle}>Recommendations worth discovering</Text>
         <View style={styles.card}>
           <View style={styles.cardImage}>
             <View style={styles.videoPill}>

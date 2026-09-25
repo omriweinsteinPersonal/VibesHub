@@ -29,7 +29,7 @@ export function SiteHeader() {
           </nav>
           <div className="actions">
             <Link className="loginLink" href="/auth?mode=login">
-              Log in
+              Creator log in
             </Link>
             <Link className="button primary joinCreatorLink" href="/auth?mode=signup">
               Create your page
@@ -58,7 +58,7 @@ export function SiteHeader() {
           href="/auth?mode=login"
         >
           <LogIn aria-hidden="true" />
-          <span>Log in</span>
+          <span>Creator login</span>
         </Link>
       </nav>
     </>

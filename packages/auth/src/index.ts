@@ -1,6 +1,4 @@
 export const capabilities = [
-  'shopper:read',
-  'shopper:save',
   'creator:manage_profile',
   'creator:manage_content',
   'creator:view_analytics',

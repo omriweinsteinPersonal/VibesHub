@@ -13,7 +13,7 @@ describe('platform capabilities', () => {
   it('lets platform administrators satisfy every capability check', () => {
     const granted = new Set<Capability>(['admin:manage_platform']);
 
-    expect(hasCapability(granted, 'shopper:save')).toBe(true);
+    expect(hasCapability(granted, 'creator:manage_profile')).toBe(true);
     expect(hasCapability(granted, 'creator:view_analytics')).toBe(true);
     expect(hasCapability(granted, 'moderator:review_content')).toBe(true);
   });

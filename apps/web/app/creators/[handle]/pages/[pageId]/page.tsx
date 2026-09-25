@@ -7,7 +7,6 @@ import { publicApiRequest } from '../../../../../lib/api';
 import { hasCreatorSession } from '../../../../../lib/server-session';
 import { loadStorefrontRecommendations } from '../../../../../lib/storefront-recommendations';
 import { StorefrontHeader } from '../../../../_components/storefront-header';
-import { EngagementProvider } from '../../../../_components/engagement';
 import { RecommendationCardView } from '../../../../_components/recommendation-card';
 
 export const dynamic = 'force-dynamic';
@@ -59,20 +58,15 @@ export default async function ProductPage({
           <h1>{page.title}</h1>
           {page.description ? <p>{page.description}</p> : null}
         </header>
-        <EngagementProvider
-          creatorIds={[storefront.id]}
-          productIds={products.map(({ productId }) => productId)}
-        >
-          <div className="creatorProductPageGrid">
-            {products.map((recommendation) => (
-              <RecommendationCardView
-                creatorId={storefront.id}
-                key={recommendation.id}
-                recommendation={recommendation}
-              />
-            ))}
-          </div>
-        </EngagementProvider>
+        <div className="creatorProductPageGrid">
+          {products.map((recommendation) => (
+            <RecommendationCardView
+              creatorId={storefront.id}
+              key={recommendation.id}
+              recommendation={recommendation}
+            />
+          ))}
+        </div>
       </main>
     </div>
   );

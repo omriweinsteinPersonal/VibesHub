@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { Bookmark, Clock, Flame, Search } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
-import { EngagementProvider } from '../_components/engagement';
 import { RecommendationCardView } from '../_components/recommendation-card';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -32,7 +31,7 @@ interface DiscoverPageProps {
 
 const sorts: ReadonlyArray<{ label: string; value: DiscoverySort }> = [
   { label: 'Trending', value: 'trending' },
-  { label: 'Most saved', value: 'most-saved' },
+  { label: 'Popular', value: 'most-saved' },
   { label: 'Newest', value: 'newest' },
 ];
 
@@ -78,7 +77,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         <p className="eyebrow">DISCOVER</p>
         <h1>Every recommendation in one place</h1>
         <p className="lede">
-          Search a product, filter by category, and sort by what shoppers love most.
+          Search a product, filter by category, and explore what is popular now.
         </p>
 
         <form action="/discover" className="discoverSearch" method="get" role="search">
@@ -164,18 +163,15 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
             <p>Try another category or search as more creator picks are published.</p>
           </div>
         ) : (
-          <EngagementProvider productIds={recommendations.map((item) => item.productId)}>
-            <div className="storeProductGrid">
-              {recommendations.map((recommendation) => (
-                <RecommendationCardView
-                  creator={recommendation.creator}
-                  key={recommendation.id}
-                  recommendation={recommendation}
-                  showSave
-                />
-              ))}
-            </div>
-          </EngagementProvider>
+          <div className="storeProductGrid">
+            {recommendations.map((recommendation) => (
+              <RecommendationCardView
+                creator={recommendation.creator}
+                key={recommendation.id}
+                recommendation={recommendation}
+              />
+            ))}
+          </div>
         )}
 
         {nextCursor ? (
@@ -204,7 +200,7 @@ function normalizeSearch(value: string | undefined): string | undefined {
 function sortLabel(sort: DiscoverySort): string {
   return {
     newest: 'Newest recommendations',
-    'most-saved': 'Most saved products',
+    'most-saved': 'Popular products',
     trending: 'Trending recommendations',
   }[sort];
 }

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { ArrowRight, Bookmark, Search, Tag, type LucideIcon } from 'lucide-react';
 
 import { publicApiCollectionRequest } from '../../lib/api';
-import { EngagementProvider } from '../_components/engagement';
 import { RecommendationCardView } from '../_components/recommendation-card';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -27,10 +26,10 @@ const steps = [
   },
   {
     description:
-      'Build a wishlist across creators and get notified when a product drops in price.',
+      'Explore recommendations across creators and compare the products they truly use.',
     icon: Bookmark,
     number: '02',
-    title: 'Save what you love',
+    title: 'Explore what you love',
   },
   {
     description:
@@ -47,7 +46,7 @@ export default async function ShoppersPage() {
 
   try {
     const page = await publicApiCollectionRequest<DiscoveryRecommendationCard>(
-      '/discover/recommendations?sort=most-saved&limit=4',
+      '/discover/recommendations?sort=trending&limit=4',
     );
     recommendations = page.data.slice(0, 4);
   } catch {
@@ -94,10 +93,10 @@ export default async function ShoppersPage() {
         <section className="shopperFavorites" aria-labelledby="shopper-favorites-title">
           <div className="shopperFavoritesHeading">
             <div>
-              <p className="eyebrow">SHOPPER FAVORITES</p>
-              <h2 id="shopper-favorites-title">Most saved this month</h2>
+              <p className="eyebrow">POPULAR PICKS</p>
+              <h2 id="shopper-favorites-title">Popular this month</h2>
             </div>
-            <Link href="/discover?sort=most-saved">
+            <Link href="/discover?sort=trending">
               See everything <ArrowRight aria-hidden="true" size={16} />
             </Link>
           </div>
@@ -109,24 +108,19 @@ export default async function ShoppersPage() {
             </div>
           ) : recommendations.length === 0 ? (
             <div className="directoryState">
-              <h3>Favorites will appear here soon</h3>
-              <p>Save products in Discover to help shape this collection.</p>
+              <h3>Popular picks will appear here soon</h3>
+              <p>Explore Discover as more creator recommendations are published.</p>
             </div>
           ) : (
-            <EngagementProvider
-              productIds={recommendations.map((item) => item.productId)}
-            >
-              <div className="storeProductGrid">
-                {recommendations.map((recommendation) => (
-                  <RecommendationCardView
-                    creator={recommendation.creator}
-                    key={recommendation.id}
-                    recommendation={recommendation}
-                    showSave
-                  />
-                ))}
-              </div>
-            </EngagementProvider>
+            <div className="storeProductGrid">
+              {recommendations.map((recommendation) => (
+                <RecommendationCardView
+                  creator={recommendation.creator}
+                  key={recommendation.id}
+                  recommendation={recommendation}
+                />
+              ))}
+            </div>
           )}
         </section>
       </main>

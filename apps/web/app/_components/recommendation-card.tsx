@@ -6,23 +6,18 @@ import Link from 'next/link';
 import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
-import { SaveProductButton } from './engagement';
 import { StoryVideo } from './story-video';
 
 interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
   creatorId?: string;
-  onSaveChange?: (saved: boolean) => void;
   recommendation: RecommendationCard;
-  showSave?: boolean;
 }
 
 export function RecommendationCardView({
   creator,
   creatorId,
-  onSaveChange,
   recommendation,
-  showSave = false,
 }: RecommendationCardViewProps) {
   const attributedCreatorId = creatorId ?? creator?.id;
   const clips = recommendation.storyClips?.length
@@ -89,16 +84,6 @@ export function RecommendationCardView({
               recommendation.productName
             )}
           </h3>
-          {showSave ? (
-            <div className="storeCardAction">
-              <SaveProductButton
-                iconOnly
-                onChange={onSaveChange}
-                productId={recommendation.productId}
-                recommendationId={recommendation.id}
-              />
-            </div>
-          ) : null}
         </div>
         {recommendation.price.amountMinor > 0 ? (
           <p className="storePrice" dir={textDirection}>
