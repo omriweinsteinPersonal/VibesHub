@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { splitBilingualProductTitle } from './bilingual-product-title';
+import {
+  isRedundantBrandTitleLine,
+  splitBilingualProductTitle,
+} from './bilingual-product-title';
 
 describe('splitBilingualProductTitle', () => {
   it('separates mixed Hebrew and English product names', () => {
@@ -52,5 +55,11 @@ describe('splitBilingualProductTitle', () => {
   it('leaves single-language titles to the browser bidi algorithm', () => {
     expect(splitBilingualProductTitle('Soft Pinch Liquid Blush')).toBeNull();
     expect(splitBilingualProductTitle('תיק יד שחור')).toBeNull();
+  });
+
+  it('recognizes a title line that only repeats the shelf brand', () => {
+    expect(isRedundantBrandTitleLine('Wolt', 'WOLT')).toBe(true);
+    expect(isRedundantBrandTitleLine('Wolt |', 'Wolt')).toBe(true);
+    expect(isRedundantBrandTitleLine('Wolt Market', 'Wolt')).toBe(false);
   });
 });

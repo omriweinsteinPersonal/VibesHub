@@ -4,7 +4,10 @@ import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contra
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { splitBilingualProductTitle } from '../../lib/bilingual-product-title';
+import {
+  isRedundantBrandTitleLine,
+  splitBilingualProductTitle,
+} from '../../lib/bilingual-product-title';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { StoryVideo } from './story-video';
@@ -46,6 +49,9 @@ export function RecommendationCardView({
           { direction: 'rtl' as const, language: 'he', text: title.hebrew },
         ]
     : null;
+  const visibleTitleLines = titleLines?.filter(
+    ({ text }) => !isRedundantBrandTitleLine(text, recommendation.brandName),
+  );
 
   return (
     <article
@@ -101,21 +107,28 @@ export function RecommendationCardView({
       </div>
       <div className="storeProductDetails" dir={textDirection}>
         <div className="compactProductHeading">
-          <h3 className={title ? 'bilingualProductTitle' : undefined} dir="auto">
-            {titleLines
-              ? titleLines.map((line, index) => (
-                  <span
-                    className={
-                      index === 0 ? 'productTitlePrimary' : 'productTitleSecondary'
-                    }
-                    dir={line.direction}
-                    key={line.language}
-                    lang={line.language}
-                  >
-                    {line.text}
-                  </span>
-                ))
-              : isolateMeasurements(recommendation.productName)}
+          <h3
+            className={title ? 'bilingualProductTitle' : 'singleLanguageProductTitle'}
+            dir={textDirection}
+          >
+            {visibleTitleLines?.length ? (
+              visibleTitleLines.map((line, index) => (
+                <span
+                  className={
+                    index === 0 ? 'productTitlePrimary' : 'productTitleSecondary'
+                  }
+                  dir={line.direction}
+                  key={line.language}
+                  lang={line.language}
+                >
+                  {line.text}
+                </span>
+              ))
+            ) : titleLines ? null : (
+              <span className="productTitlePrimary" dir={textDirection}>
+                {isolateMeasurements(recommendation.productName)}
+              </span>
+            )}
           </h3>
         </div>
         <div className="storePriceRow">

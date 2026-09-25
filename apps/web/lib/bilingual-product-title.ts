@@ -21,6 +21,18 @@ export interface BilingualProductTitle {
   hebrew: string;
 }
 
+export function isRedundantBrandTitleLine(line: string, brandName: string): boolean {
+  return normalizeTitlePart(line) === normalizeTitlePart(brandName);
+}
+
+function normalizeTitlePart(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9\u0590-\u05ff]+/gu, ' ')
+    .trim();
+}
+
 export function splitBilingualProductTitle(title: string): BilingualProductTitle | null {
   if (!hebrew.test(title) || !latin.test(title)) return null;
 
