@@ -9148,9 +9148,16 @@ dt {
   }
   .creatorHeroActions {
     width: 100%;
+    flex-wrap: nowrap;
+    gap: 10px;
   }
   .creatorHeroActions .button {
-    flex: 1 1 100%;
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
   .creatorHeroNote {
     justify-content: center;
@@ -9179,18 +9186,41 @@ dt {
   .creatorSectionHeading {
     margin-bottom: 32px;
   }
+  .creatorStepGrid,
   .creatorFeatureGrid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-auto-columns: minmax(272px, 82vw);
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    gap: 12px;
+    margin-right: -20px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 2px 20px 10px 2px;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+  }
+  .creatorFeatureGrid {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .creatorStepGrid::-webkit-scrollbar,
+  .creatorFeatureGrid::-webkit-scrollbar {
+    display: none;
+  }
+  .creatorStepGrid article,
+  .creatorFeatureGrid article {
+    min-height: 218px;
+    scroll-snap-align: start;
   }
   .creatorFeatureGrid article,
   .creatorFeatureGrid article:nth-child(even),
   .creatorFeatureGrid article:nth-child(n + 3) {
-    min-height: 190px;
-    border-right: 0;
-    border-bottom: 1px solid #594a41;
-  }
-  .creatorFeatureGrid article:last-child {
-    border-bottom: 0;
+    border: 1px solid #594a41;
+    border-radius: 20px;
+    background: #2d251f;
   }
   .creatorPricingCard {
     padding: 28px 22px;
