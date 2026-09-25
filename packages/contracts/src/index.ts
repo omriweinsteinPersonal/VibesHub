@@ -599,12 +599,14 @@ export const creatorStorefrontSchema = z
       .default([]),
     labels: z
       .array(
-        z.object({
-          id: idSchema,
-          title: z.string().trim().min(1).max(40),
-          categorySlug: z.string().trim().max(80).nullable(),
-          recommendationIds: z.array(idSchema).max(100),
-        }).strict(),
+        z
+          .object({
+            id: idSchema,
+            title: z.string().trim().min(1).max(40),
+            categorySlug: z.string().trim().max(80).nullable(),
+            recommendationIds: z.array(idSchema).max(100),
+          })
+          .strict(),
       )
       .max(12)
       .default([]),
@@ -1021,12 +1023,14 @@ export const creatorStorefrontConfigurationSchema = z
       .default([]),
     labels: z
       .array(
-        z.object({
-          id: idSchema,
-          title: z.string().trim().min(1).max(40),
-          categorySlug: z.string().trim().max(80).nullable(),
-          recommendationIds: z.array(idSchema).max(100),
-        }).strict(),
+        z
+          .object({
+            id: idSchema,
+            title: z.string().trim().min(1).max(40),
+            categorySlug: z.string().trim().max(80).nullable(),
+            recommendationIds: z.array(idSchema).max(100),
+          })
+          .strict(),
       )
       .max(12)
       .default([]),
@@ -1070,12 +1074,14 @@ export const creatorStorefrontConfigurationInputSchema = z
       ),
     labels: z
       .array(
-        z.object({
-          id: idSchema,
-          title: z.string().trim().min(1).max(40),
-          categorySlug: z.string().trim().max(80).nullable(),
-          recommendationIds: z.array(idSchema).max(100),
-        }).strict(),
+        z
+          .object({
+            id: idSchema,
+            title: z.string().trim().min(1).max(40),
+            categorySlug: z.string().trim().max(80).nullable(),
+            recommendationIds: z.array(idSchema).max(100),
+          })
+          .strict(),
       )
       .max(12)
       .default([])

@@ -20,7 +20,8 @@ const displayFont = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  description: 'Build a customizable recommendation page and share everything you love with one link.',
+  description:
+    'Build a customizable recommendation page and share everything you love with one link.',
   title: {
     default: 'swavii',
     template: '%s · swavii',

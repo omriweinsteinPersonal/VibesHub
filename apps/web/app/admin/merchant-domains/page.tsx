@@ -141,8 +141,8 @@ export default function AdminMerchantDomainsPage() {
         <p className="eyebrow">PLATFORM OPERATIONS</p>
         <h1>Merchant-domain reviews</h1>
         <p className="workspaceLead">
-          Review exact hostnames before swavii imports product data or redirects a shopper.
-          Approval never comes from creator-supplied content.
+          Review exact hostnames before swavii imports product data or redirects a
+          shopper. Approval never comes from creator-supplied content.
         </p>
 
         <div className="domainQueueTabs" role="group" aria-label="Review status">
