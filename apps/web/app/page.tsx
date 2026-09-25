@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   ArrowRight,
   BarChart3,
+  Camera,
   Check,
   ExternalLink,
   LayoutGrid,
@@ -26,12 +27,10 @@ export default function HomePage() {
             <p className="creatorLandingEyebrow">
               <Sparkles aria-hidden="true" size={14} /> Your recommendations, your space
             </p>
-            <h1>
-              The only place your audience finds <em>everything</em> about you.
-            </h1>
+            <h1>Your world, curated in one place.</h1>
             <p className="creatorHeroLede">
-              Build a beautiful recommendation page for every product, brand and
-              collection you love. Share one link and make it entirely yours.
+              Share your lifestyle, curate your picks in a designed showcase made for your
+              world.
             </p>
             <div className="creatorHeroActions">
               <Link className="button primary creatorPrimaryCta" href={signupHref}>
@@ -119,10 +118,10 @@ export default function HomePage() {
         <section className="creatorLandingSection creatorSteps" id="how-it-works">
           <div className="creatorSectionHeading">
             <p className="creatorLandingEyebrow">HOW IT WORKS</p>
-            <h2>From recommendation to live page in minutes.</h2>
+            <h2>Design your digital world in minutes.</h2>
             <p>
-              Spend your time creating. swavii keeps your recommendations organized and
-              easy to explore.
+              Stop wasting time managing scattered links. swavii lets you curate your
+              world, design your layout, and share everything in one amazing place.
             </p>
           </div>
           <div className="creatorStepGrid">
@@ -130,22 +129,25 @@ export default function HomePage() {
               <span>01</span>
               <Plus aria-hidden="true" />
               <h3>Add what you love</h3>
-              <p>Collect products, brands and collections in one simple dashboard.</p>
+              <p>
+                Collect your favorite products, brands, and lifestyle picks in one simple
+                dashboard.
+              </p>
             </article>
             <article>
               <span>02</span>
               <Palette aria-hidden="true" />
               <h3>Make it yours</h3>
-              <p>Choose colors, sections and the order that fits your personal brand.</p>
+              <p>
+                Customize colors, sections, and layout to match your personal brand and
+                aesthetic.
+              </p>
             </article>
             <article>
               <span>03</span>
               <Share2 aria-hidden="true" />
               <h3>Share one link</h3>
-              <p>
-                Place your public swavii page in any social bio. No visitor account
-                needed.
-              </p>
+              <p>Place your showcase link in any social bio.</p>
             </article>
           </div>
         </section>
@@ -228,6 +230,23 @@ export default function HomePage() {
           <Link className="button creatorLightCta" href={signupHref}>
             Create your page <ArrowRight size={17} />
           </Link>
+        </section>
+
+        <section className="creatorInstagram" aria-labelledby="instagram-heading">
+          <div>
+            <p className="creatorLandingEyebrow">FIND US ON INSTAGRAM</p>
+            <h2 id="instagram-heading">Follow along with swavii.</h2>
+            <p>Creator inspiration, curated worlds and what we are building next.</p>
+          </div>
+          <a
+            className="creatorInstagramLink"
+            href="https://www.instagram.com/swavii_?stkn=MXN1Z2E3Z2IzcDU2dw%3D%3D&utm_source=qr"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Camera size={20} /> @swavii_
+            <ExternalLink size={16} aria-hidden="true" />
+          </a>
         </section>
       </main>
       <SiteFooter />

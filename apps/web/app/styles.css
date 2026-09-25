@@ -8838,7 +8838,8 @@ dt {
   margin: 0 auto;
   padding: 112px 32px;
 }
-.creatorSectionHeading {
+.creatorLandingSection .creatorSectionHeading {
+  display: block;
   max-width: 700px;
   margin-bottom: 48px;
 }
@@ -8958,7 +8959,17 @@ dt {
   gap: clamp(48px, 9vw, 130px);
 }
 .creatorPricing .creatorSectionHeading {
+  max-width: 420px;
   margin: 0;
+}
+.creatorPricing .creatorSectionHeading .creatorLandingEyebrow {
+  margin-bottom: 18px;
+}
+.creatorPricing .creatorSectionHeading h2 {
+  max-width: 390px;
+}
+.creatorPricing .creatorSectionHeading > p:last-child {
+  max-width: 400px;
 }
 .creatorPricingCard {
   padding: 38px;
@@ -9024,6 +9035,53 @@ dt {
   color: #7b402e;
   background: white;
 }
+.creatorInstagram {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 76px 32px 96px;
+}
+.creatorInstagram .creatorLandingEyebrow {
+  margin-bottom: 14px;
+}
+.creatorInstagram h2 {
+  margin: 0;
+  font-family: var(--font-vh-display), serif;
+  font-size: clamp(32px, 3.3vw, 48px);
+  font-weight: 400;
+  line-height: 1.08;
+}
+.creatorInstagram p:not(.creatorLandingEyebrow) {
+  max-width: 510px;
+  margin: 14px 0 0;
+  color: var(--vh-muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.creatorInstagramLink {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 1px solid var(--vh-border);
+  border-radius: 999px;
+  color: var(--vh-ink);
+  font-weight: 600;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+.creatorInstagramLink:hover {
+  background: var(--vh-ink);
+  color: white;
+  transform: translateY(-2px);
+}
 .creatorMarketingFooter {
   margin-top: 0;
 }
@@ -9054,6 +9112,11 @@ dt {
   }
   .creatorFeatureIntro {
     max-width: 650px;
+  }
+  .creatorInstagram {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 60px;
   }
 }
 
