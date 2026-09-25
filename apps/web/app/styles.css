@@ -9359,8 +9359,9 @@ dt {
   object-fit: contain;
 }
 
-.compactProductCard
-  .storeProductImage[data-image-shape='wide']
+:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
+  .compactProductCard
+  .storeProductImage[data-image-layout='editorial']
   .storeProductPrimaryImage {
   object-fit: cover;
   padding: 0;

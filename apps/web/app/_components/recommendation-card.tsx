@@ -20,7 +20,7 @@ export function RecommendationCardView({
   creatorId,
   recommendation,
 }: RecommendationCardViewProps) {
-  const [imageShape, setImageShape] = useState<'standard' | 'wide'>('standard');
+  const [imageLayout, setImageLayout] = useState<'catalog' | 'editorial'>('catalog');
   const attributedCreatorId = creatorId ?? creator?.id;
   const clips = recommendation.storyClips?.length
     ? recommendation.storyClips.map(({ url }) => publicAssetUrl(url))
@@ -51,7 +51,7 @@ export function RecommendationCardView({
         className="storeCardHitArea"
         href={`/products/${recommendation.id}`}
       />
-      <div className="storeProductImage" data-image-shape={imageShape}>
+      <div className="storeProductImage" data-image-layout={imageLayout}>
         <Image
           alt=""
           aria-hidden="true"
@@ -67,7 +67,9 @@ export function RecommendationCardView({
           fill
           onLoad={({ currentTarget }) => {
             const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
-            setImageShape(ratio >= 1.6 ? 'wide' : 'standard');
+            const isWideWoltPhoto =
+              ratio >= 1.6 && /(^|\.)wolt\.com$/i.test(recommendation.merchantHostname);
+            setImageLayout(isWideWoltPhoto ? 'editorial' : 'catalog');
           }}
           sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
           src={publicAssetUrl(recommendation.imageUrl)}
