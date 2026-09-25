@@ -107,8 +107,11 @@ function AuthExperience() {
           <h1>{mode === 'signup' ? 'Create your swavii page' : 'Welcome back'}</h1>
           <p>
             {mode === 'signup'
-              ? 'Share your recommendations, links and videos from one simple page.'
+              ? 'Give shoppers one trusted place to discover the products you truly recommend, watch your videos and use verified discount codes. Create your storefront in just a few minutes.'
               : 'Log in to manage your page and recommendations.'}
+          </p>
+          <p dir="rtl" lang="he">
+            קהילה של יוצרות ויוצרים ישראלים שממליצים רק על מה שהם באמת אוהבים.
           </p>
         </section>
         <section className="referenceAuthCard">
