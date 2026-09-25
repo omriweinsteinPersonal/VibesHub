@@ -801,7 +801,10 @@ function BrandBlock({
         ) : null}
       </header>
       {collections.length || standaloneItems.length ? (
-        <div className="referenceBrandShelf">
+        <div
+          className="referenceBrandShelf"
+          data-item-count={collections.length + standaloneItems.length}
+        >
           {collections.map((collection) => {
             const firstItem = collection.recommendationIds.flatMap(
               (id) => items.find((item) => item.id === id) ?? [],

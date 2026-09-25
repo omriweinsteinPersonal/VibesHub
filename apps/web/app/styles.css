@@ -9537,6 +9537,17 @@ dt {
   padding-bottom: 4px;
 }
 
+@media (max-width: 620px) {
+  .creatorStorefrontCanvas .referenceBrandShelf[data-item-count='2'] {
+    grid-auto-columns: minmax(0, calc((100% - 10px) / 2));
+  }
+
+  .creatorStorefrontCanvas .referenceBrandShelf[data-item-count='2'] .compactProductCard {
+    max-width: none;
+    width: 100%;
+  }
+}
+
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard[data-text-direction='ltr']
   .storeProductDetails,
