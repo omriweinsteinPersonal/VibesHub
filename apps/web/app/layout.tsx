@@ -6,6 +6,8 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Instrument_Serif } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { CreatorNavigationProvider } from './_components/creator-navigation-provider';
+
 const bodyFont = DM_Sans({
   display: 'swap',
   subsets: ['latin'],
@@ -37,7 +39,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html className={`${bodyFont.variable} ${displayFont.variable}`} lang="en">
-      <body>{children}</body>
+      <body>
+        <CreatorNavigationProvider>{children}</CreatorNavigationProvider>
+      </body>
     </html>
   );
 }

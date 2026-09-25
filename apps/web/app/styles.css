@@ -197,6 +197,16 @@ svg.lucide {
   gap: 32px;
 }
 
+.creatorShellHeader nav > a {
+  min-width: 78px;
+  text-align: center;
+}
+
+.creatorShellHeader a[aria-disabled='true'],
+.creatorBottomBar a[aria-disabled='true'] {
+  cursor: default;
+}
+
 .creatorShellHeader .mobileNavigation {
   display: none;
 }
@@ -214,6 +224,8 @@ svg.lucide {
   align-items: center;
   display: inline-flex;
   gap: 8px;
+  justify-content: center;
+  min-width: 86px;
 }
 
 .creatorShellActions .button {

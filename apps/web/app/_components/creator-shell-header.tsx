@@ -1,42 +1,35 @@
 'use client';
 
-import type { CreatorProfileSettings } from '@vibeshub/contracts';
 import Link from 'next/link';
 import { ChartColumn, House, LayoutDashboard, LogOut, Store, User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { apiRequest } from '../../lib/api';
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { Brand } from './brand';
+import { useCreatorNavigation } from './creator-navigation-provider';
 
 export function CreatorShellHeader() {
   const pathname = usePathname();
   const router = useRouter();
-  const [storefrontHref, setStorefrontHref] = useState<string | null>(null);
+  const { clearStorefrontHref, ensureStorefrontHref, storefrontHref } =
+    useCreatorNavigation();
+
   useEffect(() => {
-    let active = true;
-    void apiRequest<CreatorProfileSettings>('/creator/profile')
-      .then(({ handle }) => {
-        if (active) setStorefrontHref(`/creators/${encodeURIComponent(handle)}`);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, []);
+    void ensureStorefrontHref().catch(() => undefined);
+  }, [ensureStorefrontHref]);
+
   const links = [
     { href: '/creator-home', icon: House, label: 'Home' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    ...(storefrontHref
-      ? [{ href: storefrontHref, icon: Store, label: 'Storefront' }]
-      : []),
+    { href: storefrontHref, icon: Store, label: 'Storefront' },
     { href: '/analytics', icon: ChartColumn, label: 'Analytics' },
     { href: '/account', icon: User, label: 'Account' },
   ];
 
   async function signOut() {
     await getSupabaseBrowserClient().auth.signOut();
+    clearStorefrontHref();
     router.replace('/');
     router.refresh();
   }
@@ -52,8 +45,13 @@ export function CreatorShellHeader() {
               .map((link) => (
                 <Link
                   aria-current={pathname === link.href ? 'page' : undefined}
-                  href={link.href}
-                  key={link.href}
+                  aria-disabled={!link.href || undefined}
+                  href={link.href ?? pathname}
+                  key={link.label}
+                  onClick={(event) => {
+                    if (!link.href) event.preventDefault();
+                  }}
+                  tabIndex={link.href ? undefined : -1}
                 >
                   {link.label}
                 </Link>
@@ -86,8 +84,13 @@ export function CreatorShellHeader() {
         {links.map(({ href, icon: Icon, label }) => (
           <Link
             aria-current={pathname === href ? 'page' : undefined}
-            href={href}
-            key={href}
+            aria-disabled={!href || undefined}
+            href={href ?? pathname}
+            key={label}
+            onClick={(event) => {
+              if (!href) event.preventDefault();
+            }}
+            tabIndex={href ? undefined : -1}
           >
             <Icon aria-hidden="true" />
             <span>{label}</span>

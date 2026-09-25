@@ -19,6 +19,7 @@ import {
 } from '../../lib/recommendation-media';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { CreatorShellHeader } from './creator-shell-header';
+import { useCreatorNavigation } from './creator-navigation-provider';
 import { SiteFooter } from './site-footer';
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
@@ -67,6 +68,7 @@ const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
 ];
 
 export function CreatorAccount({ email }: { email?: string }) {
+  const { setStorefrontHandle } = useCreatorNavigation();
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
   const [mediaKit, setMediaKit] = useState<CreatorMediaKit | null>(null);
@@ -176,6 +178,7 @@ export function CreatorAccount({ email }: { email?: string }) {
       stagedAssetRef.current = null;
       setProfile(updated);
       setProfileEditor(toProfileEditor(updated));
+      setStorefrontHandle(updated.handle);
       setNotice('Your profile changes are live.');
       if (previousAvatarAssetId && previousAvatarAssetId !== updated.avatar?.assetId) {
         await deleteRecommendationImage(previousAvatarAssetId).catch(() => undefined);
