@@ -41,7 +41,7 @@ export default function CreatorAnalyticsPage() {
         </div>
         <Link
           className="button secondary"
-          href={studio ? `/creator/${studio.handle}` : '/dashboard'}
+          href={studio ? `/${studio.handle}` : '/dashboard'}
         >
           View storefront
         </Link>

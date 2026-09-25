@@ -46,7 +46,7 @@ export function ProductDetailView({
       <nav aria-label="Back to storefront" className="productDetailBreadcrumb">
         <Link
           className="productDetailBack"
-          href={`/creators/${encodeURIComponent(recommendation.creator.handle)}`}
+          href={`/${encodeURIComponent(recommendation.creator.handle)}`}
         >
           <ChevronLeft aria-hidden="true" size={16} />
           Back

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { CreatorProfilePatch, CreatorProfileSettings } from '@vibeshub/contracts';
+import type {
+  CreatorHandleAvailability,
+  CreatorProfilePatch,
+  CreatorProfileSettings,
+} from '@vibeshub/contracts';
 
 import { problem } from '../api-problem.js';
 import { CreatorProfileRepository } from './creator-profile.repository.js';
@@ -25,7 +29,15 @@ export class CreatorProfileService {
     expectedVersion: number,
     patch: CreatorProfilePatch,
   ): Promise<CreatorProfileSettings> {
-    const result = await this.profiles.updateOwned(userId, expectedVersion, patch);
+    let result;
+    try {
+      result = await this.profiles.updateOwned(userId, expectedVersion, patch);
+    } catch (error) {
+      if (hasPostgresCode(error, '23505')) {
+        throw problem(409, 'RESOURCE_CONFLICT', 'That storefront handle is unavailable');
+      }
+      throw error;
+    }
     if (result.kind === 'updated') return result.profile;
     if (result.kind === 'not_found') {
       throw problem(
@@ -49,4 +61,23 @@ export class CreatorProfileService {
       'The creator profile changed before this update was saved',
     );
   }
+
+  async handleAvailability(
+    userId: string,
+    handle: string,
+  ): Promise<CreatorHandleAvailability> {
+    return {
+      available: await this.profiles.isHandleAvailable(userId, handle),
+      handle,
+    };
+  }
+}
+
+function hasPostgresCode(error: unknown, code: string): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === code
+  );
 }

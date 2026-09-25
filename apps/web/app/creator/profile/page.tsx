@@ -12,11 +12,16 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'r
 
 import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
 import { creatorConnectors } from '../../../lib/creator-connectors';
+import { normalizeCreatorHandle } from '../../../lib/creator-handle';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
   uploadCreatorImage,
 } from '../../../lib/recommendation-media';
+import {
+  type CreatorHandleStatus,
+  useCreatorHandleAvailability,
+} from '../../../lib/use-creator-handle-availability';
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
 type SocialPlatform = CreatorProfileSocialLink['platform'];
@@ -26,6 +31,7 @@ interface EditorState {
   avatarUrl: string;
   bioHe: string;
   displayName: string;
+  handle: string;
   primaryCategoryId: string;
   socialUrls: Record<SocialPlatform, string>;
 }
@@ -76,6 +82,12 @@ export default function CreatorProfilePage() {
       if (stagedAsset) void deleteRecommendationImage(stagedAsset).catch(() => undefined);
     };
   }, []);
+
+  const handleStatus = useCreatorHandleAvailability({
+    currentHandle: profile?.handle,
+    endpoint: '/creator/profile/handle-availability',
+    handle: editor?.handle ?? '',
+  });
 
   function update<K extends keyof EditorState>(key: K, value: EditorState[K]) {
     setEditor((current) => (current ? { ...current, [key]: value } : current));
@@ -154,6 +166,7 @@ export default function CreatorProfilePage() {
           avatarAssetId: editor.avatarAssetId || null,
           bioHe: editor.bioHe,
           displayName: editor.displayName,
+          handle: editor.handle,
           primaryCategoryId: editor.primaryCategoryId,
           socialLinks,
         }),
@@ -209,7 +222,7 @@ export default function CreatorProfilePage() {
             </p>
           </div>
           {profile ? (
-            <Link className="button secondary" href={`/creators/${profile.handle}`}>
+            <Link className="button secondary" href={`/${profile.handle}`}>
               View storefront
             </Link>
           ) : null}
@@ -275,9 +288,18 @@ export default function CreatorProfilePage() {
               </label>
               <label>
                 Storefront handle
-                <input disabled readOnly value={`@${profile.handle}`} />
-                <small className="fieldHint">
-                  Handles stay fixed so shared storefront links do not break.
+                <input
+                  aria-describedby="profile-handle-status"
+                  maxLength={30}
+                  onChange={(event) =>
+                    update('handle', normalizeCreatorHandle(event.target.value))
+                  }
+                  pattern="[a-z0-9][a-z0-9_-]{1,29}"
+                  required
+                  value={editor.handle}
+                />
+                <small className="fieldHint" id="profile-handle-status">
+                  {profileHandleMessage(handleStatus, editor.handle)}
                 </small>
               </label>
             </div>
@@ -330,7 +352,13 @@ export default function CreatorProfilePage() {
 
             <button
               className="button primary studioSave"
-              disabled={saving || imageIsUploading}
+              disabled={
+                saving ||
+                imageIsUploading ||
+                handleStatus === 'checking' ||
+                handleStatus === 'invalid' ||
+                handleStatus === 'unavailable'
+              }
               type="submit"
             >
               {saving ? 'Saving…' : 'Save profile'}
@@ -350,9 +378,17 @@ function toEditor(profile: CreatorProfileSettings): EditorState {
     avatarUrl: profile.avatar?.url ?? '',
     bioHe: profile.bioHe,
     displayName: profile.displayName,
+    handle: profile.handle,
     primaryCategoryId: profile.primaryCategory.id,
     socialUrls,
   };
+}
+
+function profileHandleMessage(status: CreatorHandleStatus, handle: string): string {
+  if (status === 'checking') return 'Checking address availability…';
+  if (status === 'unavailable') return 'That address is already taken.';
+  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  return `Public address: swavii.com/${handle}`;
 }
 
 function initials(name: string): string {

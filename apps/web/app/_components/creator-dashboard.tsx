@@ -1534,7 +1534,7 @@ export function CreatorDashboard() {
                         <div className="creatorManageCollectionActions">
                           {profile ? (
                             <Link
-                              href={`/creators/${profile.handle}/pages/${entry.section.id}`}
+                              href={`/${profile.handle}/pages/${entry.section.id}`}
                               target="_blank"
                             >
                               View page
@@ -1755,10 +1755,7 @@ function CollectionManageCard({
         </button>
         <div className="creatorManageCollectionActions">
           {profileHandle ? (
-            <Link
-              href={`/creators/${profileHandle}/pages/${entry.section.id}`}
-              target="_blank"
-            >
+            <Link href={`/${profileHandle}/pages/${entry.section.id}`} target="_blank">
               View page
             </Link>
           ) : null}

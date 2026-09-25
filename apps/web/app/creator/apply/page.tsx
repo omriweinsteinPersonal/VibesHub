@@ -6,6 +6,15 @@ import { Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { apiRequest, publicApiRequest } from '../../../lib/api';
+import {
+  isCreatorHandle,
+  normalizeCreatorHandle,
+  suggestCreatorHandle,
+} from '../../../lib/creator-handle';
+import {
+  type CreatorHandleStatus,
+  useCreatorHandleAvailability,
+} from '../../../lib/use-creator-handle-availability';
 
 interface Category {
   id: string;
@@ -30,6 +39,7 @@ export default function CreatorApplicationPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [displayName, setDisplayName] = useState('');
   const [requestedHandle, setRequestedHandle] = useState('');
+  const [handleEdited, setHandleEdited] = useState(false);
   const [bioText, setBioText] = useState('');
   const [primaryCategoryId, setPrimaryCategoryId] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
@@ -49,6 +59,7 @@ export default function CreatorApplicationPage() {
         if (current) {
           setDisplayName(current.displayName ?? '');
           setRequestedHandle(current.requestedHandle ?? '');
+          setHandleEdited(Boolean(current.requestedHandle));
           setBioText(current.bioText ?? '');
           setPrimaryCategoryId(current.primaryCategoryId ?? '');
           const instagram = current.socialLinks.find(
@@ -66,12 +77,29 @@ export default function CreatorApplicationPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleStatus = useCreatorHandleAvailability({
+    currentHandle: application?.requestedHandle,
+    endpoint: '/creator-applications/handle-availability',
+    handle: requestedHandle,
+  });
+
   const editable =
     !application || ['draft', 'changes_requested'].includes(application.status);
   const latestFeedback = application?.feedback.at(-1);
 
   async function saveAndSubmit(event: FormEvent) {
     event.preventDefault();
+    const handle = normalizeCreatorHandle(
+      requestedHandle || suggestCreatorHandle(displayName),
+    );
+    if (
+      !isCreatorHandle(handle) ||
+      handleStatus === 'invalid' ||
+      handleStatus === 'unavailable'
+    ) {
+      setError('Choose an available storefront address before continuing.');
+      return;
+    }
     setError('');
     setMessage('');
     setLoading(true);
@@ -79,7 +107,7 @@ export default function CreatorApplicationPage() {
       bioText,
       displayName,
       primaryCategoryId,
-      requestedHandle,
+      requestedHandle: handle,
       socialLinks: [
         {
           followerCount: followerCount ? Number(followerCount) : null,
@@ -155,7 +183,11 @@ export default function CreatorApplicationPage() {
               <input
                 disabled={!editable}
                 maxLength={100}
-                onChange={(event) => setDisplayName(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setDisplayName(value);
+                  if (!handleEdited) setRequestedHandle(suggestCreatorHandle(value));
+                }}
                 required
                 value={displayName}
               />
@@ -163,13 +195,20 @@ export default function CreatorApplicationPage() {
             <label>
               Storefront handle
               <input
+                aria-describedby="storefront-handle-status"
                 disabled={!editable}
                 maxLength={30}
-                onChange={(event) => setRequestedHandle(event.target.value.toLowerCase())}
+                onChange={(event) => {
+                  setHandleEdited(true);
+                  setRequestedHandle(normalizeCreatorHandle(event.target.value));
+                }}
                 pattern="[a-z0-9][a-z0-9_-]{1,29}"
                 required
                 value={requestedHandle}
               />
+              <small className="fieldHint" id="storefront-handle-status">
+                {handleMessage(handleStatus, requestedHandle)}
+              </small>
             </label>
           </div>
           <label>
@@ -228,7 +267,12 @@ export default function CreatorApplicationPage() {
           {editable ? (
             <button
               className="button primary formSubmit"
-              disabled={loading}
+              disabled={
+                loading ||
+                handleStatus === 'checking' ||
+                handleStatus === 'invalid' ||
+                handleStatus === 'unavailable'
+              }
               type="submit"
             >
               {loading ? 'Creating storefront…' : 'Create creator storefront'}
@@ -238,4 +282,13 @@ export default function CreatorApplicationPage() {
       </section>
     </main>
   );
+}
+
+function handleMessage(status: CreatorHandleStatus, handle: string): string {
+  if (!handle) return 'This becomes your public address on swavii.';
+  if (status === 'checking') return 'Checking address availability…';
+  if (status === 'available') return `swavii.com/${handle} is available`;
+  if (status === 'unavailable') return 'That address is already taken.';
+  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  return `Your page will live at swavii.com/${handle}`;
 }

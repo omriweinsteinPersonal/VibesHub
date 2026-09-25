@@ -563,7 +563,7 @@ export function CreatorStorefrontView({
                 )
                 .map((page) => (
                   <Link
-                    href={`/creators/${encodeURIComponent(storefront.handle)}/pages/${page.id}`}
+                    href={`/${encodeURIComponent(storefront.handle)}/pages/${page.id}`}
                     key={page.id}
                   >
                     <span>PRODUCT PAGE</span>
@@ -819,7 +819,7 @@ function BrandBlock({
               <Link
                 className="referenceBrandCollectionCard"
                 data-text-direction={textDirection}
-                href={`/creators/${encodeURIComponent(handle)}/pages/${collection.id}`}
+                href={`/${encodeURIComponent(handle)}/pages/${collection.id}`}
                 key={collection.id}
               >
                 {cover ? (
@@ -964,7 +964,7 @@ function StorefrontRow({
         <div className="referenceCollectionPages">
           {pages.map((page) => (
             <Link
-              href={`/creators/${encodeURIComponent(storefrontHandle)}/pages/${page.id}`}
+              href={`/${encodeURIComponent(storefrontHandle)}/pages/${page.id}`}
               key={page.id}
             >
               <span>PRODUCT PAGE</span>

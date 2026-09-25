@@ -14,7 +14,7 @@ export function CreatorCardView({ creator }: CreatorCardViewProps) {
     <article className="creatorCard storeProductCard">
       <Link
         className="creatorPortrait storeProductImage"
-        href={`/creators/${creator.handle}`}
+        href={`/${creator.handle}`}
         aria-label={`View ${creator.displayName}'s storefront`}
       >
         {creator.avatarUrl ? (
@@ -48,7 +48,7 @@ export function CreatorCardView({ creator }: CreatorCardViewProps) {
           <span className="creatorRecommendationCount">
             {creator.recommendationCount} recommendations
           </span>
-          <Link className="creatorHandle" href={`/creators/${creator.handle}`}>
+          <Link className="creatorHandle" href={`/${creator.handle}`}>
             View Profile
           </Link>
         </footer>

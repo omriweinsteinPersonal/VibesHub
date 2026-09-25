@@ -1,5 +1,16 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Req } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import {
+  creatorCardSchema,
   creatorApplicationInputSchema,
   creatorApplicationPatchSchema,
   type CreatorApplicationInput,
@@ -42,6 +53,19 @@ export class ApplicationController {
   @Get('current')
   async getCurrent(@CurrentActor() actor: RequestActor, @Req() request: FastifyRequest) {
     return singleResponse(await this.applications.getCurrent(actor.userId), request.id);
+  }
+
+  @Get('handle-availability')
+  async handleAvailability(
+    @CurrentActor() actor: RequestActor,
+    @Query('handle') rawHandle: string,
+    @Req() request: FastifyRequest,
+  ) {
+    const handle = creatorCardSchema.shape.handle.parse(rawHandle);
+    return singleResponse(
+      await this.applications.handleAvailability(actor.userId, handle),
+      request.id,
+    );
   }
 
   @Patch(':id')

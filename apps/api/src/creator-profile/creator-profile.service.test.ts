@@ -50,4 +50,25 @@ describe('CreatorProfileService', () => {
       }),
     ).rejects.toMatchObject({ response: { code: 'VALIDATION_FAILED' } });
   });
+
+  it('reports whether a public storefront handle is available', async () => {
+    const repository = { isHandleAvailable: vi.fn().mockResolvedValue(true) };
+    const service = new CreatorProfileService(repository as never);
+
+    await expect(service.handleAvailability('user-id', 'noa-picks')).resolves.toEqual({
+      available: true,
+      handle: 'noa-picks',
+    });
+  });
+
+  it('translates a raced unique handle update into a conflict', async () => {
+    const repository = {
+      updateOwned: vi.fn().mockRejectedValue({ code: '23505' }),
+    };
+    const service = new CreatorProfileService(repository as never);
+
+    await expect(
+      service.update('user-id', 2, { handle: 'already-taken' }),
+    ).rejects.toMatchObject({ response: { code: 'RESOURCE_CONFLICT' } });
+  });
 });

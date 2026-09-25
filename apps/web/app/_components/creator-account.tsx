@@ -13,12 +13,17 @@ import { Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { ApiError, apiRequest, publicApiCollectionRequest } from '../../lib/api';
+import { isCreatorHandle, normalizeCreatorHandle } from '../../lib/creator-handle';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
   uploadCreatorImage,
 } from '../../lib/recommendation-media';
 import { publicAssetUrl } from '../../lib/public-asset-url';
+import {
+  type CreatorHandleStatus,
+  useCreatorHandleAvailability,
+} from '../../lib/use-creator-handle-availability';
 import { DelayedLoading } from './delayed-loading';
 import { useCreatorNavigation } from './creator-navigation-provider';
 
@@ -150,6 +155,12 @@ export function CreatorAccount() {
     };
   }, [router]);
 
+  const handleStatus = useCreatorHandleAvailability({
+    currentHandle: profile?.handle,
+    endpoint: '/creator/profile/handle-availability',
+    handle: profileEditor?.handle ?? '',
+  });
+
   function updateProfile<K extends keyof ProfileEditor>(key: K, value: ProfileEditor[K]) {
     setProfileEditor((current) => (current ? { ...current, [key]: value } : current));
   }
@@ -196,6 +207,10 @@ export function CreatorAccount() {
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!profile || !profileEditor) return;
+    if (!isCreatorHandle(profileEditor.handle) || handleStatus === 'unavailable') {
+      setError('Choose an available storefront address before saving.');
+      return;
+    }
     setSavingProfile(true);
     setError('');
     setNotice('');
@@ -350,16 +365,20 @@ export function CreatorAccount() {
           <label>
             Storefront handle
             <input
-              maxLength={40}
-              pattern="[a-z0-9][a-z0-9-]*"
+              aria-describedby="account-handle-status"
+              maxLength={30}
+              pattern="[a-z0-9][a-z0-9_-]{1,29}"
               required
               value={profileEditor.handle}
               onChange={(event) =>
-                updateProfile('handle', event.target.value.toLowerCase())
+                updateProfile('handle', normalizeCreatorHandle(event.target.value))
               }
             />
+            <small className="fieldHint" id="account-handle-status">
+              {accountHandleMessage(handleStatus, profileEditor.handle)}
+            </small>
           </label>
-          <Link className="creatorInlineLink" href={`/creator/${profile.handle}`}>
+          <Link className="creatorInlineLink" href={`/${profile.handle}`}>
             View your storefront
           </Link>
           <label>
@@ -399,7 +418,13 @@ export function CreatorAccount() {
           </label>
           <button
             className="button primary"
-            disabled={savingProfile || imageIsUploading}
+            disabled={
+              savingProfile ||
+              imageIsUploading ||
+              handleStatus === 'checking' ||
+              handleStatus === 'invalid' ||
+              handleStatus === 'unavailable'
+            }
             type="submit"
           >
             {savingProfile ? 'Saving…' : 'Save changes'}
@@ -644,6 +669,13 @@ function normalizeInstagram(value: string): string | null {
   if (trimmed.startsWith('@')) return `https://www.instagram.com/${trimmed.slice(1)}`;
   if (/^instagram\.com\//i.test(trimmed)) return `https://www.${trimmed}`;
   return trimmed;
+}
+
+function accountHandleMessage(status: CreatorHandleStatus, handle: string): string {
+  if (status === 'checking') return 'Checking address availability…';
+  if (status === 'unavailable') return 'That address is already taken.';
+  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  return `Public address: swavii.com/${handle}`;
 }
 
 function nullableText(value: string): string | null {

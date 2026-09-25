@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type {
+  CreatorHandleAvailability,
   CreatorApplicationInput,
   CreatorApplicationPatch,
   CreatorApplicationReviewInput,
@@ -39,6 +40,17 @@ export class ApplicationService {
 
   getCurrent(userId: string): Promise<CreatorApplicationRecord | null> {
     return this.applications.findCurrent(userId);
+  }
+
+  async handleAvailability(
+    userId: string,
+    handle: string,
+  ): Promise<CreatorHandleAvailability> {
+    const current = await this.applications.findCurrent(userId);
+    return {
+      available: await this.applications.isHandleAvailable(handle, current?.id),
+      handle,
+    };
   }
 
   async update(
@@ -95,6 +107,13 @@ export class ApplicationService {
     } catch (error) {
       if (error instanceof Error && error.message === 'INVALID_APPLICATION_STATE') {
         throw this.invalidTransition(application.status, 'submit');
+      }
+      if (hasPostgresCode(error, '23505')) {
+        throw problem(
+          409,
+          'RESOURCE_CONFLICT',
+          'The requested creator handle is unavailable',
+        );
       }
       throw error;
     }
@@ -203,6 +222,13 @@ export class ApplicationService {
       if (error instanceof Error && error.message === 'INVALID_APPLICATION_STATE') {
         throw this.invalidTransition(application.status, 'approve');
       }
+      if (hasPostgresCode(error, '23505')) {
+        throw problem(
+          409,
+          'RESOURCE_CONFLICT',
+          'The requested creator handle is unavailable',
+        );
+      }
       throw error;
     }
     return this.getForReview(id);
@@ -258,4 +284,13 @@ export class ApplicationService {
       `Cannot ${command} an application in ${status} state.`,
     );
   }
+}
+
+function hasPostgresCode(error: unknown, code: string): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === code
+  );
 }

@@ -64,7 +64,7 @@ export interface ApplicationRepositoryPort {
   ): Promise<CreatorApplicationRecord>;
   findById(id: string): Promise<CreatorApplicationRecord | null>;
   findCurrent(userId: string): Promise<CreatorApplicationRecord | null>;
-  isHandleAvailable(handle: string, excludingApplicationId: string): Promise<boolean>;
+  isHandleAvailable(handle: string, excludingApplicationId?: string): Promise<boolean>;
   listForReview(): Promise<CreatorApplicationRecord[]>;
   recordReviewAndTransition(
     id: string,
@@ -200,7 +200,7 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
 
   async isHandleAvailable(
     handle: string,
-    excludingApplicationId: string,
+    excludingApplicationId?: string,
   ): Promise<boolean> {
     const [row] = await this.database.sql<{ available: boolean }[]>`
       select not exists (
@@ -208,9 +208,11 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
         union all
         select 1 from app.creator_profiles where handle = ${handle}
         union all
+        select 1 from app.creator_handle_aliases where handle = ${handle}
+        union all
         select 1 from app.creator_applications
         where requested_handle = ${handle}
-          and id <> ${excludingApplicationId}
+          and (${excludingApplicationId ?? null}::uuid is null or id <> ${excludingApplicationId ?? null})
           and status in ('submitted', 'under_review', 'changes_requested', 'approved')
       ) as available
     `;

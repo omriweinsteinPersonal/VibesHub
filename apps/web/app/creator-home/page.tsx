@@ -108,7 +108,7 @@ export default function CreatorHomePage() {
             <HomeCard
               icon={Store}
               title="Your storefront"
-              href={`/creator/${summary.handle}`}
+              href={`/${summary.handle}`}
               action="View storefront"
             >
               See your page exactly as shoppers see it, and share the link.

@@ -1,5 +1,9 @@
-import { Body, Controller, Get, Headers, Patch, Req } from '@nestjs/common';
-import { creatorProfilePatchSchema, type CreatorProfilePatch } from '@vibeshub/contracts';
+import { Body, Controller, Get, Headers, Patch, Query, Req } from '@nestjs/common';
+import {
+  creatorCardSchema,
+  creatorProfilePatchSchema,
+  type CreatorProfilePatch,
+} from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { CurrentActor, RequireCapabilities } from '../auth/auth.decorators.js';
@@ -16,6 +20,19 @@ export class CreatorProfileController {
   @Get()
   async get(@CurrentActor() actor: RequestActor, @Req() request: FastifyRequest) {
     return singleResponse(await this.profiles.get(actor.userId), request.id);
+  }
+
+  @Get('handle-availability')
+  async handleAvailability(
+    @CurrentActor() actor: RequestActor,
+    @Query('handle') rawHandle: string,
+    @Req() request: FastifyRequest,
+  ) {
+    const handle = creatorCardSchema.shape.handle.parse(rawHandle);
+    return singleResponse(
+      await this.profiles.handleAvailability(actor.userId, handle),
+      request.id,
+    );
   }
 
   @Patch()

@@ -221,7 +221,13 @@ export class CreatorDirectoryRepository {
       left join app.media_assets avatar
         on avatar.id = creator.avatar_media_asset_id
        and avatar.status = 'ready'
-      where creator.handle = ${handle}
+      where (
+          creator.handle = ${handle}
+          or exists (
+            select 1 from app.creator_handle_aliases alias
+            where alias.creator_id = creator.id and alias.handle = ${handle}
+          )
+        )
         and creator.status = 'approved'
         and creator.published_at is not null
         and category.is_active = true

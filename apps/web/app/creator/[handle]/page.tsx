@@ -1,12 +1,10 @@
-import type { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 
-import CreatorStorefrontPage from '../../creators/[handle]/page';
-
-export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  description: 'Authentic product recommendations from an approved Israeli creator.',
-  title: 'Creator storefront',
-};
-
-export default CreatorStorefrontPage;
+export default async function LegacyCreatorPreviewRoute({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}) {
+  const { handle } = await params;
+  permanentRedirect(`/${encodeURIComponent(handle)}`);
+}

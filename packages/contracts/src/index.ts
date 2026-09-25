@@ -902,6 +902,13 @@ export const creatorProfileSettingsSchema = z
   })
   .strict();
 
+export const creatorHandleAvailabilitySchema = z
+  .object({
+    available: z.boolean(),
+    handle: creatorCardSchema.shape.handle,
+  })
+  .strict();
+
 export const creatorProfilePatchSchema = z
   .object({
     avatarAssetId: idSchema.nullable().optional(),
@@ -1225,6 +1232,7 @@ export type CreatorApplicationSocialLink = z.infer<
 >;
 export type CreatorApplicationStatus = z.infer<typeof creatorApplicationStatusSchema>;
 export type CreatorProfilePatch = z.infer<typeof creatorProfilePatchSchema>;
+export type CreatorHandleAvailability = z.infer<typeof creatorHandleAvailabilitySchema>;
 export type CreatorProfileSettings = z.infer<typeof creatorProfileSettingsSchema>;
 export type CreatorProfileSocialLink = z.infer<typeof creatorProfileSocialLinkSchema>;
 export type CreatorMediaKit = z.infer<typeof creatorMediaKitSchema>;

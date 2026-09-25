@@ -71,6 +71,33 @@ export class CreatorProfileRepository {
     return row ? mapProfile(row) : null;
   }
 
+  async isHandleAvailable(userId: string, handle: string): Promise<boolean> {
+    const [row] = await this.database.sql<{ available: boolean }[]>`
+      select
+        exists (
+          select 1 from app.creator_profiles
+          where user_id = ${userId} and status = 'approved'
+        )
+        and not exists (
+          select 1 from app.reserved_handles where handle = ${handle}
+          union all
+          select 1 from app.creator_profiles
+          where handle = ${handle} and user_id <> ${userId}
+          union all
+          select 1
+          from app.creator_handle_aliases alias
+          join app.creator_profiles creator on creator.id = alias.creator_id
+          where alias.handle = ${handle} and creator.user_id <> ${userId}
+          union all
+          select 1 from app.creator_applications
+          where requested_handle = ${handle}
+            and user_id <> ${userId}
+            and status in ('submitted', 'under_review', 'changes_requested', 'approved')
+        ) as available
+    `;
+    return row?.available ?? false;
+  }
+
   async updateOwned(
     userId: string,
     expectedVersion: number,
@@ -135,6 +162,11 @@ export class CreatorProfileRepository {
               select 1 from app.creator_profiles
               where handle = ${patch.handle}
                 and id <> ${current.id}
+            )
+            or exists (
+              select 1 from app.creator_handle_aliases
+              where handle = ${patch.handle}
+                and creator_id <> ${current.id}
             )
           ) as unavailable
         `;

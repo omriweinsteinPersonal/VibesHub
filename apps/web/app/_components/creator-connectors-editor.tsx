@@ -71,11 +71,7 @@ export function CreatorConnectorsEditor({
           <p>Add the places where shoppers can find you. Links appear below your name.</p>
         </div>
         {profile ? (
-          <a
-            href={`/creator/${profile.handle}`}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <a href={`/${profile.handle}`} rel="noopener noreferrer" target="_blank">
             View storefront <ExternalLink aria-hidden="true" size={14} />
           </a>
         ) : null}

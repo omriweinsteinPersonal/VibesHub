@@ -52,7 +52,7 @@ export function CreatorNavigationProvider({ children }: { children: ReactNode })
 
   const setCreatorProfile = useCallback((profile: CreatorProfileSettings) => {
     setCreatorProfileState(profile);
-    setStorefrontHref(`/creator/${encodeURIComponent(profile.handle)}`);
+    setStorefrontHref(`/${encodeURIComponent(profile.handle)}`);
   }, []);
 
   const clearStorefrontHref = useCallback(() => {
