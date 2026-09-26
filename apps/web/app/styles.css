@@ -11085,3 +11085,173 @@ dt {
   outline: 2px solid #8b6248;
   outline-offset: 2px;
 }
+
+/* Phone-first refinements for the creator workspace and landing previews. */
+@media (max-width: 760px) {
+  /* Keep the workspace content full-width: a narrow side rail made recommendation
+     titles and actions collide on small handsets. */
+  .creatorDashboardWorkspace {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 20px;
+  }
+
+  .creatorDashboardSidebar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 6px;
+    position: static;
+    scrollbar-width: none;
+  }
+
+  .creatorDashboardSidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .creatorDashboardSidebar .eyebrow {
+    display: none;
+  }
+
+  .creatorDashboardSidebar button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 9px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .creatorDashboardPanel {
+    min-width: 0;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading h2 {
+    font-size: clamp(1.8rem, 9vw, 2.25rem);
+    line-height: 1.05;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading > .button {
+    align-self: stretch;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Recommendation rows should read as compact labels, not display headlines. */
+  .creatorBrandManageCard.creatorManageCollection {
+    border-radius: 16px;
+    padding: 10px 12px;
+  }
+
+  .creatorBrandToggle {
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .creatorBrandToggle strong {
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.15;
+  }
+
+  .creatorBrandToggle small {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 620px) {
+  /* The landing analytics teaser is a quick mobile scan, not a second dashboard. */
+  .creatorAudience {
+    padding: 56px 20px 64px;
+  }
+
+  .creatorAudienceIntro h2 {
+    font-size: clamp(2rem, 9vw, 2.45rem);
+    line-height: 1;
+  }
+
+  .creatorAudienceIntro > p:not(.creatorLandingEyebrow) {
+    font-size: 0.94rem;
+    line-height: 1.45;
+  }
+
+  .creatorAnalyticsPreview {
+    margin-top: 30px;
+  }
+
+  .creatorAnalyticsPreview > header {
+    padding: 0 0 10px;
+  }
+
+  .creatorAnalyticsPreview > header strong {
+    font-size: 1.05rem;
+  }
+
+  .creatorAnalyticsMetrics {
+    gap: 8px;
+  }
+
+  .creatorAnalyticsMetrics article,
+  .creatorAnalyticsMetrics article:nth-child(2),
+  .creatorAnalyticsMetrics article:nth-child(3),
+  .creatorAnalyticsMetrics article:nth-child(4) {
+    min-height: 104px;
+    padding: 14px;
+    border: 0;
+    border-radius: 16px;
+    color: #fbfaf4;
+    background: #7f896a;
+  }
+
+  .creatorAnalyticsMetrics strong {
+    font-size: clamp(1.35rem, 7vw, 1.65rem);
+    font-weight: 700;
+  }
+
+  .creatorAnalyticsDashboard {
+    display: none;
+  }
+
+  /* Keep the floating insight inside the visual canvas on narrow screens. */
+  .creatorHeroVisual {
+    min-height: 454px;
+    margin: -8px 0 0;
+    transform: none;
+    width: 100%;
+  }
+
+  .creatorPhone {
+    min-height: 492px;
+    width: 278px;
+  }
+
+  .creatorShowcaseNote {
+    min-width: 0;
+    padding: 9px 10px;
+    right: 0;
+    top: 102px;
+    width: 142px;
+  }
+
+  .creatorShowcaseNote svg {
+    flex: 0 0 auto;
+    height: 15px;
+    width: 15px;
+  }
+
+  .creatorShowcaseNote span {
+    font-size: 8px;
+    line-height: 1.25;
+  }
+
+  .creatorShowcaseNote strong {
+    font-size: 10px;
+  }
+}
