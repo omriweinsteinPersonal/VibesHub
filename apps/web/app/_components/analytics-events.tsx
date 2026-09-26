@@ -7,6 +7,7 @@ import { trackClientAnalytics } from '../../lib/analytics';
 
 export function StorefrontViewTracker({ creatorId }: { creatorId: string }) {
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('mobilePreview')) return;
     trackClientAnalytics({ creatorId, name: 'creator.storefrontViewed' });
   }, [creatorId]);
   return null;

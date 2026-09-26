@@ -15,7 +15,21 @@ import { StorefrontHeader } from './storefront-header';
 import { StorefrontPhonePreview } from './storefront-phone-preview';
 
 export async function PublicStorefrontPage({ handle }: { handle: string }) {
-  const creatorSession = await hasCreatorSession(handle);
+  return <StorefrontPage handle={handle} mode="public" />;
+}
+
+export async function CreatorStorefrontEditorPage({ handle }: { handle: string }) {
+  return <StorefrontPage handle={handle} mode="editor" />;
+}
+
+async function StorefrontPage({
+  handle,
+  mode,
+}: {
+  handle: string;
+  mode: 'editor' | 'public';
+}) {
+  const creatorSession = mode === 'editor' && (await hasCreatorSession(handle));
 
   let storefront: CreatorStorefront;
   let recommendations: RecommendationCard[] = [];
@@ -38,7 +52,31 @@ export async function PublicStorefrontPage({ handle }: { handle: string }) {
   }
 
   if (storefront.handle !== handle) {
+    permanentRedirect(
+      mode === 'editor'
+        ? `/creator/${encodeURIComponent(storefront.handle)}`
+        : `/${encodeURIComponent(storefront.handle)}`,
+    );
+  }
+
+  if (mode === 'editor' && !creatorSession) {
     permanentRedirect(`/${encodeURIComponent(storefront.handle)}`);
+  }
+
+  if (mode === 'public') {
+    return (
+      <div className="editorialPage storefrontPage">
+        <StorefrontHeader creatorSession={false} />
+        <main>
+          <CreatorStorefrontView
+            codes={discountCodes}
+            editable={false}
+            recommendations={recommendations}
+            storefront={storefront}
+          />
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -57,14 +95,14 @@ export async function PublicStorefrontPage({ handle }: { handle: string }) {
               .map(({ id, title }) => ({ id, title })),
           ]}
           creatorId={storefront.id}
-          editable={creatorSession}
+          editable
           previewUrl={`/${encodeURIComponent(handle)}?mobilePreview=1`}
           theme={storefront.theme ?? defaultStorefrontTheme}
           title={`${storefront.displayName} mobile storefront`}
         >
           <CreatorStorefrontView
             codes={discountCodes}
-            editable={creatorSession}
+            editable
             recommendations={recommendations}
             storefront={storefront}
           />

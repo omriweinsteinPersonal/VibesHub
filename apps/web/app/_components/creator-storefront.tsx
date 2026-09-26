@@ -102,7 +102,8 @@ export function CreatorStorefrontView({
     return () => window.removeEventListener('message', receive);
   }, [storefront.id]);
   useEffect(() => {
-    if (editable) return;
+    if (editable || !new URLSearchParams(window.location.search).has('mobilePreview'))
+      return;
     let active = true;
     apiRequest<{ creator: { handle: string } | null }>('/me')
       .then(({ creator }) => {

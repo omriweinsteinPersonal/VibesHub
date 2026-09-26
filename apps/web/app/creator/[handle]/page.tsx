@@ -1,10 +1,19 @@
-import { permanentRedirect } from 'next/navigation';
+import type { Metadata } from 'next';
 
-export default async function LegacyCreatorPreviewRoute({
+import { CreatorStorefrontEditorPage } from '../../_components/public-storefront-page';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  description: 'Design and preview your public storefront.',
+  title: 'Storefront editor',
+};
+
+export default async function CreatorStorefrontEditorRoute({
   params,
 }: {
   params: Promise<{ handle: string }>;
 }) {
   const { handle } = await params;
-  permanentRedirect(`/${encodeURIComponent(handle)}`);
+  return <CreatorStorefrontEditorPage handle={handle} />;
 }
