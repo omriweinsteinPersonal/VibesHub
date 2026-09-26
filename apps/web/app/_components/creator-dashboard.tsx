@@ -730,6 +730,9 @@ export function CreatorDashboard() {
         method: 'POST',
       });
       await load();
+      if (command === 'archive') {
+        setNotice('Recommendation removed from your storefront.');
+      }
     } catch (cause) {
       setError(messageFor(cause));
     }
