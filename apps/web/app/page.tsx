@@ -65,38 +65,83 @@ export default function HomePage() {
 
         <section className="creatorLandingSection creatorSteps" id="how-it-works">
           <div className="creatorSectionHeading">
-            <p className="creatorLandingEyebrow">HOW IT WORKS</p>
-            <h2>Design your digital world in minutes.</h2>
+            <p className="creatorLandingEyebrow">MAKE IT YOURS</p>
+            <h2>A creator page that looks like you.</h2>
             <p>
-              Stop wasting time managing scattered links. swavii lets you curate your
-              world, design your layout, and share everything in one amazing place.
+              Set the mood, arrange your sections and turn your favorite finds into
+              collections—all from one simple studio.
             </p>
           </div>
-          <div className="creatorStepGrid">
-            <article>
-              <span>01</span>
-              <Plus aria-hidden="true" />
-              <h3>Add what you love</h3>
-              <p>
-                Collect your favorite products, brands, and lifestyle picks in one simple
-                dashboard.
-              </p>
-            </article>
-            <article>
-              <span>02</span>
-              <Palette aria-hidden="true" />
-              <h3>Make it yours</h3>
-              <p>
-                Customize colors, sections, and layout to match your personal brand and
-                aesthetic.
-              </p>
-            </article>
-            <article>
-              <span>03</span>
-              <Share2 aria-hidden="true" />
-              <h3>Share one link</h3>
-              <p>Place your showcase link in any social bio.</p>
-            </article>
+          <div
+            className="creatorCustomizerDemo"
+            aria-label="Example of the creator customization studio"
+          >
+            <div className="creatorCustomizerControls" aria-hidden="true">
+              <header>
+                <span>CREATOR STUDIO</span>
+                <strong>Maya&apos;s page</strong>
+              </header>
+              <section>
+                <span className="creatorCustomizerLabel">
+                  <Palette size={14} /> Theme
+                </span>
+                <div className="creatorCustomizerSwatches">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </section>
+              <section>
+                <span className="creatorCustomizerLabel">SECTIONS</span>
+                <div className="creatorCustomizerSection active">
+                  <b aria-hidden="true">⋮⋮</b>
+                  <span>Latest finds</span>
+                  <small>8</small>
+                </div>
+                <div className="creatorCustomizerSection">
+                  <b aria-hidden="true">⋮⋮</b>
+                  <span>Beauty edit</span>
+                  <small>4</small>
+                </div>
+                <div className="creatorCustomizerSection">
+                  <b aria-hidden="true">⋮⋮</b>
+                  <span>Travel notes</span>
+                  <small>6</small>
+                </div>
+              </section>
+              <div className="creatorCustomizerAdd">
+                <Plus size={13} /> New collection
+              </div>
+            </div>
+            <div className="creatorCustomizerPreview" aria-hidden="true">
+              <div className="creatorCustomizerPreviewTop">
+                <span>MAYA COHEN</span>
+                <i />
+              </div>
+              <div className="creatorCustomizerPreviewCopy">
+                <strong>Beauty edit</strong>
+                <span>Curated by Maya</span>
+              </div>
+              <div className="creatorCustomizerProducts">
+                <article>
+                  <i />
+                  <span>Daily glow</span>
+                </article>
+                <article>
+                  <i />
+                  <span>Soft essentials</span>
+                </article>
+                <article>
+                  <i />
+                  <span>Golden hour</span>
+                </article>
+              </div>
+              <div className="creatorCustomizerPreviewFooter">
+                <span>Collections</span>
+                <Share2 size={13} />
+              </div>
+            </div>
           </div>
         </section>
 

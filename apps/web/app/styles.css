@@ -11086,6 +11086,224 @@ dt {
   outline-offset: 2px;
 }
 
+/* The customization demo replaces explanatory cards with a concrete, compact preview. */
+.creatorCustomizerDemo {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.78fr) minmax(0, 1.22fr);
+  min-height: 350px;
+  overflow: hidden;
+  border: 1px solid #ded7cb;
+  border-radius: 28px;
+  background: #f6f1e9;
+  box-shadow: 0 20px 56px rgba(64, 39, 25, 0.08);
+}
+
+.creatorCustomizerControls {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: 26px;
+  border-right: 1px solid #ded7cb;
+  background: #fffdf9;
+}
+
+.creatorCustomizerControls header,
+.creatorCustomizerControls section {
+  display: grid;
+  gap: 10px;
+}
+
+.creatorCustomizerControls header > span,
+.creatorCustomizerLabel {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  color: #827368;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.creatorCustomizerControls header strong {
+  font-family: var(--font-vh-display), serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+}
+
+.creatorCustomizerSwatches {
+  display: flex;
+  gap: 8px;
+}
+
+.creatorCustomizerSwatches i {
+  display: block;
+  height: 24px;
+  width: 24px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #d9cec2;
+}
+
+.creatorCustomizerSwatches i:nth-child(1) {
+  background: #7d8968;
+}
+
+.creatorCustomizerSwatches i:nth-child(2) {
+  background: #d7a477;
+}
+
+.creatorCustomizerSwatches i:nth-child(3) {
+  background: #d9c4ab;
+}
+
+.creatorCustomizerSwatches i:nth-child(4) {
+  background: #2f3d31;
+}
+
+.creatorCustomizerSection {
+  align-items: center;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 8px;
+  color: #66584f;
+  font-size: 0.78rem;
+}
+
+.creatorCustomizerSection.active {
+  border-radius: 8px;
+  color: #2e3926;
+  background: #e5ead7;
+}
+
+.creatorCustomizerSection b {
+  color: #a19287;
+  font-size: 0.62rem;
+  letter-spacing: -2px;
+}
+
+.creatorCustomizerSection small {
+  color: #988b80;
+  font-size: 0.68rem;
+}
+
+.creatorCustomizerAdd {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  color: #7a513c;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.creatorCustomizerPreview {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+  padding: 28px;
+  background: linear-gradient(145deg, #cbd4b2, #f2eadc 70%);
+}
+
+.creatorCustomizerPreviewTop,
+.creatorCustomizerPreviewFooter {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  color: #3a4830;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.creatorCustomizerPreviewTop i {
+  height: 24px;
+  width: 24px;
+  border: 1px solid rgba(58, 72, 48, 0.45);
+  border-radius: 50%;
+}
+
+.creatorCustomizerPreviewCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.creatorCustomizerPreviewCopy strong {
+  font-family: var(--font-vh-display), serif;
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  font-weight: 400;
+}
+
+.creatorCustomizerPreviewCopy span {
+  color: #56604b;
+  font-size: 0.75rem;
+}
+
+.creatorCustomizerProducts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.creatorCustomizerProducts article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid rgba(58, 72, 48, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 253, 249, 0.74);
+}
+
+.creatorCustomizerProducts i {
+  display: block;
+  aspect-ratio: 1 / 1.08;
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), transparent), #c18f6e;
+}
+
+.creatorCustomizerProducts article:nth-child(2) i {
+  background: linear-gradient(145deg, #edd7ba, #a5af89);
+}
+
+.creatorCustomizerProducts article:nth-child(3) i {
+  background: linear-gradient(145deg, #f4eee5, #b47c62);
+}
+
+.creatorCustomizerProducts span {
+  overflow: hidden;
+  color: #35412e;
+  font-family: var(--font-vh-display), serif;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creatorCustomizerPreviewFooter {
+  padding-top: 2px;
+  border-top: 1px solid rgba(58, 72, 48, 0.2);
+}
+
+/* One quiet treatment keeps the metrics in the same editorial palette. */
+.creatorAudience .creatorAnalyticsMetrics article,
+.creatorAudience .creatorAnalyticsMetrics article:nth-child(2),
+.creatorAudience .creatorAnalyticsMetrics article:nth-child(3),
+.creatorAudience .creatorAnalyticsMetrics article:nth-child(4) {
+  color: #33402d;
+  background: #f4ecdf;
+  border: 1px solid #7f896a;
+  box-shadow: none;
+}
+
+.creatorAudience .creatorAnalyticsMetrics span,
+.creatorAudience .creatorAnalyticsMetrics small,
+.creatorAudience .creatorAnalyticsMetrics strong {
+  color: inherit;
+  opacity: 1;
+}
+
 /* Phone-first refinements for the creator workspace and landing previews. */
 @media (max-width: 760px) {
   /* Keep the workspace content full-width: a narrow side rail made recommendation
@@ -11221,23 +11439,24 @@ dt {
 
   /* Keep the floating insight inside the visual canvas on narrow screens. */
   .creatorHeroVisual {
-    min-height: 454px;
-    margin: -8px 0 0;
+    min-height: 438px;
+    margin: -8px -20px 0;
     transform: none;
-    width: 100%;
+    width: calc(100% + 40px);
   }
 
   .creatorPhone {
-    min-height: 492px;
-    width: 278px;
+    min-height: 468px;
+    width: 254px;
+    transform: translateX(-32px) rotate(2deg);
   }
 
   .creatorShowcaseNote {
     min-width: 0;
-    padding: 9px 10px;
+    padding: 8px 9px;
     right: 0;
-    top: 102px;
-    width: 142px;
+    top: 80px;
+    width: 118px;
   }
 
   .creatorShowcaseNote svg {
@@ -11253,5 +11472,95 @@ dt {
 
   .creatorShowcaseNote strong {
     font-size: 10px;
+  }
+
+  .creatorCustomizerDemo {
+    grid-template-columns: minmax(116px, 0.76fr) minmax(0, 1.24fr);
+    min-height: 296px;
+    border-radius: 18px;
+  }
+
+  .creatorCustomizerControls {
+    gap: 13px;
+    padding: 14px 10px;
+  }
+
+  .creatorCustomizerControls header strong {
+    font-size: 1rem;
+  }
+
+  .creatorCustomizerControls header > span,
+  .creatorCustomizerLabel {
+    font-size: 7px;
+    letter-spacing: 0.1em;
+  }
+
+  .creatorCustomizerSwatches {
+    gap: 5px;
+  }
+
+  .creatorCustomizerSwatches i {
+    height: 17px;
+    width: 17px;
+  }
+
+  .creatorCustomizerSection {
+    gap: 4px;
+    min-height: 27px;
+    padding: 5px 4px;
+    font-size: 0.61rem;
+  }
+
+  .creatorCustomizerSection b {
+    font-size: 0.5rem;
+  }
+
+  .creatorCustomizerSection small {
+    font-size: 0.55rem;
+  }
+
+  .creatorCustomizerAdd {
+    font-size: 0.61rem;
+  }
+
+  .creatorCustomizerPreview {
+    gap: 13px;
+    padding: 16px 12px;
+  }
+
+  .creatorCustomizerPreviewTop,
+  .creatorCustomizerPreviewFooter {
+    font-size: 7px;
+  }
+
+  .creatorCustomizerPreviewTop i {
+    height: 18px;
+    width: 18px;
+  }
+
+  .creatorCustomizerPreviewCopy strong {
+    font-size: 1.45rem;
+  }
+
+  .creatorCustomizerPreviewCopy span {
+    font-size: 0.62rem;
+  }
+
+  .creatorCustomizerProducts {
+    gap: 5px;
+  }
+
+  .creatorCustomizerProducts article {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+  }
+
+  .creatorCustomizerProducts i {
+    border-radius: 5px;
+  }
+
+  .creatorCustomizerProducts span {
+    font-size: 0.54rem;
   }
 }
