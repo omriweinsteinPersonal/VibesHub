@@ -28,6 +28,7 @@ interface MetricRow {
 }
 
 interface RecommendationMetricRow {
+  brandName: string;
   categoryName: string;
   categorySlug: string;
   codeCopies: number;
@@ -253,6 +254,7 @@ export class AnalyticsRepository {
       this.database.sql<RecommendationMetricRow[]>`
         select
           recommendation.id,
+          brand.name as "brandName",
           category.name_en as "categoryName",
           category.slug::text as "categorySlug",
           coalesce(image.public_url, recommendation.image_url) as "imageUrl",
@@ -264,6 +266,7 @@ export class AnalyticsRepository {
           coalesce(sum(metric.shop_clicks), 0)::integer as "shopClicks"
         from app.recommendations recommendation
         join app.products product on product.id = recommendation.product_id
+        join app.brands brand on brand.id = product.brand_id
         join app.categories category on category.id = product.primary_category_id
         left join app.media_assets image on image.id = recommendation.image_asset_id
         left join analytics.recommendation_daily_metrics metric
@@ -271,7 +274,7 @@ export class AnalyticsRepository {
          and metric.metric_date >= current_date - (${days}::integer - 1)
         where recommendation.creator_id = ${creator.id}
           and recommendation.deleted_at is null
-        group by recommendation.id, product.name, category.name_en,
+        group by recommendation.id, brand.name, product.name, category.name_en,
           category.slug, image.public_url
         order by
           coalesce(sum(metric.shop_clicks), 0) desc,

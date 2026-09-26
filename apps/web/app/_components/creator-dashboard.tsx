@@ -1016,25 +1016,35 @@ export function CreatorDashboard() {
         <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
           <p className="eyebrow">MANAGE</p>
           <button
+            className="creatorDashboardTopNav"
+            onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
+            type="button"
+          >
+            Top
+          </button>
+          <button
             aria-current={dashboardView === 'labels' ? 'page' : undefined}
             onClick={() => setDashboardView('labels')}
             type="button"
           >
-            Storefront labels
+            <span className="creatorDashboardNavDesktop">Storefront labels</span>
+            <span className="creatorDashboardNavMobile">Templates</span>
           </button>
           <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            Recommendations
+            <span className="creatorDashboardNavDesktop">Recommendations</span>
+            <span className="creatorDashboardNavMobile">Recommendations</span>
           </button>
           <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            Social links
+            <span className="creatorDashboardNavDesktop">Social links</span>
+            <span className="creatorDashboardNavMobile">Social</span>
           </button>
         </nav>
         <div className="creatorDashboardPanel">

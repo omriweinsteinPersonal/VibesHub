@@ -6,7 +6,16 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Eye, MousePointerClick, Package, Tag, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  MousePointerClick,
+  Package,
+  Tag,
+  Users,
+} from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { apiRequest } from '../../../lib/api';
@@ -56,32 +65,29 @@ export default function CreatorAnalyticsPage() {
 }
 
 function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboard }) {
-  const [category, setCategory] = useState('all');
-  const [product, setProduct] = useState('all');
+  const [explorerView, setExplorerView] = useState<'brands' | 'categories' | 'products'>(
+    'brands',
+  );
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<AnalyticsProduct | null>(null);
   const metrics = [
     [Eye, 'Storefront visits', dashboard.summary.storefrontViews],
     [Users, 'Unique visitors', dashboard.summary.uniqueVisitors],
     [MousePointerClick, 'Product clicks', dashboard.summary.shopClicks],
     [Tag, 'Code clicks', dashboard.summary.codeCopies],
   ] as const;
-  const categories = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          dashboard.recommendations.map((item) => [item.categorySlug, item.categoryName]),
-        ).entries(),
-      ),
+  const brands = useMemo(
+    () => groupProducts(dashboard.recommendations, (item) => item.brandName),
     [dashboard.recommendations],
   );
-  const categoryProducts = dashboard.recommendations.filter(
-    (item) => category === 'all' || item.categorySlug === category,
+  const categories = useMemo(
+    () => groupProducts(dashboard.recommendations, (item) => item.categoryName),
+    [dashboard.recommendations],
   );
-  const visibleProducts = categoryProducts.filter(
-    (item) => product === 'all' || item.id === product,
-  );
+  const groups = explorerView === 'brands' ? brands : categories;
   return (
     <>
-      <section className="creatorAnalyticsMetrics">
+      <section className="creatorAnalyticsPageMetrics">
         {metrics.map(([Icon, label, value]) => (
           <article key={label}>
             <p>
@@ -102,80 +108,182 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
         </div>
         <TrafficChart series={dashboard.series} />
       </section>
-      <section className="creatorAnalyticsCard productTrafficCard">
-        <div className="productTrafficHeading">
-          <div>
-            <h2>Product traffic</h2>
-            <p>Shop link taps by recommendation</p>
-          </div>
-          <span>{visibleProducts.length} products</span>
-        </div>
-        <div className="productTrafficFilters">
-          <label>
-            Category
-            <select
-              value={category}
-              onChange={(event) => {
-                setCategory(event.target.value);
-                setProduct('all');
-              }}
-            >
-              <option value="all">All categories</option>
-              {categories.map(([slug, name]) => (
-                <option key={slug} value={slug}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Product
-            <select value={product} onChange={(event) => setProduct(event.target.value)}>
-              <option value="all">All products</option>
-              {categoryProducts.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.productName}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {visibleProducts.length ? (
-          <div className="productTrafficRows">
-            <div className="productTrafficColumns" aria-hidden="true">
-              <span>Product</span>
-              <span>Clicks</span>
+      {selectedProduct ? (
+        <ProductLens product={selectedProduct} onBack={() => setSelectedProduct(null)} />
+      ) : (
+        <section className="creatorAnalyticsCard productExplorer">
+          <div className="productTrafficHeading">
+            <div>
+              <p className="eyebrow">PRODUCT EXPLORER</p>
+              <h2>Your product world</h2>
+              <p>Explore your recommendations by brand, category or product.</p>
             </div>
-            {visibleProducts.map((item) => (
-              <div key={item.id}>
-                <span className="productTrafficIdentity">
-                  <span className="productTrafficThumbnail">
-                    {item.imageUrl ? (
-                      <Image
-                        alt=""
-                        fill
-                        sizes="48px"
-                        src={publicAssetUrl(item.imageUrl)}
-                        unoptimized
-                      />
-                    ) : (
-                      <Package aria-hidden="true" size={19} />
-                    )}
-                  </span>
-                  <span className="productTrafficName">
-                    <strong>{item.productName}</strong>
-                    <small>{item.categoryName}</small>
-                  </span>
-                </span>
-                <strong>{item.shopClicks.toLocaleString('en-IL')}</strong>
-              </div>
+            <span>{dashboard.recommendations.length} products</span>
+          </div>
+          <div className="productExplorerTabs" role="tablist" aria-label="Product explorer view">
+            {[
+              ['brands', 'Brands'],
+              ['categories', 'Categories'],
+              ['products', 'All products'],
+            ].map(([value, label]) => (
+              <button
+                aria-selected={explorerView === value}
+                className={explorerView === value ? 'active' : ''}
+                key={value}
+                onClick={() => {
+                  setExplorerView(value as typeof explorerView);
+                  setExpandedGroup(null);
+                }}
+                role="tab"
+                type="button"
+              >
+                {label}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="creatorAnalyticsEmpty">No products in this category yet.</div>
-        )}
-      </section>
+          {explorerView === 'products' ? (
+            <ProductList items={dashboard.recommendations} onSelect={setSelectedProduct} />
+          ) : groups.length ? (
+            <div className="productExplorerGroups">
+              {groups.map((group) => {
+                const groupId = `${explorerView}-${group.name}`;
+                const expanded = expandedGroup === groupId;
+                return (
+                  <article key={groupId}>
+                    <button
+                      aria-expanded={expanded}
+                      onClick={() => setExpandedGroup(expanded ? null : groupId)}
+                      type="button"
+                    >
+                      <span>
+                        {expanded ? (
+                          <ChevronDown aria-hidden="true" size={18} />
+                        ) : (
+                          <ChevronRight aria-hidden="true" size={18} />
+                        )}
+                        <span>
+                          <strong>{group.name}</strong>
+                          <small>
+                            {group.items.length} products · {group.categories.join(', ')}
+                          </small>
+                        </span>
+                      </span>
+                      <b>{group.shopClicks.toLocaleString('en-US')} clicks</b>
+                    </button>
+                    {expanded ? (
+                      <ProductList items={group.items} onSelect={setSelectedProduct} />
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="creatorAnalyticsEmpty">No recommendations yet.</div>
+          )}
+        </section>
+      )}
     </>
+  );
+}
+
+type AnalyticsProduct = CreatorAnalyticsDashboard['recommendations'][number];
+
+function groupProducts(
+  products: AnalyticsProduct[],
+  getGroupName: (product: AnalyticsProduct) => string,
+) {
+  const groups = new Map<string, AnalyticsProduct[]>();
+  products.forEach((product) => {
+    const name = getGroupName(product);
+    groups.set(name, [...(groups.get(name) ?? []), product]);
+  });
+  return Array.from(groups, ([name, items]) => ({
+    categories: Array.from(new Set(items.map((item) => item.categoryName))),
+    items,
+    name,
+    shopClicks: items.reduce((total, item) => total + item.shopClicks, 0),
+  })).sort(
+    (left, right) =>
+      right.shopClicks - left.shopClicks || left.name.localeCompare(right.name),
+  );
+}
+
+function ProductList({
+  items,
+  onSelect,
+}: {
+  items: AnalyticsProduct[];
+  onSelect: (product: AnalyticsProduct) => void;
+}) {
+  return (
+    <div className="productExplorerList">
+      {items.map((product) => (
+        <button key={product.id} onClick={() => onSelect(product)} type="button">
+          <ProductThumbnail product={product} />
+          <span>
+            <strong>{product.productName}</strong>
+            <small>
+              {product.brandName} · {product.categoryName}
+            </small>
+          </span>
+          <b>{product.shopClicks.toLocaleString('en-US')}</b>
+          <ChevronRight aria-hidden="true" size={17} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProductLens({ product, onBack }: { product: AnalyticsProduct; onBack: () => void }) {
+  const metrics = [
+    ['Views', product.views],
+    ['Shop clicks', product.shopClicks],
+    ['Story opens', product.storyOpens],
+    ['Code copies', product.codeCopies],
+  ] as const;
+  return (
+    <section className="creatorAnalyticsCard productLens">
+      <button className="productLensBack" onClick={onBack} type="button">
+        <ArrowLeft aria-hidden="true" size={16} />
+        Back to product explorer
+      </button>
+      <div className="productLensHeading">
+        <ProductThumbnail product={product} />
+        <div>
+          <p className="eyebrow">PRODUCT LENS</p>
+          <h2>{product.productName}</h2>
+          <p>
+            {product.brandName} · {product.categoryName}
+          </p>
+        </div>
+      </div>
+      <div className="productLensMetrics">
+        {metrics.map(([label, value]) => (
+          <article key={label}>
+            <small>{label}</small>
+            <strong>{value.toLocaleString('en-US')}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProductThumbnail({ product }: { product: AnalyticsProduct }) {
+  return (
+    <span className="productTrafficThumbnail">
+      {product.imageUrl ? (
+        <Image
+          alt=""
+          fill
+          sizes="48px"
+          src={publicAssetUrl(product.imageUrl)}
+          unoptimized
+        />
+      ) : (
+        <Package aria-hidden="true" size={19} />
+      )}
+    </span>
   );
 }
 

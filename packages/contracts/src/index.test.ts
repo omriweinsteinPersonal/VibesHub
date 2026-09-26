@@ -397,6 +397,7 @@ describe('shared API contracts', () => {
       range: { days: 7, from: '2026-08-02', to: '2026-08-08' },
       recommendations: [
         {
+          brandName: 'Rare Beauty',
           categoryName: 'Beauty',
           categorySlug: 'beauty',
           codeCopies: 2,

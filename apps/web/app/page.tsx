@@ -5,7 +5,6 @@ import {
   Camera,
   Check,
   ExternalLink,
-  LayoutGrid,
   Palette,
   Plus,
   Share2,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { SiteFooter } from './_components/site-footer';
+import { CreatorHeroShowcase } from './_components/creator-hero-showcase';
 import { SiteHeader } from './_components/site-header';
 
 const signupHref = '/auth?mode=signup';
@@ -50,59 +50,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div
-            className="creatorHeroVisual"
-            aria-label="Example creator recommendation page"
-          >
-            <div className="creatorHeroGlow" />
-            <div className="creatorPhone">
-              <div className="creatorPhoneTop">
-                <span />
-              </div>
-              <div className="creatorPhoneProfile">
-                <div className="creatorDemoAvatar">M</div>
-                <div>
-                  <strong>Maya Cohen</strong>
-                  <span>Style, travel &amp; everyday finds</span>
-                </div>
-              </div>
-              <div className="creatorDemoSocials">
-                <span>Instagram</span>
-                <span>TikTok</span>
-                <span>YouTube</span>
-              </div>
-              <div className="creatorDemoSearch">Search my recommendations...</div>
-              <div className="creatorDemoTabs">
-                <strong>Latest</strong>
-                <span>Fashion</span>
-                <span>Collections</span>
-              </div>
-              <div className="creatorDemoGrid">
-                <article className="creatorDemoCard creatorDemoCardWarm">
-                  <div className="creatorDemoProductShape creatorDemoBag" />
-                  <p>Everyday shoulder bag</p>
-                  <strong>₪189</strong>
-                </article>
-                <article className="creatorDemoCard creatorDemoCardCool">
-                  <div className="creatorDemoProductShape creatorDemoShoe" />
-                  <p>My favorite sneakers</p>
-                  <strong>₪329</strong>
-                </article>
-              </div>
-            </div>
-            <div className="creatorFloatingCard creatorFloatingTop">
-              <Palette aria-hidden="true" size={18} />
-              <span>
-                <strong>Your style</strong>Every color, every detail
-              </span>
-            </div>
-            <div className="creatorFloatingCard creatorFloatingBottom">
-              <BarChart3 aria-hidden="true" size={18} />
-              <span>
-                <strong>Built-in insights</strong>Know what your audience loves
-              </span>
-            </div>
-          </div>
+          <CreatorHeroShowcase />
         </section>
 
         <section className="creatorValueStrip" aria-label="Platform highlights">
@@ -152,40 +100,117 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="creatorLandingSection creatorFeatures" id="features">
-          <div className="creatorFeatureIntro">
-            <p className="creatorLandingEyebrow">EVERYTHING IN ONE PLACE</p>
-            <h2>Your taste deserves more than a list of links.</h2>
+        <section className="creatorLandingSection creatorAudience" id="features">
+          <div className="creatorAudienceIntro">
+            <p className="creatorLandingEyebrow">AUDIENCE ANALYTICS</p>
+            <h2>Know your audience. Keep them engaged.</h2>
             <p>
-              Create a destination your audience recognizes, trusts and comes back to.
+              Follow every click, learn what is converting and see where your audience is
+              coming from, all in one clear view.
             </p>
             <Link className="creatorTextLink" href={signupHref}>
-              Start building <ArrowRight size={15} />
+              Explore your analytics <ArrowRight size={15} />
             </Link>
           </div>
-          <div className="creatorFeatureGrid">
-            <article>
-              <LayoutGrid aria-hidden="true" />
-              <h3>Flexible recommendations</h3>
-              <p>Show individual items, curated collections and complete brand edits.</p>
-            </article>
-            <article>
-              <Palette aria-hidden="true" />
-              <h3>A page that feels like you</h3>
-              <p>Shape the colors, layout and sections while seeing every change live.</p>
-            </article>
-            <article>
-              <BarChart3 aria-hidden="true" />
-              <h3>Useful analytics</h3>
-              <p>Understand what gets attention and which recommendations earn clicks.</p>
-            </article>
-            <article>
-              <ExternalLink aria-hidden="true" />
-              <h3>Direct paths to products</h3>
-              <p>
-                Send your audience straight to the exact item or collection they want.
-              </p>
-            </article>
+          <div
+            className="creatorAnalyticsPreview"
+            aria-label="Example creator analytics dashboard"
+          >
+            <header>
+              <div>
+                <span>ANALYTICS</span>
+                <strong>Your audience at a glance</strong>
+              </div>
+              <span className="creatorAnalyticsRange">Last 30 days</span>
+            </header>
+            <div className="creatorAnalyticsMetrics">
+              <article>
+                <span>Audience</span>
+                <strong>12.8K</strong>
+                <small>↑ 18.4%</small>
+              </article>
+              <article>
+                <span>Product clicks</span>
+                <strong>4,286</strong>
+                <small>↑ 24.1%</small>
+              </article>
+              <article>
+                <span>Engagement</span>
+                <strong>8.6%</strong>
+                <small>↑ 2.3%</small>
+              </article>
+              <article>
+                <span>Average order</span>
+                <strong>$214</strong>
+                <small>↑ 12.8%</small>
+              </article>
+            </div>
+            <div className="creatorAnalyticsDashboard">
+              <section className="creatorAnalyticsChart">
+                <div className="creatorAnalyticsPanelHeading">
+                  <div>
+                    <span>PRODUCT CLICKS</span>
+                    <strong>What is gaining attention</strong>
+                  </div>
+                  <BarChart3 aria-hidden="true" size={16} />
+                </div>
+                <div className="creatorAnalyticsBars" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <div className="creatorAnalyticsAxis">
+                  <span>01 Jun</span>
+                  <span>30 Jun</span>
+                </div>
+              </section>
+              <section className="creatorTopProducts">
+                <div className="creatorAnalyticsPanelHeading">
+                  <div>
+                    <span>TOP PRODUCTS</span>
+                    <strong>Most clicked</strong>
+                  </div>
+                </div>
+                <ol>
+                  <li>
+                    <span>Soft leather shoulder bag</span>
+                    <strong>1,284</strong>
+                  </li>
+                  <li>
+                    <span>Daily skin ritual</span>
+                    <strong>968</strong>
+                  </li>
+                  <li>
+                    <span>Weekend layers</span>
+                    <strong>742</strong>
+                  </li>
+                </ol>
+              </section>
+              <section className="creatorAudienceCountries">
+                <div className="creatorAnalyticsPanelHeading">
+                  <div>
+                    <span>AUDIENCE BY COUNTRY</span>
+                    <strong>Where they are</strong>
+                  </div>
+                </div>
+                <div>
+                  <span>
+                    🇮🇱 Israel <strong>42%</strong>
+                  </span>
+                  <span>
+                    🇺🇸 United States <strong>24%</strong>
+                  </span>
+                  <span>
+                    🇬🇧 United Kingdom <strong>13%</strong>
+                  </span>
+                </div>
+              </section>
+            </div>
           </div>
         </section>
 

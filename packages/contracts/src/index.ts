@@ -336,6 +336,7 @@ export const creatorAnalyticsDashboardSchema = z
     recommendations: z.array(
       z
         .object({
+          brandName: z.string().trim().min(1).max(200),
           codeCopies: z.int().nonnegative(),
           categoryName: z.string().trim().min(1),
           categorySlug: z.string().trim().min(1),

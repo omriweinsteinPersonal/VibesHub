@@ -31,9 +31,6 @@ export function SiteHeader() {
             <Link className="loginLink" href="/auth?mode=login">
               Creator log in
             </Link>
-            <Link className="button primary joinCreatorLink" href="/auth?mode=signup">
-              Create your page
-            </Link>
           </div>
         </div>
       </header>
