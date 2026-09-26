@@ -120,7 +120,11 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
             </div>
             <span>{dashboard.recommendations.length} products</span>
           </div>
-          <div className="productExplorerTabs" role="tablist" aria-label="Product explorer view">
+          <div
+            className="productExplorerTabs"
+            role="tablist"
+            aria-label="Product explorer view"
+          >
             {[
               ['brands', 'Brands'],
               ['categories', 'Categories'],
@@ -142,7 +146,10 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
             ))}
           </div>
           {explorerView === 'products' ? (
-            <ProductList items={dashboard.recommendations} onSelect={setSelectedProduct} />
+            <ProductList
+              items={dashboard.recommendations}
+              onSelect={setSelectedProduct}
+            />
           ) : groups.length ? (
             <div className="productExplorerGroups">
               {groups.map((group) => {
@@ -234,7 +241,13 @@ function ProductList({
   );
 }
 
-function ProductLens({ product, onBack }: { product: AnalyticsProduct; onBack: () => void }) {
+function ProductLens({
+  product,
+  onBack,
+}: {
+  product: AnalyticsProduct;
+  onBack: () => void;
+}) {
   const metrics = [
     ['Views', product.views],
     ['Shop clicks', product.shopClicks],

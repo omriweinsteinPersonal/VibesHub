@@ -1610,7 +1610,11 @@ svg.lucide {
   margin: 0 0 12px;
 }
 .creatorAnalyticsPageMetrics strong {
-  font-family: Iowan Old Style, Baskerville, 'Times New Roman', serif;
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    'Times New Roman',
+    serif;
   font-size: 2.5rem;
   font-weight: 400;
 }
