@@ -66,7 +66,6 @@ async function StorefrontPage({
   if (mode === 'public') {
     return (
       <div className="editorialPage storefrontPage">
-        <StorefrontHeader creatorSession={false} />
         <main>
           <CreatorStorefrontView
             codes={discountCodes}

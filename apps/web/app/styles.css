@@ -11650,11 +11650,11 @@ dt {
   }
 }
 
-/* The compact left rail keeps the three dashboard modes within thumb reach. */
-@media (max-width: 760px) {
+/* Keep the dashboard controls readable on medium phones without crowding the work area. */
+@media (min-width: 421px) and (max-width: 760px) {
   .creatorDashboardWorkspace {
     align-items: start;
-    grid-template-columns: 84px minmax(0, 1fr);
+    grid-template-columns: 128px minmax(0, 1fr);
   }
 
   .creatorDashboardSidebar {
@@ -11669,7 +11669,148 @@ dt {
 
   .creatorDashboardSidebar button {
     min-height: 44px;
-    padding: 8px 6px;
+    padding: 9px 10px;
     white-space: normal;
+  }
+}
+
+/* On the narrowest phones the rail would leave too little room for real content.
+   Put it directly below the introduction, where it remains thumb-reachable and
+   lets recommendations use the full viewport width. */
+@media (max-width: 420px) {
+  .creatorDashboardMain {
+    padding-inline: 12px;
+  }
+
+  .creatorDashboardIntro {
+    margin-bottom: 14px;
+  }
+
+  .creatorDashboardWorkspace {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 14px;
+  }
+
+  .creatorDashboardSidebar {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 5px;
+    position: static;
+    scrollbar-width: none;
+    width: 100%;
+  }
+
+  .creatorDashboardSidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .creatorDashboardSidebar .eyebrow {
+    display: none;
+  }
+
+  .creatorDashboardSidebar button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .creatorDashboardNavDesktop {
+    display: none;
+  }
+
+  .creatorDashboardNavMobile {
+    display: inline;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading {
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading h2 {
+    font-size: clamp(1.7rem, 10vw, 2.1rem);
+    line-height: 1;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading p {
+    font-size: 0.78rem;
+    line-height: 1.38;
+    margin-top: 5px;
+  }
+
+  .creatorRecommendationSection > .creatorSectionHeading > .button {
+    align-self: stretch;
+    min-height: 42px;
+    width: 100%;
+  }
+
+  .creatorComposer {
+    border-radius: 14px;
+    margin: 0 0 16px;
+  }
+
+  .creatorComposerHeader {
+    gap: 8px;
+    padding: 13px 14px 11px;
+  }
+
+  .creatorComposerHeader h2 {
+    font-size: 1.22rem;
+    line-height: 1.15;
+    margin-bottom: 3px;
+  }
+
+  .creatorComposerHeader p {
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .creatorComposerHeader > button {
+    height: 32px;
+    width: 32px;
+  }
+
+  .creatorTypeGrid {
+    gap: 7px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 10px;
+  }
+
+  .creatorTypeGrid button {
+    align-content: start;
+    border-radius: 10px;
+    min-height: 102px;
+    padding: 9px 7px;
+  }
+
+  .creatorTypeGrid span {
+    height: 28px;
+    width: 28px;
+  }
+
+  .creatorTypeGrid strong {
+    font-size: 0.92rem;
+    line-height: 1.05;
+    margin: 8px 0 4px;
+  }
+
+  .creatorTypeGrid small {
+    font-size: 0.59rem;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 340px) {
+  .creatorTypeGrid button {
+    min-height: 82px;
+  }
+
+  .creatorTypeGrid small {
+    display: none;
   }
 }

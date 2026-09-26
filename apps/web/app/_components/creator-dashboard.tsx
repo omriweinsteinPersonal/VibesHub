@@ -1038,7 +1038,7 @@ export function CreatorDashboard() {
             type="button"
           >
             <span className="creatorDashboardNavDesktop">Storefront labels</span>
-            <span className="creatorDashboardNavMobile">Templates</span>
+            <span className="creatorDashboardNavMobile">Storefront labels</span>
           </button>
           <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
@@ -1054,7 +1054,7 @@ export function CreatorDashboard() {
             type="button"
           >
             <span className="creatorDashboardNavDesktop">Social links</span>
-            <span className="creatorDashboardNavMobile">Social</span>
+            <span className="creatorDashboardNavMobile">Social links</span>
           </button>
         </nav>
         <div className="creatorDashboardPanel">
