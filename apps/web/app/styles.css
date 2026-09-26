@@ -1364,6 +1364,28 @@ svg.lucide {
   }
 }
 
+.creatorDiscountType {
+  display: flex;
+  gap: 6px;
+  margin: 7px 0;
+}
+.creatorDiscountType button {
+  background: #fff;
+  border: 1px solid #dfd4c8;
+  border-radius: 999px;
+  color: #65584f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  padding: 6px 10px;
+}
+.creatorDiscountType button[aria-pressed='true'] {
+  background: #e7edd9;
+  border-color: #7f896a;
+  color: #34402d;
+  font-weight: 600;
+}
+
 .creatorAccountMain {
   max-width: 1020px;
 }

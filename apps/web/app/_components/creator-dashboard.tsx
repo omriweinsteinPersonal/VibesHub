@@ -72,6 +72,8 @@ interface ProductEditor {
   discountCode: string;
   discountExpiresAt: string;
   discountLabel: string;
+  discountType: 'amount' | 'percent';
+  discountValue: string;
   imageAssetId: string;
   imageUrl: string;
   instagramStoryUrl: string;
@@ -116,6 +118,8 @@ const emptyProduct: ProductEditor = {
   discountCode: '',
   discountExpiresAt: '',
   discountLabel: '',
+  discountType: 'percent',
+  discountValue: '',
   imageAssetId: '',
   imageUrl: '',
   instagramStoryUrl: '',
@@ -571,7 +575,11 @@ export function CreatorDashboard() {
         commercialRelationship: 'organic',
         discountCode: product.discountCode.trim() || null,
         discountExpiresAt: toIso(product.discountExpiresAt),
-        discountLabel: product.discountLabel.trim() || null,
+        discountLabel: product.discountValue.trim()
+          ? product.discountType === 'percent'
+            ? `${product.discountValue.trim()}% off`
+            : `₪${product.discountValue.trim()} off`
+          : null,
         imageAssetId: product.imageAssetId || null,
         imageUrl: product.imageAssetId ? null : product.imageUrl,
         instagramStoryUrl: product.instagramStoryUrl.trim() || null,
@@ -589,14 +597,29 @@ export function CreatorDashboard() {
       });
       let savedProduct: CreatorRecommendation;
       if (editingProduct) {
-        savedProduct = await apiRequest<CreatorRecommendation>(
-          `/creator/recommendations/${editingProduct.id}`,
-          {
-            body,
-            headers: { 'if-match': `"${editingProduct.version}"` },
-            method: 'PATCH',
-          },
-        );
+        const update = (version: number) =>
+          apiRequest<CreatorRecommendation>(
+            `/creator/recommendations/${editingProduct.id}`,
+            {
+              body,
+              headers: { 'if-match': `"${version}"` },
+              method: 'PATCH',
+            },
+          );
+        try {
+          savedProduct = await update(editingProduct.version);
+        } catch (cause) {
+          if (
+            !(cause instanceof Error) ||
+            !cause.message.includes('Reload the recommendation')
+          ) {
+            throw cause;
+          }
+          const current = await apiRequest<CreatorRecommendation>(
+            `/creator/recommendations/${editingProduct.id}`,
+          );
+          savedProduct = await update(current.version);
+        }
       } else {
         savedProduct = await apiRequest<CreatorRecommendation>(
           '/creator/recommendations',
@@ -772,6 +795,8 @@ export function CreatorDashboard() {
       discountCode: item.discount?.code ?? '',
       discountExpiresAt: toLocalDate(item.discount?.expiresAt ?? null),
       discountLabel: item.discount?.label ?? '',
+      discountType: item.discount?.label?.includes('%') ? 'percent' : 'amount',
+      discountValue: (item.discount?.label ?? '').replace(/[^0-9.]/gu, ''),
       imageAssetId: item.imageAssetId ?? '',
       imageUrl: item.imageUrl,
       instagramStoryUrl: item.instagramStoryUrl ?? '',
@@ -2371,11 +2396,28 @@ function ProductForm({
             />
           </label>
           <label>
-            Discount label
+            Discount
+            <span className="creatorDiscountType" role="group" aria-label="Discount type">
+              <button
+                aria-pressed={editor.discountType === 'percent'}
+                onClick={() => update('discountType', 'percent')}
+                type="button"
+              >
+                Percent
+              </button>
+              <button
+                aria-pressed={editor.discountType === 'amount'}
+                onClick={() => update('discountType', 'amount')}
+                type="button"
+              >
+                Fixed amount
+              </button>
+            </span>
             <input
-              value={editor.discountLabel}
-              onChange={(event) => update('discountLabel', event.target.value)}
-              placeholder="15% off"
+              inputMode="decimal"
+              onChange={(event) => update('discountValue', event.target.value)}
+              placeholder={editor.discountType === 'percent' ? '20' : '100'}
+              value={editor.discountValue}
             />
           </label>
           <label>
