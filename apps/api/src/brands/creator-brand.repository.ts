@@ -63,15 +63,36 @@ export class CreatorBrandRepository {
     );
   }
 
-  async archive(id: string, userId: string, expectedVersion: number): Promise<boolean> {
-    const creatorId = await this.creatorId(this.database.sql, userId);
-    if (!creatorId) return false;
-    const [updated] = await this.database.sql<{ id: string }[]>`
-      update app.creator_brands set lifecycle = 'archived', version = version + 1
-      where id = ${id} and creator_id = ${creatorId} and version = ${expectedVersion} and lifecycle = 'active'
-      returning id
-    `;
-    return Boolean(updated);
+  async archive(
+    id: string,
+    userId: string,
+    expectedVersion: number,
+    archiveRecommendations: boolean,
+  ): Promise<boolean> {
+    return this.database.sql.begin(async (transaction) => {
+      const sql = transaction as unknown as DatabaseClient;
+      const creatorId = await this.creatorId(sql, userId);
+      if (!creatorId) return false;
+      const [updated] = await sql<{ brandId: string }[]>`
+        update app.creator_brands set lifecycle = 'archived', version = version + 1
+        where id = ${id} and creator_id = ${creatorId} and version = ${expectedVersion} and lifecycle = 'active'
+        returning brand_id as "brandId"
+      `;
+      if (!updated) return false;
+      if (archiveRecommendations) {
+        await sql`
+          update app.recommendations recommendation
+          set lifecycle = 'archived', published_at = null, version = version + 1
+          from app.products product
+          where recommendation.product_id = product.id
+            and recommendation.creator_id = ${creatorId}
+            and product.brand_id = ${updated.brandId}
+            and recommendation.lifecycle <> 'archived'
+            and recommendation.deleted_at is null
+        `;
+      }
+      return true;
+    });
   }
 
   private async creatorId(sql: DatabaseClient, userId: string) {

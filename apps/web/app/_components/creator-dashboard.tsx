@@ -244,13 +244,6 @@ export function CreatorDashboard() {
           recommendationIds: section.recommendationIds.filter((id) => activeIds.has(id)),
         })),
       );
-      setProduct((current) => ({
-        ...current,
-        categoryId: current.categoryId || loadedProfile.primaryCategory.id,
-        categoryIds: current.categoryIds.length
-          ? current.categoryIds
-          : [current.categoryId || loadedProfile.primaryCategory.id],
-      }));
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -294,12 +287,7 @@ export function CreatorDashboard() {
     setEditingProduct(null);
     setEditingDiscount(null);
     setEditingBrand(null);
-    const categoryId = profile?.primaryCategory.id ?? '';
-    setProduct({
-      ...emptyProduct,
-      categoryId,
-      categoryIds: categoryId ? [categoryId] : [],
-    });
+    setProduct(emptyProduct);
     setDiscount(emptyDiscount);
     setBrand({
       code: '',
@@ -420,19 +408,18 @@ export function CreatorDashboard() {
         );
         if (productFetchRequest.current !== requestId) return;
         setProduct((current) => {
-          const categoryId =
-            categories.find((category) => category.slug === metadata.categorySlug)?.id ??
-            current.categoryId;
+          const detectedCategoryId = categories.find(
+            (category) => category.slug === metadata.categorySlug,
+          )?.id;
+          const categoryId = detectedCategoryId ?? current.categoryId;
           return normalizedProductUrl(current.productUrl) === requestedUrl
             ? {
                 ...current,
                 brandName: metadata.brandName ?? current.brandName,
                 categoryId,
-                categoryIds: current.categoryIds.length
-                  ? current.categoryIds
-                  : categoryId
-                    ? [categoryId]
-                    : [],
+                categoryIds: detectedCategoryId
+                  ? [detectedCategoryId]
+                  : current.categoryIds,
                 additionalImages: current.imageAssetId
                   ? current.additionalImages
                   : metadata.imageUrls.slice(1).map((url) => ({ imageAssetId: '', url })),
@@ -457,7 +444,9 @@ export function CreatorDashboard() {
         if (productFetchRequest.current === requestId) {
           setNotice(
             metadata.imageUrl
-              ? 'Product details fetched. Review them, then select Save recommendation.'
+              ? metadata.priceAmountMinor === null
+                ? 'Product details fetched. This store did not expose a price, so add it manually before saving.'
+                : 'Product details fetched. Review them, then select Save recommendation.'
               : 'Product details fetched, but this store did not provide a photo. Add one before selecting Save recommendation.',
           );
         }
@@ -1016,13 +1005,6 @@ export function CreatorDashboard() {
         <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
           <p className="eyebrow">MANAGE</p>
           <button
-            className="creatorDashboardTopNav"
-            onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
-            type="button"
-          >
-            Top
-          </button>
-          <button
             aria-current={dashboardView === 'labels' ? 'page' : undefined}
             onClick={() => setDashboardView('labels')}
             type="button"
@@ -1281,10 +1263,8 @@ export function CreatorDashboard() {
                               ...emptyProduct,
                               brandName,
                               collectionIds: [section.id],
-                              categoryId: profile?.primaryCategory.id ?? '',
-                              categoryIds: profile?.primaryCategory.id
-                                ? [profile.primaryCategory.id]
-                                : [],
+                              categoryId: '',
+                              categoryIds: [],
                             });
                             setComposer('product');
                             return true;
@@ -1397,16 +1377,18 @@ export function CreatorDashboard() {
                             aria-label={`Delete ${managedBrand.name}`}
                             disabled={saving}
                             onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `Remove the ${managedBrand.name} brand card? Its items and collections will remain.`,
-                                )
+                              const archiveRecommendations =
+                                managedBrand.itemCount > 0 &&
+                                window.confirm(
+                                  `Also remove ${managedBrand.itemCount} recommendation${managedBrand.itemCount === 1 ? '' : 's'} under ${managedBrand.name}? Choose OK to remove them too, or Cancel to keep them.`,
+                                );
+                              void apiRequest(
+                                `/creator/brands/${managedBrand.id}?archiveRecommendations=${archiveRecommendations}`,
+                                {
+                                  headers: { 'if-match': `"${managedBrand.version}"` },
+                                  method: 'DELETE',
+                                },
                               )
-                                return;
-                              void apiRequest(`/creator/brands/${managedBrand.id}`, {
-                                headers: { 'if-match': `"${managedBrand.version}"` },
-                                method: 'DELETE',
-                              })
                                 .then(load)
                                 .catch((cause: unknown) => setError(messageFor(cause)));
                             }}

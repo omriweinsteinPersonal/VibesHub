@@ -1281,6 +1281,19 @@ svg.lucide {
   gap: 5px;
   padding: 0 14px;
 }
+.creatorConnectorPlatform {
+  align-items: center;
+  display: inline-flex;
+  gap: 9px;
+}
+.creatorConnectorPlatform img,
+.creatorConnectorChoices img {
+  height: 22px;
+  width: 22px;
+}
+.creatorConnectorPlatform strong {
+  font-weight: 600;
+}
 .creatorConnectorActions button:disabled {
   cursor: default;
   opacity: 0.4;
@@ -1298,6 +1311,56 @@ svg.lucide {
   }
   .creatorConnectorsHeading > a {
     margin: 0 0 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  .creatorDashboardWorkspace {
+    align-items: start;
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+  .creatorDashboardSidebar {
+    align-content: start;
+    display: grid;
+    gap: 4px;
+    overflow: visible;
+    padding: 6px;
+    position: sticky;
+    top: 12px;
+  }
+  .creatorDashboardSidebar button {
+    min-height: 44px;
+    padding: 8px 6px;
+    white-space: normal;
+  }
+  .creatorConnectors {
+    padding: 20px 14px;
+  }
+  .creatorConnectorList li {
+    align-items: center;
+    border: 1px solid #e7ddd2;
+    border-radius: 14px;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 10px;
+  }
+  .creatorConnectorList label {
+    gap: 8px;
+  }
+  .creatorConnectorPlatform {
+    font-size: 0.85rem;
+  }
+  .creatorConnectorChoices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .creatorConnectorChoices button {
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 0 10px;
+  }
+  .creatorConnectorChoices button svg:last-child {
+    margin-left: auto;
   }
 }
 
@@ -11562,5 +11625,29 @@ dt {
 
   .creatorCustomizerProducts span {
     font-size: 0.54rem;
+  }
+}
+
+/* The compact left rail keeps the three dashboard modes within thumb reach. */
+@media (max-width: 760px) {
+  .creatorDashboardWorkspace {
+    align-items: start;
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .creatorDashboardSidebar {
+    align-content: start;
+    display: grid;
+    gap: 4px;
+    overflow: visible;
+    padding: 6px;
+    position: sticky;
+    top: 12px;
+  }
+
+  .creatorDashboardSidebar button {
+    min-height: 44px;
+    padding: 8px 6px;
+    white-space: normal;
   }
 }

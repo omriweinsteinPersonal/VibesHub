@@ -15,8 +15,13 @@ export class CreatorBrandService {
   async update(id: string, userId: string, version: number, input: CreatorBrandInput) {
     return this.require(await this.brands.update(id, userId, version, input));
   }
-  async archive(id: string, userId: string, version: number) {
-    if (!(await this.brands.archive(id, userId, version)))
+  async archive(
+    id: string,
+    userId: string,
+    version: number,
+    archiveRecommendations = false,
+  ) {
+    if (!(await this.brands.archive(id, userId, version, archiveRecommendations)))
       throw problem(
         412,
         'PRECONDITION_FAILED',

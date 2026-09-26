@@ -254,8 +254,7 @@ export function parseProductMetadata(
       null,
     imageUrl: absoluteImage,
     imageUrls,
-    priceAmountMinor:
-      price && Number.isFinite(Number(price)) ? Math.round(Number(price) * 100) : null,
+    priceAmountMinor: priceAmountMinor(price),
     productName:
       firstString(jsonLd?.name) ??
       meta.get('og:title') ??
@@ -455,17 +454,33 @@ function namedEntity(value: unknown): string | null {
     : null;
 }
 
-function offerPrice(value: unknown): string | null {
+function offerPrice(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(offerPrice).find(Boolean) ?? null;
   }
   const offer = objectValue(value);
   if (!offer) return null;
   return (
-    firstString(offer.price) ??
-    firstString(objectValue(offer.priceSpecification)?.price) ??
-    null
+    offer.price ?? offer.lowPrice ?? objectValue(offer.priceSpecification)?.price ?? null
   );
+}
+
+function priceAmountMinor(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value >= 0 ? Math.round(value * 100) : null;
+  }
+  if (typeof value !== 'string') return null;
+  const raw = value.trim().replace(/[^0-9,.-]/gu, '');
+  if (!raw) return null;
+  const lastComma = raw.lastIndexOf(',');
+  const lastDot = raw.lastIndexOf('.');
+  const decimalIndex = Math.max(lastComma, lastDot);
+  const normalized =
+    decimalIndex >= 0
+      ? `${raw.slice(0, decimalIndex).replaceAll(/[,.]/gu, '')}.${raw.slice(decimalIndex + 1)}`
+      : raw.replaceAll(/[,.]/gu, '');
+  const amount = Number(normalized);
+  return Number.isFinite(amount) && amount >= 0 ? Math.round(amount * 100) : null;
 }
 
 function productNameFromUrl(productUrl: string): string | null {

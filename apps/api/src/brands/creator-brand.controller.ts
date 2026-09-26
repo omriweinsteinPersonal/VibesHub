@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { creatorBrandInputSchema, type CreatorBrandInput } from '@vibeshub/contracts';
@@ -55,9 +56,15 @@ export class CreatorBrandController {
     @Param('id') id: string,
     @CurrentActor() actor: RequestActor,
     @Headers('if-match') match: string | undefined,
+    @Query('archiveRecommendations') archiveRecommendations: string | undefined,
     @Req() request: FastifyRequest,
   ) {
-    await this.brands.archive(id, actor.userId, parseIfMatch(match));
+    await this.brands.archive(
+      id,
+      actor.userId,
+      parseIfMatch(match),
+      archiveRecommendations === 'true',
+    );
     return singleResponse({ deleted: true }, request.id);
   }
 }

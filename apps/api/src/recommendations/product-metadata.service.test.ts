@@ -87,6 +87,21 @@ describe('parseProductMetadata', () => {
       parseProductMetadata(html, 'https://adidas.co.il/product').priceAmountMinor,
     ).toBe(49_990);
   });
+
+  it('reads numeric and localized offer prices', () => {
+    const numeric = `<script type="application/ld+json">{
+      "@type":"Product", "name":"Numeric price", "offers":{"price":129.9}
+    }</script>`;
+    const localized = `<script type="application/ld+json">{
+      "@type":"Product", "name":"Localized price", "offers":{"lowPrice":"₪1,299.90"}
+    }</script>`;
+    expect(
+      parseProductMetadata(numeric, 'https://shop.example/numeric').priceAmountMinor,
+    ).toBe(12_990);
+    expect(
+      parseProductMetadata(localized, 'https://shop.example/localized').priceAmountMinor,
+    ).toBe(129_990);
+  });
 });
 
 describe('ProductMetadataService Shopify import', () => {

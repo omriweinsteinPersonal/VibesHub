@@ -85,7 +85,10 @@ export function CreatorConnectorsEditor({
               {links.map((link) => (
                 <li key={link.platform}>
                   <label>
-                    <span>{connectorLabel(link.platform)}</span>
+                    <span className="creatorConnectorPlatform">
+                      <CreatorConnectorIcon platform={link.platform} />
+                      <strong>{connectorLabel(link.platform)}</strong>
+                    </span>
                     <input
                       autoComplete="url"
                       disabled={saving}
@@ -142,8 +145,9 @@ export function CreatorConnectorsEditor({
                   }}
                   type="button"
                 >
+                  <CreatorConnectorIcon platform={platform} />
+                  <span>{label}</span>
                   <Plus aria-hidden="true" size={15} />
-                  <CreatorConnectorIcon platform={platform} /> {label}
                 </button>
               ))}
           </div>
