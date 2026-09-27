@@ -108,6 +108,10 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 
+  it('allows a creator bio to be empty', () => {
+    expect(creatorProfilePatchSchema.parse({ bioHe: '' })).toMatchObject({ bioHe: '' });
+  });
+
   it('allows local media URLs without allowing insecure remote media', () => {
     const asset = {
       contentType: 'image/png',

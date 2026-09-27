@@ -13,6 +13,10 @@ export const directionalTextSchema = z.object({
   value: z.string().trim().min(1),
 });
 
+const creatorBioSchema = directionalTextSchema.extend({
+  value: z.string().trim(),
+});
+
 const publicAssetUrlSchema = z
   .url()
   .max(2_048)
@@ -33,7 +37,7 @@ export const categoryCardSchema = z
 export const creatorCardSchema = z
   .object({
     avatarUrl: publicAssetUrlSchema.nullable(),
-    bio: directionalTextSchema,
+    bio: creatorBioSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
     handle: z
@@ -560,7 +564,7 @@ export type StorefrontTitle = z.infer<typeof storefrontTitleSchema>;
 export const creatorStorefrontSchema = z
   .object({
     avatarUrl: publicAssetUrlSchema.nullable(),
-    bio: directionalTextSchema,
+    bio: creatorBioSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
     handle: z
@@ -893,7 +897,7 @@ export const creatorProfileSettingsSchema = z
       })
       .strict()
       .nullable(),
-    bioHe: z.string().trim().min(1).max(1_000),
+    bioHe: z.string().trim().max(1_000),
     displayName: z.string().trim().min(1).max(100),
     handle: creatorCardSchema.shape.handle,
     id: idSchema,
@@ -913,13 +917,7 @@ export const creatorHandleAvailabilitySchema = z
 export const creatorProfilePatchSchema = z
   .object({
     avatarAssetId: idSchema.nullable().optional(),
-    bioHe: z
-      .string()
-      .trim()
-      .min(1)
-      .max(1_000)
-      .refine((value) => /[א-ת]/u.test(value), 'A Hebrew creator bio is required')
-      .optional(),
+    bioHe: z.string().trim().max(1_000).optional(),
     displayName: z.string().trim().min(1).max(100).optional(),
     handle: creatorCardSchema.shape.handle.optional(),
     primaryCategoryId: idSchema.optional(),

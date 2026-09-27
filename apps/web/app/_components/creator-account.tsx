@@ -405,12 +405,10 @@ export function CreatorAccount() {
           </label>
           <small>Shown as a “Follow on Instagram” button on your storefront.</small>
           <label>
-            Bio (Hebrew)
+            Bio
             <textarea
-              dir="rtl"
-              lang="he"
+              dir="auto"
               maxLength={1000}
-              required
               rows={4}
               value={profileEditor.bioHe}
               onChange={(event) => updateProfile('bioHe', event.target.value)}

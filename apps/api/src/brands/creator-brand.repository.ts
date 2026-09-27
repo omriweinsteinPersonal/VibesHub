@@ -82,7 +82,7 @@ export class CreatorBrandRepository {
       if (archiveRecommendations) {
         await sql`
           update app.recommendations recommendation
-          set lifecycle = 'archived', published_at = null, version = version + 1
+          set lifecycle = 'archived', published_at = null, version = recommendation.version + 1
           from app.products product
           where recommendation.product_id = product.id
             and recommendation.creator_id = ${creatorId}
