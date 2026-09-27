@@ -10427,6 +10427,15 @@ dt {
   min-height: 1em;
 }
 
+/* Keep storefront shelves focused on the product preview; pricing lives on the detail page. */
+.creatorStorefrontCanvas .referenceBrandShelf .storeProductDetails {
+  min-height: 0;
+}
+
+.creatorStorefrontCanvas .referenceBrandShelf .storePriceRow {
+  display: none;
+}
+
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard
   .storeProductDetails
