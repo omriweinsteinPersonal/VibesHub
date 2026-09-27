@@ -1,18 +1,18 @@
 {
   "expo": {
     "name": "swavii",
-    "slug": "vibeshub",
+    "slug": "swavii",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "vibeshub",
+    "scheme": "swavii",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.vibeshub.app",
+      "bundleIdentifier": "com.swavii.app",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.vibeshub.app"
+      "package": "com.swavii.app"
     },
     "web": {
       "bundler": "metro"
