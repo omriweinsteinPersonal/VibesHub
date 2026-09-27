@@ -590,7 +590,7 @@ export function CreatorDashboard() {
         ),
         priceAmountMinor: Math.round(price * 100),
         productName: product.productName,
-        productUrl: product.productUrl,
+        productUrl: recommendationProductUrl(product.productUrl),
         reviewHe: product.reviewHe.trim() || 'לא צורפה ביקורת',
         storyClips,
         videoUrl: storyClips.find((clip) => clip.videoUrl)?.videoUrl ?? null,
@@ -802,7 +802,7 @@ export function CreatorDashboard() {
       instagramStoryUrl: item.instagramStoryUrl ?? '',
       priceIls: item.price.amountMinor > 0 ? String(item.price.amountMinor / 100) : '',
       productName: item.productName,
-      productUrl: item.productUrl,
+      productUrl: isManualRecommendationUrl(item.productUrl) ? '' : item.productUrl,
       reviewHe: item.review.value === 'לא צורפה ביקורת' ? '' : item.review.value,
       storyClips: item.storyClips.map((clip) => ({
         mediaAssetId: clip.mediaAssetId ?? '',
@@ -2131,7 +2131,7 @@ function ProductForm({
       }}
     >
       <ComposerHeader title={editing ? 'Edit item' : 'Add item'} onClose={onClose}>
-        Paste a link to fill in available details automatically.
+        Add the details yourself, or paste a link to fill them in automatically.
       </ComposerHeader>
       <div className="creatorComposerBody">
         <button className="creatorBack" onClick={onChangeType} type="button">
@@ -2139,11 +2139,12 @@ function ProductForm({
           Change type
         </button>
         <div className="creatorFullField creatorProductLinkField">
-          <label htmlFor="creator-product-link">Item link</label>
+          <label htmlFor="creator-product-link">
+            Item link <small>Optional</small>
+          </label>
           <span className="creatorInlineField">
             <input
               id="creator-product-link"
-              required
               type="url"
               value={editor.productUrl}
               onChange={(event) => update('productUrl', event.target.value)}
@@ -2164,13 +2165,13 @@ function ProductForm({
             </button>
           </span>
           <small>
-            Paste the link and we&apos;ll fill in available details. Everything stays
-            editable.
+            A link can fill in details automatically. You can also leave it blank and add
+            the item manually with a photo.
           </small>
         </div>
         <div className="creatorProductSavePrompt">
           <span>
-            Fetch details fills the form. Save adds the product to your storefront.
+            Add a photo and the item details, then save. A shopping link is optional.
           </span>
           <button className="button primary" disabled={saving || fetching} type="submit">
             {fetching ? 'Fetching details…' : saving ? 'Saving…' : saveLabel}
@@ -2731,10 +2732,12 @@ function RecommendationManageCard({
       <div className="creatorManageCopy">
         <p className="productBrand">{item.brandName}</p>
         <h3>{item.productName}</h3>
-        <a href={item.productUrl} rel="noreferrer" target="_blank">
-          Product link
-          <ExternalLink aria-hidden="true" size={12} />
-        </a>
+        {!isManualRecommendationUrl(item.productUrl) ? (
+          <a href={item.productUrl} rel="noreferrer" target="_blank">
+            Product link
+            <ExternalLink aria-hidden="true" size={12} />
+          </a>
+        ) : null}
       </div>
       <div className="creatorManageActions">
         <button aria-label="Edit recommendation" onClick={onEdit} type="button">
@@ -3242,4 +3245,14 @@ function toLocalDateTime(value: string | null) {
 }
 function messageFor(cause: unknown) {
   return cause instanceof Error ? cause.message : 'The request could not be completed.';
+}
+
+const manualRecommendationUrlPrefix = 'https://swavii.com/manual-recommendation/';
+
+function recommendationProductUrl(value: string) {
+  return normalizedProductUrl(value) || `${manualRecommendationUrlPrefix}${randomUuid()}`;
+}
+
+function isManualRecommendationUrl(value: string) {
+  return value.startsWith(manualRecommendationUrlPrefix);
 }
