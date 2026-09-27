@@ -265,7 +265,9 @@ function mapCreatorCard(row: CreatorCardRow): CreatorCard {
 
 function bioText(value: string): CreatorCard['bio'] {
   const firstStrongCharacter = value.match(/[\u0590-\u05ffA-Za-z]/u)?.[0];
-  const isHebrew = Boolean(firstStrongCharacter && /[\u0590-\u05ff]/u.test(firstStrongCharacter));
+  const isHebrew = Boolean(
+    firstStrongCharacter && /[\u0590-\u05ff]/u.test(firstStrongCharacter),
+  );
   return {
     direction: isHebrew ? 'rtl' : 'ltr',
     language: isHebrew ? 'he' : 'en',
