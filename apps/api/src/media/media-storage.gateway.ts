@@ -6,6 +6,7 @@ import type {
 } from '@vibeshub/contracts';
 
 import { parseApiConfig } from '../config.js';
+import type { AccountMediaAsset } from './media.repository.js';
 import {
   RECOMMENDATION_IMAGE_BUCKET,
   RECOMMENDATION_IMAGE_UPLOAD_BUCKET,
@@ -124,6 +125,28 @@ export class MediaStorageGateway {
 
   async removePublishedVideo(objectPath: string): Promise<void> {
     await this.removeFrom(STORY_VIDEO_BUCKET, objectPath);
+  }
+
+  async removeAccountAssets(assets: AccountMediaAsset[]): Promise<void> {
+    const removals = new Map<string, string[]>();
+    for (const asset of assets) {
+      const buckets =
+        asset.mediaKind === 'story_video'
+          ? [STORY_VIDEO_UPLOAD_BUCKET, STORY_VIDEO_BUCKET]
+          : [RECOMMENDATION_IMAGE_UPLOAD_BUCKET, RECOMMENDATION_IMAGE_BUCKET];
+      for (const bucket of buckets) {
+        const paths = removals.get(bucket) ?? [];
+        paths.push(asset.objectPath);
+        removals.set(bucket, paths);
+      }
+    }
+
+    await Promise.all(
+      [...removals].map(async ([bucket, objectPaths]) => {
+        const { error } = await this.storage.from(bucket).remove(objectPaths);
+        if (error) throw new Error(`Storage object deletion failed: ${error.message}`);
+      }),
+    );
   }
 
   private async removeFrom(bucket: string, objectPath: string): Promise<void> {

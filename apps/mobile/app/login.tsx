@@ -35,7 +35,7 @@ export default function LoginScreen() {
           password,
         });
         if (authError) throw authError;
-        router.replace('/');
+        router.replace('/account');
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
@@ -43,7 +43,7 @@ export default function LoginScreen() {
           options: { data: { intended_role: 'creator' } },
         });
         if (authError) throw authError;
-        if (data.session) router.replace('/');
+        if (data.session) router.replace('/account');
         else setMessage('Check your email to confirm your account.');
       }
     } catch (cause) {

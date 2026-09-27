@@ -1,6 +1,7 @@
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -10,10 +11,24 @@ import {
   View,
 } from 'react-native';
 
+import { getSupabaseClient } from '../lib/supabase';
+
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => setSignedIn(Boolean(data.session)));
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSignedIn(Boolean(session));
+    });
+    return () => subscription.subscription.unsubscribe();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -23,10 +38,12 @@ export default function HomeScreen() {
           <Text style={styles.logo}>swavii</Text>
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push('/login')}
+            onPress={() => router.push(signedIn ? '/account' : '/login')}
             style={styles.profileButton}
           >
-            <Text style={styles.profileButtonText}>For creators</Text>
+            <Text style={styles.profileButtonText}>
+              {signedIn ? 'Account' : 'For creators'}
+            </Text>
           </Pressable>
         </View>
 

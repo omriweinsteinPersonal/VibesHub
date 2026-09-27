@@ -18,6 +18,11 @@ export interface MediaAssetRow {
   version: number;
 }
 
+export interface AccountMediaAsset {
+  mediaKind: 'recommendation_image' | 'story_video';
+  objectPath: string;
+}
+
 @Injectable()
 export class MediaRepository {
   constructor(private readonly database: Database) {}
@@ -84,6 +89,42 @@ export class MediaRepository {
         and owner_user_id = ${userId}
     `;
     return asset ?? null;
+  }
+
+  async listOwnedIds(userId: string): Promise<string[]> {
+    const assets = await this.database.sql<{ id: string }[]>`
+      select id
+      from app.media_assets
+      where owner_user_id = ${userId}
+    `;
+    return assets.map((asset) => asset.id);
+  }
+
+  async deleteUnreferenced(assetIds: string[]): Promise<AccountMediaAsset[]> {
+    if (assetIds.length === 0) return [];
+
+    return this.database.sql<AccountMediaAsset[]>`
+      delete from app.media_assets media
+      where media.id = any(${assetIds}::uuid[])
+        and not exists (
+          select 1 from app.recommendations where image_asset_id = media.id
+        )
+        and not exists (
+          select 1 from app.products where primary_image_asset_id = media.id
+        )
+        and not exists (
+          select 1 from app.creator_profiles where avatar_media_asset_id = media.id
+        )
+        and not exists (
+          select 1 from app.recommendation_images where image_asset_id = media.id
+        )
+        and not exists (
+          select 1 from app.recommendation_story_clips where media_asset_id = media.id
+        )
+      returning
+        media_kind as "mediaKind",
+        object_path as "objectPath"
+    `;
   }
 
   async markReady(

@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 
 import { AccountController } from './account/account.controller.js';
+import { AccountAuthGateway } from './account/account-auth.gateway.js';
+import { AccountDeletionService } from './account/account-deletion.service.js';
 import { AccountRepository } from './account/account.repository.js';
 import {
   AnalyticsController,
@@ -87,6 +89,8 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     Database,
     SupabaseTokenVerifier,
     ActorRepository,
+    AccountAuthGateway,
+    AccountDeletionService,
     AccountRepository,
     AnalyticsRepository,
     AnalyticsService,

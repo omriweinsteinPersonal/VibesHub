@@ -328,27 +328,28 @@ This endpoint is intentionally outside the JSON `/v1` surface.
 
 ## 10. Authenticated shopper endpoints
 
-| Method    | Path                                        | Purpose                                            |
-| --------- | ------------------------------------------- | -------------------------------------------------- |
-| GET       | `/me`                                       | Account, capabilities, creator/application summary |
-| GET/PATCH | `/me/profile`                               | Shopper display profile                            |
-| POST      | `/me/engagement-state`                      | Batched save/follow state for one rendered page    |
-| GET       | `/me/saved-products`                        | Cursor-paginated saves                             |
-| PUT       | `/me/saved-products/{productId}`            | Idempotently save product                          |
-| DELETE    | `/me/saved-products/{productId}`            | Idempotently remove save                           |
-| GET       | `/me/followed-creators`                     | Cursor-paginated follows                           |
-| PUT       | `/me/followed-creators/{creatorId}`         | Idempotently follow                                |
-| DELETE    | `/me/followed-creators/{creatorId}`         | Idempotently unfollow                              |
-| GET       | `/me/notifications`                         | Cursor-paginated notifications                     |
-| POST      | `/me/notifications/{notificationId}/read`   | Mark notification read                             |
-| GET/PATCH | `/me/notification-preferences`              | Channel/type preferences                           |
-| POST      | `/me/device-installations`                  | Register/update push installation                  |
-| DELETE    | `/me/device-installations/{installationId}` | Revoke installation                                |
-| POST      | `/me/data-exports`                          | Request asynchronous export                        |
-| GET       | `/me/data-exports/{operationId}`            | Export status                                      |
-| POST      | `/me/account-deletion`                      | Request deletion after reauthentication            |
-| GET       | `/me/account-deletion`                      | Deletion status                                    |
-| DELETE    | `/me/account-deletion`                      | Cancel while policy allows                         |
+| Method    | Path                                        | Purpose                                                       |
+| --------- | ------------------------------------------- | ------------------------------------------------------------- |
+| GET       | `/me`                                       | Account, capabilities, creator/application summary            |
+| DELETE    | `/me`                                       | Permanently delete the authenticated account and creator data |
+| GET/PATCH | `/me/profile`                               | Shopper display profile                                       |
+| POST      | `/me/engagement-state`                      | Batched save/follow state for one rendered page               |
+| GET       | `/me/saved-products`                        | Cursor-paginated saves                                        |
+| PUT       | `/me/saved-products/{productId}`            | Idempotently save product                                     |
+| DELETE    | `/me/saved-products/{productId}`            | Idempotently remove save                                      |
+| GET       | `/me/followed-creators`                     | Cursor-paginated follows                                      |
+| PUT       | `/me/followed-creators/{creatorId}`         | Idempotently follow                                           |
+| DELETE    | `/me/followed-creators/{creatorId}`         | Idempotently unfollow                                         |
+| GET       | `/me/notifications`                         | Cursor-paginated notifications                                |
+| POST      | `/me/notifications/{notificationId}/read`   | Mark notification read                                        |
+| GET/PATCH | `/me/notification-preferences`              | Channel/type preferences                                      |
+| POST      | `/me/device-installations`                  | Register/update push installation                             |
+| DELETE    | `/me/device-installations/{installationId}` | Revoke installation                                           |
+| POST      | `/me/data-exports`                          | Request asynchronous export                                   |
+| GET       | `/me/data-exports/{operationId}`            | Export status                                                 |
+| POST      | `/me/account-deletion`                      | Request deletion after reauthentication                       |
+| GET       | `/me/account-deletion`                      | Deletion status                                               |
+| DELETE    | `/me/account-deletion`                      | Cancel while policy allows                                    |
 
 Save and follow PUT/DELETE operations are naturally idempotent and do not expose other users' private relations.
 
