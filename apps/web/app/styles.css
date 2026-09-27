@@ -10316,19 +10316,12 @@ dt {
   .compactProductCard
   .storeProductImage
   .storeProductImageBackdrop {
-  object-fit: cover;
+  display: none;
 }
 
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard
   .storeProductImage
-  .storeProductPrimaryImage {
-  object-fit: contain;
-}
-
-:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
-  .compactProductCard
-  .storeProductImage[data-image-layout='editorial']
   .storeProductPrimaryImage {
   object-fit: cover;
   padding: 0;
