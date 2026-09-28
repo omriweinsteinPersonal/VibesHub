@@ -11141,7 +11141,8 @@ dt {
   font-size: 0.85rem;
 }
 .storefrontTitleEditor select,
-.storefrontTitleEditor textarea {
+.storefrontTitleEditor textarea,
+.storefrontTitleEditor input {
   min-width: 0;
   width: 100%;
   border: 1px solid #ded5ca;
@@ -11156,6 +11157,15 @@ dt {
   margin: 20px 0 12px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+.referenceStorefrontProducts .storefrontContentTitle a {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+.referenceStorefrontProducts .storefrontContentTitle a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 .referenceStorefrontProducts .storefrontContentTitle-small {
   font-size: 1.1rem;

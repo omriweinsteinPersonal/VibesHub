@@ -551,8 +551,16 @@ export const storefrontTitleSchema = z
       .string()
       .regex(/^#[0-9a-fA-F]{6}$/)
       .optional(),
+    backgroundImageUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .optional(),
     padding: z.enum(['small', 'medium', 'large']).optional(),
     radius: z.enum(['square', 'rounded', 'soft']).optional(),
+    url: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .optional(),
   })
   .strict();
 export const storefrontTitlesSchema = z

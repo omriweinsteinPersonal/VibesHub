@@ -252,6 +252,18 @@ export function StorefrontContentEditor({
               />
             </label>
             <label>
+              Destination link <small>Optional</small>
+              <input
+                inputMode="url"
+                placeholder="https://example.com"
+                type="url"
+                value={selected.url ?? ''}
+                onChange={(e) =>
+                  update(selected.id, { url: e.target.value.trim() || undefined })
+                }
+              />
+            </label>
+            <label>
               Text style
               <select
                 value={selected.format ?? 'heading'}
@@ -285,6 +297,20 @@ export function StorefrontContentEditor({
                     type="color"
                     value={selected.background ?? '#f1e8dc'}
                     onChange={(e) => update(selected.id, { background: e.target.value })}
+                  />
+                </label>
+                <label>
+                  Background image URL <small>Optional</small>
+                  <input
+                    inputMode="url"
+                    placeholder="https://example.com/background.jpg"
+                    type="url"
+                    value={selected.backgroundImageUrl ?? ''}
+                    onChange={(e) =>
+                      update(selected.id, {
+                        backgroundImageUrl: e.target.value.trim() || undefined,
+                      })
+                    }
                   />
                 </label>
                 <label>

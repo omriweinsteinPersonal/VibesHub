@@ -316,6 +316,21 @@ export function CreatorStorefrontView({
       )
       .map((title) => {
         const Tag = title.format === 'paragraph' ? 'p' : 'h2';
+        const cardStyle =
+          title.appearance === 'card'
+            ? {
+                background: title.background ?? '#f1e8dc',
+                backgroundImage: title.backgroundImageUrl
+                  ? `linear-gradient(rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.28)), url(${title.backgroundImageUrl})`
+                  : undefined,
+                backgroundPosition: 'center',
+                backgroundSize: 'cover',
+                padding: { small: 12, medium: 20, large: 28 }[title.padding ?? 'small'],
+                borderRadius: { square: 0, rounded: 10, soft: 20 }[
+                  title.radius ?? 'rounded'
+                ],
+              }
+            : {};
         return (
           <Tag
             key={title.id}
@@ -323,22 +338,15 @@ export function CreatorStorefrontView({
             className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
             data-editor-block={title.id}
             data-selected={selectedBlock === title.id}
-            style={{
-              textAlign: title.align,
-              ...(title.appearance === 'card'
-                ? {
-                    background: title.background ?? '#f1e8dc',
-                    padding: { small: 12, medium: 20, large: 28 }[
-                      title.padding ?? 'small'
-                    ],
-                    borderRadius: { square: 0, rounded: 10, soft: 20 }[
-                      title.radius ?? 'rounded'
-                    ],
-                  }
-                : {}),
-            }}
+            style={{ textAlign: title.align, ...cardStyle }}
           >
-            {title.text}
+            {title.url ? (
+              <a href={title.url} rel="noreferrer" target="_blank">
+                {title.text} <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              title.text
+            )}
           </Tag>
         );
       });

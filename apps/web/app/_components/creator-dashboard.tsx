@@ -1129,28 +1129,6 @@ export function CreatorDashboard() {
                             story clips.
                           </small>
                         </button>
-                        <button
-                          onClick={() => {
-                            const defaultCategory = categories[0]?.id ?? '';
-                            setProduct({
-                              ...emptyProduct,
-                              brandName: 'Links',
-                              categoryId: defaultCategory,
-                              categoryIds: defaultCategory ? [defaultCategory] : [],
-                              contentKind: 'link',
-                            });
-                            setComposer('product');
-                          }}
-                          type="button"
-                        >
-                          <span aria-hidden="true">
-                            <Link2 size={16} />
-                          </span>
-                          <strong>Link card</strong>
-                          <small>
-                            Share a title and a link, with an optional cover photo.
-                          </small>
-                        </button>
                         <button onClick={() => setComposer('collection')} type="button">
                           <span aria-hidden="true">
                             <LayoutGrid size={16} />
