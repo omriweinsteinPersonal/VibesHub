@@ -319,7 +319,7 @@ export function CreatorStorefrontView({
         const cardStyle =
           title.appearance === 'card'
             ? {
-                background: title.background ?? '#f1e8dc',
+                background: title.background ?? previewTheme.discountBackground,
                 backgroundImage: title.backgroundImageUrl
                   ? `linear-gradient(rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.28)), url(${title.backgroundImageUrl})`
                   : undefined,
@@ -329,6 +329,7 @@ export function CreatorStorefrontView({
                 borderRadius: { square: 0, rounded: 10, soft: 20 }[
                   title.radius ?? 'rounded'
                 ],
+                border: '1px solid #e2d5c8',
               }
             : {};
         return (
@@ -365,11 +366,7 @@ export function CreatorStorefrontView({
             return;
           const target = event.target as HTMLElement;
           const block = target.closest<HTMLElement>('[data-editor-block]');
-          if (
-            block &&
-            !target.closest('input, button') &&
-            (editingContent || !target.closest('a'))
-          ) {
+          if (block && !target.closest('input, button') && !target.closest('a')) {
             event.preventDefault();
             event.stopPropagation();
             window.parent.postMessage(

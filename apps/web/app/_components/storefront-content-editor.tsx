@@ -187,6 +187,9 @@ export function StorefrontContentEditor({
                 align: 'start',
                 size: 'medium',
                 beforeId: null,
+                appearance: 'card',
+                padding: 'medium',
+                radius: 'rounded',
               },
             ],
           });
@@ -285,8 +288,8 @@ export function StorefrontContentEditor({
                   update(selected.id, { appearance: e.target.value as 'plain' | 'card' })
                 }
               >
-                <option value="plain">Plain</option>
-                <option value="card">Card</option>
+                <option value="plain">Plain text</option>
+                <option value="card">Card — matches your storefront palette</option>
               </select>
             </label>
             {selected.appearance === 'card' ? (
@@ -295,7 +298,7 @@ export function StorefrontContentEditor({
                   Background
                   <input
                     type="color"
-                    value={selected.background ?? '#f1e8dc'}
+                    value={selected.background ?? '#f8f6f2'}
                     onChange={(e) => update(selected.id, { background: e.target.value })}
                   />
                 </label>
