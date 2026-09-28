@@ -13,8 +13,10 @@ import { CopyDiscountCodeButton } from './analytics-events';
 import { StoryVideo } from './story-video';
 
 export function ProductDetailView({
+  backTo,
   recommendation,
 }: {
+  backTo?: string;
   recommendation: PublicRecommendationDetail;
 }) {
   const [activeImage, setActiveImage] = useState(0);
@@ -46,7 +48,7 @@ export function ProductDetailView({
       <nav aria-label="Back to storefront" className="productDetailBreadcrumb">
         <Link
           className="productDetailBack"
-          href={`/${encodeURIComponent(recommendation.creator.handle)}`}
+          href={backTo ?? `/${encodeURIComponent(recommendation.creator.handle)}`}
         >
           <ChevronLeft aria-hidden="true" size={16} />
           Back

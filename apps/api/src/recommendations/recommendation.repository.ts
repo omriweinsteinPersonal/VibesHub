@@ -58,7 +58,6 @@ interface RecommendationRow {
   categoryName: string;
   categorySlug: string;
   commercialRelationship: RecommendationCard['commercialRelationship'];
-  contentKind: RecommendationCard['contentKind'];
   creatorId: string;
   createdAt: string;
   discountCode: string | null;
@@ -141,7 +140,6 @@ export class RecommendationRepository {
           discount_code,
           discount_label,
           commercial_relationship,
-          content_kind,
           lifecycle,
           published_at,
           position
@@ -157,7 +155,6 @@ export class RecommendationRepository {
           ${input.discountCode?.toUpperCase() ?? null},
           ${input.discountLabel ?? null},
           ${input.commercialRelationship},
-          ${input.contentKind},
           'published',
           statement_timestamp(),
           (
@@ -338,7 +335,6 @@ export class RecommendationRepository {
           discount_code = ${input.discountCode?.toUpperCase() ?? null},
           discount_label = ${input.discountLabel ?? null},
           commercial_relationship = ${input.commercialRelationship},
-          content_kind = ${input.contentKind},
           version = version + 1
         where id = ${id}
           and creator_id = ${creator.id}
@@ -723,7 +719,6 @@ export class RecommendationRepository {
         placed_discount.last_verified_at as "discountLastVerifiedAt",
         placed_discount.verification_status as "discountVerificationStatus",
         recommendation.commercial_relationship as "commercialRelationship",
-        recommendation.content_kind as "contentKind",
         recommendation.lifecycle,
         recommendation.position,
         recommendation.published_at as "publishedAt",
@@ -1222,7 +1217,7 @@ function mapRecommendationCard(
     brandName: row.brandName,
     category: { name: row.categoryName, slug: row.categorySlug },
     commercialRelationship: row.commercialRelationship,
-    contentKind: row.contentKind,
+    contentKind: row.brandName === 'Links' ? 'link' : 'product',
     createdAt: row.createdAt,
     discount: row.discountCode
       ? {

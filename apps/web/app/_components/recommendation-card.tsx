@@ -16,6 +16,7 @@ import { StoryVideo } from './story-video';
 const measurementWithValue = /(\d+(?:[.,]\d+)?\s*(?:cm|g|gb|kg|l|mah|ml|mm|tb|v|w)\b)/giu;
 
 interface RecommendationCardViewProps {
+  backTo?: string;
   creator?: RecommendationCreator;
   creatorId?: string;
   recommendation: RecommendationCard;
@@ -23,6 +24,7 @@ interface RecommendationCardViewProps {
 }
 
 export function RecommendationCardView({
+  backTo,
   creator,
   creatorId,
   recommendation,
@@ -85,7 +87,11 @@ export function RecommendationCardView({
         <Link
           aria-label={`View details for ${recommendation.productName}`}
           className="storeCardHitArea"
-          href={`/products/${recommendation.id}`}
+          href={
+            backTo
+              ? `/products/${recommendation.id}?from=${encodeURIComponent(backTo)}`
+              : `/products/${recommendation.id}`
+          }
         />
       )}
       {isLinkCard && !hasCoverImage ? (

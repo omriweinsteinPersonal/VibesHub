@@ -4,10 +4,8 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
 import { publicApiRequest } from '../../../../lib/api';
-import { hasCreatorSession } from '../../../../lib/server-session';
 import { loadStorefrontRecommendations } from '../../../../lib/storefront-recommendations';
 import { RecommendationCardView } from '../../../_components/recommendation-card';
-import { StorefrontHeader } from '../../../_components/storefront-header';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +15,9 @@ export default async function StorefrontPageRoute({
   params: Promise<{ handle: string; pageId: string }>;
 }) {
   const { handle, pageId } = await params;
-  const [storefront, recommendations, creatorSession] = await Promise.all([
+  const [storefront, recommendations] = await Promise.all([
     publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
     loadStorefrontRecommendations(handle),
-    hasCreatorSession(handle),
   ]);
   if (storefront.handle !== handle) {
     permanentRedirect(
@@ -40,7 +37,6 @@ export default async function StorefrontPageRoute({
 
   return (
     <div className="editorialPage">
-      <StorefrontHeader creatorSession={creatorSession} />
       <main
         className="creatorProductPage"
         style={
@@ -63,6 +59,7 @@ export default async function StorefrontPageRoute({
         <div className="creatorProductPageGrid">
           {products.map((recommendation) => (
             <RecommendationCardView
+              backTo={`/${encodeURIComponent(handle)}/pages/${encodeURIComponent(pageId)}`}
               creatorId={storefront.id}
               key={recommendation.id}
               recommendation={recommendation}
