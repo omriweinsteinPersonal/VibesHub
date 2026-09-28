@@ -78,6 +78,7 @@ interface ProductEditor {
   imageAssetId: string;
   imageUrl: string;
   instagramStoryUrl: string;
+  linkHasBackground: boolean;
   priceIls: string;
   productName: string;
   productUrl: string;
@@ -125,6 +126,7 @@ const emptyProduct: ProductEditor = {
   imageAssetId: '',
   imageUrl: '',
   instagramStoryUrl: '',
+  linkHasBackground: false,
   priceIls: '',
   productName: '',
   productUrl: '',
@@ -601,7 +603,11 @@ export function CreatorDashboard() {
         priceAmountMinor: isLinkCard ? 0 : Math.round(price * 100),
         productName: product.productName,
         productUrl: recommendationProductUrl(product.productUrl),
-        reviewHe: isLinkCard ? 'Link card' : product.reviewHe.trim() || 'לא צורפה ביקורת',
+        reviewHe: isLinkCard
+          ? product.linkHasBackground
+            ? 'Link card / backdrop'
+            : 'Link card'
+          : product.reviewHe.trim() || 'לא צורפה ביקורת',
         storyClips: isLinkCard ? [] : storyClips,
         videoUrl: isLinkCard
           ? null
@@ -813,6 +819,7 @@ export function CreatorDashboard() {
       imageAssetId: item.imageAssetId ?? '',
       imageUrl: item.imageUrl,
       instagramStoryUrl: item.instagramStoryUrl ?? '',
+      linkHasBackground: item.review.value === 'Link card / backdrop',
       priceIls: item.price.amountMinor > 0 ? String(item.price.amountMinor / 100) : '',
       productName: item.productName,
       productUrl: isManualRecommendationUrl(item.productUrl) ? '' : item.productUrl,
@@ -2226,7 +2233,7 @@ function ProductForm({
         <div className="creatorProductSavePrompt">
           <span>
             {isLinkCard
-              ? 'A title and destination link are required. Add a cover photo if you want one.'
+              ? 'A title and destination link are all you need.'
               : 'Add a photo and the item details, then save. A shopping link is optional.'}
           </span>
           <button className="button primary" disabled={saving || fetching} type="submit">
@@ -2258,78 +2265,97 @@ function ProductForm({
               />
             </label>
           ) : null}
-          <fieldset
-            className="creatorProductPhotos creatorFullField"
-            id="creator-product-photos"
-          >
-            <legend>
-              {isLinkCard ? 'Cover photo' : 'Product photos'}{' '}
-              {isLinkCard ? <small>Optional</small> : null}
-            </legend>
-            <p>
-              {isLinkCard
-                ? 'A cover is optional. Without one, your link will use a clean text-first card.'
-                : 'Add at least one photo. The first is shown by default; you can add up to 10.'}
-            </p>
-            {photoError && !isLinkCard ? (
-              <p className="formError" role="alert">
-                Add a product photo to save this recommendation.
-              </p>
-            ) : null}
-            {editor.imageUrl ? (
-              <div className="creatorProductPhotoGrid">
-                {[
-                  { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
-                  ...editor.additionalImages,
-                ].map((image, index) => (
-                  <span key={`${image.url}:${index}`}>
-                    <Image alt="" fill sizes="96px" src={image.url} unoptimized />
-                    {index === 0 ? <small>Default</small> : null}
-                    <button
-                      aria-label={`Remove photo ${index + 1}`}
-                      onClick={() => {
-                        const images = [
-                          { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
-                          ...editor.additionalImages,
-                        ].filter((_, imageIndex) => imageIndex !== index);
-                        const [primary, ...additionalImages] = images;
-                        onChange({
-                          ...editor,
-                          additionalImages,
-                          imageAssetId: primary?.imageAssetId ?? '',
-                          imageUrl: primary?.url ?? '',
-                        });
-                      }}
-                      type="button"
-                    >
-                      <X aria-hidden="true" size={12} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            <div className="creatorPhotoControls">
-              <label className="button secondary">
-                <Upload aria-hidden="true" size={16} />
-                Add photos
-                <input
-                  accept={recommendationImageAccept}
-                  multiple
-                  onChange={onImages}
-                  type="file"
-                />
-              </label>
+          {isLinkCard ? (
+            <label className="creatorLinkBackdropOption creatorFullField">
               <input
-                aria-label="Primary image link"
-                type="url"
-                value={editor.imageAssetId ? '' : editor.imageUrl}
-                onChange={(event) =>
-                  onChange({ ...editor, imageAssetId: '', imageUrl: event.target.value })
-                }
-                placeholder="Or paste an image link"
+                checked={editor.linkHasBackground}
+                onChange={(event) => update('linkHasBackground', event.target.checked)}
+                type="checkbox"
               />
-            </div>
-          </fieldset>
+              <span>
+                Add a subtle section background
+                <small>Optional — gives the text a soft collection-style backdrop.</small>
+              </span>
+            </label>
+          ) : null}
+          {!isLinkCard ? (
+            <fieldset
+              className="creatorProductPhotos creatorFullField"
+              id="creator-product-photos"
+            >
+              <legend>
+                {isLinkCard ? 'Cover photo' : 'Product photos'}{' '}
+                {isLinkCard ? <small>Optional</small> : null}
+              </legend>
+              <p>
+                {isLinkCard
+                  ? 'A cover is optional. Without one, your link will use a clean text-first card.'
+                  : 'Add at least one photo. The first is shown by default; you can add up to 10.'}
+              </p>
+              {photoError && !isLinkCard ? (
+                <p className="formError" role="alert">
+                  Add a product photo to save this recommendation.
+                </p>
+              ) : null}
+              {editor.imageUrl ? (
+                <div className="creatorProductPhotoGrid">
+                  {[
+                    { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
+                    ...editor.additionalImages,
+                  ].map((image, index) => (
+                    <span key={`${image.url}:${index}`}>
+                      <Image alt="" fill sizes="96px" src={image.url} unoptimized />
+                      {index === 0 ? <small>Default</small> : null}
+                      <button
+                        aria-label={`Remove photo ${index + 1}`}
+                        onClick={() => {
+                          const images = [
+                            { imageAssetId: editor.imageAssetId, url: editor.imageUrl },
+                            ...editor.additionalImages,
+                          ].filter((_, imageIndex) => imageIndex !== index);
+                          const [primary, ...additionalImages] = images;
+                          onChange({
+                            ...editor,
+                            additionalImages,
+                            imageAssetId: primary?.imageAssetId ?? '',
+                            imageUrl: primary?.url ?? '',
+                          });
+                        }}
+                        type="button"
+                      >
+                        <X aria-hidden="true" size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="creatorPhotoControls">
+                <label className="button secondary">
+                  <Upload aria-hidden="true" size={16} />
+                  Add photos
+                  <input
+                    accept={recommendationImageAccept}
+                    multiple
+                    onChange={onImages}
+                    type="file"
+                  />
+                </label>
+                <input
+                  aria-label="Primary image link"
+                  type="url"
+                  value={editor.imageAssetId ? '' : editor.imageUrl}
+                  onChange={(event) =>
+                    onChange({
+                      ...editor,
+                      imageAssetId: '',
+                      imageUrl: event.target.value,
+                    })
+                  }
+                  placeholder="Or paste an image link"
+                />
+              </div>
+            </fieldset>
+          ) : null}
           {!isLinkCard ? (
             <>
               <label>

@@ -859,6 +859,32 @@ svg.lucide {
   color: #8a3028;
   font-size: 0.82rem;
 }
+.creatorLinkBackdropOption {
+  align-items: flex-start;
+  background: #faf7f3;
+  border: 1px solid #e6ddd2;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.creatorLinkBackdropOption input {
+  accent-color: var(--vh-accent);
+  height: 18px;
+  margin: 2px 0 0;
+  width: 18px;
+}
+.creatorLinkBackdropOption span {
+  display: grid;
+  font-weight: 600;
+  gap: 3px;
+}
+.creatorLinkBackdropOption small {
+  color: #7d7168;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
 .creatorProductSavePrompt {
   align-items: center;
   background: #faf7f3;
@@ -7916,28 +7942,43 @@ dt {
   outline-offset: -3px;
 }
 
-.compactProductCard[data-content-kind='link'] {
-  background: #f8f1e8;
-  border-color: color-mix(in srgb, var(--sf-accent, var(--vh-accent)) 35%, #e6ddd2);
+.storeLinkSection {
+  margin: 8px 0;
 }
 
-.storeLinkCardVisual {
+.storeLinkSection a {
   align-items: center;
-  background: linear-gradient(135deg, #f3e8dc, #fbf8f3);
-  color: var(--sf-accent, var(--vh-accent));
+  color: var(--sf-text, var(--vh-ink));
   display: flex;
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    Georgia,
+    serif;
+  font-size: clamp(1.1rem, 4vw, 1.35rem);
   gap: 10px;
-  justify-content: center;
-  min-height: 144px;
+  line-height: 1.35;
+  min-height: 44px;
+  padding: 8px 0;
+  text-decoration: none;
 }
 
-.storeLinkCardLabel {
-  align-items: center;
+.storeLinkSection[data-link-backdrop='true'] a {
+  background: color-mix(in srgb, var(--sf-collection, #f8f4ee) 72%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--sf-accent, var(--vh-accent)) 24%, transparent);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.storeLinkSection a:hover,
+.storeLinkSection a:focus-visible {
   color: var(--sf-accent, var(--vh-accent));
-  display: inline-flex;
-  font-size: 0.76rem;
-  gap: 5px;
-  margin-top: 7px;
+}
+
+.storeLinkSection a:focus-visible {
+  outline: 3px solid var(--sf-accent, var(--vh-accent));
+  outline-offset: 3px;
 }
 
 .storeProductImage {

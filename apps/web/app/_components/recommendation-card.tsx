@@ -3,7 +3,7 @@
 import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ExternalLink, Link2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import {
   isRedundantBrandTitleLine,
@@ -58,8 +58,31 @@ export function RecommendationCardView({
     ({ text }) => !isRedundantBrandTitleLine(text, recommendation.brandName),
   );
   const isLinkCard = recommendation.contentKind === 'link';
-  const hasCoverImage =
-    recommendation.imageUrl !== 'https://swavii.com/images/link-card-placeholder.svg';
+  if (isLinkCard) {
+    return (
+      <article
+        className="storeLinkSection"
+        data-link-backdrop={recommendation.review.value === 'Link card / backdrop'}
+      >
+        {attributedCreatorId ? (
+          <RecommendationImpressionTracker
+            creatorId={attributedCreatorId}
+            productId={recommendation.productId}
+            recommendationId={recommendation.id}
+          />
+        ) : null}
+        <a
+          aria-label={`Open ${recommendation.productName}`}
+          href={recommendation.shopUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <span dir={textDirection}>{recommendation.productName}</span>
+          <ExternalLink aria-hidden="true" size={16} />
+        </a>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -75,67 +98,50 @@ export function RecommendationCardView({
           recommendationId={recommendation.id}
         />
       ) : null}
-      {isLinkCard ? (
-        <a
-          aria-label={`Open ${recommendation.productName}`}
-          className="storeCardHitArea"
-          href={recommendation.shopUrl}
-          rel="noreferrer"
-          target="_blank"
+      <Link
+        aria-label={`View details for ${recommendation.productName}`}
+        className="storeCardHitArea"
+        href={
+          backTo
+            ? `/products/${recommendation.id}?from=${encodeURIComponent(backTo)}`
+            : `/products/${recommendation.id}`
+        }
+      />
+      <div className="storeProductImage" data-image-layout={imageLayout}>
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="storeProductImageBackdrop"
+          fill
+          sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
+          src={publicAssetUrl(recommendation.imageUrl)}
+          unoptimized
         />
-      ) : (
-        <Link
-          aria-label={`View details for ${recommendation.productName}`}
-          className="storeCardHitArea"
-          href={
-            backTo
-              ? `/products/${recommendation.id}?from=${encodeURIComponent(backTo)}`
-              : `/products/${recommendation.id}`
-          }
+        <Image
+          alt={recommendation.productName}
+          className="storeProductPrimaryImage"
+          fill
+          onLoad={({ currentTarget }) => {
+            const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
+            const isWideWoltPhoto =
+              ratio >= 1.6 && /(^|\.)wolt\.com$/i.test(recommendation.merchantHostname);
+            setImageLayout(isWideWoltPhoto ? 'editorial' : 'catalog');
+          }}
+          sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
+          src={publicAssetUrl(recommendation.imageUrl)}
+          unoptimized
         />
-      )}
-      {isLinkCard && !hasCoverImage ? (
-        <div className="storeLinkCardVisual" aria-hidden="true">
-          <Link2 size={28} />
-          <ExternalLink size={18} />
-        </div>
-      ) : (
-        <div className="storeProductImage" data-image-layout={imageLayout}>
-          <Image
-            alt=""
-            aria-hidden="true"
-            className="storeProductImageBackdrop"
-            fill
-            sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
-            src={publicAssetUrl(recommendation.imageUrl)}
-            unoptimized
+        {clips.length ? (
+          <StoryVideo
+            creatorId={attributedCreatorId}
+            posterUrl={publicAssetUrl(recommendation.imageUrl)}
+            productId={recommendation.productId}
+            productName={recommendation.productName}
+            recommendationId={recommendation.id}
+            videoUrls={clips}
           />
-          <Image
-            alt={recommendation.productName}
-            className="storeProductPrimaryImage"
-            fill
-            onLoad={({ currentTarget }) => {
-              const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
-              const isWideWoltPhoto =
-                ratio >= 1.6 && /(^|\.)wolt\.com$/i.test(recommendation.merchantHostname);
-              setImageLayout(isWideWoltPhoto ? 'editorial' : 'catalog');
-            }}
-            sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
-            src={publicAssetUrl(recommendation.imageUrl)}
-            unoptimized
-          />
-          {clips.length ? (
-            <StoryVideo
-              creatorId={attributedCreatorId}
-              posterUrl={publicAssetUrl(recommendation.imageUrl)}
-              productId={recommendation.productId}
-              productName={recommendation.productName}
-              recommendationId={recommendation.id}
-              videoUrls={clips}
-            />
-          ) : null}
-        </div>
-      )}
+        ) : null}
+      </div>
       <div className="storeProductDetails" dir={textDirection}>
         <div className="compactProductHeading">
           <h3
@@ -162,11 +168,6 @@ export function RecommendationCardView({
             )}
           </h3>
         </div>
-        {isLinkCard ? (
-          <span className="storeLinkCardLabel">
-            Open link <ExternalLink size={14} />
-          </span>
-        ) : null}
         {showPrice ? (
           <div className="storePriceRow">
             {recommendation.price.amountMinor > 0 ? (
