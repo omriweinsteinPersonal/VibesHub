@@ -69,6 +69,7 @@ interface ProductEditor {
   categoryId: string;
   categoryIds: string[];
   collectionIds: string[];
+  contentKind: 'product' | 'link';
   discountCode: string;
   discountExpiresAt: string;
   discountLabel: string;
@@ -115,6 +116,7 @@ const emptyProduct: ProductEditor = {
   categoryId: '',
   categoryIds: [],
   collectionIds: [],
+  contentKind: 'product',
   discountCode: '',
   discountExpiresAt: '',
   discountLabel: '',
@@ -551,12 +553,13 @@ export function CreatorDashboard() {
     productFetchRequest.current += 1;
     setFetching(false);
     setNotice('');
+    const isLinkCard = product.contentKind === 'link';
     const price = product.priceIls.trim() ? Number(product.priceIls) : 0;
     if (!Number.isFinite(price) || price < 0) {
       setError('Enter a valid price.');
       return;
     }
-    if (!product.imageAssetId && !product.imageUrl) {
+    if (!isLinkCard && !product.imageAssetId && !product.imageUrl) {
       setError('Add a product photo to save this recommendation.');
       document.getElementById('creator-product-photos')?.scrollIntoView({
         behavior: 'smooth',
@@ -571,12 +574,13 @@ export function CreatorDashboard() {
         clip.mediaAssetId ? { mediaAssetId: clip.mediaAssetId } : { videoUrl: clip.url },
       );
       const body = JSON.stringify({
-        brandName: product.brandName,
+        brandName: isLinkCard ? 'Links' : product.brandName,
         categoryId: product.categoryId,
         categoryIds: product.categoryIds.length
           ? product.categoryIds
           : [product.categoryId],
         commercialRelationship: 'organic',
+        contentKind: product.contentKind,
         discountCode: product.discountCode.trim() || null,
         discountExpiresAt: toIso(product.discountExpiresAt),
         discountLabel: product.discountValue.trim()
@@ -587,17 +591,21 @@ export function CreatorDashboard() {
         imageAssetId: product.imageAssetId || null,
         imageUrl: product.imageAssetId ? null : product.imageUrl,
         instagramStoryUrl: product.instagramStoryUrl.trim() || null,
-        additionalImages: product.additionalImages.map((image) =>
-          image.imageAssetId
-            ? { imageAssetId: image.imageAssetId }
-            : { imageUrl: image.url },
-        ),
-        priceAmountMinor: Math.round(price * 100),
+        additionalImages: isLinkCard
+          ? []
+          : product.additionalImages.map((image) =>
+              image.imageAssetId
+                ? { imageAssetId: image.imageAssetId }
+                : { imageUrl: image.url },
+            ),
+        priceAmountMinor: isLinkCard ? 0 : Math.round(price * 100),
         productName: product.productName,
         productUrl: recommendationProductUrl(product.productUrl),
-        reviewHe: product.reviewHe.trim() || 'לא צורפה ביקורת',
-        storyClips,
-        videoUrl: storyClips.find((clip) => clip.videoUrl)?.videoUrl ?? null,
+        reviewHe: isLinkCard ? 'Link card' : product.reviewHe.trim() || 'לא צורפה ביקורת',
+        storyClips: isLinkCard ? [] : storyClips,
+        videoUrl: isLinkCard
+          ? null
+          : (storyClips.find((clip) => clip.videoUrl)?.videoUrl ?? null),
       });
       let savedProduct: CreatorRecommendation;
       if (editingProduct) {
@@ -796,6 +804,7 @@ export function CreatorDashboard() {
             section.kind === 'collection' && section.recommendationIds.includes(item.id),
         )
         .map(({ id }) => id),
+      contentKind: item.contentKind,
       discountCode: item.discount?.code ?? '',
       discountExpiresAt: toLocalDate(item.discount?.expiresAt ?? null),
       discountLabel: item.discount?.label ?? '',
@@ -1097,7 +1106,13 @@ export function CreatorDashboard() {
                           <strong>Brand</strong>
                           <small>Create a brand card. A discount code is optional.</small>
                         </button>
-                        <button onClick={() => setComposer('product')} type="button">
+                        <button
+                          onClick={() => {
+                            setProduct(emptyProduct);
+                            setComposer('product');
+                          }}
+                          type="button"
+                        >
                           <span aria-hidden="true">
                             <Tag size={16} />
                           </span>
@@ -1105,6 +1120,28 @@ export function CreatorDashboard() {
                           <small>
                             Recommend one specific product with its price, details and
                             story clips.
+                          </small>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const defaultCategory = categories[0]?.id ?? '';
+                            setProduct({
+                              ...emptyProduct,
+                              brandName: 'Links',
+                              categoryId: defaultCategory,
+                              categoryIds: defaultCategory ? [defaultCategory] : [],
+                              contentKind: 'link',
+                            });
+                            setComposer('product');
+                          }}
+                          type="button"
+                        >
+                          <span aria-hidden="true">
+                            <Link2 size={16} />
+                          </span>
+                          <strong>Link card</strong>
+                          <small>
+                            Share a title and a link, with an optional cover photo.
                           </small>
                         </button>
                         <button onClick={() => setComposer('collection')} type="button">
@@ -1139,7 +1176,10 @@ export function CreatorDashboard() {
                         setCategories((current) => [...current, category])
                       }
                       onChange={setProduct}
-                      onChangeType={() => setComposer('choose')}
+                      onChangeType={() => {
+                        setProduct(emptyProduct);
+                        setComposer('choose');
+                      }}
                       onClose={closeComposer}
                       onFetch={fetchProductDetails}
                       onImages={selectProductImages}
@@ -2090,6 +2130,7 @@ function ProductForm({
   const [validationError, setValidationError] = useState('');
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
+  const isLinkCard = editor.contentKind === 'link';
   const matchingCollections = collections.filter((collection) => {
     const brandName =
       recommendations.find(({ brandId }) => brandId === collection.brandId)?.brandName ??
@@ -2099,9 +2140,13 @@ function ProductForm({
       brandName.toLocaleLowerCase() === editor.brandName.trim().toLocaleLowerCase()
     );
   });
-  const saveLabel = editor.collectionIds.length
-    ? `Save to ${editor.collectionIds.length} ${editor.collectionIds.length === 1 ? 'collection' : 'collections'}`
-    : 'Save recommendation';
+  const saveLabel = isLinkCard
+    ? editing
+      ? 'Save link card'
+      : 'Add link card'
+    : editor.collectionIds.length
+      ? `Save to ${editor.collectionIds.length} ${editor.collectionIds.length === 1 ? 'collection' : 'collections'}`
+      : 'Save recommendation';
   const update = <K extends keyof ProductEditor>(key: K, value: ProductEditor[K]) =>
     onChange({ ...editor, [key]: value });
 
@@ -2117,8 +2162,21 @@ function ProductForm({
         onSave(event);
       }}
     >
-      <ComposerHeader title={editing ? 'Edit item' : 'Add item'} onClose={onClose}>
-        Add the details yourself, or paste a link to fill them in automatically.
+      <ComposerHeader
+        title={
+          editing
+            ? isLinkCard
+              ? 'Edit link card'
+              : 'Edit item'
+            : isLinkCard
+              ? 'Add link card'
+              : 'Add item'
+        }
+        onClose={onClose}
+      >
+        {isLinkCard
+          ? 'Give your audience a useful destination, with an optional cover photo.'
+          : 'Add the details yourself, or paste a link to fill them in automatically.'}
       </ComposerHeader>
       <div className="creatorComposerBody">
         <button className="creatorBack" onClick={onChangeType} type="button">
@@ -2127,37 +2185,49 @@ function ProductForm({
         </button>
         <div className="creatorFullField creatorProductLinkField">
           <label htmlFor="creator-product-link">
-            Item link <small>Optional</small>
+            {isLinkCard ? (
+              'Destination link'
+            ) : (
+              <>
+                Item link <small>Optional</small>
+              </>
+            )}
           </label>
           <span className="creatorInlineField">
             <input
               id="creator-product-link"
+              required={isLinkCard}
               type="url"
               value={editor.productUrl}
               onChange={(event) => update('productUrl', event.target.value)}
               placeholder="https://www.terminalx.com/..."
             />
-            <button
-              className="button secondary"
-              disabled={fetching}
-              onClick={() => {
-                const url = normalizedProductUrl(editor.productUrl);
-                if (url) onFetch(url);
-              }}
-              type="button"
-            >
-              <Sparkles aria-hidden="true" size={16} />
-              {fetching ? 'Fetching…' : 'Fetch details'}
-            </button>
+            {!isLinkCard ? (
+              <button
+                className="button secondary"
+                disabled={fetching}
+                onClick={() => {
+                  const url = normalizedProductUrl(editor.productUrl);
+                  if (url) onFetch(url);
+                }}
+                type="button"
+              >
+                <Sparkles aria-hidden="true" size={16} />
+                {fetching ? 'Fetching…' : 'Fetch details'}
+              </button>
+            ) : null}
           </span>
           <small>
-            Select Fetch details to fill in details from a link. Or leave it blank and add
-            the item manually with a photo.
+            {isLinkCard
+              ? 'This opens directly when someone taps the card.'
+              : 'Select Fetch details to fill in details from a link. Or leave it blank and add the item manually with a photo.'}
           </small>
         </div>
         <div className="creatorProductSavePrompt">
           <span>
-            Add a photo and the item details, then save. A shopping link is optional.
+            {isLinkCard
+              ? 'A title and destination link are required. Add a cover photo if you want one.'
+              : 'Add a photo and the item details, then save. A shopping link is optional.'}
           </span>
           <button className="button primary" disabled={saving || fetching} type="submit">
             {fetching ? 'Fetching details…' : saving ? 'Saving…' : saveLabel}
@@ -2165,32 +2235,43 @@ function ProductForm({
         </div>
         <div className="creatorFormGrid">
           <label>
-            Item name
+            {isLinkCard ? 'Link title' : 'Item name'}
             <input
               required
               value={editor.productName}
               onChange={(event) => update('productName', event.target.value)}
             />
           </label>
-          <label>
-            Brand
-            <input
-              required
-              value={editor.brandName}
-              onChange={(event) =>
-                onChange({ ...editor, brandName: event.target.value, collectionIds: [] })
-              }
-            />
-          </label>
+          {!isLinkCard ? (
+            <label>
+              Brand
+              <input
+                required
+                value={editor.brandName}
+                onChange={(event) =>
+                  onChange({
+                    ...editor,
+                    brandName: event.target.value,
+                    collectionIds: [],
+                  })
+                }
+              />
+            </label>
+          ) : null}
           <fieldset
             className="creatorProductPhotos creatorFullField"
             id="creator-product-photos"
           >
-            <legend>Product photos</legend>
+            <legend>
+              {isLinkCard ? 'Cover photo' : 'Product photos'}{' '}
+              {isLinkCard ? <small>Optional</small> : null}
+            </legend>
             <p>
-              Add at least one photo. The first is shown by default; you can add up to 10.
+              {isLinkCard
+                ? 'A cover is optional. Without one, your link will use a clean text-first card.'
+                : 'Add at least one photo. The first is shown by default; you can add up to 10.'}
             </p>
-            {photoError ? (
+            {photoError && !isLinkCard ? (
               <p className="formError" role="alert">
                 Add a product photo to save this recommendation.
               </p>
@@ -2249,238 +2330,261 @@ function ProductForm({
               />
             </div>
           </fieldset>
-          <label>
-            Price (₪) <small>Optional</small>
-            <input
-              inputMode="decimal"
-              value={editor.priceIls}
-              onChange={(event) => update('priceIls', event.target.value)}
-            />
-          </label>
-          <div className="creatorCompactPicker">
-            <span>
-              Categories <small>Optional</small>
-            </span>
-            <details>
-              <summary>
-                {categories
-                  .filter(({ id }) => editor.categoryIds.includes(id))
-                  .map(({ name }) => name)
-                  .join(', ') || 'Select categories'}
-              </summary>
-              <div className="creatorCompactPickerPanel">
-                <div className="creatorPickerOptions">
-                  {categories.map((category) => (
-                    <label key={category.id}>
+          {!isLinkCard ? (
+            <>
+              <label>
+                Price (₪) <small>Optional</small>
+                <input
+                  inputMode="decimal"
+                  value={editor.priceIls}
+                  onChange={(event) => update('priceIls', event.target.value)}
+                />
+              </label>
+              <div className="creatorCompactPicker">
+                <span>
+                  Categories <small>Optional</small>
+                </span>
+                <details>
+                  <summary>
+                    {categories
+                      .filter(({ id }) => editor.categoryIds.includes(id))
+                      .map(({ name }) => name)
+                      .join(', ') || 'Select categories'}
+                  </summary>
+                  <div className="creatorCompactPickerPanel">
+                    <div className="creatorPickerOptions">
+                      {categories.map((category) => (
+                        <label key={category.id}>
+                          <input
+                            checked={editor.categoryIds.includes(category.id)}
+                            onChange={(event) => {
+                              const categoryIds = event.target.checked
+                                ? [...editor.categoryIds, category.id]
+                                : editor.categoryIds.filter((id) => id !== category.id);
+                              onChange({
+                                ...editor,
+                                categoryId: categoryIds[0] ?? editor.categoryId,
+                                categoryIds,
+                              });
+                            }}
+                            type="checkbox"
+                          />
+                          {category.name}
+                        </label>
+                      ))}
+                    </div>
+                    <span className="creatorCustomCategory">
                       <input
-                        checked={editor.categoryIds.includes(category.id)}
-                        onChange={(event) => {
-                          const categoryIds = event.target.checked
-                            ? [...editor.categoryIds, category.id]
-                            : editor.categoryIds.filter((id) => id !== category.id);
-                          onChange({
-                            ...editor,
-                            categoryId: categoryIds[0] ?? editor.categoryId,
-                            categoryIds,
-                          });
-                        }}
-                        type="checkbox"
+                        aria-label="New category name"
+                        maxLength={100}
+                        placeholder="Add your own category"
+                        value={customCategoryName}
+                        onChange={(event) => setCustomCategoryName(event.target.value)}
                       />
-                      {category.name}
-                    </label>
+                      <button
+                        className="button secondary"
+                        disabled={creatingCategory || !customCategoryName.trim()}
+                        onClick={() => {
+                          setCreatingCategory(true);
+                          void apiRequest<CategoryCard>('/creator/categories', {
+                            body: JSON.stringify({ name: customCategoryName }),
+                            method: 'POST',
+                          })
+                            .then((category) => {
+                              onCategoryCreated(category);
+                              onChange({
+                                ...editor,
+                                categoryId: category.id,
+                                categoryIds: [...editor.categoryIds, category.id],
+                              });
+                              setCustomCategoryName('');
+                            })
+                            .finally(() => setCreatingCategory(false));
+                        }}
+                        type="button"
+                      >
+                        <Plus aria-hidden="true" size={14} />{' '}
+                        {creatingCategory ? 'Adding…' : 'Add'}
+                      </button>
+                    </span>
+                  </div>
+                </details>
+              </div>
+              <div className="creatorCompactPicker">
+                <span>
+                  Collections <small>Optional</small>
+                </span>
+                <details>
+                  <summary>
+                    {matchingCollections
+                      .filter(({ id }) => editor.collectionIds.includes(id))
+                      .map(({ title }) => title)
+                      .join(', ') || 'Select collections'}
+                  </summary>
+                  <div className="creatorCompactPickerPanel">
+                    <p>An item can belong to multiple collections from the same brand.</p>
+                    <div className="creatorPickerOptions">
+                      {matchingCollections.length ? (
+                        matchingCollections.map((collection) => (
+                          <label key={collection.id}>
+                            <input
+                              checked={editor.collectionIds.includes(collection.id)}
+                              disabled={
+                                collection.recommendationIds.length >= 20 &&
+                                !editor.collectionIds.includes(collection.id)
+                              }
+                              onChange={(event) =>
+                                update(
+                                  'collectionIds',
+                                  event.target.checked
+                                    ? [...editor.collectionIds, collection.id]
+                                    : editor.collectionIds.filter(
+                                        (id) => id !== collection.id,
+                                      ),
+                                )
+                              }
+                              type="checkbox"
+                            />
+                            {collection.title}
+                            {collection.recommendationIds.length >= 20 ? ' (full)' : ''}
+                          </label>
+                        ))
+                      ) : (
+                        <small>No collections exist for this brand yet.</small>
+                      )}
+                    </div>
+                  </div>
+                </details>
+              </div>
+              <label>
+                Discount code
+                <input
+                  value={editor.discountCode}
+                  onChange={(event) =>
+                    update('discountCode', event.target.value.toUpperCase())
+                  }
+                />
+              </label>
+              <label>
+                Discount
+                <span
+                  className="creatorDiscountType"
+                  role="group"
+                  aria-label="Discount type"
+                >
+                  <button
+                    aria-pressed={editor.discountType === 'percent'}
+                    onClick={() => update('discountType', 'percent')}
+                    type="button"
+                  >
+                    Percent
+                  </button>
+                  <button
+                    aria-pressed={editor.discountType === 'amount'}
+                    onClick={() => update('discountType', 'amount')}
+                    type="button"
+                  >
+                    Fixed amount
+                  </button>
+                </span>
+                <input
+                  inputMode="decimal"
+                  onChange={(event) => update('discountValue', event.target.value)}
+                  placeholder={editor.discountType === 'percent' ? '20' : '100'}
+                  value={editor.discountValue}
+                />
+              </label>
+              <label>
+                Expires at
+                <input
+                  type="date"
+                  value={editor.discountExpiresAt}
+                  onChange={(event) => update('discountExpiresAt', event.target.value)}
+                />
+              </label>
+            </>
+          ) : null}
+        </div>
+        {!isLinkCard ? (
+          <>
+            <label className="creatorFullField">
+              Review <small>Optional</small>
+              <textarea
+                dir="auto"
+                maxLength={1000}
+                rows={3}
+                value={editor.reviewHe}
+                onChange={(event) => update('reviewHe', event.target.value)}
+              />
+            </label>
+            <label className="creatorFullField">
+              Instagram story or Highlight link (optional)
+              <input
+                inputMode="url"
+                pattern="https://(www\.)?instagram\.com/stories/.+"
+                placeholder="https://www.instagram.com/stories/..."
+                type="url"
+                value={editor.instagramStoryUrl}
+                onChange={(event) => update('instagramStoryUrl', event.target.value)}
+              />
+            </label>
+            <fieldset className="creatorStoryFields">
+              <legend>Story clips (optional)</legend>
+              <p>
+                Attach short videos like your Instagram stories. They appear on this
+                recommendation card in order.
+              </p>
+              <label className="creatorStoryUpload">
+                <Upload aria-hidden="true" size={16} />
+                <input
+                  accept={storyVideoAccept}
+                  multiple
+                  onChange={onStory}
+                  type="file"
+                />
+              </label>
+              {editor.storyClips.length ? (
+                <div className="creatorStoryThumbs">
+                  {editor.storyClips.map((clip, index) => (
+                    <span key={`${clip.url}:${index}`}>
+                      <video muted playsInline src={clip.url} />
+                      <button
+                        aria-label="Remove clip"
+                        onClick={() =>
+                          update(
+                            'storyClips',
+                            editor.storyClips.filter(
+                              (_, clipIndex) => clipIndex !== index,
+                            ),
+                          )
+                        }
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={12} />
+                      </button>
+                    </span>
                   ))}
                 </div>
-                <span className="creatorCustomCategory">
-                  <input
-                    aria-label="New category name"
-                    maxLength={100}
-                    placeholder="Add your own category"
-                    value={customCategoryName}
-                    onChange={(event) => setCustomCategoryName(event.target.value)}
-                  />
-                  <button
-                    className="button secondary"
-                    disabled={creatingCategory || !customCategoryName.trim()}
-                    onClick={() => {
-                      setCreatingCategory(true);
-                      void apiRequest<CategoryCard>('/creator/categories', {
-                        body: JSON.stringify({ name: customCategoryName }),
-                        method: 'POST',
-                      })
-                        .then((category) => {
-                          onCategoryCreated(category);
-                          onChange({
-                            ...editor,
-                            categoryId: category.id,
-                            categoryIds: [...editor.categoryIds, category.id],
-                          });
-                          setCustomCategoryName('');
-                        })
-                        .finally(() => setCreatingCategory(false));
-                    }}
-                    type="button"
-                  >
-                    <Plus aria-hidden="true" size={14} />{' '}
-                    {creatingCategory ? 'Adding…' : 'Add'}
-                  </button>
-                </span>
-              </div>
-            </details>
-          </div>
-          <div className="creatorCompactPicker">
-            <span>
-              Collections <small>Optional</small>
-            </span>
-            <details>
-              <summary>
-                {matchingCollections
-                  .filter(({ id }) => editor.collectionIds.includes(id))
-                  .map(({ title }) => title)
-                  .join(', ') || 'Select collections'}
-              </summary>
-              <div className="creatorCompactPickerPanel">
-                <p>An item can belong to multiple collections from the same brand.</p>
-                <div className="creatorPickerOptions">
-                  {matchingCollections.length ? (
-                    matchingCollections.map((collection) => (
-                      <label key={collection.id}>
-                        <input
-                          checked={editor.collectionIds.includes(collection.id)}
-                          disabled={
-                            collection.recommendationIds.length >= 20 &&
-                            !editor.collectionIds.includes(collection.id)
-                          }
-                          onChange={(event) =>
-                            update(
-                              'collectionIds',
-                              event.target.checked
-                                ? [...editor.collectionIds, collection.id]
-                                : editor.collectionIds.filter(
-                                    (id) => id !== collection.id,
-                                  ),
-                            )
-                          }
-                          type="checkbox"
-                        />
-                        {collection.title}
-                        {collection.recommendationIds.length >= 20 ? ' (full)' : ''}
-                      </label>
-                    ))
-                  ) : (
-                    <small>No collections exist for this brand yet.</small>
-                  )}
-                </div>
-              </div>
-            </details>
-          </div>
-          <label>
-            Discount code
-            <input
-              value={editor.discountCode}
-              onChange={(event) =>
-                update('discountCode', event.target.value.toUpperCase())
-              }
-            />
-          </label>
-          <label>
-            Discount
-            <span className="creatorDiscountType" role="group" aria-label="Discount type">
-              <button
-                aria-pressed={editor.discountType === 'percent'}
-                onClick={() => update('discountType', 'percent')}
-                type="button"
-              >
-                Percent
-              </button>
-              <button
-                aria-pressed={editor.discountType === 'amount'}
-                onClick={() => update('discountType', 'amount')}
-                type="button"
-              >
-                Fixed amount
-              </button>
-            </span>
-            <input
-              inputMode="decimal"
-              onChange={(event) => update('discountValue', event.target.value)}
-              placeholder={editor.discountType === 'percent' ? '20' : '100'}
-              value={editor.discountValue}
-            />
-          </label>
-          <label>
-            Expires at
-            <input
-              type="date"
-              value={editor.discountExpiresAt}
-              onChange={(event) => update('discountExpiresAt', event.target.value)}
-            />
-          </label>
-        </div>
-        <label className="creatorFullField">
-          Review <small>Optional</small>
-          <textarea
-            dir="auto"
-            maxLength={1000}
-            rows={3}
-            value={editor.reviewHe}
-            onChange={(event) => update('reviewHe', event.target.value)}
-          />
-        </label>
-        <label className="creatorFullField">
-          Instagram story or Highlight link (optional)
-          <input
-            inputMode="url"
-            pattern="https://(www\.)?instagram\.com/stories/.+"
-            placeholder="https://www.instagram.com/stories/..."
-            type="url"
-            value={editor.instagramStoryUrl}
-            onChange={(event) => update('instagramStoryUrl', event.target.value)}
-          />
-        </label>
-        <fieldset className="creatorStoryFields">
-          <legend>Story clips (optional)</legend>
-          <p>
-            Attach short videos like your Instagram stories. They appear on this
-            recommendation card in order.
-          </p>
-          <label className="creatorStoryUpload">
-            <Upload aria-hidden="true" size={16} />
-            <input accept={storyVideoAccept} multiple onChange={onStory} type="file" />
-          </label>
-          {editor.storyClips.length ? (
-            <div className="creatorStoryThumbs">
-              {editor.storyClips.map((clip, index) => (
-                <span key={`${clip.url}:${index}`}>
-                  <video muted playsInline src={clip.url} />
-                  <button
-                    aria-label="Remove clip"
-                    onClick={() =>
-                      update(
-                        'storyClips',
-                        editor.storyClips.filter((_, clipIndex) => clipIndex !== index),
-                      )
-                    }
-                    type="button"
-                  >
-                    <Trash2 aria-hidden="true" size={12} />
-                  </button>
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <span className="creatorInlineField">
-            <input
-              type="url"
-              value={editor.storyLink}
-              onChange={(event) => update('storyLink', event.target.value)}
-              placeholder="…or paste a video link (https://)"
-            />
-            <button className="button secondary" onClick={onAddStoryLink} type="button">
-              <Link2 aria-hidden="true" size={16} />
-              Add link
-            </button>
-          </span>
-        </fieldset>
+              ) : null}
+              <span className="creatorInlineField">
+                <input
+                  type="url"
+                  value={editor.storyLink}
+                  onChange={(event) => update('storyLink', event.target.value)}
+                  placeholder="…or paste a video link (https://)"
+                />
+                <button
+                  className="button secondary"
+                  onClick={onAddStoryLink}
+                  type="button"
+                >
+                  <Link2 aria-hidden="true" size={16} />
+                  Add link
+                </button>
+              </span>
+            </fieldset>
+          </>
+        ) : null}
         <div className="creatorFormActions">
           {validationError ? (
             <p className="formError" role="alert">

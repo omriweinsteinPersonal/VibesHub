@@ -48,6 +48,8 @@ interface RecommendationImageSource {
   publicUrl: string;
 }
 
+const linkCardPlaceholderUrl = 'https://swavii.com/images/link-card-placeholder.svg';
+
 interface RecommendationRow {
   brandId: string;
   brandName: string;
@@ -56,6 +58,7 @@ interface RecommendationRow {
   categoryName: string;
   categorySlug: string;
   commercialRelationship: RecommendationCard['commercialRelationship'];
+  contentKind: RecommendationCard['contentKind'];
   creatorId: string;
   createdAt: string;
   discountCode: string | null;
@@ -117,7 +120,12 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId, true);
       if (!creator) return null;
-      const image = await this.resolveImageSource(sql, userId, input);
+      const image = await this.resolveImageSource(
+        sql,
+        userId,
+        input,
+        input.contentKind === 'link',
+      );
       const catalog = await this.upsertCatalog(sql, userId, input, image);
       await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
       const [inserted] = await sql<{ id: string }[]>`
@@ -133,6 +141,7 @@ export class RecommendationRepository {
           discount_code,
           discount_label,
           commercial_relationship,
+          content_kind,
           lifecycle,
           published_at,
           position
@@ -148,6 +157,7 @@ export class RecommendationRepository {
           ${input.discountCode?.toUpperCase() ?? null},
           ${input.discountLabel ?? null},
           ${input.commercialRelationship},
+          ${input.contentKind},
           'published',
           statement_timestamp(),
           (
@@ -307,7 +317,12 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
-      const image = await this.resolveImageSource(sql, userId, input);
+      const image = await this.resolveImageSource(
+        sql,
+        userId,
+        input,
+        input.contentKind === 'link',
+      );
       const catalog = await this.upsertCatalog(sql, userId, input, image);
       await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
       const [updated] = await sql<{ id: string; lifecycle: string }[]>`
@@ -323,6 +338,7 @@ export class RecommendationRepository {
           discount_code = ${input.discountCode?.toUpperCase() ?? null},
           discount_label = ${input.discountLabel ?? null},
           commercial_relationship = ${input.commercialRelationship},
+          content_kind = ${input.contentKind},
           version = version + 1
         where id = ${id}
           and creator_id = ${creator.id}
@@ -707,6 +723,7 @@ export class RecommendationRepository {
         placed_discount.last_verified_at as "discountLastVerifiedAt",
         placed_discount.verification_status as "discountVerificationStatus",
         recommendation.commercial_relationship as "commercialRelationship",
+        recommendation.content_kind as "contentKind",
         recommendation.lifecycle,
         recommendation.position,
         recommendation.published_at as "publishedAt",
@@ -1113,9 +1130,13 @@ export class RecommendationRepository {
     sql: DatabaseClient,
     userId: string,
     input: Pick<CreatorRecommendationInput, 'imageAssetId' | 'imageUrl'>,
+    allowMissing = false,
   ): Promise<RecommendationImageSource> {
     if (!input.imageAssetId) {
-      if (!input.imageUrl) throw new Error('RECOMMENDATION_IMAGE_REQUIRED');
+      if (!input.imageUrl) {
+        if (allowMissing) return { assetId: null, publicUrl: linkCardPlaceholderUrl };
+        throw new Error('RECOMMENDATION_IMAGE_REQUIRED');
+      }
       return { assetId: null, publicUrl: input.imageUrl };
     }
     const [asset] = await sql<{ id: string; publicUrl: string }[]>`
@@ -1201,6 +1222,7 @@ function mapRecommendationCard(
     brandName: row.brandName,
     category: { name: row.categoryName, slug: row.categorySlug },
     commercialRelationship: row.commercialRelationship,
+    contentKind: row.contentKind,
     createdAt: row.createdAt,
     discount: row.discountCode
       ? {

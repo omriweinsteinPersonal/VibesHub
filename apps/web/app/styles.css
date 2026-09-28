@@ -7916,6 +7916,30 @@ dt {
   outline-offset: -3px;
 }
 
+.compactProductCard[data-content-kind='link'] {
+  background: #f8f1e8;
+  border-color: color-mix(in srgb, var(--sf-accent, var(--vh-accent)) 35%, #e6ddd2);
+}
+
+.storeLinkCardVisual {
+  align-items: center;
+  background: linear-gradient(135deg, #f3e8dc, #fbf8f3);
+  color: var(--sf-accent, var(--vh-accent));
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  min-height: 144px;
+}
+
+.storeLinkCardLabel {
+  align-items: center;
+  color: var(--sf-accent, var(--vh-accent));
+  display: inline-flex;
+  font-size: 0.76rem;
+  gap: 5px;
+  margin-top: 7px;
+}
+
 .storeProductImage {
   aspect-ratio: 4 / 3;
   flex: 0 0 auto;

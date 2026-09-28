@@ -230,6 +230,7 @@ export const recommendationImageSchema = z
 
 const creatorRecommendationInputFieldsSchema = z
   .object({
+    contentKind: z.enum(['product', 'link']).default('product'),
     brandName: z.string().trim().min(1).max(120),
     categoryId: idSchema,
     categoryIds: z.array(idSchema).min(1).max(8).optional(),
@@ -253,6 +254,7 @@ const creatorRecommendationInputFieldsSchema = z
 export const creatorRecommendationInputSchema =
   creatorRecommendationInputFieldsSchema.refine(
     (value) =>
+      value.contentKind === 'link' ||
       Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) === 1,
     {
       message: 'Choose exactly one recommendation image source',
@@ -470,6 +472,7 @@ export const recommendationCardSchema = z
     brandName: z.string().trim().min(1).max(120),
     category: categoryCardSchema.pick({ name: true, slug: true }),
     commercialRelationship: commercialRelationshipSchema,
+    contentKind: z.enum(['product', 'link']),
     createdAt: z.iso.datetime(),
     discount: recommendationDiscountSchema.nullable(),
     id: idSchema,

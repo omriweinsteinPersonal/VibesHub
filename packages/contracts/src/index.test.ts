@@ -190,6 +190,20 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 
+  it('allows a link card without a cover image', () => {
+    expect(
+      creatorRecommendationInputSchema.parse({
+        brandName: 'Links',
+        categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        contentKind: 'link',
+        priceAmountMinor: 0,
+        productName: 'My sleep secret',
+        productUrl: 'https://shop.example.com/sleep',
+        reviewHe: 'Link card',
+      }).contentKind,
+    ).toBe('link');
+  });
+
   it('accepts Instagram story and Highlight links but rejects other destinations', () => {
     const input = {
       brandName: 'Rare Beauty',
@@ -317,6 +331,7 @@ describe('shared API contracts', () => {
         brandName: 'Rare Beauty',
         category: { name: 'Beauty', slug: 'beauty' },
         commercialRelationship: 'affiliate',
+        contentKind: 'product',
         createdAt: '2026-08-07T10:00:00.000Z',
         discount: { code: 'NOA10', id: null, label: '10% off' },
         id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',

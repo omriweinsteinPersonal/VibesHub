@@ -70,6 +70,7 @@ export class RecommendationService {
       categoryId: current.categoryId,
       categoryIds: current.categoryIds,
       commercialRelationship: current.commercialRelationship,
+      contentKind: current.contentKind,
       discountCode: current.discount?.code ?? null,
       discountExpiresAt: current.discount?.expiresAt ?? null,
       discountLabel: current.discount?.label ?? null,
