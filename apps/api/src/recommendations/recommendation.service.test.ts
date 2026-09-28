@@ -10,6 +10,7 @@ const recommendation: CreatorRecommendationRecord = {
   categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca013',
   categoryIds: ['01989f72-07e4-7f32-9b42-1ba55d4ca013'],
   commercialRelationship: 'organic',
+  contentKind: 'product',
   createdAt: '2026-08-07T10:00:00.000Z',
   discount: null,
   id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',

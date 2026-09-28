@@ -335,6 +335,7 @@ export class ProductDiscoveryRepository {
           where recommendation.lifecycle = 'published'
             and recommendation.deleted_at is null
             and recommendation.published_at is not null
+            and recommendation.content_kind = 'product'
             and creator.status = 'approved'
             and creator.published_at is not null
             and product.status = 'active'
@@ -379,6 +380,7 @@ function mapDiscoveryRecommendation(
     brandName: row.brandName,
     category: { name: row.categoryName, slug: row.categorySlug },
     commercialRelationship: row.commercialRelationship,
+    contentKind: 'product',
     createdAt: row.createdAt,
     creator: {
       displayName: row.creatorDisplayName,
