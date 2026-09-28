@@ -839,6 +839,7 @@ function BrandBlock({
               creatorId={creatorId}
               key={item.id}
               recommendation={item}
+              showPrice={false}
             />
           ))}
         </div>
@@ -957,6 +958,7 @@ function StorefrontRow({
               creatorId={creatorId}
               key={recommendation.id}
               recommendation={recommendation}
+              showPrice={false}
             />
           ))}
         </div>

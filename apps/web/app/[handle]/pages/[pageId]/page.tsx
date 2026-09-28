@@ -66,6 +66,7 @@ export default async function StorefrontPageRoute({
               creatorId={storefront.id}
               key={recommendation.id}
               recommendation={recommendation}
+              showPrice={false}
             />
           ))}
         </div>

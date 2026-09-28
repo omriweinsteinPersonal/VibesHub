@@ -18,12 +18,14 @@ interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
   creatorId?: string;
   recommendation: RecommendationCard;
+  showPrice?: boolean;
 }
 
 export function RecommendationCardView({
   creator,
   creatorId,
   recommendation,
+  showPrice = true,
 }: RecommendationCardViewProps) {
   const [imageLayout, setImageLayout] = useState<'catalog' | 'editorial'>('catalog');
   const attributedCreatorId = creatorId ?? creator?.id;
@@ -56,6 +58,7 @@ export function RecommendationCardView({
   return (
     <article
       className="storeProductCard compactProductCard"
+      data-show-price={showPrice}
       data-text-direction={textDirection}
     >
       {attributedCreatorId ? (
@@ -131,18 +134,20 @@ export function RecommendationCardView({
             )}
           </h3>
         </div>
-        <div className="storePriceRow">
-          {recommendation.price.amountMinor > 0 ? (
-            <p
-              aria-label={`${formatPriceNumber(recommendation.price.amountMinor)} Israeli new shekels`}
-              className="storePrice"
-              dir="ltr"
-            >
-              <span aria-hidden="true">₪</span>
-              <span>{formatPriceNumber(recommendation.price.amountMinor)}</span>
-            </p>
-          ) : null}
-        </div>
+        {showPrice ? (
+          <div className="storePriceRow">
+            {recommendation.price.amountMinor > 0 ? (
+              <p
+                aria-label={`${formatPriceNumber(recommendation.price.amountMinor)} Israeli new shekels`}
+                className="storePrice"
+                dir="ltr"
+              >
+                <span aria-hidden="true">₪</span>
+                <span>{formatPriceNumber(recommendation.price.amountMinor)}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </article>
   );
