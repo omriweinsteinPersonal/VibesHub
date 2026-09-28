@@ -408,7 +408,11 @@ export function CreatorDashboard() {
       try {
         const metadata = await apiRequest<CreatorProductMetadata>(
           '/creator/recommendations/fetch-details',
-          { body: JSON.stringify({ url: requestedUrl }), method: 'POST' },
+          {
+            body: JSON.stringify({ url: requestedUrl }),
+            method: 'POST',
+            timeoutMs: 6_000,
+          },
         );
         if (productFetchRequest.current !== requestId) return;
         setProduct((current) => {
@@ -2083,9 +2087,6 @@ function ProductForm({
   onStory: (event: ChangeEvent<HTMLInputElement>) => void;
   saving: boolean;
 }) {
-  const lastAutomaticallyFetchedUrl = useRef(
-    editing ? normalizedProductUrl(editor.productUrl) : null,
-  );
   const [validationError, setValidationError] = useState('');
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -2103,20 +2104,6 @@ function ProductForm({
     : 'Save recommendation';
   const update = <K extends keyof ProductEditor>(key: K, value: ProductEditor[K]) =>
     onChange({ ...editor, [key]: value });
-
-  useEffect(() => {
-    const url = normalizedProductUrl(editor.productUrl);
-    if (!url) {
-      lastAutomaticallyFetchedUrl.current = null;
-      return;
-    }
-    if (url === lastAutomaticallyFetchedUrl.current) return;
-    const timer = window.setTimeout(() => {
-      lastAutomaticallyFetchedUrl.current = url;
-      onFetch(url);
-    }, 650);
-    return () => window.clearTimeout(timer);
-  }, [editor.productUrl, onFetch]);
 
   return (
     <form
@@ -2155,7 +2142,6 @@ function ProductForm({
               disabled={fetching}
               onClick={() => {
                 const url = normalizedProductUrl(editor.productUrl);
-                lastAutomaticallyFetchedUrl.current = url;
                 if (url) onFetch(url);
               }}
               type="button"
@@ -2165,7 +2151,7 @@ function ProductForm({
             </button>
           </span>
           <small>
-            A link can fill in details automatically. You can also leave it blank and add
+            Select Fetch details to fill in details from a link. Or leave it blank and add
             the item manually with a photo.
           </small>
         </div>

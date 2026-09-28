@@ -7,6 +7,7 @@ import { problem } from '../api-problem.js';
 
 const maxRedirects = 3;
 const maxHtmlBytes = 512 * 1_024;
+const metadataFetchTimeoutMs = 4_000;
 
 // Vercel's Node function compiler does not include the DOM Response shape even
 // though Node exposes fetch at runtime. Keep the boundary structural so the API
@@ -36,7 +37,7 @@ export class ProductMetadataService {
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
         },
         redirect: 'manual',
-        signal: AbortSignal.timeout(8_000),
+        signal: AbortSignal.timeout(metadataFetchTimeoutMs),
       }).catch(() => null)) as ProductFetchResponse | null;
       if (!response) {
         return fallback;
@@ -88,7 +89,7 @@ async function fetchShopifyProductMetadata(
       'user-agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
     },
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(metadataFetchTimeoutMs),
   }).catch(() => null)) as ProductFetchResponse | null;
   if (!response?.ok) return null;
   try {
@@ -300,7 +301,7 @@ async function fetchAdidasProductMetadata(
       'user-agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36',
     },
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(metadataFetchTimeoutMs),
   }).catch(() => null)) as ProductFetchResponse | null;
   if (!response?.ok) return null;
   try {
