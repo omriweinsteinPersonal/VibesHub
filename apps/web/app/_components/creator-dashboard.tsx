@@ -2009,7 +2009,7 @@ function StorefrontLabelsEditor({
                     {label.categorySlug
                       ? (categories.find(({ slug }) => slug === label.categorySlug)
                           ?.name ?? label.categorySlug)
-                      : `${label.recommendationIds.length} items · ${label.collectionIds.length} collections`}
+                      : `${label.recommendationIds.length} items · ${(label.collectionIds ?? []).length} collections`}
                   </small>
                 </span>
               </button>
@@ -2081,7 +2081,7 @@ function StorefrontLabelsEditor({
                 <fieldset className="creatorLabelItems">
                   <legend>
                     Choose by brand · {label.recommendationIds.length} items ·{' '}
-                    {label.collectionIds.length} collections
+                    {(label.collectionIds ?? []).length} collections
                   </legend>
                   {!recommendations.length ? (
                     <p className="creatorLabelEmpty">
@@ -2104,12 +2104,14 @@ function StorefrontLabelsEditor({
                             key={collection.id}
                           >
                             <input
-                              checked={label.collectionIds.includes(collection.id)}
+                              checked={(label.collectionIds ?? []).includes(
+                                collection.id,
+                              )}
                               onChange={(event) =>
                                 update(label.id, {
                                   collectionIds: event.target.checked
-                                    ? [...label.collectionIds, collection.id]
-                                    : label.collectionIds.filter(
+                                    ? [...(label.collectionIds ?? []), collection.id]
+                                    : (label.collectionIds ?? []).filter(
                                         (id) => id !== collection.id,
                                       ),
                                 })

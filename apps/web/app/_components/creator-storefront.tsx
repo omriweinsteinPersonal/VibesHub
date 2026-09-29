@@ -183,7 +183,7 @@ export function CreatorStorefrontView({
     const term = query.trim().toLocaleLowerCase('he-IL');
     const label = labels.find(({ id }) => id === activeLabelId);
     const collectionRecommendationIds = new Set(
-      label?.collectionIds
+      (label?.collectionIds ?? [])
         .flatMap(
           (collectionId) =>
             storefront.curatedSections.find(

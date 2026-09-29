@@ -8,7 +8,10 @@ import type {
   StorefrontTheme,
   StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
-import { storefrontThemeSchema } from '@vibeshub/contracts';
+import {
+  creatorStorefrontConfigurationSchema,
+  storefrontThemeSchema,
+} from '@vibeshub/contracts';
 
 import { Database, type DatabaseClient } from '../database.js';
 
@@ -505,7 +508,7 @@ export class CreatorStudioRepository {
       group by section.id
       order by section.position
     `;
-    return {
+    return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       curatedSections: curatedRows,
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
@@ -526,7 +529,7 @@ export class CreatorStudioRepository {
           : [],
       ),
       version: rows[0]?.version ?? 1,
-    };
+    });
   }
 
   private async ensureAndReadMediaKit(
