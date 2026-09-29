@@ -11212,7 +11212,8 @@ dt {
     border: 1px solid #e7ded5;
     border-bottom: 0;
     border-radius: 20px 20px 0 0;
-    bottom: 0;
+    /* Keep both the editor handle and the creator's primary navigation reachable. */
+    bottom: calc(64px + env(safe-area-inset-bottom));
     box-shadow: 0 -12px 32px rgb(48 38 31 / 16%);
     height: min(68dvh, 600px);
     left: 0;
@@ -11275,7 +11276,8 @@ dt {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    height: 100dvh;
+    /* The preview lives between the workspace header and its two fixed controls. */
+    height: calc(100dvh - 69px - 128px - env(safe-area-inset-bottom));
     margin: 0;
     min-height: 0;
     width: 100%;
@@ -11287,6 +11289,12 @@ dt {
 
   .storefrontPhoneScreen {
     border-radius: 0;
+  }
+
+  @media (max-width: 620px) {
+    .storefrontPhoneDevice {
+      height: calc(100dvh - 65px - 128px - env(safe-area-inset-bottom));
+    }
   }
 
   .compactProductCard .storeProductImage .storyPreviewCircle,
