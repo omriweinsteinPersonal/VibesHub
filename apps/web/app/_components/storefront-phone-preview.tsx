@@ -167,7 +167,7 @@ export function StorefrontPhonePreview({
     if (!showPhone) return;
     frame.current?.contentWindow?.postMessage(
       {
-        type: 'swave:theme-preview',
+        type: 'swavii:theme-preview',
         creatorId,
         theme: draft,
         titles: previewTitles,
@@ -194,7 +194,7 @@ export function StorefrontPhonePreview({
         type?: string;
       };
       if (
-        data.type === 'swave:block-select' &&
+        data.type === 'swavii:block-select' &&
         data.creatorId === creatorId &&
         data.blockId
       ) {
@@ -203,7 +203,7 @@ export function StorefrontPhonePreview({
         return;
       }
       if (
-        data.type === 'swave:theme-select' &&
+        data.type === 'swavii:theme-select' &&
         data.creatorId === creatorId &&
         groups.some(({ id }) => id === data.section)
       ) {
@@ -430,7 +430,7 @@ export function StorefrontPhonePreview({
             onLoad={() =>
               frame.current?.contentWindow?.postMessage(
                 {
-                  type: 'swave:theme-preview',
+                  type: 'swavii:theme-preview',
                   creatorId,
                   theme: draft,
                   titles: previewTitles,

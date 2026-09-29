@@ -49,7 +49,7 @@ export function CreatorShellHeader() {
     <>
       <header className="creatorShellHeader">
         <div className="creatorShellHeaderInner">
-          <Brand />
+          <Brand href="/creator-home" />
           <nav aria-label="Creator workspace">
             {links
               .filter(({ label }) => label !== 'Account')

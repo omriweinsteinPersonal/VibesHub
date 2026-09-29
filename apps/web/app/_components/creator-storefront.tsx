@@ -85,7 +85,8 @@ export function CreatorStorefrontView({
         editingContent?: boolean;
         type?: string;
       };
-      if (data.type !== 'swave:theme-preview' || data.creatorId !== storefront.id) return;
+      if (data.type !== 'swavii:theme-preview' || data.creatorId !== storefront.id)
+        return;
       const parsed = storefrontThemeSchema.safeParse(data.theme);
       if (parsed.success) setPreviewTheme(parsed.data);
       const titles = storefrontTitlesSchema.safeParse(data.titles);
@@ -398,7 +399,7 @@ export function CreatorStorefrontView({
             event.stopPropagation();
             window.parent.postMessage(
               {
-                type: 'swave:block-select',
+                type: 'swavii:block-select',
                 creatorId: storefront.id,
                 blockId: block.dataset.editorBlock,
               },
@@ -419,7 +420,7 @@ export function CreatorStorefrontView({
                   ? 'profile'
                   : 'recommendations';
           window.parent.postMessage(
-            { type: 'swave:theme-select', creatorId: storefront.id, section },
+            { type: 'swavii:theme-select', creatorId: storefront.id, section },
             window.location.origin,
           );
         }}
