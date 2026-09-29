@@ -1979,6 +1979,7 @@ function StorefrontLabelsEditor({
                 title: 'New label',
                 categorySlug: null,
                 collectionIds: [],
+                layout: 'grid',
                 recommendationIds: [],
               },
             ]);
@@ -2076,6 +2077,22 @@ function StorefrontLabelsEditor({
                     ))}
                   </select>
                 </label>
+                {!label.categorySlug ? (
+                  <label>
+                    Display
+                    <select
+                      value={label.layout ?? 'grid'}
+                      onChange={(event) =>
+                        update(label.id, {
+                          layout: event.target.value as StorefrontLabel['layout'],
+                        })
+                      }
+                    >
+                      <option value="grid">Compact grid</option>
+                      <option value="cards">Brand cards</option>
+                    </select>
+                  </label>
+                ) : null}
               </div>
               {!label.categorySlug ? (
                 <fieldset className="creatorLabelItems">

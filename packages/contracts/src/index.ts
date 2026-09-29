@@ -655,6 +655,7 @@ export const creatorStorefrontSchema = z
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
             collectionIds: z.array(idSchema).max(24).default([]),
+            layout: z.enum(['cards', 'grid']).default('grid'),
           })
           .strict(),
       )
@@ -1023,6 +1024,7 @@ export const creatorStorefrontConfigurationSchema = z
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
             collectionIds: z.array(idSchema).max(24).default([]),
+            layout: z.enum(['cards', 'grid']).default('grid'),
           })
           .strict(),
       )
@@ -1081,6 +1083,7 @@ export const creatorStorefrontConfigurationInputSchema = z
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
             collectionIds: z.array(idSchema).max(24).default([]),
+            layout: z.enum(['cards', 'grid']).default('grid'),
           })
           .strict(),
       )
