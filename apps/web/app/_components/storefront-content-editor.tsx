@@ -267,6 +267,18 @@ export function StorefrontContentEditor({
               />
             </label>
             <label>
+              Button label <small>Optional — shown only with a destination link</small>
+              <input
+                maxLength={80}
+                placeholder="e.g. Shop the collection"
+                type="text"
+                value={selected.buttonLabel ?? ''}
+                onChange={(e) =>
+                  update(selected.id, { buttonLabel: e.target.value.trim() || undefined })
+                }
+              />
+            </label>
+            <label>
               Text style
               <select
                 value={selected.format ?? 'heading'}

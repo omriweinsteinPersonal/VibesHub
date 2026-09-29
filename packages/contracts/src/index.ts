@@ -561,6 +561,7 @@ export const storefrontTitleSchema = z
       .url({ protocol: /^https$/ })
       .max(2_048)
       .optional(),
+    buttonLabel: z.string().trim().min(1).max(80).optional(),
   })
   .strict();
 export const storefrontTitlesSchema = z

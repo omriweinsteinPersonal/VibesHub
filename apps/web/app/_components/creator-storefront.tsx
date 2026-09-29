@@ -316,6 +316,7 @@ export function CreatorStorefrontView({
       )
       .map((title) => {
         const Tag = title.format === 'paragraph' ? 'p' : 'h2';
+        const showButton = Boolean(title.url && title.buttonLabel);
         const cardStyle =
           title.appearance === 'card'
             ? {
@@ -333,22 +334,37 @@ export function CreatorStorefrontView({
               }
             : {};
         return (
-          <Tag
+          <div
             key={title.id}
-            dir="auto"
-            className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
+            className="storefrontContentBlock"
             data-editor-block={title.id}
             data-selected={selectedBlock === title.id}
-            style={{ textAlign: title.align, ...cardStyle }}
+            style={cardStyle}
           >
-            {title.url ? (
-              <a href={title.url} rel="noreferrer" target="_blank">
-                {title.text} <span aria-hidden="true">↗</span>
+            <Tag
+              dir="auto"
+              className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
+              style={{ textAlign: title.align }}
+            >
+              {title.url && !showButton ? (
+                <a href={title.url} rel="noreferrer" target="_blank">
+                  {title.text}
+                </a>
+              ) : (
+                title.text
+              )}
+            </Tag>
+            {showButton ? (
+              <a
+                className="storefrontContentButton"
+                href={title.url}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {title.buttonLabel}
               </a>
-            ) : (
-              title.text
-            )}
-          </Tag>
+            ) : null}
+          </div>
         );
       });
   }

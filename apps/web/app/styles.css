@@ -11392,11 +11392,15 @@ dt {
   padding: 8px;
   font: inherit;
 }
+.referenceStorefrontProducts .storefrontContentBlock {
+  margin: 20px 0 12px;
+  overflow-wrap: anywhere;
+}
 .referenceStorefrontProducts .storefrontContentTitle {
   color: var(--sf-text);
   font-family: var(--font-vh-display), Georgia, serif;
   line-height: 1.25;
-  margin: 20px 0 12px;
+  margin: 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -11408,6 +11412,24 @@ dt {
 .referenceStorefrontProducts .storefrontContentTitle a:hover {
   text-decoration: underline;
   text-underline-offset: 0.18em;
+}
+.referenceStorefrontProducts .storefrontContentButton {
+  align-items: center;
+  background: var(--sf-accent);
+  border-radius: 999px;
+  color: var(--sf-accent-ink);
+  display: inline-flex;
+  font-family: var(--font-vh-body), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  justify-content: center;
+  margin-top: 12px;
+  min-height: 44px;
+  padding: 0 18px;
+  text-decoration: none;
+}
+.referenceStorefrontProducts .storefrontContentButton:hover {
+  filter: brightness(0.94);
 }
 .referenceStorefrontProducts .storefrontContentTitle-small {
   font-size: 1.1rem;

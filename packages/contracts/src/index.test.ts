@@ -473,6 +473,22 @@ describe('storefront text blocks', () => {
       }).success,
     ).toBe(false);
   });
+
+  it('allows an optional custom label for a linked text block', () => {
+    const text = {
+      align: 'start' as const,
+      beforeId: null,
+      buttonLabel: 'See my favorite pieces',
+      id: '33333333-3333-4333-8333-333333333333',
+      size: 'medium' as const,
+      text: 'My fall wardrobe',
+      url: 'https://example.com/wardrobe',
+    };
+    expect(
+      creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], titles: [text] })
+        .titles,
+    ).toEqual([text]);
+  });
 });
 
 describe('storefront block editor', () => {
