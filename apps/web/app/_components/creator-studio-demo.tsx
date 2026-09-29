@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { ArrowRight, Check, Layers, Palette, Pause, Play, Tags } from 'lucide-react';
 import styles from './creator-studio-demo.module.css';
 
@@ -65,9 +65,21 @@ const products = [
   { name: 'Market day finds', image: '/images/hero-editorial-market.png' },
 ] as const;
 
+function subscribeToMotionPreference(callback: () => void) {
+  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+  media.addEventListener('change', callback);
+  return () => media.removeEventListener('change', callback);
+}
+
 export function CreatorStudioDemo() {
   const [frame, setFrame] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [wantsPlayback, setPlaying] = useState(true);
+  const reducedMotion = useSyncExternalStore(
+    subscribeToMotionPreference,
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    () => true,
+  );
+  const playing = wantsPlayback && !reducedMotion;
   const [toneOverride, setTone] = useState<number | null>(null);
   const [labelOverride, setLabel] = useState<string | null>(null);
   const scene = scenes[frame] ?? scenes[0];
@@ -96,9 +108,6 @@ export function CreatorStudioDemo() {
     setTone(null);
     setLabel(null);
   };
-  useEffect(() => {
-    setPlaying(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }, []);
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
