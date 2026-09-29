@@ -106,12 +106,13 @@
 }
 .canvas {
   position: relative;
-  padding: 112px 28px 24px;
+  padding: 20px 28px 24px;
   background: #eee9e0;
   display: grid;
-  align-items: center;
-  height: 650px;
-  overflow: hidden;
+  grid-template-rows: minmax(104px, auto) minmax(500px, auto);
+  gap: 16px;
+  align-items: start;
+  min-height: 650px;
   min-width: 0;
 }
 .editor,
@@ -132,15 +133,13 @@
   transition: background 700ms ease;
 }
 .sceneCaption {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  right: 16px;
+  position: relative;
+  align-self: start;
   text-align: center;
   z-index: 2;
   pointer-events: none;
   width: fit-content;
-  max-width: calc(100% - 32px);
+  max-width: 100%;
   margin-inline: auto;
   padding: 9px 18px;
   border: 1px solid #e3d8c8;
@@ -434,17 +433,15 @@
     margin-top: 5px;
   }
   .canvas {
-    padding: 96px 10px 12px;
-    height: 490px;
-    min-height: 0;
+    padding: 14px 10px 18px;
+    grid-template-rows: minmax(94px, auto) minmax(430px, auto);
+    gap: 12px;
+    min-height: 568px;
     align-items: start;
   }
   .sceneCaption {
-    top: 14px;
-    left: 8px;
-    right: 8px;
     padding: 7px 10px;
-    max-width: calc(100% - 16px);
+    max-width: 100%;
   }
   .sceneCaption h3 {
     font-size: 26px;
@@ -453,7 +450,7 @@
     font-size: 11px;
   }
   .store {
-    max-height: 375px;
+    max-height: 430px;
   }
   .editor {
     padding: 18px;

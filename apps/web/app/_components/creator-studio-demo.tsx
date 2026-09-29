@@ -141,13 +141,13 @@ export function CreatorStudioDemo() {
       </div>
       <div className={styles.stage}>
         <div className={styles.canvas}>
-          <div className={styles.sceneCaption} key={frame}>
+          <div className={styles.sceneCaption} key={`caption-${frame}`}>
             <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO</span>
             <h3>{scene.title}</h3>
             <p>{scene.detail}</p>
           </div>
           {category === 0 && step < 2 ? (
-            <div className={styles.editor} key={step}>
+            <div className={styles.editor} key={`editor-${step}`}>
               <span className={styles.eyebrow}>CREATOR DASHBOARD</span>
               <h4>{step === 0 ? 'Add recommendation' : 'Create collection'}</h4>
               {step === 0 ? (
