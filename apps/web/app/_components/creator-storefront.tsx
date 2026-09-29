@@ -412,7 +412,7 @@ export function CreatorStorefrontView({
         <StorefrontViewTracker creatorId={storefront.id} />
         <section className="referenceStorefrontHero">
           <div
-            className={`referenceStorefrontInner${storefront.socialLinks.length ? '' : ' noConnectors'}`}
+            className={`referenceStorefrontInner${storefront.socialLinks.length ? '' : ' noConnectors'}${storefront.bio.value ? ' hasBio' : ''}`}
           >
             <span className="referenceStorefrontAvatar">
               {storefront.avatarUrl ? (
@@ -441,6 +441,15 @@ export function CreatorStorefrontView({
                 {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
               </p>
             </div>
+            {storefront.bio.value ? (
+              <p
+                className="referenceStorefrontBio"
+                dir={storefront.bio.direction}
+                lang={storefront.bio.language}
+              >
+                {storefront.bio.value}
+              </p>
+            ) : null}
             {storefront.socialLinks.length ? (
               <nav
                 aria-label="Creator links"

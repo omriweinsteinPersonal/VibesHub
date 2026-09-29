@@ -2151,6 +2151,29 @@ svg.lucide {
 .referenceStorefrontInner.noConnectors {
   grid-template-areas: 'avatar identity';
 }
+.referenceStorefrontInner.hasBio {
+  grid-template-areas:
+    'avatar identity'
+    'avatar bio'
+    'avatar actions';
+}
+.referenceStorefrontInner.noConnectors.hasBio {
+  grid-template-areas:
+    'avatar identity'
+    'avatar bio';
+}
+.referenceStorefrontBio {
+  align-self: start;
+  color: var(--sf-text, #5f5148);
+  font-size: 1rem;
+  grid-area: bio;
+  line-height: 1.65;
+  margin: 0;
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 .referenceStorefrontActions.referenceConnectors {
   display: flex;
   flex-wrap: wrap;
@@ -2663,6 +2686,17 @@ svg.lucide {
       'avatar identity'
       'actions actions';
     grid-template-columns: 110px minmax(0, 1fr);
+  }
+  .referenceStorefrontInner.hasBio {
+    grid-template-areas:
+      'avatar identity'
+      'bio bio'
+      'actions actions';
+  }
+  .referenceStorefrontInner.noConnectors.hasBio {
+    grid-template-areas:
+      'avatar identity'
+      'bio bio';
   }
   .referenceStorefrontAvatar {
     height: 105px;
@@ -7898,6 +7932,24 @@ dt {
 }
 
 @media (max-width: 560px) {
+  .referenceStorefrontInner.hasBio {
+    grid-template-areas:
+      'avatar identity'
+      'bio bio'
+      'actions actions';
+  }
+
+  .referenceStorefrontInner.noConnectors.hasBio {
+    grid-template-areas:
+      'avatar identity'
+      'bio bio';
+  }
+
+  .referenceStorefrontBio {
+    font-size: 0.94rem;
+    max-width: none;
+  }
+
   .creatorTypeGrid {
     display: grid;
     gap: 12px;
