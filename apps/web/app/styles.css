@@ -2036,6 +2036,31 @@ svg.lucide {
   padding: 13px 20px;
   width: 100%;
 }
+.googleIdentityButtonSlot {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+  position: relative;
+  width: 100%;
+}
+.googleIdentityButtonSlot > div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.googleIdentityButtonStatus {
+  align-items: center;
+  background: white;
+  border: 1px solid #dfd5ca;
+  border-radius: 999px;
+  color: #756a62;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: auto;
+  position: absolute;
+}
 .referenceAuthCard .separator {
   align-items: center;
   color: #867b72;

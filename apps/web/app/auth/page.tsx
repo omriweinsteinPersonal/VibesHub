@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Script from 'next/script';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-import { Suspense, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
 import {
@@ -14,6 +15,50 @@ import {
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
+
+type GoogleCredentialResponse = { credential?: string };
+
+type GoogleIdentity = {
+  initialize: (configuration: {
+    button_auto_select?: boolean;
+    callback: (response: GoogleCredentialResponse) => void;
+    client_id: string;
+    itp_support?: boolean;
+    nonce?: string;
+    use_fedcm_for_button?: boolean;
+    ux_mode?: 'popup' | 'redirect';
+  }) => void;
+  renderButton: (
+    parent: HTMLElement,
+    configuration: {
+      logo_alignment: 'left' | 'center';
+      shape: 'pill' | 'rectangular';
+      size: 'large' | 'medium' | 'small';
+      text: 'continue_with' | 'signup_with';
+      theme: 'outline';
+      type: 'standard';
+      width: number;
+    },
+  ) => void;
+};
+
+declare global {
+  interface Window {
+    google?: { accounts: { id: GoogleIdentity } };
+  }
+}
+
+function createNonce(): string {
+  const values = crypto.getRandomValues(new Uint8Array(32));
+  return Array.from(values, (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashNonce(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
+}
 
 function AuthExperience() {
   const searchParams = useSearchParams();
@@ -32,8 +77,22 @@ function AuthExperience() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [googleScriptReady, setGoogleScriptReady] = useState(false);
+  const [googleButtonReady, setGoogleButtonReady] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(
+    () => undefined,
+  );
+  const googleModeRef = useRef(mode);
+  const googleNonceRef = useRef('');
+  const googleInitializedRef = useRef(false);
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
   const requestedNext = searchParams.get('next');
   const safeNext = safeInternalPath(requestedNext, '/creator-home');
+
+  useEffect(() => {
+    googleModeRef.current = mode;
+  }, [mode]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -76,7 +135,7 @@ function AuthExperience() {
     }
   }
 
-  async function continueWithGoogle() {
+  async function continueWithGoogleRedirect() {
     setError('');
     setOauthLoading(true);
     const next = mode === 'signup' ? '/creator/apply' : safeNext;
@@ -91,6 +150,93 @@ function AuthExperience() {
       setOauthLoading(false);
     }
   }
+
+  useEffect(() => {
+    googleCallbackRef.current = async (response) => {
+      if (!response.credential) {
+        setError('Google did not return a sign-in credential. Please try again.');
+        return;
+      }
+
+      setError('');
+      setMessage('');
+      setOauthLoading(true);
+      const next = googleModeRef.current === 'signup' ? '/creator/apply' : safeNext;
+      try {
+        const { error: authError } =
+          await getSupabaseBrowserClient().auth.signInWithIdToken({
+            provider: 'google',
+            token: response.credential,
+            nonce: googleNonceRef.current,
+          });
+        if (authError) throw authError;
+
+        try {
+          const account = await apiRequest<AuthenticatedAccount>('/me');
+          router.replace(destinationForAccount(account, next));
+          router.refresh();
+        } catch {
+          router.replace(`/auth/continue?next=${encodeURIComponent(next)}`);
+          router.refresh();
+        }
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'Google sign-in failed.');
+        setOauthLoading(false);
+      }
+    };
+  }, [router, safeNext]);
+
+  useEffect(() => {
+    if (!googleClientId || !googleScriptReady || googleInitializedRef.current) return;
+
+    let cancelled = false;
+    void (async () => {
+      const nonce = createNonce();
+      const hashedNonce = await hashNonce(nonce);
+      if (cancelled || !window.google) return;
+
+      googleNonceRef.current = nonce;
+      window.google.accounts.id.initialize({
+        button_auto_select: false,
+        callback: (response) => googleCallbackRef.current(response),
+        client_id: googleClientId,
+        itp_support: true,
+        nonce: hashedNonce,
+        use_fedcm_for_button: true,
+        ux_mode: 'popup',
+      });
+      googleInitializedRef.current = true;
+      setGoogleButtonReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleClientId, googleScriptReady]);
+
+  useEffect(() => {
+    const container = googleButtonRef.current;
+    const identity = window.google?.accounts.id;
+    if (!container || !identity || !googleButtonReady) return;
+
+    const render = () => {
+      container.replaceChildren();
+      identity.renderButton(container, {
+        logo_alignment: 'left',
+        shape: 'pill',
+        size: 'large',
+        text: mode === 'signup' ? 'signup_with' : 'continue_with',
+        theme: 'outline',
+        type: 'standard',
+        width: Math.min(400, Math.max(200, Math.floor(container.clientWidth))),
+      });
+    };
+
+    render();
+    const observer = new ResizeObserver(render);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [googleButtonReady, mode]);
 
   return (
     <div className="editorialPage authExperiencePage">
@@ -132,17 +278,41 @@ function AuthExperience() {
               Create account
             </button>
           </div>
-          <button
-            aria-busy={oauthLoading}
-            className="referenceGoogleButton"
-            disabled={oauthLoading || loading}
-            onClick={() => void continueWithGoogle()}
-            type="button"
-          >
-            {oauthLoading
-              ? 'Opening Google…'
-              : `${mode === 'login' ? 'Continue' : 'Sign up'} with Google`}
-          </button>
+          {googleClientId ? (
+            <>
+              <Script
+                onError={() =>
+                  setError('Google sign-in could not load. Please try again.')
+                }
+                onReady={() => setGoogleScriptReady(true)}
+                src="https://accounts.google.com/gsi/client"
+                strategy="afterInteractive"
+              />
+              <div
+                aria-busy={!googleButtonReady || oauthLoading}
+                className="googleIdentityButtonSlot"
+              >
+                <div ref={googleButtonRef} />
+                {!googleButtonReady || oauthLoading || loading ? (
+                  <span className="googleIdentityButtonStatus">
+                    {oauthLoading ? 'Signing you in…' : 'Loading Google…'}
+                  </span>
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <button
+              aria-busy={oauthLoading}
+              className="referenceGoogleButton"
+              disabled={oauthLoading || loading}
+              onClick={() => void continueWithGoogleRedirect()}
+              type="button"
+            >
+              {oauthLoading
+                ? 'Opening Google…'
+                : `${mode === 'login' ? 'Continue' : 'Sign up'} with Google`}
+            </button>
+          )}
           <div className="separator">OR</div>
           <form onSubmit={submit}>
             {mode === 'signup' ? (
