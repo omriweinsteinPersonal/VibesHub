@@ -11382,6 +11382,19 @@ dt {
   gap: 5px;
   font-size: 0.85rem;
 }
+.storefrontBackgroundReset {
+  align-items: start;
+  display: grid;
+  gap: 6px;
+}
+.storefrontBackgroundReset .button {
+  justify-self: start;
+}
+.storefrontBackgroundReset small {
+  color: #75695f;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
 .storefrontTitleEditor select,
 .storefrontTitleEditor textarea,
 .storefrontTitleEditor input {

@@ -314,6 +314,21 @@ export function StorefrontContentEditor({
                     onChange={(e) => update(selected.id, { background: e.target.value })}
                   />
                 </label>
+                <div className="storefrontBackgroundReset">
+                  <button
+                    className="button secondary"
+                    disabled={!selected.background}
+                    onClick={() => update(selected.id, { background: undefined })}
+                    type="button"
+                  >
+                    Use storefront palette color
+                  </button>
+                  <small>
+                    {selected.background
+                      ? 'Using a custom background color.'
+                      : 'Using the current storefront card color.'}
+                  </small>
+                </div>
                 <label>
                   Background image URL <small>Optional</small>
                   <input
