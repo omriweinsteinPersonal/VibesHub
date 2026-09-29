@@ -11275,7 +11275,7 @@ dt {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    height: calc(100dvh - 60px);
+    height: 100dvh;
     margin: 0;
     min-height: 0;
     width: 100%;
