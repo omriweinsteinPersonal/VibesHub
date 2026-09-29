@@ -1,0 +1,360 @@
+.demo {
+  margin-top: 32px;
+  color: #30291f;
+}
+.categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.categories button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 22px;
+  background: #fffdf9;
+  border: 1px solid #e3d8c8;
+  border-radius: 16px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.categories button[aria-pressed='true'] {
+  background: #e8ecde;
+  border-color: #788563;
+}
+.categories strong {
+  font-size: 15px;
+}
+.categories span {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.stage {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  border: 1px solid #e3d8c8;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fffdf9;
+}
+.guide {
+  padding: 40px;
+}
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  line-height: 1.6;
+}
+.guide h3 {
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 36px;
+  font-weight: 400;
+  margin: 20px 0 12px;
+}
+.guide p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.steps {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+.steps button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.steps button[aria-pressed='true'] {
+  background: #f1e5d9;
+}
+.steps button span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid #cdbca8;
+  border-radius: 50%;
+}
+.steps button svg {
+  margin-left: auto;
+}
+.play,
+.replay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 12px;
+}
+.play {
+  margin-top: 18px;
+}
+.canvas {
+  padding: 28px;
+  background: #eee9e0;
+  display: grid;
+  align-items: center;
+  min-height: 580px;
+  min-width: 0;
+}
+.editor,
+.store {
+  width: 100%;
+  max-width: 410px;
+  margin: auto;
+  border: 1px solid #dfd5c8;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fffdf9;
+  box-shadow: 0 14px 36px #3a2c1710;
+}
+.editor {
+  padding: 26px;
+}
+.editor h4,
+.store h4 {
+  font:
+    400 27px/1.2 var(--font-vh-display),
+    Georgia,
+    serif;
+  margin: 10px 0 22px;
+}
+.field {
+  margin-bottom: 16px;
+  min-width: 0;
+  font-size: 12px;
+}
+.field span {
+  display: block;
+  margin-bottom: 7px;
+}
+.field small {
+  color: #807260;
+}
+.field div {
+  padding: 10px;
+  border: 1px solid #e3d8c8;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.pick {
+  display: grid;
+  grid-template-columns: 95px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.pick img {
+  width: 95px;
+  height: 125px;
+  object-fit: cover;
+  border-radius: 9px;
+}
+.primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  background: #bc7554;
+  color: white;
+  border: 0;
+  border-radius: 24px;
+  cursor: pointer;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.selectionLabel {
+  font-size: 12px;
+}
+.selection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 12px;
+}
+.selection img {
+  object-fit: cover;
+  border-radius: 6px;
+}
+.selection svg {
+  margin-left: auto;
+  color: #63734a;
+  flex-shrink: 0;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 22px 0;
+}
+.profile img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+.profile h4 {
+  margin: 0 0 6px;
+}
+.profile span {
+  font-size: 11px;
+}
+.bio {
+  margin: 16px 22px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.socials {
+  display: flex;
+  gap: 16px;
+  margin: 0 22px 20px;
+}
+.feed {
+  background: #fffdf9;
+  padding: 18px;
+}
+.labels {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 22px;
+}
+.labels button {
+  padding: 7px 10px;
+  border: 1px solid #d7cbbb;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.labels button[aria-pressed='true'] {
+  background: #eee9e0;
+  border-color: #8a7c6c;
+}
+.feed h4 {
+  margin: 7px 0;
+}
+.caption {
+  font-size: 11px;
+  margin: 0 0 15px;
+}
+.products {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.products article {
+  min-width: 0;
+}
+.products img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.products span {
+  display: block;
+  font-size: 10px;
+  line-height: 1.4;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+}
+.swatches {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+}
+.swatches button {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  width: 44px;
+  border: 1px solid #948875;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.demo button:focus-visible {
+  outline: 2px solid #63734a;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .categories {
+    gap: 7px;
+  }
+  .categories button {
+    padding: 12px 9px;
+    gap: 9px;
+    border-radius: 11px;
+  }
+  .categories strong {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .categories span {
+    display: none;
+  }
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide {
+    padding: 22px;
+  }
+  .guide h3 {
+    font-size: 28px;
+    margin: 12px 0 8px;
+  }
+  .guide p {
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+  .steps {
+    margin-top: 15px;
+    gap: 3px;
+  }
+  .steps button {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .play {
+    margin-top: 5px;
+  }
+  .canvas {
+    padding: 14px;
+    min-height: 475px;
+  }
+  .editor {
+    padding: 18px;
+  }
+  .profile {
+    padding: 18px 14px 0;
+  }
+  .bio {
+    margin-inline: 14px;
+  }
+  .feed {
+    padding: 14px;
+  }
+  .products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .products article:nth-child(3) {
+    display: none;
+  }
+}

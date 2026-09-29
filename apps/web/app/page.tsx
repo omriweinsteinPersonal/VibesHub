@@ -5,13 +5,11 @@ import {
   Camera,
   Check,
   ExternalLink,
-  Palette,
-  Plus,
-  Share2,
   Sparkles,
 } from 'lucide-react';
 
 import { SiteFooter } from './_components/site-footer';
+import { CreatorStudioDemo } from './_components/creator-studio-demo';
 import { CreatorHeroShowcase } from './_components/creator-hero-showcase';
 import { SiteHeader } from './_components/site-header';
 
@@ -72,77 +70,7 @@ export default function HomePage() {
               collections—all from one simple studio.
             </p>
           </div>
-          <div
-            className="creatorCustomizerDemo"
-            aria-label="Example of the creator customization studio"
-          >
-            <div className="creatorCustomizerControls" aria-hidden="true">
-              <header>
-                <span>CREATOR STUDIO</span>
-                <strong>Maya&apos;s page</strong>
-              </header>
-              <section>
-                <span className="creatorCustomizerLabel">
-                  <Palette size={14} /> Theme
-                </span>
-                <div className="creatorCustomizerSwatches">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </div>
-              </section>
-              <section>
-                <span className="creatorCustomizerLabel">SECTIONS</span>
-                <div className="creatorCustomizerSection active">
-                  <b aria-hidden="true">⋮⋮</b>
-                  <span>Latest finds</span>
-                  <small>8</small>
-                </div>
-                <div className="creatorCustomizerSection">
-                  <b aria-hidden="true">⋮⋮</b>
-                  <span>Beauty edit</span>
-                  <small>4</small>
-                </div>
-                <div className="creatorCustomizerSection">
-                  <b aria-hidden="true">⋮⋮</b>
-                  <span>Travel notes</span>
-                  <small>6</small>
-                </div>
-              </section>
-              <div className="creatorCustomizerAdd">
-                <Plus size={13} /> New collection
-              </div>
-            </div>
-            <div className="creatorCustomizerPreview" aria-hidden="true">
-              <div className="creatorCustomizerPreviewTop">
-                <span>MAYA COHEN</span>
-                <i />
-              </div>
-              <div className="creatorCustomizerPreviewCopy">
-                <strong>Beauty edit</strong>
-                <span>Curated by Maya</span>
-              </div>
-              <div className="creatorCustomizerProducts">
-                <article>
-                  <i />
-                  <span>Daily glow</span>
-                </article>
-                <article>
-                  <i />
-                  <span>Soft essentials</span>
-                </article>
-                <article>
-                  <i />
-                  <span>Golden hour</span>
-                </article>
-              </div>
-              <div className="creatorCustomizerPreviewFooter">
-                <span>Collections</span>
-                <Share2 size={13} />
-              </div>
-            </div>
-          </div>
+          <CreatorStudioDemo />
         </section>
 
         <section className="creatorLandingSection creatorAudience" id="features">
