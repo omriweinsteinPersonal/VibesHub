@@ -11201,6 +11201,117 @@ dt {
   overflow: hidden;
   width: 100%;
 }
+
+.mobileStorefrontEditorToggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .storefrontDesignPanel {
+    background: #fffdfb;
+    border: 1px solid #e7ded5;
+    border-bottom: 0;
+    border-radius: 20px 20px 0 0;
+    bottom: 0;
+    box-shadow: 0 -12px 32px rgb(48 38 31 / 16%);
+    height: min(68dvh, 600px);
+    left: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0;
+    position: fixed;
+    right: 0;
+    top: auto;
+    transform: translateY(calc(100% - 64px));
+    transition: transform 220ms ease-out;
+    z-index: 1100;
+  }
+
+  .storefrontDesignPanel[data-mobile-open='true'] {
+    transform: translateY(0);
+  }
+
+  .storefrontDesignPanel[data-mobile-open='false'] .storefrontDesignPanelBody {
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .mobileStorefrontEditorToggle {
+    align-items: center;
+    background: #fffdfb;
+    border: 0;
+    border-bottom: 1px solid #e7ded5;
+    color: #30251f;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-weight: 600;
+    justify-content: space-between;
+    min-height: 64px;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .mobileStorefrontEditorToggle > span {
+    align-items: center;
+    display: inline-flex;
+    gap: 9px;
+  }
+
+  .storefrontDesignPanelBody {
+    padding: 20px 16px 28px;
+  }
+
+  .storefrontPhoneStage {
+    background: #fff;
+    padding: 0;
+  }
+
+  .storefrontPhoneDevice {
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    height: calc(100dvh - 60px);
+    margin: 0;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .storefrontPhoneIsland {
+    display: none;
+  }
+
+  .storefrontPhoneScreen {
+    border-radius: 0;
+  }
+
+  .compactProductCard .storeProductImage .storyPreviewCircle,
+  .productDetailMedia .storyPreviewCircle {
+    aspect-ratio: 1;
+    background: transparent;
+    bottom: 10px;
+    box-shadow: 0 3px 10px rgb(38 25 16 / 25%);
+    box-sizing: border-box;
+    height: 42px;
+    left: 10px;
+    line-height: 0;
+    padding: 0;
+    width: 42px;
+  }
+
+  .compactProductCard .storyPreviewCircle .storyPreviewThumb,
+  .productDetailMedia .storyPreviewCircle .storyPreviewThumb {
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    display: grid;
+    height: 100%;
+    width: 100%;
+  }
+}
 .storyViewerBackdrop {
   z-index: 2000;
 }

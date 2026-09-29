@@ -6,6 +6,7 @@ import {
   type StorefrontTitle,
   type StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
+import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -125,6 +126,7 @@ export function StorefrontPhonePreview({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -241,159 +243,181 @@ export function StorefrontPhonePreview({
   return (
     <div className={`storefrontDesignWorkspace${canEdit ? ' hasEditor' : ''}`}>
       {canEdit ? (
-        <aside aria-label="Storefront design" className="storefrontDesignPanel">
-          <div className="storefrontDesignPanelHeading">
-            <p className="eyebrow">YOUR STOREFRONT</p>
-            <h2>Design your page</h2>
-            <p>
-              Choose a palette, then refine each part. Changes appear in the phone before
-              you save.
-            </p>
-          </div>
-          <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
-            <button
-              type="button"
-              aria-pressed={tab === 'design'}
-              onClick={() => setTab('design')}
-            >
-              Design
-            </button>
-            <button
-              type="button"
-              aria-pressed={tab === 'content'}
-              onClick={() => setTab('content')}
-            >
-              Content
-            </button>
-          </div>
-          <div hidden={tab !== 'content'}>
-            <StorefrontContentEditor
-              creatorId={creatorId}
-              targets={contentTargets}
-              selectedId={selectedBlock}
-              onSelect={setSelectedBlock}
-              onPreview={(next) => {
-                setPreviewTitles(next.titles);
-                setPreviewBrandOrder(next.brandOrder);
-              }}
-            />
-          </div>
-          <div hidden={tab !== 'design'}>
-            <div
-              className="storefrontPaletteList"
-              role="group"
-              aria-label="Color palettes"
-            >
-              {palettes.map(({ name, theme: palette }) => (
+        <aside
+          aria-label="Storefront design"
+          className="storefrontDesignPanel"
+          data-mobile-open={mobileEditorOpen}
+        >
+          <button
+            aria-expanded={mobileEditorOpen}
+            className="mobileStorefrontEditorToggle"
+            onClick={() => setMobileEditorOpen((open) => !open)}
+            type="button"
+          >
+            <span>
+              <SlidersHorizontal aria-hidden="true" size={18} />
+              {mobileEditorOpen ? 'Back to storefront' : 'Design & content'}
+            </span>
+            {mobileEditorOpen ? (
+              <ChevronDown aria-hidden="true" size={18} />
+            ) : (
+              <ChevronUp aria-hidden="true" size={18} />
+            )}
+          </button>
+          <div className="storefrontDesignPanelBody">
+            <div className="storefrontDesignPanelHeading">
+              <p className="eyebrow">YOUR STOREFRONT</p>
+              <h2>Design your page</h2>
+              <p>
+                Choose a palette, then refine each part. Changes appear in the phone
+                before you save.
+              </p>
+            </div>
+            <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
+              <button
+                type="button"
+                aria-pressed={tab === 'design'}
+                onClick={() => setTab('design')}
+              >
+                Design
+              </button>
+              <button
+                type="button"
+                aria-pressed={tab === 'content'}
+                onClick={() => setTab('content')}
+              >
+                Content
+              </button>
+            </div>
+            <div hidden={tab !== 'content'}>
+              <StorefrontContentEditor
+                creatorId={creatorId}
+                targets={contentTargets}
+                selectedId={selectedBlock}
+                onSelect={setSelectedBlock}
+                onPreview={(next) => {
+                  setPreviewTitles(next.titles);
+                  setPreviewBrandOrder(next.brandOrder);
+                }}
+              />
+            </div>
+            <div hidden={tab !== 'design'}>
+              <div
+                className="storefrontPaletteList"
+                role="group"
+                aria-label="Color palettes"
+              >
+                {palettes.map(({ name, theme: palette }) => (
+                  <button
+                    aria-pressed={JSON.stringify(draft) === JSON.stringify(palette)}
+                    key={name}
+                    onClick={() => {
+                      setDraft(palette);
+                      setNotice('');
+                    }}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="storefrontPaletteSwatches">
+                      <i style={{ background: palette.profileBackground }} />
+                      <i style={{ background: palette.recommendationsBackground }} />
+                      <i style={{ background: palette.accentColor }} />
+                    </span>
+                    {name}
+                  </button>
+                ))}
+              </div>
+              <div className="storefrontDesignFields">
+                {groups.map((group) => (
+                  <section
+                    className={selected === group.id ? 'isSelected' : ''}
+                    key={group.id}
+                  >
+                    <button
+                      aria-expanded={selected === group.id}
+                      onClick={() => setSelected(group.id)}
+                      type="button"
+                    >
+                      {group.title}
+                      <span aria-hidden="true">{selected === group.id ? '−' : '+'}</span>
+                    </button>
+                    {selected === group.id ? (
+                      <div className="storefrontColorFields">
+                        {group.fields.map(({ key, label }) => (
+                          <label key={key}>
+                            <span>{label}</span>
+                            <span className="storefrontColorControl">
+                              <input
+                                aria-label={`${group.title}: ${label}`}
+                                onChange={(event) => {
+                                  setDraft((current) => ({
+                                    ...current,
+                                    [key]: event.target.value,
+                                  }));
+                                  setNotice('');
+                                }}
+                                type="color"
+                                value={draft[key]}
+                              />
+                              <output>{draft[key].toUpperCase()}</output>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : null}
+                  </section>
+                ))}
+              </div>
+              {[
+                draft.profileBackground,
+                draft.recommendationsBackground,
+                draft.productBackground,
+                draft.discountBackground,
+                draft.collectionBackground,
+              ].some((color) => contrastRatio(draft.textColor, color) < 4.5) ? (
+                <p className="storefrontContrastNotice">
+                  Some text and background colors need more contrast to stay readable.
+                </p>
+              ) : null}
+              {error ? (
+                <p className="formError" role="alert">
+                  {error}
+                </p>
+              ) : null}
+              {notice ? (
+                <p className="storefrontDesignNotice" role="status">
+                  {notice}
+                </p>
+              ) : null}
+              <div className="storefrontDesignActions">
                 <button
-                  aria-pressed={JSON.stringify(draft) === JSON.stringify(palette)}
-                  key={name}
+                  disabled={!changed || saving}
                   onClick={() => {
-                    setDraft(palette);
+                    setDraft(configuration?.theme ?? theme);
                     setNotice('');
                   }}
                   type="button"
                 >
-                  <span aria-hidden="true" className="storefrontPaletteSwatches">
-                    <i style={{ background: palette.profileBackground }} />
-                    <i style={{ background: palette.recommendationsBackground }} />
-                    <i style={{ background: palette.accentColor }} />
-                  </span>
-                  {name}
+                  Undo changes
                 </button>
-              ))}
-            </div>
-            <div className="storefrontDesignFields">
-              {groups.map((group) => (
-                <section
-                  className={selected === group.id ? 'isSelected' : ''}
-                  key={group.id}
+                <button
+                  disabled={saving}
+                  onClick={() => {
+                    setDraft(defaultStorefrontTheme);
+                    setNotice('');
+                  }}
+                  type="button"
                 >
-                  <button
-                    aria-expanded={selected === group.id}
-                    onClick={() => setSelected(group.id)}
-                    type="button"
-                  >
-                    {group.title}
-                    <span aria-hidden="true">{selected === group.id ? '−' : '+'}</span>
-                  </button>
-                  {selected === group.id ? (
-                    <div className="storefrontColorFields">
-                      {group.fields.map(({ key, label }) => (
-                        <label key={key}>
-                          <span>{label}</span>
-                          <span className="storefrontColorControl">
-                            <input
-                              aria-label={`${group.title}: ${label}`}
-                              onChange={(event) => {
-                                setDraft((current) => ({
-                                  ...current,
-                                  [key]: event.target.value,
-                                }));
-                                setNotice('');
-                              }}
-                              type="color"
-                              value={draft[key]}
-                            />
-                            <output>{draft[key].toUpperCase()}</output>
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
-              ))}
-            </div>
-            {[
-              draft.profileBackground,
-              draft.recommendationsBackground,
-              draft.productBackground,
-              draft.discountBackground,
-              draft.collectionBackground,
-            ].some((color) => contrastRatio(draft.textColor, color) < 4.5) ? (
-              <p className="storefrontContrastNotice">
-                Some text and background colors need more contrast to stay readable.
-              </p>
-            ) : null}
-            {error ? (
-              <p className="formError" role="alert">
-                {error}
-              </p>
-            ) : null}
-            {notice ? (
-              <p className="storefrontDesignNotice" role="status">
-                {notice}
-              </p>
-            ) : null}
-            <div className="storefrontDesignActions">
-              <button
-                disabled={!changed || saving}
-                onClick={() => {
-                  setDraft(configuration?.theme ?? theme);
-                  setNotice('');
-                }}
-                type="button"
-              >
-                Undo changes
-              </button>
-              <button
-                disabled={saving}
-                onClick={() => {
-                  setDraft(defaultStorefrontTheme);
-                  setNotice('');
-                }}
-                type="button"
-              >
-                Reset colors
-              </button>
-              <button
-                className="button primary"
-                disabled={!configuration || !changed || saving}
-                onClick={() => void save()}
-                type="button"
-              >
-                {saving ? 'Saving…' : 'Save design'}
-              </button>
+                  Reset colors
+                </button>
+                <button
+                  className="button primary"
+                  disabled={!configuration || !changed || saving}
+                  onClick={() => void save()}
+                  type="button"
+                >
+                  {saving ? 'Saving…' : 'Save design'}
+                </button>
+              </div>
             </div>
           </div>
         </aside>
