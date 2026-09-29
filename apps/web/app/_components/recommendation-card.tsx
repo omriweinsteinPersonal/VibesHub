@@ -20,6 +20,7 @@ interface RecommendationCardViewProps {
   creator?: RecommendationCreator;
   creatorId?: string;
   recommendation: RecommendationCard;
+  showBrand?: boolean;
   showPrice?: boolean;
 }
 
@@ -28,6 +29,7 @@ export function RecommendationCardView({
   creator,
   creatorId,
   recommendation,
+  showBrand = false,
   showPrice = true,
 }: RecommendationCardViewProps) {
   const [imageLayout, setImageLayout] = useState<'catalog' | 'editorial'>('catalog');
@@ -143,6 +145,11 @@ export function RecommendationCardView({
         ) : null}
       </div>
       <div className="storeProductDetails" dir={textDirection}>
+        {showBrand ? (
+          <p className="compactProductBrand" dir="auto">
+            {recommendation.brandName}
+          </p>
+        ) : null}
         <div className="compactProductHeading">
           <h3
             className={title ? 'bilingualProductTitle' : 'singleLanguageProductTitle'}

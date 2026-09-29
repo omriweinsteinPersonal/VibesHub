@@ -623,6 +623,7 @@ export function CreatorStorefrontView({
                       creatorId={storefront.id}
                       key={item.id}
                       recommendation={item}
+                      showBrand
                       showPrice={false}
                     />
                   ))}

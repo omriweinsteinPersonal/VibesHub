@@ -9082,6 +9082,17 @@ dt {
   padding-inline: 2px;
 }
 
+.referenceCompactLabelGrid .compactProductBrand {
+  color: color-mix(in srgb, var(--sf-text, #211b18) 68%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin: 0 0 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 520px) {
   .referenceCompactLabelGroups {
     gap: 20px;
