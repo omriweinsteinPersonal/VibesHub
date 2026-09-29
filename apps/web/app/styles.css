@@ -8332,11 +8332,16 @@ dt {
 
 .compactProductCard .storeProductImage {
   aspect-ratio: 1 / 1.08;
-  background: #f3f1ee;
+  background: transparent;
 }
 
-.compactProductCard .storeProductImage img {
-  object-fit: contain;
+.compactProductCard .storeProductImage .storeProductImageBackdrop {
+  display: none;
+}
+
+.compactProductCard .storeProductImage .storeProductPrimaryImage {
+  object-fit: cover;
+  padding: 0;
 }
 
 .compactProductCard .storeProductDetails {
