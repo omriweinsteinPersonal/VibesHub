@@ -33,6 +33,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -1728,7 +1729,9 @@ export function CreatorDashboard() {
             </section>
           ) : dashboardView === 'labels' ? (
             <StorefrontLabelsEditor
+              brands={brands}
               categories={categories}
+              collections={collections}
               key={storefrontLabels.map(({ id, title }) => `${id}:${title}`).join('|')}
               labels={storefrontLabels}
               onSave={(labels) =>
@@ -1886,13 +1889,17 @@ function ComposerHeader({
 }
 
 function StorefrontLabelsEditor({
+  brands,
   categories,
+  collections,
   labels,
   onSave,
   recommendations,
   saving,
 }: {
+  brands: CreatorBrand[];
   categories: CategoryCard[];
+  collections: CuratedSection[];
   labels: StorefrontLabel[];
   onSave: (labels: StorefrontLabel[]) => void;
   recommendations: CreatorRecommendation[];
@@ -1900,6 +1907,46 @@ function StorefrontLabelsEditor({
 }) {
   const [draft, setDraft] = useState(labels);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const brandGroups = useMemo(() => {
+    const normalized = (value: string) => value.trim().toLocaleLowerCase();
+    const groupedRecommendationIds = new Set<string>();
+    const groupedCollectionIds = new Set<string>();
+    const groups = brands
+      .map((brand) => {
+        const items = recommendations.filter(
+          (item) =>
+            item.brandId === brand.brandId ||
+            normalized(item.brandName) === normalized(brand.name),
+        );
+        const groupedCollections = collections.filter(
+          (collection) => collection.brandId === brand.brandId,
+        );
+        items.forEach(({ id }) => groupedRecommendationIds.add(id));
+        groupedCollections.forEach(({ id }) => groupedCollectionIds.add(id));
+        return {
+          id: brand.id,
+          items,
+          collections: groupedCollections,
+          title: brand.name,
+        };
+      })
+      .filter(({ items, collections }) => items.length || collections.length);
+    const otherItems = recommendations.filter(
+      ({ id }) => !groupedRecommendationIds.has(id),
+    );
+    const otherCollections = collections.filter(
+      ({ id }) => !groupedCollectionIds.has(id),
+    );
+    if (otherItems.length || otherCollections.length) {
+      groups.push({
+        id: 'other',
+        items: otherItems,
+        collections: otherCollections,
+        title: 'Other recommendations',
+      });
+    }
+    return groups;
+  }, [brands, collections, recommendations]);
   const update = (id: string, patch: Partial<StorefrontLabel>) =>
     setDraft((current) =>
       current.map((label) => (label.id === id ? { ...label, ...patch } : label)),
@@ -1927,7 +1974,13 @@ function StorefrontLabelsEditor({
             const id = randomUuid();
             setDraft((current) => [
               ...current,
-              { id, title: 'New label', categorySlug: null, recommendationIds: [] },
+              {
+                id,
+                title: 'New label',
+                categorySlug: null,
+                collectionIds: [],
+                recommendationIds: [],
+              },
             ]);
             setExpandedId(id);
           }}
@@ -1956,7 +2009,7 @@ function StorefrontLabelsEditor({
                     {label.categorySlug
                       ? (categories.find(({ slug }) => slug === label.categorySlug)
                           ?.name ?? label.categorySlug)
-                      : `${label.recommendationIds.length} selected items`}
+                      : `${label.recommendationIds.length} items · ${label.collectionIds.length} collections`}
                   </small>
                 </span>
               </button>
@@ -2007,7 +2060,11 @@ function StorefrontLabelsEditor({
                         label.id,
                         event.target.value === 'custom'
                           ? { categorySlug: null }
-                          : { categorySlug: event.target.value, recommendationIds: [] },
+                          : {
+                              categorySlug: event.target.value,
+                              collectionIds: [],
+                              recommendationIds: [],
+                            },
                       )
                     }
                   >
@@ -2023,35 +2080,78 @@ function StorefrontLabelsEditor({
               {!label.categorySlug ? (
                 <fieldset className="creatorLabelItems">
                   <legend>
-                    Choose items ? {label.recommendationIds.length} selected
+                    Choose by brand · {label.recommendationIds.length} items ·{' '}
+                    {label.collectionIds.length} collections
                   </legend>
                   {!recommendations.length ? (
                     <p className="creatorLabelEmpty">
                       Add recommendations first to select items for this label.
                     </p>
                   ) : null}
-                  {recommendations.map((item) => (
-                    <label key={item.id}>
-                      <input
-                        checked={label.recommendationIds.includes(item.id)}
-                        onChange={(event) =>
-                          update(label.id, {
-                            recommendationIds: event.target.checked
-                              ? [...label.recommendationIds, item.id]
-                              : label.recommendationIds.filter((id) => id !== item.id),
-                          })
-                        }
-                        type="checkbox"
-                      />
-                      <Image
-                        alt=""
-                        height={40}
-                        width={40}
-                        src={item.imageUrl}
-                        unoptimized
-                      />
-                      <span dir="auto">{item.productName}</span>
-                    </label>
+                  {brandGroups.map((brand) => (
+                    <details className="creatorLabelBrandGroup" key={brand.id}>
+                      <summary>
+                        <span>{brand.title}</span>
+                        <small>
+                          {brand.collections.length} collections · {brand.items.length}{' '}
+                          items
+                        </small>
+                      </summary>
+                      <div className="creatorLabelBrandChoices">
+                        {brand.collections.map((collection) => (
+                          <label
+                            className="creatorLabelCollectionChoice"
+                            key={collection.id}
+                          >
+                            <input
+                              checked={label.collectionIds.includes(collection.id)}
+                              onChange={(event) =>
+                                update(label.id, {
+                                  collectionIds: event.target.checked
+                                    ? [...label.collectionIds, collection.id]
+                                    : label.collectionIds.filter(
+                                        (id) => id !== collection.id,
+                                      ),
+                                })
+                              }
+                              type="checkbox"
+                            />
+                            <LayoutGrid aria-hidden="true" size={18} />
+                            <span dir="auto">
+                              <strong>{collection.title}</strong>
+                              <small>
+                                Collection · {collection.recommendationIds.length} items
+                              </small>
+                            </span>
+                          </label>
+                        ))}
+                        {brand.items.map((item) => (
+                          <label key={item.id}>
+                            <input
+                              checked={label.recommendationIds.includes(item.id)}
+                              onChange={(event) =>
+                                update(label.id, {
+                                  recommendationIds: event.target.checked
+                                    ? [...label.recommendationIds, item.id]
+                                    : label.recommendationIds.filter(
+                                        (id) => id !== item.id,
+                                      ),
+                                })
+                              }
+                              type="checkbox"
+                            />
+                            <Image
+                              alt=""
+                              height={40}
+                              width={40}
+                              src={item.imageUrl}
+                              unoptimized
+                            />
+                            <span dir="auto">{item.productName}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </details>
                   ))}
                 </fieldset>
               ) : null}

@@ -654,6 +654,7 @@ export const creatorStorefrontSchema = z
             title: z.string().trim().min(1).max(40),
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
+            collectionIds: z.array(idSchema).max(24).default([]),
           })
           .strict(),
       )
@@ -1021,6 +1022,7 @@ export const creatorStorefrontConfigurationSchema = z
             title: z.string().trim().min(1).max(40),
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
+            collectionIds: z.array(idSchema).max(24).default([]),
           })
           .strict(),
       )
@@ -1078,6 +1080,7 @@ export const creatorStorefrontConfigurationInputSchema = z
             title: z.string().trim().min(1).max(40),
             categorySlug: z.string().trim().max(80).nullable(),
             recommendationIds: z.array(idSchema).max(100),
+            collectionIds: z.array(idSchema).max(24).default([]),
           })
           .strict(),
       )

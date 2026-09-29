@@ -298,6 +298,16 @@ export class CreatorStudioRepository {
         ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
         ...new Set(input.labels.flatMap((label) => label.recommendationIds)),
       ];
+      const collectionIds = new Set(input.labels.flatMap((label) => label.collectionIds));
+      if (
+        [...collectionIds].some(
+          (id) =>
+            !input.curatedSections.some(
+              (section) => section.id === id && section.kind === 'collection',
+            ),
+        )
+      )
+        return { kind: 'invalid_recommendations' };
       if (recommendationIds.length) {
         const [owned] = await sql<{ count: number }[]>`
           select count(*)::integer as count

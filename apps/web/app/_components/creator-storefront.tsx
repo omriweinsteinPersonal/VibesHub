@@ -182,12 +182,23 @@ export function CreatorStorefrontView({
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
     const label = labels.find(({ id }) => id === activeLabelId);
+    const collectionRecommendationIds = new Set(
+      label?.collectionIds
+        .flatMap(
+          (collectionId) =>
+            storefront.curatedSections.find(
+              ({ id, kind }) => id === collectionId && kind === 'collection',
+            )?.recommendationIds ?? [],
+        )
+        .filter(Boolean) ?? [],
+    );
     return recommendations.filter((item) => {
       const matchesLabel =
         !label ||
         (label.categorySlug
           ? item.category.slug === label.categorySlug
-          : label.recommendationIds.includes(item.id));
+          : label.recommendationIds.includes(item.id) ||
+            collectionRecommendationIds.has(item.id));
       const matchesSearch =
         !term ||
         [item.productName, item.brandName, item.review.value, item.category.name].some(
@@ -195,7 +206,7 @@ export function CreatorStorefrontView({
         );
       return matchesLabel && matchesSearch;
     });
-  }, [activeLabelId, labels, query, recommendations]);
+  }, [activeLabelId, labels, query, recommendations, storefront.curatedSections]);
   const rows = useMemo(() => {
     const brandNames = new Set(
       storefront.brands.map(({ name }) => name.toLocaleLowerCase()),
