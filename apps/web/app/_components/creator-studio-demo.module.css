@@ -434,9 +434,9 @@
   }
   .canvas {
     padding: 14px 10px 18px;
-    grid-template-rows: minmax(94px, auto) minmax(430px, auto);
+    grid-template-rows: minmax(86px, auto) minmax(370px, auto);
     gap: 12px;
-    min-height: 568px;
+    min-height: 500px;
     align-items: start;
   }
   .sceneCaption {
@@ -453,7 +453,42 @@
     max-height: 430px;
   }
   .editor {
-    padding: 18px;
+    padding: 14px;
+    align-self: start;
+    margin-block: 0;
+  }
+  .editor h4 {
+    font-size: 24px;
+    margin: 6px 0 12px;
+  }
+  .field {
+    margin-bottom: 10px;
+  }
+  .field div {
+    padding: 7px 9px;
+  }
+  .field span {
+    margin-bottom: 4px;
+  }
+  .pick {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .pick img {
+    width: 76px;
+    height: 108px;
+  }
+  .selection {
+    padding-block: 5px;
+    gap: 10px;
+  }
+  .selection img {
+    width: 36px;
+    height: 40px;
+  }
+  .primary {
+    margin-top: 12px;
+    min-height: 44px;
   }
   .profile {
     padding: 18px 14px 0;
