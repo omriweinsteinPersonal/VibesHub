@@ -55,7 +55,8 @@ svg.lucide {
       calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     position: fixed;
     right: 0;
-    z-index: 1000;
+    /* The creator's primary navigation must remain above the editor sheet. */
+    z-index: 1200;
   }
 
   .creatorBottomBar a {

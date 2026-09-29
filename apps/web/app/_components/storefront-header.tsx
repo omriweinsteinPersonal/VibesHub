@@ -1,7 +1,6 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { Brand } from './brand';
 import { CreatorShellHeader } from './creator-shell-header';
 
 const subscribe = () => () => {};
@@ -16,13 +15,7 @@ export function StorefrontHeader({
 }) {
   const embedded = useSyncExternalStore(subscribe, isEmbedded, () => false);
   if (embedded || !creatorSession) {
-    return (
-      <header className="creatorShellHeader storefrontVisitorHeader">
-        <div className="creatorShellHeaderInner">
-          <Brand />
-        </div>
-      </header>
-    );
+    return null;
   }
   return (
     <div className={workspace ? 'storefrontWorkspaceHeader' : 'storefrontDetailHeader'}>
