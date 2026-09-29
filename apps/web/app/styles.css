@@ -8447,6 +8447,65 @@ dt {
   display: grid;
   grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
 }
+@media (max-width: 900px) {
+  .storefrontDesignWorkspace.hasEditor {
+    display: block;
+  }
+
+  .storefrontDesignPanel {
+    border-bottom: 1px solid #e7ded5;
+    border-right: 0;
+    height: auto;
+    overflow: visible;
+    padding: 20px 16px 24px;
+    position: static;
+  }
+
+  .storefrontDesignPanelHeading h2 {
+    font-size: 1.7rem;
+  }
+
+  .storefrontPhoneStage {
+    background: #f5f0ea;
+    padding: 12px;
+  }
+
+  .storefrontPhoneDevice {
+    background: #272727;
+    border: 6px solid #272727;
+    border-radius: 30px;
+    box-shadow: 0 12px 30px rgb(48 38 31 / 16%);
+    height: min(76dvh, 720px);
+    margin: 0 auto;
+    min-height: 460px;
+    overflow: hidden;
+    position: relative;
+    width: min(100%, 430px);
+  }
+
+  .storefrontPhoneIsland {
+    background: #171717;
+    border-radius: 999px;
+    display: block;
+    height: 20px;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 6px;
+    transform: translateX(-50%);
+    width: 92px;
+    z-index: 1;
+  }
+
+  .storefrontPhoneScreen {
+    background: #fff;
+    border: 0;
+    border-radius: 24px;
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}
 .storefrontDesignPanel {
   background: #fffdfb;
   border-right: 1px solid #e7ded5;
@@ -10618,7 +10677,9 @@ dt {
     grid-auto-columns: minmax(0, calc((100% - 10px) / 2));
   }
 
-  .creatorStorefrontCanvas .referenceBrandShelf[data-item-count='2'] .compactProductCard {
+  .creatorStorefrontCanvas
+    .referenceBrandShelf[data-item-count='2']
+    :is(.compactProductCard, .referenceBrandCollectionCard) {
     max-width: none;
     width: 100%;
   }
@@ -11114,20 +11175,30 @@ dt {
 /* One story launcher per product, above the card's detail link. */
 .compactProductCard .storeProductImage .storyPreviewCircle,
 .productDetailMedia .storyPreviewCircle {
-  background: transparent;
+  background: conic-gradient(
+    from 210deg,
+    var(--sf-accent, #b77856),
+    #e8b992,
+    var(--sf-accent, #b77856)
+  );
   border: 0;
-  bottom: 8px;
-  box-shadow: none;
-  height: 40px;
-  left: 8px;
-  padding: 0;
+  border-radius: 50%;
+  bottom: 10px;
+  box-shadow: 0 3px 10px rgb(38 25 16 / 25%);
+  height: 44px;
+  left: 10px;
+  overflow: visible;
+  padding: 2px;
   top: auto;
-  width: 40px;
+  width: 44px;
   z-index: 3;
 }
 .compactProductCard .storyPreviewCircle .storyPreviewThumb,
 .productDetailMedia .storyPreviewCircle .storyPreviewThumb {
+  border: 2px solid #fff;
+  border-radius: 50%;
   height: 100%;
+  overflow: hidden;
   width: 100%;
 }
 .storyViewerBackdrop {

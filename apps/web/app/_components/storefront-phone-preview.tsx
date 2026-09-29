@@ -107,7 +107,10 @@ export function StorefrontPhonePreview({
   theme: StorefrontTheme;
   title: string;
 }) {
-  const showPhone = useSyncExternalStore(subscribe, desktopSnapshot, () => false);
+  const desktopPreview = useSyncExternalStore(subscribe, desktopSnapshot, () => false);
+  // Creators need the same editor on a phone. The preview becomes a full-width
+  // device there, while public storefront visitors still see the regular page.
+  const showPhone = desktopPreview || editable;
   const [tab, setTab] = useState<'design' | 'content'>('design');
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [previewBrandOrder, setPreviewBrandOrder] = useState<string[] | null>(null);
