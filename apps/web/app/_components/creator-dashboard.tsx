@@ -1978,6 +1978,7 @@ function StorefrontLabelsEditor({
                 id,
                 title: 'New label',
                 categorySlug: null,
+                brandIds: [],
                 collectionIds: [],
                 layout: 'grid',
                 recommendationIds: [],
@@ -2063,6 +2064,7 @@ function StorefrontLabelsEditor({
                           ? { categorySlug: null }
                           : {
                               categorySlug: event.target.value,
+                              brandIds: [],
                               collectionIds: [],
                               recommendationIds: [],
                             },
@@ -2077,28 +2079,13 @@ function StorefrontLabelsEditor({
                     ))}
                   </select>
                 </label>
-                {!label.categorySlug ? (
-                  <label>
-                    Display
-                    <select
-                      value={label.layout ?? 'grid'}
-                      onChange={(event) =>
-                        update(label.id, {
-                          layout: event.target.value as StorefrontLabel['layout'],
-                        })
-                      }
-                    >
-                      <option value="grid">Compact grid</option>
-                      <option value="cards">Brand cards</option>
-                    </select>
-                  </label>
-                ) : null}
               </div>
               {!label.categorySlug ? (
                 <fieldset className="creatorLabelItems">
                   <legend>
                     Choose by brand · {label.recommendationIds.length} items ·{' '}
-                    {(label.collectionIds ?? []).length} collections
+                    {(label.collectionIds ?? []).length} collections ·{' '}
+                    {(label.brandIds ?? []).length} brand cards
                   </legend>
                   {!recommendations.length ? (
                     <p className="creatorLabelEmpty">
@@ -2115,6 +2102,29 @@ function StorefrontLabelsEditor({
                         </small>
                       </summary>
                       <div className="creatorLabelBrandChoices">
+                        <label className="creatorLabelCollectionChoice">
+                          <input
+                            checked={(label.brandIds ?? []).includes(brand.id)}
+                            onChange={(event) =>
+                              update(label.id, {
+                                layout: 'grid',
+                                brandIds: event.target.checked
+                                  ? [...(label.brandIds ?? []), brand.id]
+                                  : (label.brandIds ?? []).filter(
+                                      (id) => id !== brand.id,
+                                    ),
+                              })
+                            }
+                            type="checkbox"
+                          />
+                          <LayoutGrid aria-hidden="true" size={18} />
+                          <span>
+                            <strong>Show {brand.title} as a card</strong>
+                            <small>
+                              Includes this brand&apos;s products and collections
+                            </small>
+                          </span>
+                        </label>
                         {brand.collections.map((collection) => (
                           <label
                             className="creatorLabelCollectionChoice"

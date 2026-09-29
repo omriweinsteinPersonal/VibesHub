@@ -311,6 +311,18 @@ export class CreatorStudioRepository {
         )
       )
         return { kind: 'invalid_recommendations' };
+      const brandIds = new Set(input.labels.flatMap((label) => label.brandIds));
+      if (brandIds.size) {
+        const [ownedBrands] = await sql<{ count: number }[]>`
+          select count(*)::integer as count
+          from app.creator_brands
+          where creator_id = ${identity.id}
+            and id = any(${[...brandIds]}::uuid[])
+            and lifecycle = 'active'
+        `;
+        if (ownedBrands?.count !== brandIds.size)
+          return { kind: 'invalid_recommendations' };
+      }
       if (recommendationIds.length) {
         const [owned] = await sql<{ count: number }[]>`
           select count(*)::integer as count

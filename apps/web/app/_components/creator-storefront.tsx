@@ -193,13 +193,19 @@ export function CreatorStorefrontView({
         )
         .filter(Boolean) ?? [],
     );
+    const cardBrandNames = new Set(
+      storefront.brands
+        .filter((brand) => (label?.brandIds ?? []).includes(brand.id))
+        .map((brand) => brand.name.toLocaleLowerCase('he-IL')),
+    );
     return recommendations.filter((item) => {
       const matchesLabel =
         !label ||
         (label.categorySlug
           ? item.category.slug === label.categorySlug
           : label.recommendationIds.includes(item.id) ||
-            collectionRecommendationIds.has(item.id));
+            collectionRecommendationIds.has(item.id) ||
+            cardBrandNames.has(item.brandName.toLocaleLowerCase('he-IL')));
       const matchesSearch =
         !term ||
         [item.productName, item.brandName, item.review.value, item.category.name].some(
@@ -207,7 +213,14 @@ export function CreatorStorefrontView({
         );
       return matchesLabel && matchesSearch;
     });
-  }, [activeLabelId, labels, query, recommendations, storefront.curatedSections]);
+  }, [
+    activeLabelId,
+    labels,
+    query,
+    recommendations,
+    storefront.brands,
+    storefront.curatedSections,
+  ]);
   const rows = useMemo(() => {
     const brandNames = new Set(
       storefront.brands.map(({ name }) => name.toLocaleLowerCase()),
@@ -218,7 +231,14 @@ export function CreatorStorefrontView({
     );
   }, [filtered, orderedStorefront, storefront.brands]);
   const activeLabel = labels.find(({ id }) => id === activeLabelId) ?? null;
-  const compactLabelGroups = useMemo(() => {
+  const selectedCardBrands = useMemo(
+    () =>
+      storefront.brands.filter((brand) =>
+        (activeLabel?.brandIds ?? []).includes(brand.id),
+      ),
+    [activeLabel?.brandIds, storefront.brands],
+  );
+  const compactLabelItems = useMemo(() => {
     if (
       !activeLabel ||
       activeLabel.categorySlug ||
@@ -226,17 +246,16 @@ export function CreatorStorefrontView({
     ) {
       return [];
     }
-    const groups = new Map<string, { items: RecommendationCard[]; title: string }>();
-    filtered.forEach((item) => {
-      const title = item.brandName.trim() || 'More picks';
-      const key = title.toLocaleLowerCase('he-IL');
-      const group = groups.get(key);
-      if (group) group.items.push(item);
-      else groups.set(key, { items: [item], title });
-    });
-    return [...groups.values()];
-  }, [activeLabel, filtered]);
-  const showingCompactLabelGrid = compactLabelGroups.length > 0;
+    const cardBrandNames = new Set(
+      selectedCardBrands.map((brand) => brand.name.toLocaleLowerCase('he-IL')),
+    );
+    return filtered.filter(
+      (item) => !cardBrandNames.has(item.brandName.toLocaleLowerCase('he-IL')),
+    );
+  }, [activeLabel, filtered, selectedCardBrands]);
+  const showingCompactLabelGrid = Boolean(
+    activeLabel && !activeLabel.categorySlug && (activeLabel.layout ?? 'grid') === 'grid',
+  );
   const blocks = useMemo(() => {
     const remainingRows = [...rows];
     const remainingCodes = codes.filter(({ brandId }) => !brandId);
@@ -575,21 +594,40 @@ export function CreatorStorefrontView({
           </header>
           {showingCompactLabelGrid ? (
             <div className="referenceCompactLabelGroups">
-              {compactLabelGroups.map((group) => (
-                <section className="referenceCompactLabelGroup" key={group.title}>
-                  <h3 dir="auto">{group.title}</h3>
-                  <div className="referenceCompactLabelGrid">
-                    {group.items.map((item) => (
-                      <RecommendationCardView
-                        creatorId={storefront.id}
-                        key={item.id}
-                        recommendation={item}
-                        showPrice={false}
-                      />
-                    ))}
-                  </div>
-                </section>
+              {selectedCardBrands.map((brand) => (
+                <BrandBlock
+                  brand={brand}
+                  collections={storefront.curatedSections.filter(
+                    (section) =>
+                      section.kind === 'collection' && section.brandId === brand.brandId,
+                  )}
+                  creatorId={storefront.id}
+                  handle={storefront.handle}
+                  items={filtered.filter(
+                    (item) =>
+                      item.brandName.toLocaleLowerCase('he-IL') ===
+                      brand.name.toLocaleLowerCase('he-IL'),
+                  )}
+                  key={brand.id}
+                  offer={
+                    codes.find(
+                      (code) => code.brandId === brand.id && code.scopeKind === 'brand',
+                    ) ?? null
+                  }
+                />
               ))}
+              {compactLabelItems.length ? (
+                <div className="referenceCompactLabelGrid">
+                  {compactLabelItems.map((item) => (
+                    <RecommendationCardView
+                      creatorId={storefront.id}
+                      key={item.id}
+                      recommendation={item}
+                      showPrice={false}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : null}
           {!showingCompactLabelGrid
