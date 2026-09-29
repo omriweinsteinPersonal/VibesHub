@@ -18,34 +18,99 @@ const categories = [
   },
   { title: 'Shape every label', detail: 'Organize picks your way.', icon: Tags },
 ];
-const steps = ['Add a pick', 'Build a collection', 'See it in your store'];
+const scenes = [
+  { category: 0, title: 'Add a pick', detail: 'A link, a photo, a favorite find.' },
+  {
+    category: 0,
+    title: 'Build a collection',
+    detail: 'Bring your recommendations together.',
+  },
+  {
+    category: 0,
+    title: 'See it in your store',
+    detail: 'Your collection comes to life.',
+  },
+  {
+    category: 1,
+    title: 'Customize your header',
+    detail: 'Set the mood with your colors.',
+  },
+  {
+    category: 1,
+    title: 'Make your feed yours',
+    detail: 'Style your products and background, too.',
+  },
+  { category: 1, title: 'Move things around', detail: 'Your collections. Your order.' },
+  { category: 2, title: 'Shape every label', detail: 'Explore My closet.' },
+  {
+    category: 2,
+    title: 'A home for every interest',
+    detail: 'A little bit of everything in Random.',
+  },
+  {
+    category: 2,
+    title: 'More of what you love',
+    detail: 'Beauty, Home & living, and beyond.',
+  },
+] as const;
+const labels = ['All', 'My closet', 'Random', 'Beauty', 'Home & living'];
 const products = [
   { name: 'Everyday shoulder bag', image: '/images/creator-demo-shoulder-bag.png' },
   { name: 'My favorite sneakers', image: '/images/creator-demo-sneakers.png' },
   { name: 'Sculptural gold hoops', image: '/images/creator-demo-earrings.png' },
+  { name: 'Morning coffee', image: '/images/creator-demo-coffee-cup.png' },
+  { name: 'Daily glow', image: '/images/hero-editorial-skincare.png' },
+  { name: 'My makeup essentials', image: '/images/hero-editorial-makeup.png' },
+  { name: 'Slow Sundays', image: '/images/hero-editorial-reading.png' },
+  { name: 'Market day finds', image: '/images/hero-editorial-market.png' },
 ] as const;
 
 export function CreatorStudioDemo() {
-  const [category, setCategory] = useState(0);
-  const [step, setStep] = useState(0);
-  const [playing, setPlaying] = useState(true);
-  const [tone, setTone] = useState(0);
-  const [label, setLabel] = useState('All');
-
+  const [frame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [toneOverride, setTone] = useState<number | null>(null);
+  const [labelOverride, setLabel] = useState<string | null>(null);
+  const scene = scenes[frame] ?? scenes[0];
+  const category = scene.category;
+  const step = frame;
+  const tone = toneOverride ?? (frame >= 4 ? 2 : frame === 3 ? 1 : 0);
+  const label =
+    labelOverride ??
+    (frame === 6 ? 'My closet' : frame === 7 ? 'Random' : frame === 8 ? 'Beauty' : 'All');
+  const indices =
+    label === 'My closet'
+      ? [0, 1, 2, 7]
+      : label === 'Random'
+        ? [3, 2, 6, 7]
+        : label === 'Beauty'
+          ? [4, 5, 2, 3]
+          : label === 'Home & living'
+            ? [3, 6, 7, 4]
+            : [0, 1, 2, 3, 4, 5];
+  const visibleProducts = indices.flatMap((index) =>
+    products[index] ? [products[index]] : [],
+  );
+  if (frame === 5) visibleProducts.reverse();
+  const goTo = (next: number) => {
+    setFrame(next);
+    setTone(null);
+    setLabel(null);
+  };
   useEffect(() => {
-    if (
-      !playing ||
-      category !== 0 ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    )
-      return;
-    const timer = window.setInterval(() => setStep((current) => (current + 1) % 3), 5500);
+    setPlaying(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      setFrame((current) => (current + 1) % scenes.length);
+      setTone(null);
+      setLabel(null);
+    }, 4200);
     return () => window.clearInterval(timer);
-  }, [playing, category]);
-
+  }, [playing]);
   const advance = () => {
     setPlaying(false);
-    setStep((step + 1) % 3);
+    goTo((frame + 1) % scenes.length);
   };
   return (
     <div className={styles.demo}>
@@ -56,8 +121,7 @@ export function CreatorStudioDemo() {
             key={title}
             aria-pressed={category === index}
             onClick={() => {
-              setCategory(index);
-              setStep(0);
+              goTo([0, 3, 6][index] ?? 0);
             }}
           >
             <Icon size={22} aria-hidden="true" />
@@ -67,64 +131,12 @@ export function CreatorStudioDemo() {
         ))}
       </div>
       <div className={styles.stage}>
-        <aside className={styles.guide}>
-          <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO · INTERACTIVE DEMO</span>
-          <h3>{categories[category]?.title}</h3>
-          <p>
-            {category === 0
-              ? 'From a favorite find to a collection your audience can explore.'
-              : category === 1
-                ? 'Choose a palette and see Maya’s page take on a new mood.'
-                : 'Give every interest a home. Switch labels to explore Maya’s picks.'}
-          </p>
-          {category === 0 ? (
-            <>
-              <div className={styles.steps}>
-                {steps.map((name, index) => (
-                  <button
-                    type="button"
-                    key={name}
-                    aria-pressed={step === index}
-                    onClick={() => {
-                      setStep(index);
-                      setPlaying(false);
-                    }}
-                  >
-                    <span>{index + 1}</span>
-                    {name}
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-              <button
-                className={styles.play}
-                type="button"
-                onClick={() => setPlaying(!playing)}
-              >
-                {playing ? <Pause size={14} /> : <Play size={14} />}
-                {playing ? 'Pause demo' : 'Play demo'}
-              </button>
-            </>
-          ) : category === 1 ? (
-            <div className={styles.swatches}>
-              {['#f6efe3', '#e0e6d5', '#eedee1'].map((color, index) => (
-                <button
-                  type="button"
-                  key={color}
-                  style={{ background: color }}
-                  aria-label={['Warm sand', 'Soft sage', 'Rose'][index]}
-                  aria-pressed={tone === index}
-                  onClick={() => setTone(index)}
-                >
-                  {tone === index ? <Check size={18} /> : null}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className={styles.hint}>Try the labels above the products →</p>
-          )}
-        </aside>
         <div className={styles.canvas}>
+          <div className={styles.sceneCaption} key={frame}>
+            <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO</span>
+            <h3>{scene.title}</h3>
+            <p>{scene.detail}</p>
+          </div>
           {category === 0 && step < 2 ? (
             <div className={styles.editor} key={step}>
               <span className={styles.eyebrow}>CREATOR DASHBOARD</span>
@@ -168,7 +180,7 @@ export function CreatorStudioDemo() {
                   <span className={styles.selectionLabel}>
                     Choose your recommendations
                   </span>
-                  {products.map((product) => (
+                  {products.slice(0, 3).map((product) => (
                     <div className={styles.selection} key={product.name}>
                       <Image src={product.image} alt="" width={44} height={48} />
                       <span>{product.name}</span>
@@ -212,14 +224,23 @@ export function CreatorStudioDemo() {
                   />
                 ))}
               </div>
-              <div className={styles.feed}>
+              <div
+                className={styles.feed}
+                style={{
+                  background:
+                    frame >= 4 ? ['#fffdf9', '#f1f3ea', '#f4e9df'][tone] : '#fffdf9',
+                }}
+              >
                 <div className={styles.labels}>
-                  {['All', 'My closet', 'Random'].map((name) => (
+                  {labels.map((name) => (
                     <button
                       type="button"
                       key={name}
                       aria-pressed={label === name}
-                      onClick={() => setLabel(name)}
+                      onClick={() => {
+                        setPlaying(false);
+                        setLabel(name);
+                      }}
                     >
                       {name}
                     </button>
@@ -235,12 +256,7 @@ export function CreatorStudioDemo() {
                     : 'Picked and shared by Maya.'}
                 </p>
                 <div className={styles.products}>
-                  {(label === 'Random'
-                    ? products.slice(2)
-                    : label === 'My closet'
-                      ? products.slice(0, 2)
-                      : products
-                  ).map((product) => (
+                  {visibleProducts.map((product) => (
                     <article key={product.name}>
                       <Image
                         src={product.image}
@@ -252,15 +268,36 @@ export function CreatorStudioDemo() {
                     </article>
                   ))}
                 </div>
-                {category === 0 ? (
-                  <button className={styles.replay} type="button" onClick={advance}>
-                    Replay the steps ↻
-                  </button>
-                ) : null}
               </div>
             </div>
           )}
         </div>
+      </div>
+      <div className={styles.transport}>
+        <button
+          type="button"
+          onClick={() => setPlaying(!playing)}
+          aria-label={playing ? 'Pause demo' : 'Play demo'}
+        >
+          {playing ? <Pause size={16} /> : <Play size={16} />}
+        </button>
+        <div className={styles.progress}>
+          {scenes.map((item, index) => (
+            <button
+              key={item.title}
+              type="button"
+              aria-label={item.title}
+              aria-current={frame === index ? 'step' : undefined}
+              onClick={() => {
+                setPlaying(false);
+                goTo(index);
+              }}
+            />
+          ))}
+        </div>
+        <button type="button" onClick={advance} aria-label="Next scene">
+          <ArrowRight size={17} />
+        </button>
       </div>
     </div>
   );

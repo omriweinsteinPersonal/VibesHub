@@ -34,7 +34,7 @@
 }
 .stage {
   display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
+  grid-template-columns: minmax(0, 1fr);
   border: 1px solid #e3d8c8;
   border-radius: 24px;
   overflow: hidden;
@@ -105,11 +105,13 @@
   margin-top: 18px;
 }
 .canvas {
-  padding: 28px;
+  position: relative;
+  padding: 112px 28px 24px;
   background: #eee9e0;
   display: grid;
   align-items: center;
-  min-height: 580px;
+  height: 650px;
+  overflow: hidden;
   min-width: 0;
 }
 .editor,
@@ -122,6 +124,100 @@
   overflow: hidden;
   background: #fffdf9;
   box-shadow: 0 14px 36px #3a2c1710;
+}
+.store {
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  transition: background 700ms ease;
+}
+.sceneCaption {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin-inline: auto;
+  padding: 9px 18px;
+  border: 1px solid #e3d8c8;
+  border-radius: 14px;
+  background: #fffdf9;
+  box-shadow: 0 6px 20px #3a2c1710;
+  animation: captionIn 400ms ease both;
+}
+.sceneCaption h3 {
+  font:
+    400 32px/1.15 var(--font-vh-display),
+    Georgia,
+    serif;
+  margin: 4px 0;
+}
+.sceneCaption p {
+  margin: 0;
+  font-size: 12px;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px;
+}
+.transport > button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.progress {
+  display: flex;
+  gap: 5px;
+}
+.progress button {
+  border: 0;
+  background: transparent;
+  width: 17px;
+  height: 44px;
+  padding: 0;
+  cursor: pointer;
+}
+.progress button::after {
+  content: '';
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: #d9ccbc;
+}
+.progress button[aria-current='step']::after {
+  background: #a96342;
+}
+@keyframes captionIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sceneCaption {
+    animation: none;
+  }
+  .store,
+  .feed {
+    transition: none;
+  }
 }
 .editor {
   padding: 26px;
@@ -228,10 +324,12 @@
 .feed {
   background: #fffdf9;
   padding: 18px;
+  transition: background 700ms ease;
 }
 .labels {
   display: flex;
   gap: 7px;
+  flex-wrap: wrap;
   margin-bottom: 22px;
 }
 .labels button {
@@ -336,8 +434,26 @@
     margin-top: 5px;
   }
   .canvas {
-    padding: 14px;
-    min-height: 475px;
+    padding: 96px 10px 12px;
+    height: 490px;
+    min-height: 0;
+    align-items: start;
+  }
+  .sceneCaption {
+    top: 14px;
+    left: 8px;
+    right: 8px;
+    padding: 7px 10px;
+    max-width: calc(100% - 16px);
+  }
+  .sceneCaption h3 {
+    font-size: 26px;
+  }
+  .sceneCaption p {
+    font-size: 11px;
+  }
+  .store {
+    max-height: 375px;
   }
   .editor {
     padding: 18px;
@@ -353,8 +469,5 @@
   }
   .products {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .products article:nth-child(3) {
-    display: none;
   }
 }
