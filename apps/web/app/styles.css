@@ -11208,6 +11208,11 @@ dt {
 }
 
 @media (max-width: 900px) {
+  /* The creator storefront is their own surface; retain only the bottom workspace navigation. */
+  .storefrontWorkspaceHeader .creatorShellHeader {
+    display: none;
+  }
+
   .storefrontDesignPanel {
     background: #fffdfb;
     border: 1px solid #e7ded5;
@@ -11277,8 +11282,8 @@ dt {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    /* The preview lives between the workspace header and its two fixed controls. */
-    height: calc(100dvh - 69px - 128px - env(safe-area-inset-bottom));
+    /* The preview lives above the editor handle and the persistent workspace navigation. */
+    height: calc(100dvh - 128px - env(safe-area-inset-bottom));
     margin: 0;
     min-height: 0;
     width: 100%;
@@ -11290,12 +11295,6 @@ dt {
 
   .storefrontPhoneScreen {
     border-radius: 0;
-  }
-
-  @media (max-width: 620px) {
-    .storefrontPhoneDevice {
-      height: calc(100dvh - 65px - 128px - env(safe-area-inset-bottom));
-    }
   }
 
   .compactProductCard .storeProductImage .storyPreviewCircle,
