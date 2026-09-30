@@ -84,6 +84,12 @@ async function StorefrontPage({
       <main>
         <StorefrontPhonePreview
           contentTargets={[
+            { id: 'bio', title: 'Bio', kind: 'bio' },
+            ...storefront.socialLinks.map(({ platform }) => ({
+              id: `social:${platform}`,
+              title: `${platform} link`,
+              kind: 'social',
+            })),
             ...storefront.brands.map(({ id, name }) => ({
               id,
               title: name,

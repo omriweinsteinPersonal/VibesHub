@@ -1,15 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import {
   creatorStorefrontConfigurationInputSchema,
   type CreatorStorefrontConfiguration,
+  type CreatorProfileSettings,
+  type CreatorProfileSocialLink,
   type StorefrontTitle,
 } from '@vibeshub/contracts';
 import { randomUuid } from '../../lib/random-id';
 import { apiRequest } from '../../lib/api';
 
-type Draft = { titles: StorefrontTitle[]; brandOrder: string[] };
+type Draft = {
+  titles: StorefrontTitle[];
+  brandOrder: string[];
+  bio?: string;
+  socialLinks?: CreatorProfileSocialLink[];
+};
 type Target = { id: string; title: string; kind?: string };
 export function StorefrontContentEditor({
   creatorId,
@@ -32,13 +39,20 @@ export function StorefrontContentEditor({
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
   const [dragged, setDragged] = useState<string | null>(null);
+  const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [draggedSocial, setDraggedSocial] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
-    apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections')
-      .then((value) => {
+    Promise.all([
+      apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections'),
+      apiRequest<CreatorProfileSettings>('/creator/profile'),
+    ])
+      .then(([value, creatorProfile]) => {
         if (!active) return;
         setConfiguration(value);
         setDraft({ titles: value.titles ?? [], brandOrder: value.brandOrder ?? [] });
+        setProfile(creatorProfile);
       })
       .catch((cause: unknown) => {
         if (active)
@@ -102,9 +116,47 @@ export function StorefrontContentEditor({
     });
   }
   const selected = draft.titles.find(({ id }) => id === selectedId);
+  const selectedTarget = targets.find(({ id }) => id === selectedId);
+  const profileDraft = {
+    bio: draft.bio ?? profile?.bioHe ?? '',
+    socialLinks: draft.socialLinks ?? profile?.socialLinks ?? [],
+  };
+  function changeProfile(patch: Partial<typeof profileDraft>) {
+    const next = { ...profileDraft, ...patch };
+    const nextDraft = { ...draft, bio: next.bio, socialLinks: next.socialLinks };
+    setDraft(nextDraft);
+    onPreview(nextDraft);
+    setNotice('');
+  }
+  async function saveProfile() {
+    if (!profile || savingProfile) return;
+    setSavingProfile(true);
+    setError('');
+    try {
+      const updated = await apiRequest<CreatorProfileSettings>('/creator/profile', {
+        method: 'PATCH',
+        headers: { 'if-match': `"${profile.version}"` },
+        body: JSON.stringify({
+          bioHe: profileDraft.bio,
+          socialLinks: profileDraft.socialLinks,
+        }),
+      });
+      setProfile(updated);
+      const next = { ...draft, bio: updated.bioHe, socialLinks: updated.socialLinks };
+      setDraft(next);
+      onPreview(next);
+      setNotice('Profile changes are live.');
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Could not save profile changes.',
+      );
+    } finally {
+      setSavingProfile(false);
+    }
+  }
   const dirty =
     configuration &&
-    JSON.stringify(draft) !==
+    JSON.stringify({ titles: draft.titles, brandOrder: draft.brandOrder }) !==
       JSON.stringify({
         titles: configuration.titles ?? [],
         brandOrder: configuration.brandOrder ?? [],
@@ -167,9 +219,29 @@ export function StorefrontContentEditor({
   return (
     <div className="storefrontContentEditor">
       <p>
-        Select a block in the preview, or choose a layer below. Drag layers or use the
-        arrows to reorder.
+        Tap a block in the preview to edit it. Drag a section to place it where you want
+        it.
       </p>
+      {targets.some(({ kind }) => kind === 'bio' || kind === 'social') ? (
+        <div
+          className="storefrontProfileTargets"
+          role="group"
+          aria-label="Profile content"
+        >
+          {targets
+            .filter(({ kind }) => kind === 'bio' || kind === 'social')
+            .map((target) => (
+              <button
+                aria-pressed={selectedId === target.id}
+                key={target.id}
+                onClick={() => onSelect(target.id)}
+                type="button"
+              >
+                {target.kind === 'bio' ? 'Edit bio' : `Edit ${target.title}`}
+              </button>
+            ))}
+        </div>
+      ) : null}
       <button
         className="button secondary"
         type="button"
@@ -222,26 +294,95 @@ export function StorefrontContentEditor({
               <small>{layer.kind === 'text' ? 'Text' : 'Brand'}</small>
               <span>{layer.title}</span>
             </button>
-            <button
-              type="button"
-              aria-label={'Move ' + layer.title + ' up'}
-              disabled={saving || index === 0}
-              onClick={() => move(layer.id, index - 1)}
-            >
-              <ArrowUp size={14} />
-            </button>
-            <button
-              type="button"
-              aria-label={'Move ' + layer.title + ' down'}
-              disabled={saving || index === layers.length - 1}
-              onClick={() => move(layer.id, index + 1)}
-            >
-              <ArrowDown size={14} />
-            </button>
           </li>
         ))}
       </ol>
-      {selected ? (
+      {selectedTarget?.kind === 'bio' ? (
+        <section className="storefrontTitleEditor">
+          <label>
+            Bio
+            <textarea
+              dir="auto"
+              maxLength={1000}
+              rows={4}
+              value={profileDraft.bio}
+              onChange={(event) => changeProfile({ bio: event.target.value })}
+            />
+          </label>
+          <button
+            className="button primary"
+            disabled={savingProfile}
+            onClick={() => void saveProfile()}
+            type="button"
+          >
+            {savingProfile ? 'Saving...' : 'Save bio'}
+          </button>
+        </section>
+      ) : selectedTarget?.kind === 'social' ? (
+        <section className="storefrontTitleEditor">
+          <p>Edit this link, or drag platforms below to set their live order.</p>
+          <ol className="storefrontLayerList">
+            {profileDraft.socialLinks.map((link, index) => (
+              <li
+                draggable={!savingProfile}
+                key={link.platform}
+                onDragEnd={() => setDraggedSocial(null)}
+                onDragOver={(event) => event.preventDefault()}
+                onDragStart={() => setDraggedSocial(link.platform)}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (!draggedSocial || draggedSocial === link.platform) return;
+                  const links = [...profileDraft.socialLinks];
+                  const from = links.findIndex(
+                    ({ platform }) => platform === draggedSocial,
+                  );
+                  const [moving] = links.splice(from, 1);
+                  links.splice(index, 0, moving!);
+                  changeProfile({ socialLinks: links });
+                  setDraggedSocial(null);
+                }}
+              >
+                <button type="button" onClick={() => onSelect(`social:${link.platform}`)}>
+                  <small>Platform</small>
+                  <span>{link.platform}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          {(() => {
+            const platform = selectedTarget.id.slice('social:'.length);
+            const link = profileDraft.socialLinks.find(
+              (item) => item.platform === platform,
+            );
+            return link ? (
+              <label>
+                {link.platform} URL
+                <input
+                  type="url"
+                  value={link.url}
+                  onChange={(event) =>
+                    changeProfile({
+                      socialLinks: profileDraft.socialLinks.map((item) =>
+                        item.platform === link.platform
+                          ? { ...item, url: event.target.value }
+                          : item,
+                      ),
+                    })
+                  }
+                />
+              </label>
+            ) : null;
+          })()}
+          <button
+            className="button primary"
+            disabled={savingProfile}
+            onClick={() => void saveProfile()}
+            type="button"
+          >
+            {savingProfile ? 'Saving...' : 'Save links'}
+          </button>
+        </section>
+      ) : selected ? (
         <section className="storefrontTitleEditor">
           <fieldset disabled={saving}>
             <label>
@@ -419,7 +560,7 @@ export function StorefrontContentEditor({
           </fieldset>
         </section>
       ) : selectedId ? (
-        <p>Use the layer arrows or drag this brand to change its position.</p>
+        <p>Drag this section directly in the preview to change its position.</p>
       ) : null}
       {error ? (
         <p role="alert" className="formError">

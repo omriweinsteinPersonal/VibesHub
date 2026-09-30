@@ -57,6 +57,8 @@ export function CreatorStorefrontView({
   const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[]>(
     storefront.titles ?? [],
   );
+  const [previewBio, setPreviewBio] = useState(storefront.bio.value);
+  const [previewSocialLinks, setPreviewSocialLinks] = useState(storefront.socialLinks);
   const [query, setQuery] = useState('');
   const [activeLabelId, setActiveLabelId] = useState<string | null>(null);
   const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
@@ -81,6 +83,8 @@ export function CreatorStorefrontView({
         theme?: unknown;
         titles?: unknown;
         brandOrder?: unknown;
+        bio?: unknown;
+        socialLinks?: unknown;
         selectedBlock?: string | null;
         editingContent?: boolean;
         type?: string;
@@ -96,6 +100,18 @@ export function CreatorStorefrontView({
         data.brandOrder.every((id) => typeof id === 'string')
       )
         setPreviewBrandOrder(data.brandOrder);
+      if (typeof data.bio === 'string') setPreviewBio(data.bio);
+      if (
+        Array.isArray(data.socialLinks) &&
+        data.socialLinks.every(
+          (link) =>
+            typeof link === 'object' &&
+            link !== null &&
+            'platform' in link &&
+            'url' in link,
+        )
+      )
+        setPreviewSocialLinks(data.socialLinks as typeof storefront.socialLinks);
       setSelectedBlock(data.selectedBlock ?? null);
       setEditingContent(data.editingContent === true);
     };
@@ -433,7 +449,11 @@ export function CreatorStorefrontView({
             return;
           const target = event.target as HTMLElement;
           const block = target.closest<HTMLElement>('[data-editor-block]');
-          if (block && !target.closest('input, button') && !target.closest('a')) {
+          if (
+            block &&
+            !target.closest('input, button') &&
+            (editingContent || !target.closest('a'))
+          ) {
             event.preventDefault();
             event.stopPropagation();
             window.parent.postMessage(
@@ -479,7 +499,7 @@ export function CreatorStorefrontView({
         <StorefrontViewTracker creatorId={storefront.id} />
         <section className="referenceStorefrontHero">
           <div
-            className={`referenceStorefrontInner${storefront.socialLinks.length ? '' : ' noConnectors'}${storefront.bio.value ? ' hasBio' : ''}`}
+            className={`referenceStorefrontInner${previewSocialLinks.length ? '' : ' noConnectors'}${previewBio ? ' hasBio' : ''}`}
           >
             <span className="referenceStorefrontAvatar">
               {storefront.avatarUrl ? (
@@ -508,21 +528,23 @@ export function CreatorStorefrontView({
                 {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
               </p>
             </div>
-            {storefront.bio.value ? (
+            {previewBio ? (
               <p
                 className="referenceStorefrontBio"
-                dir={storefront.bio.direction}
+                data-editor-block="bio"
+                data-selected={selectedBlock === 'bio'}
+                dir="auto"
                 lang={storefront.bio.language}
               >
-                {storefront.bio.value}
+                {previewBio}
               </p>
             ) : null}
-            {storefront.socialLinks.length ? (
+            {previewSocialLinks.length ? (
               <nav
                 aria-label="Creator links"
                 className="referenceStorefrontActions referenceConnectors"
               >
-                {storefront.socialLinks.map((link) => {
+                {previewSocialLinks.map((link) => {
                   const label = connectorLabel(link.platform);
                   const content = (
                     <>
@@ -534,6 +556,8 @@ export function CreatorStorefrontView({
                     <TrackedInstagramLink
                       className="referenceConnectorLink"
                       creatorId={storefront.id}
+                      data-editor-block={`social:${link.platform}`}
+                      data-selected={selectedBlock === `social:${link.platform}`}
                       href={link.url}
                       key={link.platform}
                       title={label}
@@ -543,6 +567,8 @@ export function CreatorStorefrontView({
                   ) : (
                     <a
                       className="referenceConnectorLink"
+                      data-editor-block={`social:${link.platform}`}
+                      data-selected={selectedBlock === `social:${link.platform}`}
                       href={link.url}
                       key={link.platform}
                       rel="noopener noreferrer"

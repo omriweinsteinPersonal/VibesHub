@@ -5,6 +5,7 @@ import {
   type StorefrontTheme,
   type StorefrontTitle,
   type StorefrontThemeConfiguration,
+  type CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
@@ -116,6 +117,10 @@ export function StorefrontPhonePreview({
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [previewBrandOrder, setPreviewBrandOrder] = useState<string[] | null>(null);
   const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[] | null>(null);
+  const [previewBio, setPreviewBio] = useState<string | null>(null);
+  const [previewSocialLinks, setPreviewSocialLinks] = useState<
+    CreatorProfileSocialLink[] | null
+  >(null);
   const [canEdit, setCanEdit] = useState(editable);
   const frame = useRef<HTMLIFrameElement>(null);
   const [configuration, setConfiguration] = useState<StorefrontThemeConfiguration | null>(
@@ -172,6 +177,8 @@ export function StorefrontPhonePreview({
         theme: draft,
         titles: previewTitles,
         brandOrder: previewBrandOrder,
+        bio: previewBio,
+        socialLinks: previewSocialLinks,
         selectedBlock,
         editingContent: tab === 'content',
       },
@@ -298,6 +305,8 @@ export function StorefrontPhonePreview({
                 onPreview={(next) => {
                   setPreviewTitles(next.titles);
                   setPreviewBrandOrder(next.brandOrder);
+                  setPreviewBio(next.bio ?? null);
+                  setPreviewSocialLinks(next.socialLinks ?? null);
                 }}
               />
             </div>
@@ -435,6 +444,8 @@ export function StorefrontPhonePreview({
                   theme: draft,
                   titles: previewTitles,
                   brandOrder: previewBrandOrder,
+                  bio: previewBio,
+                  socialLinks: previewSocialLinks,
                   selectedBlock,
                   editingContent: tab === 'content',
                 },

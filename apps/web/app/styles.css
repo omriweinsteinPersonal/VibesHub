@@ -11783,6 +11783,28 @@ dt {
   padding: 0;
   margin: 0;
 }
+
+.storefrontProfileTargets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+
+.storefrontProfileTargets button {
+  border: 1px solid color-mix(in srgb, var(--sf-accent, #8b6248) 35%, transparent);
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.45rem 0.7rem;
+}
+
+.storefrontProfileTargets button[aria-pressed='true'] {
+  background: var(--sf-accent, #8b6248);
+  color: var(--sf-accent-ink, #fff);
+}
 .storefrontLayerList li {
   display: flex;
   align-items: center;
