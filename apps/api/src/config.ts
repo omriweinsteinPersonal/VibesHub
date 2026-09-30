@@ -9,6 +9,10 @@ const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().max(65_535).default(4000),
   REDIRECT_BASE_URL: z.url().optional(),
+  REVENUECAT_ALLOWED_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
+  REVENUECAT_ENTITLEMENT_ID: z.string().trim().min(3).default('creator_pro'),
+  REVENUECAT_WEBHOOK_AUTHORIZATION: z.string().trim().min(16).optional(),
+  REVENUECAT_WEBHOOK_SIGNING_SECRET: z.string().trim().min(16).optional(),
   SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1).optional(),
   SUPABASE_URL: z.url().optional(),
@@ -23,6 +27,10 @@ export interface ApiConfig {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   redirectBaseUrl: string;
+  revenueCatAllowedEnvironment: 'production' | 'sandbox';
+  revenueCatEntitlementId: string;
+  revenueCatWebhookAuthorization?: string;
+  revenueCatWebhookSigningSecret?: string;
   supabasePublishableKey?: string;
   supabaseServiceRoleKey?: string;
   supabaseUrl?: string;
@@ -30,6 +38,14 @@ export interface ApiConfig {
 
 export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
   const parsed = environmentSchema.parse(environment);
+  if (
+    Boolean(parsed.REVENUECAT_WEBHOOK_AUTHORIZATION) !==
+    Boolean(parsed.REVENUECAT_WEBHOOK_SIGNING_SECRET)
+  ) {
+    throw new Error(
+      'REVENUECAT_WEBHOOK_AUTHORIZATION and REVENUECAT_WEBHOOK_SIGNING_SECRET must be configured together',
+    );
+  }
   const redirectBaseUrl =
     parsed.REDIRECT_BASE_URL ??
     (parsed.NODE_ENV === 'production' ? undefined : 'http://localhost:4000');
@@ -60,6 +76,8 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
       redirectBaseUrl ?? 'http://localhost:4000',
       parsed.NODE_ENV,
     ),
+    revenueCatAllowedEnvironment: parsed.REVENUECAT_ALLOWED_ENVIRONMENT,
+    revenueCatEntitlementId: parsed.REVENUECAT_ENTITLEMENT_ID,
   };
 
   if (parsed.DATABASE_URL) config.databaseUrl = parsed.DATABASE_URL;
@@ -68,6 +86,10 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
   if (parsed.SUPABASE_SERVICE_ROLE_KEY)
     config.supabaseServiceRoleKey = parsed.SUPABASE_SERVICE_ROLE_KEY;
   if (parsed.SUPABASE_URL) config.supabaseUrl = parsed.SUPABASE_URL;
+  if (parsed.REVENUECAT_WEBHOOK_AUTHORIZATION)
+    config.revenueCatWebhookAuthorization = parsed.REVENUECAT_WEBHOOK_AUTHORIZATION;
+  if (parsed.REVENUECAT_WEBHOOK_SIGNING_SECRET)
+    config.revenueCatWebhookSigningSecret = parsed.REVENUECAT_WEBHOOK_SIGNING_SECRET;
 
   return config;
 }

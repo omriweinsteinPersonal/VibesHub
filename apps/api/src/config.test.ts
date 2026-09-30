@@ -11,6 +11,25 @@ describe('API configuration', () => {
       nodeEnv: 'development',
       port: 4000,
       redirectBaseUrl: 'http://localhost:4000',
+      revenueCatAllowedEnvironment: 'sandbox',
+      revenueCatEntitlementId: 'creator_pro',
+    });
+  });
+
+  it('requires both RevenueCat webhook secrets and defaults to sandbox', () => {
+    expect(() =>
+      parseApiConfig({ REVENUECAT_WEBHOOK_AUTHORIZATION: 'Bearer test-secret' }),
+    ).toThrow('must be configured together');
+    expect(
+      parseApiConfig({
+        REVENUECAT_ALLOWED_ENVIRONMENT: 'sandbox',
+        REVENUECAT_WEBHOOK_AUTHORIZATION: 'Bearer test-secret',
+        REVENUECAT_WEBHOOK_SIGNING_SECRET: 'signing-test-secret',
+      }),
+    ).toMatchObject({
+      revenueCatAllowedEnvironment: 'sandbox',
+      revenueCatWebhookAuthorization: 'Bearer test-secret',
+      revenueCatWebhookSigningSecret: 'signing-test-secret',
     });
   });
 

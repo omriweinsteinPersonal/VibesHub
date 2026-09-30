@@ -10,22 +10,15 @@ begin
   inferred_name := coalesce(
     nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''),
     nullif(split_part(new.email, '@', 1), ''),
-    'swavii shopper'
+    'Swavii creator'
   );
 
   insert into app.users (id) values (new.id);
   insert into app.user_profiles (user_id, display_name) values (new.id, inferred_name);
-  insert into app.user_capabilities (user_id, capability) values
-    (new.id, 'shopper:read'),
-    (new.id, 'shopper:save');
 
   return new;
 end;
 $$;
-
-update app.user_profiles
-set display_name = 'swavii shopper'
-where lower(display_name) = 'swave shopper';
 
 comment on schema app is 'Authoritative swavii application data.';
 

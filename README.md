@@ -70,6 +70,7 @@ docker/
 - [First-party creator analytics](docs/architecture/15-first-party-creator-analytics.md)
 - [Recommendation story viewer and analytics](docs/architecture/16-story-viewer-analytics.md)
 - [Creator profile settings](docs/architecture/17-creator-profile-settings.md)
+- [Billing and entitlements](docs/architecture/18-billing-entitlements.md)
 - [Architecture decision records](docs/architecture/adrs/README.md)
 - [Production identity deployment runbook](docs/operations/production-identity-slice.md)
 

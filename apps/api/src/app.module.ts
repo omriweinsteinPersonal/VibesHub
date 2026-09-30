@@ -15,6 +15,10 @@ import { ActorRepository } from './auth/actor.repository.js';
 import { AuthenticationGuard } from './auth/auth.guard.js';
 import { CapabilityGuard } from './auth/capability.guard.js';
 import { SupabaseTokenVerifier } from './auth/token-verifier.js';
+import { BillingController } from './billing/billing.controller.js';
+import { BillingRepository } from './billing/billing.repository.js';
+import { BillingService } from './billing/billing.service.js';
+import { RevenueCatWebhookVerifier } from './billing/revenuecat-webhook.verifier.js';
 import {
   CategoriesController,
   CreatorCategoriesController,
@@ -84,6 +88,7 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     AdminApplicationController,
     AdminMerchantDomainController,
     RedirectController,
+    BillingController,
   ],
   providers: [
     Database,
@@ -118,6 +123,9 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     RedirectRepository,
     RedirectService,
     IdempotencyService,
+    BillingRepository,
+    BillingService,
+    RevenueCatWebhookVerifier,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },

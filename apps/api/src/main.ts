@@ -13,7 +13,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ trustProxy: true }),
-    { bufferLogs: true },
+    { bufferLogs: true, rawBody: true },
   );
 
   app.enableCors({

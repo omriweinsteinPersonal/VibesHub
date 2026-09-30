@@ -11,3 +11,4 @@ Architecture decision records capture decisions that materially constrain Swave 
 | [ADR-005](ADR-005-media-pipeline.md)         | Managed image and video pipeline               | Accepted |
 | [ADR-006](ADR-006-deployment-topology.md)    | Regional deployment topology                   | Accepted |
 | [ADR-007](ADR-007-search-analytics.md)       | Replaceable search and analytics read models   | Accepted |
+| [ADR-008](ADR-008-cross-platform-billing.md) | Native billing and normalized entitlements     | Accepted |
