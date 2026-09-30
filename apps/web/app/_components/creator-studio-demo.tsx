@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { ArrowRight, Check, Layers, Palette, Pause, Play, Tags } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Layers, Palette, Tags } from 'lucide-react';
 import styles from './creator-studio-demo.module.css';
 
 const categories = [
@@ -19,39 +19,15 @@ const categories = [
   { title: 'Shape every label', detail: 'Organize picks your way.', icon: Tags },
 ];
 const scenes = [
-  { category: 0, title: 'Add a pick', detail: 'A link, a photo, a favorite find.' },
-  {
-    category: 0,
-    title: 'Build a collection',
-    detail: 'Bring your recommendations together.',
-  },
-  {
-    category: 0,
-    title: 'See it in your store',
-    detail: 'Your collection comes to life.',
-  },
-  {
-    category: 1,
-    title: 'Customize your header',
-    detail: 'Set the mood with your colors.',
-  },
-  {
-    category: 1,
-    title: 'Make your feed yours',
-    detail: 'Style your products and background, too.',
-  },
-  { category: 1, title: 'Move things around', detail: 'Your collections. Your order.' },
-  { category: 2, title: 'Shape every label', detail: 'Explore My closet.' },
-  {
-    category: 2,
-    title: 'A home for every interest',
-    detail: 'A little bit of everything in Random.',
-  },
-  {
-    category: 2,
-    title: 'More of what you love',
-    detail: 'Beauty, Home & living, and beyond.',
-  },
+  { category: 0, title: 'Add a pick' },
+  { category: 0, title: 'Build a collection' },
+  { category: 0, title: 'See it in your store' },
+  { category: 1, title: 'Customize your header' },
+  { category: 1, title: 'Make your feed yours' },
+  { category: 1, title: 'Move things around' },
+  { category: 2, title: 'Shape every label' },
+  { category: 2, title: 'A home for every interest' },
+  { category: 2, title: 'More of what you love' },
 ] as const;
 const labels = ['All', 'My closet', 'Random', 'Beauty', 'Home & living'];
 const products = [
@@ -73,13 +49,11 @@ function subscribeToMotionPreference(callback: () => void) {
 
 export function CreatorStudioDemo() {
   const [frame, setFrame] = useState(0);
-  const [wantsPlayback, setPlaying] = useState(true);
   const reducedMotion = useSyncExternalStore(
     subscribeToMotionPreference,
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     () => true,
   );
-  const playing = wantsPlayback && !reducedMotion;
   const [toneOverride, setTone] = useState<number | null>(null);
   const [labelOverride, setLabel] = useState<string | null>(null);
   const scene = scenes[frame] ?? scenes[0];
@@ -109,18 +83,16 @@ export function CreatorStudioDemo() {
     setLabel(null);
   };
   useEffect(() => {
-    if (!playing) return;
+    if (reducedMotion) return;
     const timer = window.setInterval(() => {
       setFrame((current) => (current + 1) % scenes.length);
       setTone(null);
       setLabel(null);
     }, 4200);
     return () => window.clearInterval(timer);
-  }, [playing]);
-  const advance = () => {
-    setPlaying(false);
-    goTo((frame + 1) % scenes.length);
-  };
+  }, [reducedMotion]);
+  const advance = () => goTo((frame + 1) % scenes.length);
+  const retreat = () => goTo((frame - 1 + scenes.length) % scenes.length);
   return (
     <div className={styles.demo}>
       <div className={styles.categories} aria-label="Explore creator features">
@@ -144,7 +116,6 @@ export function CreatorStudioDemo() {
           <div className={styles.sceneCaption} key={`caption-${frame}`}>
             <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO</span>
             <h3>{scene.title}</h3>
-            <p>{scene.detail}</p>
           </div>
           {category === 0 && step < 2 ? (
             <div className={styles.editor} key={`editor-${step}`}>
@@ -247,7 +218,6 @@ export function CreatorStudioDemo() {
                       key={name}
                       aria-pressed={label === name}
                       onClick={() => {
-                        setPlaying(false);
                         setLabel(name);
                       }}
                     >
@@ -283,12 +253,8 @@ export function CreatorStudioDemo() {
         </div>
       </div>
       <div className={styles.transport}>
-        <button
-          type="button"
-          onClick={() => setPlaying(!playing)}
-          aria-label={playing ? 'Pause demo' : 'Play demo'}
-        >
-          {playing ? <Pause size={16} /> : <Play size={16} />}
+        <button type="button" onClick={retreat} aria-label="Previous scene">
+          <ArrowLeft size={17} />
         </button>
         <div className={styles.progress}>
           {scenes.map((item, index) => (
@@ -298,7 +264,6 @@ export function CreatorStudioDemo() {
               aria-label={item.title}
               aria-current={frame === index ? 'step' : undefined}
               onClick={() => {
-                setPlaying(false);
                 goTo(index);
               }}
             />

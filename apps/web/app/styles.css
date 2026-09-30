@@ -10141,7 +10141,10 @@ dt {
   padding-top: 104px;
   padding-bottom: 112px;
   color: #171b2c;
-  background: #e7eef8;
+  background:
+    radial-gradient(circle at 14% 14%, rgba(255, 192, 221, 0.72), transparent 30%),
+    radial-gradient(circle at 88% 72%, rgba(169, 215, 255, 0.8), transparent 34%),
+    linear-gradient(135deg, #f9efff 0%, #edf3ff 51%, #fff2f5 100%);
 }
 .creatorAudienceIntro {
   max-width: 700px;
@@ -10149,7 +10152,7 @@ dt {
   text-align: center;
 }
 .creatorAudienceIntro .creatorLandingEyebrow {
-  color: #637045;
+  color: #8a3477;
 }
 .creatorAudienceIntro h2 {
   max-width: 660px;
@@ -10162,12 +10165,12 @@ dt {
 .creatorAudienceIntro > p:not(.creatorLandingEyebrow) {
   max-width: 610px;
   margin-inline: auto;
-  color: #343a4b;
+  color: #45445a;
   font-size: 17px;
   line-height: 1.5;
 }
 .creatorAudience .creatorTextLink {
-  color: #27331a;
+  color: #5e286e;
   font-weight: 700;
 }
 .creatorAnalyticsPreview {
@@ -10186,16 +10189,16 @@ dt {
 }
 .creatorAnalyticsPreview > header > div > span,
 .creatorAnalyticsPanelHeading span {
-  color: #5c6642;
+  color: #72518c;
 }
 .creatorAnalyticsPreview > header strong,
 .creatorAnalyticsPanelHeading strong {
-  color: #171b2c;
+  color: #27213e;
 }
 .creatorAnalyticsRange {
-  border-color: rgba(41, 52, 30, 0.22);
-  color: #465134;
-  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(94, 40, 110, 0.2);
+  color: #5e286e;
+  background: rgba(255, 255, 255, 0.62);
 }
 .creatorAnalyticsMetrics {
   gap: 12px;
@@ -10206,20 +10209,20 @@ dt {
   padding: 22px 20px;
   border: 0;
   border-radius: 22px;
-  color: #eff5c9;
-  background: #72794e;
+  color: #fffaff;
+  background: linear-gradient(135deg, #33225f, #56418f);
 }
 .creatorAnalyticsMetrics article:nth-child(2) {
-  color: #14225e;
-  background: #e3b4e5;
+  color: #36235a;
+  background: linear-gradient(135deg, #e9d8ff, #cfb8f4);
 }
 .creatorAnalyticsMetrics article:nth-child(3) {
-  color: white;
-  background: #d80ad4;
+  color: #54213f;
+  background: linear-gradient(135deg, #ffc7bc, #f49db3);
 }
 .creatorAnalyticsMetrics article:nth-child(4) {
-  color: white;
-  background: #10259b;
+  color: #123f4b;
+  background: linear-gradient(135deg, #c1f0e5, #8dd8d4);
 }
 .creatorAnalyticsMetrics span,
 .creatorAnalyticsMetrics small {
@@ -10236,40 +10239,40 @@ dt {
 .creatorAnalyticsDashboard {
   margin-top: 12px;
   overflow: hidden;
-  border: 1px solid rgba(31, 42, 68, 0.16);
+  border: 1px solid rgba(83, 62, 122, 0.16);
   border-radius: 22px;
-  background: #f8f9ec;
+  background: rgba(255, 255, 255, 0.74);
 }
 .creatorAnalyticsDashboard section {
-  border-color: rgba(31, 42, 68, 0.13);
+  border-color: rgba(83, 62, 122, 0.13);
 }
 .creatorAnalyticsPanelHeading svg {
-  color: #627042;
+  color: #8a3477;
 }
 .creatorAnalyticsBars {
-  border-color: rgba(31, 42, 68, 0.14);
+  border-color: rgba(83, 62, 122, 0.14);
 }
 .creatorAnalyticsBars i {
-  background: #b8c484;
+  background: #cbb7ec;
 }
 .creatorAnalyticsBars i:nth-child(4),
 .creatorAnalyticsBars i:nth-child(6) {
-  background: #718047;
+  background: #9b7bd2;
 }
 .creatorAnalyticsBars i:nth-child(8) {
-  background: #263c91;
+  background: #d35d91;
 }
 .creatorAnalyticsAxis,
 .creatorTopProducts li,
 .creatorAudienceCountries > div > span {
-  color: #4d5740;
+  color: #5e5777;
 }
 .creatorTopProducts li strong,
 .creatorAudienceCountries > div strong {
-  color: #171b2c;
+  color: #27213e;
 }
 .creatorAudienceCountries > div > span {
-  background: #e2e9bf;
+  background: #ebe2fb;
 }
 
 .creatorPricing {
@@ -12024,17 +12027,6 @@ dt {
   border-top: 1px solid rgba(58, 72, 48, 0.2);
 }
 
-/* One quiet treatment keeps the metrics in the same editorial palette. */
-.creatorAudience .creatorAnalyticsMetrics article,
-.creatorAudience .creatorAnalyticsMetrics article:nth-child(2),
-.creatorAudience .creatorAnalyticsMetrics article:nth-child(3),
-.creatorAudience .creatorAnalyticsMetrics article:nth-child(4) {
-  color: #33402d;
-  background: #f4ecdf;
-  border: 1px solid #7f896a;
-  box-shadow: none;
-}
-
 .creatorAudience .creatorAnalyticsMetrics span,
 .creatorAudience .creatorAnalyticsMetrics small,
 .creatorAudience .creatorAnalyticsMetrics strong {
@@ -12162,8 +12154,7 @@ dt {
     padding: 14px;
     border: 0;
     border-radius: 16px;
-    color: #fbfaf4;
-    background: #7f896a;
+    box-shadow: 0 10px 24px rgba(66, 41, 100, 0.12);
   }
 
   .creatorAnalyticsMetrics strong {
