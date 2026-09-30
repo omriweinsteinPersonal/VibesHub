@@ -362,8 +362,8 @@ function AuthExperience() {
             </button>
           </form>
           <p className="referenceAuthTerms">
-            By continuing you agree to the swavii community guidelines.{' '}
-            <Link href="/about">Learn more</Link>
+            By continuing, you agree to the <Link href="/terms">Terms of Service</Link>{' '}
+            and acknowledge the <Link href="/privacy">Privacy Policy</Link>.
           </p>
         </section>
       </main>

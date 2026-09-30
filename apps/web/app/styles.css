@@ -5153,6 +5153,16 @@ dt {
   padding-top: 24px;
 }
 
+.siteFooterLegal {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+}
+
+.siteFooterLegal a:hover {
+  color: var(--vh-ink);
+}
+
 .logoCompact {
   font-size: 1.55rem;
 }
@@ -5427,6 +5437,102 @@ dt {
 .aboutCopy > p:first-child {
   color: var(--vh-ink);
   font-size: 1rem;
+}
+
+.legalMain {
+  margin: 0 auto;
+  max-width: 920px;
+  padding: 88px 32px 24px;
+}
+
+.legalHero {
+  border-bottom: 1px solid var(--vh-border);
+  margin-bottom: 52px;
+  padding-bottom: 44px;
+}
+
+.legalHero h1 {
+  font-size: clamp(3.2rem, 6vw, 4.8rem);
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  margin: 20px 0 24px;
+}
+
+.legalSummary {
+  color: var(--vh-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 720px;
+}
+
+.legalUpdated {
+  color: var(--vh-muted);
+  font-size: 0.78rem;
+  margin: 22px 0 0;
+}
+
+.legalContent {
+  display: grid;
+  gap: 38px;
+}
+
+.legalContent section {
+  scroll-margin-top: 100px;
+}
+
+.legalContent h2 {
+  color: var(--vh-ink);
+  font-size: 1.8rem;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 0 0 14px;
+}
+
+.legalContent h3 {
+  color: var(--vh-ink);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 24px 0 8px;
+}
+
+.legalContent p,
+.legalContent li {
+  color: var(--vh-muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.legalContent p {
+  margin: 0 0 12px;
+}
+
+.legalContent ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+
+.legalContent li + li {
+  margin-top: 8px;
+}
+
+.legalContent a {
+  color: var(--vh-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--vh-border);
+  text-underline-offset: 3px;
+}
+
+.legalCallout {
+  background: var(--vh-surface);
+  border: 1px solid var(--vh-border);
+  border-radius: 22px;
+  padding: 22px 24px;
+}
+
+.legalCallout p:last-child {
+  margin-bottom: 0;
 }
 
 .aboutQuote {
@@ -5956,6 +6062,38 @@ dt {
     flex-direction: column;
     gap: 8px;
     margin-top: 38px;
+  }
+
+  .siteFooterLegal {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+  }
+
+  .legalMain {
+    padding: 54px 20px 8px;
+  }
+
+  .legalHero {
+    margin-bottom: 38px;
+    padding-bottom: 34px;
+  }
+
+  .legalHero h1 {
+    font-size: clamp(2.75rem, 15vw, 3.7rem);
+  }
+
+  .legalContent {
+    gap: 32px;
+  }
+
+  .legalContent h2 {
+    font-size: 1.55rem;
+  }
+
+  .legalCallout {
+    border-radius: 18px;
+    padding: 18px;
   }
 }
 

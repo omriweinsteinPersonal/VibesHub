@@ -28,7 +28,11 @@ export function SiteFooter() {
       </div>
       <div className="siteFooterBottom">
         <span>© 2026 swavii. Made in Tel Aviv.</span>
-        <span>Built for creators.</span>
+        <div className="siteFooterLegal">
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <span>Built for creators.</span>
+        </div>
       </div>
     </footer>
   );
