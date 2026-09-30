@@ -1,16 +1,9 @@
 import Link from 'next/link';
-import {
-  ArrowRight,
-  BarChart3,
-  Camera,
-  Check,
-  ExternalLink,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowRight, BarChart3, Camera, Check, ExternalLink } from 'lucide-react';
 
 import { SiteFooter } from './_components/site-footer';
 import { CreatorStudioDemo } from './_components/creator-studio-demo';
-import { CreatorHeroShowcase } from './_components/creator-hero-showcase';
+import { CreatorLandingHero } from './_components/creator-landing-hero';
 import { SiteHeader } from './_components/site-header';
 
 const signupHref = '/auth?mode=signup';
@@ -20,36 +13,7 @@ export default function HomePage() {
     <div className="creatorLandingPage">
       <SiteHeader />
       <main>
-        <section className="creatorHero" id="top">
-          <div className="creatorHeroCopy">
-            <p className="creatorLandingEyebrow">
-              <Sparkles aria-hidden="true" size={14} /> Your recommendations, your space
-            </p>
-            <h1>Your world, curated in one place.</h1>
-            <p className="creatorHeroLede">
-              Share your lifestyle, curate your picks in a designed showcase made for your
-              world.
-            </p>
-            <div className="creatorHeroActions">
-              <Link className="button primary creatorPrimaryCta" href={signupHref}>
-                Create your page <ArrowRight aria-hidden="true" size={17} />
-              </Link>
-              <a className="button secondary" href="#how-it-works">
-                See how it works
-              </a>
-            </div>
-            <div className="creatorHeroNote">
-              <span>
-                <Check aria-hidden="true" size={14} /> No code required
-              </span>
-              <span>
-                <Check aria-hidden="true" size={14} /> Open to every creator
-              </span>
-            </div>
-          </div>
-
-          <CreatorHeroShowcase />
-        </section>
+        <CreatorLandingHero />
 
         <section className="creatorValueStrip" aria-label="Platform highlights">
           <span>One link for everything</span>

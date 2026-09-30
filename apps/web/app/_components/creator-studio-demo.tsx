@@ -49,6 +49,8 @@ function subscribeToMotionPreference(callback: () => void) {
 
 export function CreatorStudioDemo() {
   const [frame, setFrame] = useState(0);
+  const demoRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
   const storeRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useSyncExternalStore(
     subscribeToMotionPreference,
@@ -84,30 +86,40 @@ export function CreatorStudioDemo() {
     setLabel(null);
   };
   useEffect(() => {
-    if (reducedMotion) return;
-    const timer = window.setInterval(() => {
+    const demo = demoRef.current;
+    if (!demo) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry?.isIntersecting ?? false),
+      { threshold: 0.35 },
+    );
+    observer.observe(demo);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (reducedMotion || !inView) return;
+    const timer = window.setTimeout(() => {
       setFrame((current) => (current + 1) % scenes.length);
       setTone(null);
       setLabel(null);
-    }, 4200);
-    return () => window.clearInterval(timer);
-  }, [reducedMotion]);
+    }, 5800);
+    return () => window.clearTimeout(timer);
+  }, [frame, reducedMotion, inView]);
   useEffect(() => {
     const store = storeRef.current;
     if (!store) return;
 
     store.scrollTo({ top: 0, behavior: 'auto' });
-    if (frame !== 2 || reducedMotion) return;
+    if (frame < 2 || reducedMotion) return;
 
     const scrollTimer = window.setTimeout(() => {
       store.scrollTo({ top: store.scrollHeight, behavior: 'smooth' });
-    }, 900);
+    }, 2400);
     return () => window.clearTimeout(scrollTimer);
   }, [frame, reducedMotion]);
   const advance = () => goTo((frame + 1) % scenes.length);
   const retreat = () => goTo((frame - 1 + scenes.length) % scenes.length);
   return (
-    <div className={styles.demo}>
+    <div className={styles.demo} ref={demoRef}>
       <div className={styles.categories} aria-label="Explore creator features">
         {categories.map(({ title, detail, icon: Icon }, index) => (
           <button
@@ -124,7 +136,7 @@ export function CreatorStudioDemo() {
           </button>
         ))}
       </div>
-      <div className={styles.stage}>
+      <div className={styles.stage} data-scene={step < 2 ? 'editor' : 'store'}>
         <div className={styles.canvas}>
           <div className={styles.sceneCaption} key={`caption-${frame}`}>
             <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO</span>
@@ -187,80 +199,91 @@ export function CreatorStudioDemo() {
               )}
             </div>
           ) : (
-            <div
-              ref={storeRef}
-              className={styles.store}
-              style={{ background: ['#f6efe3', '#e0e6d5', '#eedee1'][tone] }}
-            >
-              <header className={styles.profile}>
-                <Image
-                  src="/images/creator-maya-avatar.png"
-                  alt="Maya Cohen"
-                  width={56}
-                  height={56}
-                />
-                <div>
-                  <h4>Maya Cohen</h4>
-                  <span>Lifestyle · @just_maya</span>
-                </div>
-              </header>
-              <p className={styles.bio}>
-                Good taste, daily aesthetics, and little things I love.
-              </p>
-              <div className={styles.socials}>
-                {['instagram', 'tiktok', 'youtube'].map((name) => (
-                  <Image
-                    key={name}
-                    src={`/connectors/${name}.svg`}
-                    alt={name}
-                    width={20}
-                    height={20}
-                  />
-                ))}
+            <div className={styles.phone}>
+              <div className={styles.phoneBar} aria-hidden="true">
+                <span>9:41</span>
+                <i />
+                <span>•••</span>
               </div>
               <div
-                className={styles.feed}
-                style={{
-                  background:
-                    frame >= 4 ? ['#fffdf9', '#f1f3ea', '#f4e9df'][tone] : '#fffdf9',
-                }}
+                ref={storeRef}
+                className={styles.store}
+                style={{ background: ['#f6efe3', '#e0e6d5', '#eedee1'][tone] }}
               >
-                <div className={styles.labels}>
-                  {labels.map((name) => (
-                    <button
-                      type="button"
-                      key={name}
-                      aria-pressed={label === name}
-                      onClick={() => {
-                        setLabel(name);
-                      }}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-                <span className={styles.eyebrow}>MAYA’S FAVORITES</span>
-                <h4>
-                  {label === 'Random' ? 'Little things I love' : 'Everyday favorites'}
-                </h4>
-                <p className={styles.caption}>
-                  {category === 0
-                    ? 'Your collection, ready to explore.'
-                    : 'Picked and shared by Maya.'}
+                <header className={styles.profile}>
+                  <Image
+                    src="/images/creator-maya-avatar.png"
+                    alt="Maya Cohen"
+                    width={56}
+                    height={56}
+                  />
+                  <div>
+                    <h4>Maya Cohen</h4>
+                    <span>Lifestyle · @just_maya</span>
+                  </div>
+                </header>
+                <p className={styles.bio}>
+                  Good taste, daily aesthetics, and little things I love.
                 </p>
-                <div className={styles.products}>
-                  {visibleProducts.map((product) => (
-                    <article key={product.name}>
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={180}
-                        height={210}
-                      />
-                      <span>{product.name}</span>
-                    </article>
+                <div className={styles.socials}>
+                  {['instagram', 'tiktok', 'youtube'].map((name) => (
+                    <Image
+                      key={name}
+                      src={`/connectors/${name}.svg`}
+                      alt={name}
+                      width={20}
+                      height={20}
+                    />
                   ))}
                 </div>
+                <div
+                  className={styles.feed}
+                  style={{
+                    background:
+                      frame >= 4 ? ['#fffdf9', '#f1f3ea', '#f4e9df'][tone] : '#fffdf9',
+                  }}
+                >
+                  <div className={styles.labels}>
+                    {labels.map((name) => (
+                      <button
+                        type="button"
+                        key={name}
+                        aria-pressed={label === name}
+                        onClick={() => {
+                          setLabel(name);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                  <span className={styles.eyebrow}>MAYA’S FAVORITES</span>
+                  <h4>
+                    {label === 'Random' ? 'Little things I love' : 'Everyday favorites'}
+                  </h4>
+                  <p className={styles.caption}>
+                    {category === 0
+                      ? 'Your collection, ready to explore.'
+                      : 'Picked and shared by Maya.'}
+                  </p>
+                  <div className={styles.products}>
+                    {visibleProducts.map((product) => (
+                      <article key={product.name}>
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          width={180}
+                          height={210}
+                        />
+                        <span>{product.name}</span>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className={styles.phoneFoot} aria-hidden="true">
+                <span>More to explore ↓</span>
+                <i />
               </div>
             </div>
           )}

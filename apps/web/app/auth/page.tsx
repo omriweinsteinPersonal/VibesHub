@@ -66,7 +66,9 @@ function AuthExperience() {
   const [mode, setMode] = useState<'login' | 'signup'>(
     searchParams.get('mode') === 'signup' ? 'signup' : 'login',
   );
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState(
+    (searchParams.get('name') ?? '').slice(0, 100),
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(
