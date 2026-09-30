@@ -424,7 +424,7 @@
   }
   .canvas {
     padding: 12px 10px 14px;
-    grid-template-rows: 58px 356px;
+    grid-template-rows: 58px 474px;
     gap: 8px;
     min-height: 0;
     align-items: start;
@@ -440,8 +440,9 @@
     font-size: 11px;
   }
   .store {
-    height: 356px;
-    max-height: 356px;
+    width: min(82vw, 292px);
+    height: 474px;
+    max-height: 474px;
     overflow: hidden;
   }
   .editor {
@@ -533,9 +534,6 @@
   .products {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 7px;
-  }
-  .products article:nth-child(n + 4) {
-    display: none;
   }
   .products span {
     display: none;
