@@ -440,7 +440,9 @@
     font-size: 11px;
   }
   .store {
-    max-height: none;
+    max-height: min(390px, 54svh);
+    overflow-y: hidden;
+    scroll-behavior: smooth;
   }
   .editor {
     padding: 14px;

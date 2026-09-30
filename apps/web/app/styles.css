@@ -10142,9 +10142,9 @@ dt {
   padding-bottom: 112px;
   color: #171b2c;
   background:
-    radial-gradient(circle at 14% 14%, rgba(255, 192, 221, 0.72), transparent 30%),
-    radial-gradient(circle at 88% 72%, rgba(169, 215, 255, 0.8), transparent 34%),
-    linear-gradient(135deg, #f9efff 0%, #edf3ff 51%, #fff2f5 100%);
+    radial-gradient(circle at 12% 12%, rgba(232, 211, 193, 0.78), transparent 31%),
+    radial-gradient(circle at 88% 72%, rgba(242, 215, 206, 0.76), transparent 34%),
+    linear-gradient(135deg, #f8f2ec 0%, #f3ebe2 52%, #f9f0eb 100%);
 }
 .creatorAudienceIntro {
   max-width: 700px;
@@ -10152,7 +10152,7 @@ dt {
   text-align: center;
 }
 .creatorAudienceIntro .creatorLandingEyebrow {
-  color: #8a3477;
+  color: #a6503d;
 }
 .creatorAudienceIntro h2 {
   max-width: 660px;
@@ -10165,12 +10165,12 @@ dt {
 .creatorAudienceIntro > p:not(.creatorLandingEyebrow) {
   max-width: 610px;
   margin-inline: auto;
-  color: #45445a;
+  color: #5b4d45;
   font-size: 17px;
   line-height: 1.5;
 }
 .creatorAudience .creatorTextLink {
-  color: #5e286e;
+  color: #984434;
   font-weight: 700;
 }
 .creatorAnalyticsPreview {
@@ -10189,15 +10189,15 @@ dt {
 }
 .creatorAnalyticsPreview > header > div > span,
 .creatorAnalyticsPanelHeading span {
-  color: #72518c;
+  color: #986354;
 }
 .creatorAnalyticsPreview > header strong,
 .creatorAnalyticsPanelHeading strong {
-  color: #27213e;
+  color: #3d302a;
 }
 .creatorAnalyticsRange {
-  border-color: rgba(94, 40, 110, 0.2);
-  color: #5e286e;
+  border-color: rgba(145, 83, 65, 0.22);
+  color: #875244;
   background: rgba(255, 255, 255, 0.62);
 }
 .creatorAnalyticsMetrics {
@@ -10209,20 +10209,20 @@ dt {
   padding: 22px 20px;
   border: 0;
   border-radius: 22px;
-  color: #fffaff;
-  background: linear-gradient(135deg, #33225f, #56418f);
+  color: #493a31;
+  background: #e8ddd1;
 }
 .creatorAnalyticsMetrics article:nth-child(2) {
-  color: #36235a;
-  background: linear-gradient(135deg, #e9d8ff, #cfb8f4);
+  color: #4e3c31;
+  background: #f3e9df;
 }
 .creatorAnalyticsMetrics article:nth-child(3) {
-  color: #54213f;
-  background: linear-gradient(135deg, #ffc7bc, #f49db3);
+  color: #642d26;
+  background: #e7bdb1;
 }
 .creatorAnalyticsMetrics article:nth-child(4) {
-  color: #123f4b;
-  background: linear-gradient(135deg, #c1f0e5, #8dd8d4);
+  color: #4b3d34;
+  background: #ddd2c7;
 }
 .creatorAnalyticsMetrics span,
 .creatorAnalyticsMetrics small {
@@ -10239,40 +10239,40 @@ dt {
 .creatorAnalyticsDashboard {
   margin-top: 12px;
   overflow: hidden;
-  border: 1px solid rgba(83, 62, 122, 0.16);
+  border: 1px solid rgba(113, 82, 67, 0.16);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.74);
+  background: rgba(255, 251, 247, 0.76);
 }
 .creatorAnalyticsDashboard section {
-  border-color: rgba(83, 62, 122, 0.13);
+  border-color: rgba(113, 82, 67, 0.13);
 }
 .creatorAnalyticsPanelHeading svg {
-  color: #8a3477;
+  color: #ad5b49;
 }
 .creatorAnalyticsBars {
-  border-color: rgba(83, 62, 122, 0.14);
+  border-color: rgba(113, 82, 67, 0.14);
 }
 .creatorAnalyticsBars i {
-  background: #cbb7ec;
+  background: #d8bcb0;
 }
 .creatorAnalyticsBars i:nth-child(4),
 .creatorAnalyticsBars i:nth-child(6) {
-  background: #9b7bd2;
+  background: #be806d;
 }
 .creatorAnalyticsBars i:nth-child(8) {
-  background: #d35d91;
+  background: #aa4e3e;
 }
 .creatorAnalyticsAxis,
 .creatorTopProducts li,
 .creatorAudienceCountries > div > span {
-  color: #5e5777;
+  color: #765e51;
 }
 .creatorTopProducts li strong,
 .creatorAudienceCountries > div strong {
-  color: #27213e;
+  color: #3d302a;
 }
 .creatorAudienceCountries > div > span {
-  background: #ebe2fb;
+  background: #efe0d4;
 }
 
 .creatorPricing {

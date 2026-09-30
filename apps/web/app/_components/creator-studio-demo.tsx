@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ArrowLeft, ArrowRight, Check, Layers, Palette, Tags } from 'lucide-react';
 import styles from './creator-studio-demo.module.css';
 
@@ -49,6 +49,7 @@ function subscribeToMotionPreference(callback: () => void) {
 
 export function CreatorStudioDemo() {
   const [frame, setFrame] = useState(0);
+  const storeRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useSyncExternalStore(
     subscribeToMotionPreference,
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -91,6 +92,18 @@ export function CreatorStudioDemo() {
     }, 4200);
     return () => window.clearInterval(timer);
   }, [reducedMotion]);
+  useEffect(() => {
+    const store = storeRef.current;
+    if (!store) return;
+
+    store.scrollTo({ top: 0, behavior: 'auto' });
+    if (frame !== 2 || reducedMotion) return;
+
+    const scrollTimer = window.setTimeout(() => {
+      store.scrollTo({ top: store.scrollHeight, behavior: 'smooth' });
+    }, 900);
+    return () => window.clearTimeout(scrollTimer);
+  }, [frame, reducedMotion]);
   const advance = () => goTo((frame + 1) % scenes.length);
   const retreat = () => goTo((frame - 1 + scenes.length) % scenes.length);
   return (
@@ -175,6 +188,7 @@ export function CreatorStudioDemo() {
             </div>
           ) : (
             <div
+              ref={storeRef}
               className={styles.store}
               style={{ background: ['#f6efe3', '#e0e6d5', '#eedee1'][tone] }}
             >
