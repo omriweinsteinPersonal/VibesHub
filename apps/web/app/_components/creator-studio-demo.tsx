@@ -31,7 +31,7 @@ const scenes = [
 ] as const;
 const labels = ['All', 'My closet', 'Random', 'Beauty', 'Home & living'];
 const products = [
-  { name: 'Everyday shoulder bag', image: '/images/creator-demo-shoulder-bag.png' },
+  { name: 'Crescent mini bag', image: '/images/creator-demo-shoulder-bag.png' },
   { name: 'My favorite sneakers', image: '/images/creator-demo-sneakers.png' },
   { name: 'Sculptural gold hoops', image: '/images/creator-demo-earrings.png' },
   { name: 'Morning coffee', image: '/images/creator-demo-coffee-cup.png' },
@@ -156,7 +156,7 @@ export function CreatorStudioDemo() {
                       </div>
                       <div className={styles.field}>
                         <span>Brand</span>
-                        <div>Maya’s favorites</div>
+                        <div>Orelune Studio</div>
                       </div>
                     </div>
                   </div>

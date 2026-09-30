@@ -191,15 +191,17 @@ export default function HomePage() {
           <div className="creatorSectionHeading">
             <p className="creatorLandingEyebrow">PRICING</p>
             <h2>Start building your space.</h2>
-            <p>
-              Pricing plans are coming soon. Join now to help shape swavii for creators.
-            </p>
+            <p>Try your first month free, then keep building for $12 a month.</p>
           </div>
           <div className="creatorPricingCard">
             <div>
               <p>EARLY ACCESS</p>
               <h3>Build your creator page</h3>
               <span>Everything you need to start sharing your recommendations.</span>
+              <div className="creatorPrice">
+                <strong>First month free</strong>
+                <span>Then $12 / month</span>
+              </div>
             </div>
             <ul>
               <li>
@@ -213,6 +215,9 @@ export default function HomePage() {
               </li>
               <li>
                 <Check size={15} /> Performance analytics
+              </li>
+              <li>
+                <Check size={15} /> Connect your social accounts <em>coming soon</em>
               </li>
             </ul>
             <Link className="button primary" href={signupHref}>
