@@ -528,6 +528,15 @@ export const storefrontThemeSchema = z
     collectionBackground: storefrontColorSchema,
     accentColor: storefrontColorSchema,
     textColor: storefrontColorSchema,
+    // Layout lives alongside the visual design in the existing theme JSON.
+    // Optional for older clients and storefronts that retain their default order.
+    layout: z
+      .object({
+        blocks: z.array(z.string().min(1).max(160)).max(500),
+        labels: z.array(idSchema).max(100),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

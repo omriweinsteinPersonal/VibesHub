@@ -26,13 +26,13 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type PointerEvent,
 } from 'react';
 
+import { StorefrontLayout, StorefrontRegion, StorefrontSlot } from './storefront-layout';
 import { apiCollectionRequest, apiRequest } from '../../lib/api';
 import { connectorLabel } from '../../lib/creator-connectors';
 import { publicAssetUrl } from '../../lib/public-asset-url';
-import { storefrontEditOrder, type StorefrontLayer } from '../../lib/storefront-order';
+import type { StorefrontLayer } from '../../lib/storefront-order';
 import { textOnAccent } from '../../lib/storefront-theme';
 import { StorefrontViewTracker, TrackedInstagramLink } from './analytics-events';
 import { CreatorConnectorIcon } from './creator-connector-icon';
@@ -68,11 +68,7 @@ export function CreatorStorefrontView({
   const [configuration, setConfiguration] =
     useState<CreatorStorefrontConfiguration | null>(null);
   const [order, setOrder] = useState<StorefrontLayer[]>([]);
-  const [savingOrder, setSavingOrder] = useState(false);
   const [orderError, setOrderError] = useState('');
-  const [dragSource, setDragSource] = useState<string | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const suppressClick = useRef(false);
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -169,7 +165,9 @@ export function CreatorStorefrontView({
           ),
         };
         setConfiguration(cleaned);
-        setOrder(storefrontEditOrder(cleaned, recommendations, codes));
+        // Match the public grouping exactly; synthesizing individual layers here
+        // would create editor-only keys that the public page cannot restore.
+        setOrder(cleaned.contentOrder);
       })
       .catch(() => {
         if (active)
@@ -308,68 +306,6 @@ export function CreatorStorefrontView({
     );
     return result;
   }, [rows, codes, contentOrder]);
-  async function saveOrder(nextOrder: StorefrontLayer[], previous: StorefrontLayer[]) {
-    if (!configuration || savingOrder) return;
-    setSavingOrder(true);
-    setOrderError('');
-    try {
-      const saved = await apiRequest<CreatorStorefrontConfiguration>(
-        '/creator/studio/storefront-sections',
-        {
-          method: 'PUT',
-          headers: { 'if-match': `"${configuration.version}"` },
-          body: JSON.stringify({
-            categoryIds: configuration.sections.map(({ category }) => category.id),
-            curatedSections: configuration.curatedSections.map(
-              ({
-                id,
-                kind,
-                brandId,
-                title,
-                description,
-                imageUrl,
-                parentCollectionId,
-                recommendationIds,
-                showItemsIndividually,
-              }) => ({
-                id,
-                kind,
-                brandId,
-                title,
-                description,
-                imageUrl,
-                parentCollectionId,
-                recommendationIds,
-                showItemsIndividually,
-              }),
-            ),
-            contentOrder: nextOrder,
-            labels: configuration.labels,
-          }),
-        },
-      );
-      setConfiguration(saved);
-      setOrder(storefrontEditOrder(saved, recommendations, codes));
-    } catch (cause) {
-      setOrder(previous);
-      setOrderError(
-        cause instanceof Error
-          ? cause.message
-          : 'Could not save the new order. Please try again.',
-      );
-    } finally {
-      setSavingOrder(false);
-      setDragSource(null);
-      setDropTarget(null);
-    }
-  }
-  function moveLayer(source: string, target: string) {
-    if (savingOrder || source === target) return;
-    const nextOrder = reorderLayers(order, source, target);
-    if (nextOrder === order) return;
-    setOrder(nextOrder);
-    void saveOrder(nextOrder, order);
-  }
   const validTargets = new Set([
     ...storefront.brands.map(({ id }) => id),
     ...rows.map(({ key }) => key),
@@ -401,37 +337,42 @@ export function CreatorStorefrontView({
               }
             : {};
         return (
-          <div
+          <StorefrontSlot
             key={title.id}
-            className="storefrontContentBlock"
-            data-editor-block={title.id}
-            data-selected={selectedBlock === title.id}
-            style={cardStyle}
+            id={`text:${title.id}`}
+            label={title.text.slice(0, 60)}
           >
-            <Tag
-              dir="auto"
-              className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
-              style={{ textAlign: title.align }}
+            <div
+              className="storefrontContentBlock"
+              data-editor-block={title.id}
+              data-selected={selectedBlock === title.id}
+              style={cardStyle}
             >
-              {title.url && !showButton ? (
-                <a href={title.url} rel="noreferrer" target="_blank">
-                  {title.text}
-                </a>
-              ) : (
-                title.text
-              )}
-            </Tag>
-            {showButton ? (
-              <a
-                className="storefrontContentButton"
-                href={title.url}
-                rel="noreferrer"
-                target="_blank"
+              <Tag
+                dir="auto"
+                className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
+                style={{ textAlign: title.align }}
               >
-                {title.buttonLabel}
-              </a>
-            ) : null}
-          </div>
+                {title.url && !showButton ? (
+                  <a href={title.url} rel="noreferrer" target="_blank">
+                    {title.text}
+                  </a>
+                ) : (
+                  title.text
+                )}
+              </Tag>
+              {showButton ? (
+                <a
+                  className="storefrontContentButton"
+                  href={title.url}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {title.buttonLabel}
+                </a>
+              ) : null}
+            </div>
+          </StorefrontSlot>
         );
       });
   }
@@ -449,11 +390,7 @@ export function CreatorStorefrontView({
             return;
           const target = event.target as HTMLElement;
           const block = target.closest<HTMLElement>('[data-editor-block]');
-          if (
-            block &&
-            !target.closest('input, button') &&
-            (editingContent || !target.closest('a'))
-          ) {
+          if (block && !target.closest('input, button')) {
             event.preventDefault();
             event.stopPropagation();
             window.parent.postMessage(
@@ -497,53 +434,59 @@ export function CreatorStorefrontView({
         }
       >
         <StorefrontViewTracker creatorId={storefront.id} />
-        <section className="referenceStorefrontHero">
-          <div
-            className={`referenceStorefrontInner${previewSocialLinks.length ? '' : ' noConnectors'}${previewBio ? ' hasBio' : ''}`}
-          >
-            <span className="referenceStorefrontAvatar">
-              {storefront.avatarUrl ? (
-                <Image
-                  alt={`${storefront.displayName} profile photo`}
-                  fill
-                  priority
-                  sizes="180px"
-                  src={publicAssetUrl(storefront.avatarUrl)}
-                  unoptimized
-                />
-              ) : (
-                <b>{initials(storefront.displayName)}</b>
-              )}
-            </span>
-            <div className="referenceStorefrontName">
-              <div>
-                <h1>{storefront.displayName}</h1>
-                {storefront.verificationStatus === 'verified' ? (
-                  <span aria-label="Verified creator">
-                    <BadgeCheck aria-hidden="true" size={24} />
-                  </span>
-                ) : null}
+        <StorefrontLayout
+          creatorId={storefront.id}
+          theme={previewTheme}
+          editable={canEdit && Boolean(configuration) && !query && !activeLabelId}
+          onTheme={setPreviewTheme}
+        >
+          <StorefrontRegion>
+            <StorefrontSlot id="profile" label="Profile" kind="profile">
+              <div className="referenceStorefrontInner">
+                <span className="referenceStorefrontAvatar">
+                  {storefront.avatarUrl ? (
+                    <Image
+                      alt={`${storefront.displayName} profile photo`}
+                      fill
+                      priority
+                      sizes="180px"
+                      src={publicAssetUrl(storefront.avatarUrl)}
+                      unoptimized
+                    />
+                  ) : (
+                    <b>{initials(storefront.displayName)}</b>
+                  )}
+                </span>
+                <div className="referenceStorefrontName">
+                  <div>
+                    <h1>{storefront.displayName}</h1>
+                    {storefront.verificationStatus === 'verified' ? (
+                      <span aria-label="Verified creator">
+                        <BadgeCheck aria-hidden="true" size={24} />
+                      </span>
+                    ) : null}
+                  </div>
+                  <p>
+                    {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
+                  </p>
+                </div>
               </div>
-              <p>
-                {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
-              </p>
-            </div>
-            {previewBio ? (
-              <p
-                className="referenceStorefrontBio"
-                data-editor-block="bio"
-                data-selected={selectedBlock === 'bio'}
-                dir="auto"
-                lang={storefront.bio.language}
-              >
-                {previewBio}
-              </p>
+            </StorefrontSlot>
+            {previewBio || canEdit ? (
+              <StorefrontSlot id="bio" label="Bio" kind="profile">
+                <p
+                  className="referenceStorefrontBio"
+                  data-editor-block="bio"
+                  data-selected={selectedBlock === 'bio'}
+                  dir="auto"
+                  lang={storefront.bio.language}
+                >
+                  {previewBio || 'Tap to add your bio'}
+                </p>
+              </StorefrontSlot>
             ) : null}
             {previewSocialLinks.length ? (
-              <nav
-                aria-label="Creator links"
-                className="referenceStorefrontActions referenceConnectors"
-              >
+              <StorefrontRegion>
                 {previewSocialLinks.map((link) => {
                   const label = connectorLabel(link.platform);
                   const content = (
@@ -552,367 +495,251 @@ export function CreatorStorefrontView({
                       <span className="srOnly">{label}</span>
                     </>
                   );
-                  return link.platform === 'instagram' ? (
-                    <TrackedInstagramLink
-                      className="referenceConnectorLink"
-                      creatorId={storefront.id}
-                      data-editor-block={`social:${link.platform}`}
-                      data-selected={selectedBlock === `social:${link.platform}`}
-                      href={link.url}
+                  return (
+                    <StorefrontSlot
                       key={link.platform}
-                      title={label}
+                      id={`social:${link.platform}`}
+                      label={label}
+                      kind="social"
                     >
-                      {content}
-                    </TrackedInstagramLink>
-                  ) : (
-                    <a
-                      className="referenceConnectorLink"
-                      data-editor-block={`social:${link.platform}`}
-                      data-selected={selectedBlock === `social:${link.platform}`}
-                      href={link.url}
-                      key={link.platform}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      title={label}
-                    >
-                      {content}
-                    </a>
+                      {link.platform === 'instagram' ? (
+                        <TrackedInstagramLink
+                          className="referenceConnectorLink"
+                          creatorId={storefront.id}
+                          data-editor-block={`social:${link.platform}`}
+                          data-selected={selectedBlock === `social:${link.platform}`}
+                          href={link.url}
+                          key={link.platform}
+                          title={label}
+                        >
+                          {content}
+                        </TrackedInstagramLink>
+                      ) : (
+                        <a
+                          className="referenceConnectorLink"
+                          data-editor-block={`social:${link.platform}`}
+                          data-selected={selectedBlock === `social:${link.platform}`}
+                          href={link.url}
+                          key={link.platform}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          title={label}
+                        >
+                          {content}
+                        </a>
+                      )}
+                    </StorefrontSlot>
                   );
                 })}
-              </nav>
+              </StorefrontRegion>
             ) : null}
-          </div>
-        </section>
+          </StorefrontRegion>
 
-        <section className="referenceStorefrontProducts">
-          {labels.length ? (
-            <nav aria-label="Store filters" className="referenceStorefrontLabels">
-              <button
-                aria-pressed={activeLabelId === null}
-                onClick={() => setActiveLabelId(null)}
-                type="button"
-              >
-                All
-              </button>
-              {labels.map((label) => (
-                <button
-                  aria-pressed={activeLabelId === label.id}
-                  key={label.id}
-                  onClick={() => setActiveLabelId(label.id)}
-                  type="button"
-                >
-                  {label.title}
-                </button>
-              ))}
-            </nav>
-          ) : null}
-          <header>
-            <label>
-              <Search aria-hidden="true" size={16} />
-              <input
-                aria-label="Search this store"
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search this store…"
-                type="search"
-                value={query}
-              />
-            </label>
-          </header>
-          {showingCompactLabelGrid ? (
-            <div className="referenceCompactLabelGroups">
-              {selectedCardBrands.map((brand) => (
-                <BrandBlock
-                  brand={brand}
-                  collections={storefront.curatedSections.filter(
-                    (section) =>
-                      section.kind === 'collection' && section.brandId === brand.brandId,
-                  )}
-                  creatorId={storefront.id}
-                  handle={storefront.handle}
-                  items={filtered.filter(
-                    (item) =>
-                      item.brandName.toLocaleLowerCase('he-IL') ===
-                      brand.name.toLocaleLowerCase('he-IL'),
-                  )}
-                  key={brand.id}
-                  offer={
-                    codes.find(
-                      (code) => code.brandId === brand.id && code.scopeKind === 'brand',
-                    ) ?? null
-                  }
-                />
-              ))}
-              {compactLabelItems.length ? (
-                <div className="referenceCompactLabelGrid">
-                  {compactLabelItems.map((item) => (
-                    <RecommendationCardView
+          <StorefrontRegion>
+            {labels.length ? (
+              <StorefrontSlot id="labels" label="Labels">
+                <nav aria-label="Store filters" className="referenceStorefrontLabels">
+                  <button
+                    aria-pressed={activeLabelId === null}
+                    onClick={() => setActiveLabelId(null)}
+                    type="button"
+                  >
+                    All
+                  </button>
+                  {labels.map((label) => (
+                    <button
+                      aria-pressed={activeLabelId === label.id}
+                      key={label.id}
+                      data-label-id={label.id}
+                      onClick={() => setActiveLabelId(label.id)}
+                      type="button"
+                    >
+                      {label.title}
+                    </button>
+                  ))}
+                </nav>
+              </StorefrontSlot>
+            ) : null}
+            <StorefrontSlot id="search" label="Search">
+              <header>
+                <label>
+                  <Search aria-hidden="true" size={16} />
+                  <input
+                    aria-label="Search this store"
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search this store…"
+                    type="search"
+                    value={query}
+                  />
+                </label>
+              </header>
+            </StorefrontSlot>
+            {showingCompactLabelGrid ? (
+              <StorefrontSlot id="filtered" label="Filtered recommendations">
+                <div className="referenceCompactLabelGroups">
+                  {selectedCardBrands.map((brand) => (
+                    <BrandBlock
+                      brand={brand}
+                      collections={storefront.curatedSections.filter(
+                        (section) =>
+                          section.kind === 'collection' &&
+                          section.brandId === brand.brandId,
+                      )}
                       creatorId={storefront.id}
-                      key={item.id}
-                      recommendation={item}
-                      showBrand
-                      showPrice={false}
+                      handle={storefront.handle}
+                      items={filtered.filter(
+                        (item) =>
+                          item.brandName.toLocaleLowerCase('he-IL') ===
+                          brand.name.toLocaleLowerCase('he-IL'),
+                      )}
+                      key={brand.id}
+                      offer={
+                        codes.find(
+                          (code) =>
+                            code.brandId === brand.id && code.scopeKind === 'brand',
+                        ) ?? null
+                      }
                     />
                   ))}
+                  {compactLabelItems.length ? (
+                    <div className="referenceCompactLabelGrid">
+                      {compactLabelItems.map((item) => (
+                        <RecommendationCardView
+                          creatorId={storefront.id}
+                          key={item.id}
+                          recommendation={item}
+                          showBrand
+                          showPrice={false}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          ) : null}
-          {!showingCompactLabelGrid
-            ? storefront.brands
-                .filter((brand) =>
-                  filtered.some(
-                    (item) =>
-                      item.brandName.toLocaleLowerCase() ===
-                      brand.name.toLocaleLowerCase(),
-                  ),
-                )
-                .sort((a, b) => {
-                  const ai = previewBrandOrder.indexOf(a.id),
-                    bi = previewBrandOrder.indexOf(b.id);
-                  return (ai < 0 ? 1000 : ai) - (bi < 0 ? 1000 : bi);
-                })
-                .map((brand) => (
-                  <Fragment key={brand.id}>
-                    {renderTitles(brand.id)}
-                    <div
-                      data-editor-block={brand.id}
-                      data-selected={selectedBlock === brand.id}
-                    >
-                      <BrandBlock
-                        brand={brand}
-                        collections={storefront.curatedSections.filter(
-                          (section) =>
-                            section.kind === 'collection' &&
-                            section.brandId === brand.brandId,
-                        )}
-                        creatorId={storefront.id}
-                        handle={storefront.handle}
-                        items={filtered.filter(
-                          (item) =>
-                            item.brandName.toLocaleLowerCase() ===
-                            brand.name.toLocaleLowerCase(),
-                        )}
-                        offer={
-                          codes.find(
-                            (code) =>
-                              code.brandId === brand.id && code.scopeKind === 'brand',
-                          ) ?? null
-                        }
-                        key={brand.id}
-                      />
-                    </div>
-                  </Fragment>
-                ))
-            : null}
-          {!showingCompactLabelGrid &&
-          storefront.curatedSections.some(
-            (section) => section.kind === 'page' && !section.parentCollectionId,
-          ) ? (
-            <div className="referenceStandalonePages referenceCollectionPages">
-              {storefront.curatedSections
-                .filter(
-                  (section) => section.kind === 'page' && !section.parentCollectionId,
-                )
-                .map((page) => (
-                  <Link
-                    href={`/${encodeURIComponent(storefront.handle)}/pages/${page.id}`}
-                    key={page.id}
-                  >
-                    <span>PRODUCT PAGE</span>
-                    <strong>{page.title}</strong>
-                    <small>{page.recommendationIds.length} picks →</small>
-                  </Link>
-                ))}
-            </div>
-          ) : null}
-          {orderError ? (
-            <p className="formError" role="alert">
-              {orderError}
-            </p>
-          ) : null}
-          {!showingCompactLabelGrid &&
-          !blocks.length &&
-          !storefront.curatedSections.some(({ kind }) => kind === 'page')
-            ? null
-            : !showingCompactLabelGrid
-              ? blocks.map(({ key, layer, row, code }) => {
-                  const productContent = row ? (
-                    <StorefrontRow
-                      creatorId={storefront.id}
-                      framed={row.framed}
-                      pages={storefront.curatedSections.filter(
-                        (section) =>
-                          section.kind === 'page' &&
-                          section.parentCollectionId === row.key,
-                      )}
-                      recommendations={row.items}
-                      storefrontHandle={storefront.handle}
-                      title={row.title}
-                    />
-                  ) : code ? (
-                    <DiscountBlock code={code} />
-                  ) : null;
-                  const content = (
-                    <>
-                      {renderTitles(row?.key ?? code?.id ?? key)}
-                      {productContent}
-                    </>
-                  );
-                  if (!canEdit || !configuration || !layer || query)
-                    return <div key={key}>{content}</div>;
-                  const layerKey = `${layer.kind}:${layer.id}`;
-                  const draggableBlocks = blocks.filter(({ layer: item }) => item);
-                  const position = draggableBlocks.findIndex(
-                    ({ layer: item }) =>
-                      item?.kind === layer.kind && item.id === layer.id,
-                  );
-                  const label = row?.title ?? code?.merchantName ?? 'Recommendation';
-                  return (
-                    <div
-                      aria-label={`${label}. Drag to change its position, or use the arrow keys.`}
-                      className="storefrontDraggableBlock"
-                      data-dragging={dragSource === layerKey}
-                      data-drop-target={dropTarget === layerKey}
-                      data-storefront-layer={layerKey}
-                      key={key}
-                      onClickCapture={(event) => {
-                        if (!suppressClick.current) return;
-                        event.preventDefault();
-                        event.stopPropagation();
-                        suppressClick.current = false;
-                      }}
-                      onContextMenu={(event) => event.preventDefault()}
-                      onDragStartCapture={(event) => event.preventDefault()}
-                      onKeyDown={(event) => {
-                        if (event.target !== event.currentTarget || savingOrder) return;
-                        const offset =
-                          event.key === 'ArrowUp'
-                            ? -1
-                            : event.key === 'ArrowDown'
-                              ? 1
-                              : 0;
-                        if (!offset) return;
-                        const target = draggableBlocks[position + offset]?.layer;
-                        if (!target) return;
-                        event.preventDefault();
-                        void moveLayer(layerKey, `${target.kind}:${target.id}`);
-                      }}
-                      onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
-                        if (
-                          savingOrder ||
-                          (event.pointerType === 'mouse' && event.button !== 0)
-                        )
-                          return;
-                        const pointerId = event.pointerId;
-                        const isTouch = event.pointerType === 'touch';
-                        const gesture = {
-                          source: layerKey,
-                          startX: event.clientX,
-                          startY: event.clientY,
-                          active: false,
-                          order,
-                          changed: false,
-                        };
-                        const pressTimer = window.setTimeout(() => {
-                          gesture.active = true;
-                          setDragSource(layerKey);
-                        }, 280);
-                        const cleanup = () => {
-                          window.clearTimeout(pressTimer);
-                          window.removeEventListener('pointermove', onMove);
-                          window.removeEventListener('pointerup', onUp);
-                          window.removeEventListener('pointercancel', onCancel);
-                          window.removeEventListener('touchmove', onTouchMove);
-                          window.removeEventListener('touchend', onTouchEnd);
-                          window.removeEventListener('touchcancel', onTouchCancel);
-                          setDragSource(null);
-                          setDropTarget(null);
-                        };
-                        const updatePosition = (x: number, y: number) => {
-                          if (!gesture.active) {
-                            if (Math.hypot(x - gesture.startX, y - gesture.startY) > 8)
-                              window.clearTimeout(pressTimer);
-                            return;
-                          }
-                          const target =
-                            document
-                              .elementFromPoint(x, y)
-                              ?.closest<HTMLElement>('[data-storefront-layer]')?.dataset
-                              .storefrontLayer ?? null;
-                          if (target && target !== layerKey) {
-                            const nextOrder = reorderLayers(
-                              gesture.order,
-                              layerKey,
-                              target,
-                            );
-                            if (nextOrder !== gesture.order) {
-                              gesture.order = nextOrder;
-                              gesture.changed = true;
-                              setOrder(nextOrder);
+              </StorefrontSlot>
+            ) : null}
+            {!showingCompactLabelGrid
+              ? storefront.brands
+                  .filter((brand) =>
+                    filtered.some(
+                      (item) =>
+                        item.brandName.toLocaleLowerCase() ===
+                        brand.name.toLocaleLowerCase(),
+                    ),
+                  )
+                  .sort((a, b) => {
+                    const ai = previewBrandOrder.indexOf(a.id),
+                      bi = previewBrandOrder.indexOf(b.id);
+                    return (ai < 0 ? 1000 : ai) - (bi < 0 ? 1000 : bi);
+                  })
+                  .map((brand) => (
+                    <Fragment key={brand.id}>
+                      {renderTitles(brand.id)}
+                      <StorefrontSlot id={`brand:${brand.id}`} label={brand.name}>
+                        <div
+                          data-editor-block={brand.id}
+                          data-selected={selectedBlock === brand.id}
+                        >
+                          <BrandBlock
+                            brand={brand}
+                            collections={storefront.curatedSections.filter(
+                              (section) =>
+                                section.kind === 'collection' &&
+                                section.brandId === brand.brandId,
+                            )}
+                            creatorId={storefront.id}
+                            handle={storefront.handle}
+                            items={filtered.filter(
+                              (item) =>
+                                item.brandName.toLocaleLowerCase() ===
+                                brand.name.toLocaleLowerCase(),
+                            )}
+                            offer={
+                              codes.find(
+                                (code) =>
+                                  code.brandId === brand.id && code.scopeKind === 'brand',
+                              ) ?? null
                             }
-                          }
-                          setDropTarget(target);
-                          if (y < 64) window.scrollBy(0, -18);
-                          else if (y > window.innerHeight - 64) window.scrollBy(0, 18);
-                        };
-                        const onMove = (pointer: globalThis.PointerEvent) => {
-                          if (pointer.pointerId === pointerId)
-                            updatePosition(pointer.clientX, pointer.clientY);
-                        };
-                        const finish = () => {
-                          const active = gesture.active;
-                          cleanup();
-                          if (active) {
-                            suppressClick.current = true;
-                            if (gesture.changed) void saveOrder(gesture.order, order);
-                            window.setTimeout(() => {
-                              suppressClick.current = false;
-                            }, 400);
-                          }
-                        };
-                        const onUp = (pointer: globalThis.PointerEvent) => {
-                          if (pointer.pointerId === pointerId) finish();
-                        };
-                        const onCancel = (pointer: globalThis.PointerEvent) => {
-                          if (pointer.pointerId === pointerId) {
-                            if (isTouch && gesture.active) return;
-                            cleanup();
-                            if (gesture.changed) setOrder(order);
-                          }
-                        };
-                        const onTouchMove = (touch: TouchEvent) => {
-                          if (!isTouch) return;
-                          if (gesture.active) touch.preventDefault();
-                          const point = touch.touches[0];
-                          if (point) updatePosition(point.clientX, point.clientY);
-                        };
-                        const onTouchEnd = () => {
-                          if (isTouch) finish();
-                        };
-                        const onTouchCancel = () => {
-                          if (isTouch) {
-                            cleanup();
-                            if (gesture.changed) setOrder(order);
-                          }
-                        };
-                        window.addEventListener('pointermove', onMove);
-                        window.addEventListener('pointerup', onUp);
-                        window.addEventListener('pointercancel', onCancel);
-                        window.addEventListener('touchmove', onTouchMove, {
-                          passive: false,
-                        });
-                        window.addEventListener('touchend', onTouchEnd);
-                        window.addEventListener('touchcancel', onTouchCancel);
-                      }}
-                      tabIndex={0}
-                    >
-                      {content}
-                    </div>
-                  );
-                })
+                            key={brand.id}
+                          />
+                        </div>
+                      </StorefrontSlot>
+                    </Fragment>
+                  ))
               : null}
-          {!showingCompactLabelGrid ? renderTitles(null) : null}
-        </section>
+            {!showingCompactLabelGrid &&
+            storefront.curatedSections.some(
+              (section) => section.kind === 'page' && !section.parentCollectionId,
+            ) ? (
+              <StorefrontRegion>
+                {storefront.curatedSections
+                  .filter(
+                    (section) => section.kind === 'page' && !section.parentCollectionId,
+                  )
+                  .map((page) => (
+                    <StorefrontSlot
+                      key={page.id}
+                      id={`page:${page.id}`}
+                      label={page.title}
+                    >
+                      <div className="referenceStandalonePages referenceCollectionPages">
+                        <Link
+                          href={`/${encodeURIComponent(storefront.handle)}/pages/${page.id}`}
+                          key={page.id}
+                        >
+                          <span>PRODUCT PAGE</span>
+                          <strong>{page.title}</strong>
+                          <small>{page.recommendationIds.length} picks →</small>
+                        </Link>
+                      </div>
+                    </StorefrontSlot>
+                  ))}
+              </StorefrontRegion>
+            ) : null}
+            {orderError ? (
+              <StorefrontSlot id="error" label="Editing status">
+                <p className="formError" role="alert">
+                  {orderError}
+                </p>
+              </StorefrontSlot>
+            ) : null}
+            {!showingCompactLabelGrid &&
+            !blocks.length &&
+            !storefront.curatedSections.some(({ kind }) => kind === 'page')
+              ? null
+              : !showingCompactLabelGrid
+                ? blocks.map(({ key, row, code }) => {
+                    const productContent = row ? (
+                      <StorefrontRow
+                        creatorId={storefront.id}
+                        framed={row.framed}
+                        pages={storefront.curatedSections.filter(
+                          (section) =>
+                            section.kind === 'page' &&
+                            section.parentCollectionId === row.key,
+                        )}
+                        recommendations={row.items}
+                        storefrontHandle={storefront.handle}
+                        title={row.title}
+                      />
+                    ) : code ? (
+                      <DiscountBlock code={code} />
+                    ) : null;
+                    return (
+                      <Fragment key={key}>
+                        {renderTitles(row?.key ?? code?.id ?? key)}
+                        <StorefrontSlot
+                          id={`content:${row?.key ?? code?.id ?? key}`}
+                          label={row?.title ?? code?.merchantName ?? 'Recommendations'}
+                        >
+                          {productContent}
+                        </StorefrontSlot>
+                      </Fragment>
+                    );
+                  })
+                : null}
+            {!showingCompactLabelGrid ? renderTitles(null) : null}
+          </StorefrontRegion>
+        </StorefrontLayout>
       </div>
     </>
   );
@@ -1314,13 +1141,4 @@ async function loadCreatorInventory<T>(path: string): Promise<T[]> {
     cursor = page.page.nextCursor;
   } while (cursor);
   return items;
-}
-
-function reorderLayers(order: StorefrontLayer[], source: string, target: string) {
-  const from = order.findIndex(({ kind, id }) => `${kind}:${id}` === source);
-  const to = order.findIndex(({ kind, id }) => `${kind}:${id}` === target);
-  if (from < 0 || to < 0 || from === to) return order;
-  const next = [...order];
-  next.splice(to, 0, ...next.splice(from, 1));
-  return next;
 }

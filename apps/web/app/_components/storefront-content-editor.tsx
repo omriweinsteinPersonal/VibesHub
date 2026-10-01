@@ -38,10 +38,8 @@ export function StorefrontContentEditor({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
-  const [dragged, setDragged] = useState<string | null>(null);
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [draggedSocial, setDraggedSocial] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
     Promise.all([
@@ -92,29 +90,6 @@ export function StorefrontContentEditor({
       .filter(({ beforeId }) => !beforeId || !brandIds.has(beforeId))
       .map((item) => ({ id: item.id, title: item.text || 'Empty text', kind: 'text' })),
   );
-  function move(id: string, to: number) {
-    const from = layers.findIndex((item) => item.id === id);
-    if (saving || from < 0 || to < 0 || to >= layers.length || to === from) return;
-    const next = [...layers];
-    const [item] = next.splice(from, 1);
-    next.splice(to, 0, item!);
-    const titles = next.flatMap((layer, index) => {
-      const text = draft.titles.find(({ id }) => id === layer.id);
-      return text
-        ? [
-            {
-              ...text,
-              beforeId:
-                next.slice(index + 1).find(({ kind }) => kind === 'brand')?.id ?? null,
-            },
-          ]
-        : [];
-    });
-    change({
-      titles,
-      brandOrder: next.filter(({ kind }) => kind === 'brand').map(({ id }) => id),
-    });
-  }
   const selected = draft.titles.find(({ id }) => id === selectedId);
   const selectedTarget = targets.find(({ id }) => id === selectedId);
   const profileDraft = {
@@ -194,7 +169,8 @@ export function StorefrontContentEditor({
         ),
         contentOrder: configuration.contentOrder,
         labels: configuration.labels,
-        ...draft,
+        titles: draft.titles,
+        brandOrder: draft.brandOrder,
       });
       const updated = await apiRequest<CreatorStorefrontConfiguration>(
         '/creator/studio/storefront-sections',
@@ -219,8 +195,8 @@ export function StorefrontContentEditor({
   return (
     <div className="storefrontContentEditor">
       <p>
-        Tap a block in the preview to edit it. Drag a section to place it where you want
-        it.
+        Tap a block in the preview to edit it. Drag its dotted handle to change its
+        position. Positions save automatically.
       </p>
       {targets.some(({ kind }) => kind === 'bio' || kind === 'social') ? (
         <div
@@ -272,20 +248,8 @@ export function StorefrontContentEditor({
       </button>
       <h3>Layers</h3>
       <ol className="storefrontLayerList">
-        {layers.map((layer, index) => (
-          <li
-            key={layer.id}
-            draggable={!saving}
-            onDragStart={() => setDragged(layer.id)}
-            onDragEnd={() => setDragged(null)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (dragged) move(dragged, index);
-              setDragged(null);
-            }}
-            data-selected={selectedId === layer.id}
-          >
+        {layers.map((layer) => (
+          <li key={layer.id} data-selected={selectedId === layer.id}>
             <button
               type="button"
               aria-pressed={selectedId === layer.id}
@@ -320,28 +284,12 @@ export function StorefrontContentEditor({
         </section>
       ) : selectedTarget?.kind === 'social' ? (
         <section className="storefrontTitleEditor">
-          <p>Edit this link, or drag platforms below to set their live order.</p>
+          <p>
+            Edit this link here. To move an icon, drag its dotted handle in the preview.
+          </p>
           <ol className="storefrontLayerList">
-            {profileDraft.socialLinks.map((link, index) => (
-              <li
-                draggable={!savingProfile}
-                key={link.platform}
-                onDragEnd={() => setDraggedSocial(null)}
-                onDragOver={(event) => event.preventDefault()}
-                onDragStart={() => setDraggedSocial(link.platform)}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  if (!draggedSocial || draggedSocial === link.platform) return;
-                  const links = [...profileDraft.socialLinks];
-                  const from = links.findIndex(
-                    ({ platform }) => platform === draggedSocial,
-                  );
-                  const [moving] = links.splice(from, 1);
-                  links.splice(index, 0, moving!);
-                  changeProfile({ socialLinks: links });
-                  setDraggedSocial(null);
-                }}
-              >
+            {profileDraft.socialLinks.map((link) => (
+              <li key={link.platform}>
                 <button type="button" onClick={() => onSelect(`social:${link.platform}`)}>
                   <small>Platform</small>
                   <span>{link.platform}</span>

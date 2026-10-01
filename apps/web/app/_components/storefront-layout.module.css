@@ -1,0 +1,177 @@
+.layout {
+  padding-bottom: 24px;
+  color: var(--sf-text);
+  background: var(--sf-page);
+}
+.instructions {
+  padding: 10px 20px;
+  background: #f4edf2;
+  color: #654653;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.instructions p {
+  margin: 0;
+}
+.profile {
+  background: var(--sf-profile);
+  padding: 14px 5vw;
+}
+.profile:first-of-type {
+  padding-top: 30px;
+}
+.profile :global(.referenceStorefrontInner) {
+  grid-template-areas: 'avatar identity';
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0;
+}
+.profile :global(.referenceStorefrontName) {
+  align-self: center;
+}
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 5vw 22px;
+  background: var(--sf-profile);
+}
+.socials :global(.referenceConnectorLink) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #c5b8af;
+  border-radius: 50%;
+  background: var(--sf-product);
+  color: var(--sf-text);
+}
+.content:global(.referenceStorefrontProducts) {
+  padding-block: 8px;
+}
+.content header:has(input) label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #c5b8af;
+  border-radius: 24px;
+  padding: 6px 12px;
+  max-width: 420px;
+  margin-left: auto;
+}
+.content header:has(input) input {
+  min-width: 0;
+  width: 100%;
+  min-height: 32px;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 16px;
+}
+.sortable {
+  position: relative;
+  min-width: 0;
+  padding-top: 48px;
+  border-radius: 12px;
+  outline: 1px dashed #b6a59b;
+  outline-offset: 2px;
+}
+.sortable[data-moving='true'] {
+  opacity: 0.55;
+}
+.sortable[data-drop-target='true'] {
+  outline: 3px solid #855875;
+  background: #eee4ec;
+}
+.handle {
+  position: absolute;
+  top: -2px;
+  right: 4px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #faf6f8;
+  color: #68465c;
+  border: 1px solid #c8b6c2;
+  border-radius: 8px;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  z-index: 2;
+}
+.handle:active {
+  cursor: grabbing;
+}
+.handle:focus-visible {
+  outline: 3px solid #855875;
+  outline-offset: 2px;
+}
+.handle:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.dragHint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: #674259;
+  color: white;
+  border-radius: 20px;
+  padding: 9px 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.socials .sortable {
+  min-width: 46px;
+}
+.labels {
+  align-items: center;
+  padding: 4px;
+}
+.compact {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-radius: 8px;
+}
+.compact .handle {
+  position: static;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+}
+.compact > button:not(.handle) {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .profile,
+  .socials {
+    padding-inline: 18px;
+  }
+  .profile :global(.referenceStorefrontInner) {
+    column-gap: 14px;
+  }
+  .profile :global(.referenceStorefrontAvatar) {
+    width: 66px;
+    height: 66px;
+    border-width: 3px;
+  }
+  .profile :global(.referenceStorefrontName h1) {
+    font-size: 32px;
+    overflow-wrap: anywhere;
+  }
+  .profile :global(.referenceStorefrontName > p) {
+    font-size: 12px;
+  }
+  .content:global(.referenceStorefrontProducts) {
+    padding-inline: 18px;
+  }
+}

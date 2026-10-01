@@ -190,15 +190,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="creatorFinalCta">
-          <p className="creatorLandingEyebrow">YOUR PAGE, YOUR WAY</p>
-          <h2>Give every recommendation a place to live.</h2>
-          <p>Create one beautiful page, then share it everywhere.</p>
-          <Link className="button creatorLightCta" href={signupHref}>
-            Create your page <ArrowRight size={17} />
-          </Link>
-        </section>
-
         <section className="creatorInstagram" aria-labelledby="instagram-heading">
           <div>
             <p className="creatorLandingEyebrow">FIND US ON INSTAGRAM</p>

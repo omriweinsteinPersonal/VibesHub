@@ -2,6 +2,7 @@
 
 import {
   defaultStorefrontTheme,
+  storefrontThemeConfigurationSchema,
   type StorefrontTheme,
   type StorefrontTitle,
   type StorefrontThemeConfiguration,
@@ -14,7 +15,7 @@ import { apiRequest } from '../../lib/api';
 import { StorefrontContentEditor } from './storefront-content-editor';
 import { contrastRatio } from '../../lib/storefront-theme';
 
-type ThemeKey = keyof StorefrontTheme;
+type ThemeKey = Exclude<keyof StorefrontTheme, 'layout'>;
 type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
 const desktopQuery = '(min-width: 901px) and (pointer: fine)';
 const groups: Array<{
@@ -184,7 +185,17 @@ export function StorefrontPhonePreview({
       },
       window.location.origin,
     );
-  }, [creatorId, draft, previewTitles, previewBrandOrder, selectedBlock, tab, showPhone]);
+  }, [
+    creatorId,
+    draft,
+    previewTitles,
+    previewBrandOrder,
+    previewBio,
+    previewSocialLinks,
+    selectedBlock,
+    tab,
+    showPhone,
+  ]);
 
   useEffect(() => {
     if (!canEdit || !showPhone) return;
@@ -199,7 +210,16 @@ export function StorefrontPhonePreview({
         section?: ThemeSection;
         blockId?: string;
         type?: string;
+        configuration?: unknown;
       };
+      if (data.type === 'swavii:layout-saved' && data.creatorId === creatorId) {
+        const parsed = storefrontThemeConfigurationSchema.safeParse(data.configuration);
+        if (parsed.success) {
+          setConfiguration(parsed.data);
+          setDraft((current) => ({ ...current, layout: parsed.data.theme.layout }));
+        }
+        return;
+      }
       if (
         data.type === 'swavii:block-select' &&
         data.creatorId === creatorId &&
@@ -207,6 +227,7 @@ export function StorefrontPhonePreview({
       ) {
         setSelectedBlock(data.blockId);
         setTab('content');
+        setMobileEditorOpen(true);
         return;
       }
       if (
@@ -318,10 +339,12 @@ export function StorefrontPhonePreview({
               >
                 {palettes.map(({ name, theme: palette }) => (
                   <button
-                    aria-pressed={JSON.stringify(draft) === JSON.stringify(palette)}
+                    aria-pressed={Object.keys(defaultStorefrontTheme).every(
+                      (key) => draft[key as ThemeKey] === palette[key as ThemeKey],
+                    )}
                     key={name}
                     onClick={() => {
-                      setDraft(palette);
+                      setDraft((current) => ({ ...palette, layout: current.layout }));
                       setNotice('');
                     }}
                     type="button"
@@ -411,7 +434,10 @@ export function StorefrontPhonePreview({
                 <button
                   disabled={saving}
                   onClick={() => {
-                    setDraft(defaultStorefrontTheme);
+                    setDraft((current) => ({
+                      ...defaultStorefrontTheme,
+                      layout: current.layout,
+                    }));
                     setNotice('');
                   }}
                   type="button"

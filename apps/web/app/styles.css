@@ -7993,8 +7993,8 @@ dt {
   }
 
   .creatorManageCard:not(.creatorDiscountManageCard) {
-    gap: 8px 12px;
-    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 8px;
+    grid-template-columns: 56px minmax(0, 1fr) 96px;
     padding: 10px;
   }
 
@@ -8004,7 +8004,7 @@ dt {
 
   .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageImage {
     height: 64px;
-    width: 64px;
+    width: 56px;
   }
 
   .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageCopy h3 {
@@ -8012,8 +8012,15 @@ dt {
   }
 
   .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageActions {
-    grid-column: 2;
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
     justify-content: flex-end;
+    gap: 8px;
+  }
+  .creatorManageCard:not(.creatorDiscountManageCard) .creatorManageActions > button {
+    width: 44px;
+    height: 44px;
   }
 
   .creatorCustomSection {
@@ -10296,14 +10303,14 @@ dt {
 }
 .creatorPricingCard {
   padding: 38px;
-  border: 1px solid #dfcfc2;
+  border: 1px solid #c9b8c4;
   border-radius: 28px;
-  background: linear-gradient(145deg, #fff, #f7eee5);
-  box-shadow: 0 22px 60px rgba(68, 42, 28, 0.08);
+  background: linear-gradient(145deg, #eee3ea, #e2d3df);
+  box-shadow: 0 22px 60px rgba(73, 46, 65, 0.1);
 }
 .creatorPricingCard > div > p {
   margin: 0 0 10px;
-  color: #a66a4c;
+  color: #754961;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -10324,18 +10331,18 @@ dt {
   gap: 7px 12px;
   margin-top: 24px;
   padding: 16px 18px;
-  border: 1px solid #e4d4ca;
+  border: 1px solid #c9b3c2;
   border-radius: 16px;
-  background: linear-gradient(110deg, #fffaf5, #f3e9df);
+  background: #f8f2f6;
 }
 .creatorPrice strong {
-  color: #8d4f3b;
+  color: #673b56;
   font-family: var(--font-vh-display), serif;
   font-size: 24px;
   font-weight: 400;
 }
 .creatorPrice span {
-  color: #77665b;
+  color: #67555f;
   font-size: 13px;
 }
 .creatorPricingCard ul {
@@ -10343,7 +10350,7 @@ dt {
   gap: 12px;
   margin: 28px 0;
   padding: 24px 0;
-  border-block: 1px solid #e4d5ca;
+  border-block: 1px solid #cbb8c5;
   list-style: none;
 }
 .creatorPricingCard li {
@@ -10352,7 +10359,8 @@ dt {
   gap: 10px;
 }
 .creatorPricingCard li svg {
-  color: #a65f43;
+  color: #754961;
+  flex-shrink: 0;
 }
 .creatorPricingCard li em {
   margin-left: auto;
@@ -10363,6 +10371,12 @@ dt {
 .creatorPricingCard .button {
   width: 100%;
   gap: 8px;
+  background: #73445f;
+  border-color: #73445f;
+  color: #fff;
+}
+.creatorPricingCard .button:hover {
+  background: #5b344b;
 }
 .creatorFinalCta {
   display: flex;
@@ -10391,8 +10405,8 @@ dt {
   justify-content: space-between;
   gap: 32px;
   max-width: 1060px;
-  margin: 0 auto;
-  padding: 76px 32px 96px;
+  margin: 0 auto 48px;
+  padding: 56px 32px;
   border-radius: 32px;
   background:
     radial-gradient(circle at 88% 14%, #e8dafa 0, transparent 30%),
@@ -10438,6 +10452,7 @@ dt {
 }
 .creatorMarketingFooter {
   margin-top: 0;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
 @media (max-width: 900px) {

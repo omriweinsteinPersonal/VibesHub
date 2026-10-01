@@ -188,7 +188,7 @@ export class CreatorStudioRepository {
         return { actualVersion: row.themeVersion, kind: 'version_conflict' };
       await sql`
         update app.creator_storefront_preferences
-        set theme = ${sql.json(theme)}, theme_version = theme_version + 1
+        set theme = theme || ${sql.json(theme)}, theme_version = theme_version + 1
         where creator_id = ${identity.id}
       `;
       return { data: await this.readStorefrontTheme(sql, identity.id), kind: 'updated' };
