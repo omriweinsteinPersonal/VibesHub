@@ -6,12 +6,16 @@ used by web and mobile clients.
 
 ## Current scope
 
-This slice is deliberately sandbox-only:
+This integration is deliberately sandbox-only:
 
-- The only planned entitlement identifier is `creator_pro`.
+- RevenueCat Test Store has `monthly` and `yearly` products attached to the
+  `creator_pro` entitlement through the default offering.
 - No App Store Connect or Google Play product is created.
 - No RevenueCat payment method is required or stored.
 - No Polar integration or web checkout is enabled.
+- `EXPO_PUBLIC_REVENUECAT_TEST_STORE_API_KEY` is used only by development builds.
+- Release builds ignore the Test Store key and refuse a `test_` key placed in either
+  platform production-key slot.
 - Empty mobile RevenueCat public keys leave the SDK disabled.
 - The RevenueCat webhook accepts `SANDBOX` events by default and ignores production
   events until the allowed environment is changed intentionally.
@@ -31,8 +35,10 @@ This slice is deliberately sandbox-only:
    event is at least as new as the stored event.
 
 Clients never receive webhook secrets, store credentials, database credentials, or a
-RevenueCat secret API key. The `EXPO_PUBLIC_REVENUECAT_*_API_KEY` values are the public
-SDK keys intended to ship in the native application.
+RevenueCat secret API key. The `EXPO_PUBLIC_REVENUECAT_*_API_KEY` values are public SDK
+identifiers. Only platform-specific Apple and Google keys may ship in release builds;
+the Test Store key stays in a developer's ignored `.env.local` or a development build
+environment.
 
 ## Database boundary
 
@@ -46,18 +52,18 @@ Account deletion cascades the creator's billing identity, subscriptions, and ent
 state. Receipt rows contain provider event IDs and payload hashes only; they do not store
 emails, names, raw payloads, or the internal user ID.
 
-## Enabling sandbox testing later
+## Sandbox activation
 
-1. Create a RevenueCat project without adding a payment card.
-2. Create iOS and Android apps and use RevenueCat Test Store or platform sandbox
-   products only.
-3. Create the `creator_pro` entitlement and attach sandbox products.
-4. Configure a webhook to `https://<api-domain>/v1/webhooks/revenuecat`.
-5. Set a long random Authorization header and enable RevenueCat HMAC signing.
-6. Store the two webhook values only in the API project's secret environment variables.
-7. Keep `REVENUECAT_ALLOWED_ENVIRONMENT=sandbox`.
-8. Add the public iOS and Android SDK keys to the native build environment.
-9. Use an Expo development build for real purchase testing; Expo Go is not a release
+1. The RevenueCat project and Test Store catalog are configured without a payment card.
+2. Put the public Test Store SDK key in
+   `apps/mobile/.env.local` as `EXPO_PUBLIC_REVENUECAT_TEST_STORE_API_KEY`.
+3. Configure a sandbox-only webhook to
+   `https://vibeshub-api.vercel.app/v1/webhooks/revenuecat`.
+4. Set a long random Authorization header and enable RevenueCat HMAC signing.
+5. Store the two webhook values only in the API project's sensitive Production
+   environment variables.
+6. Keep `REVENUECAT_ALLOWED_ENVIRONMENT=sandbox`.
+7. Use an Expo development build for purchase testing; Expo Go is not a release
    purchase environment.
 
 Before enabling production, configure App Store Connect and Play Console agreements,

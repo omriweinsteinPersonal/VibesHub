@@ -24,8 +24,9 @@ model must nevertheless avoid locking authorization to one billing vendor.
   Auth ID or email.
 - Require both an authorization header and RevenueCat HMAC signature on webhooks.
 - Deduplicate webhook event IDs and reject stale signatures and conflicting payloads.
-- Default all integration settings to sandbox and keep the SDK disabled when its public
-  platform key is absent.
+- Default all integration settings to sandbox. Use the Test Store key only in
+  development, ignore it in release builds, and keep the SDK disabled when the
+  appropriate public key is absent.
 - Reserve `creator_pro` as the first entitlement identifier, without creating live store
   products in this slice.
 - Defer Polar and web checkout until a concrete web-billing need and tax/merchant model

@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+import { resolveRevenueCatApiKey } from './billing-config';
+
 let configuredCustomerId: string | undefined;
 
 export function isNativeBillingConfigured(): boolean {
@@ -28,11 +30,11 @@ export async function resetNativeBilling(): Promise<void> {
 }
 
 function getRevenueCatApiKey(): string | undefined {
-  if (Platform.OS === 'ios') {
-    return process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY?.trim() || undefined;
-  }
-  if (Platform.OS === 'android') {
-    return process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY?.trim() || undefined;
-  }
-  return undefined;
+  return resolveRevenueCatApiKey({
+    androidApiKey: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
+    iosApiKey: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
+    isDevelopment: __DEV__,
+    platform: Platform.OS,
+    testStoreApiKey: process.env.EXPO_PUBLIC_REVENUECAT_TEST_STORE_API_KEY,
+  });
 }
