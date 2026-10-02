@@ -441,11 +441,7 @@ export function CreatorStorefrontView({
           creatorId={storefront.id}
           theme={previewTheme}
           editable={
-            canEdit &&
-            !previewMode &&
-            Boolean(configuration) &&
-            !query &&
-            !activeLabelId
+            canEdit && !previewMode && Boolean(configuration) && !query && !activeLabelId
           }
           onTheme={setPreviewTheme}
         >

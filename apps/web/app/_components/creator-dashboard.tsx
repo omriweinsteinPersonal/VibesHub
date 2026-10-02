@@ -3087,7 +3087,10 @@ function CuratedSectionForm({
   const recommendationGroups = Array.from(
     visibleRecommendations.reduce((groups, item) => {
       const key = item.brandId || `unassigned:${item.brandName}`;
-      const group = groups.get(key) ?? { name: item.brandName || 'Other products', items: [] };
+      const group = groups.get(key) ?? {
+        name: item.brandName || 'Other products',
+        items: [],
+      };
       group.items.push(item);
       groups.set(key, group);
       return groups;
@@ -3290,31 +3293,33 @@ function CuratedSectionForm({
               <section className="creatorCuratedBrandGroup" key={id}>
                 {!brandId ? <h3>{group.name}</h3> : null}
                 {group.items.map((item) => (
-                <label key={item.id}>
-                  <input
-                    checked={recommendationIds.includes(item.id)}
-                    type="checkbox"
-                    disabled={
-                      recommendationIds.length >= 20 &&
-                      !recommendationIds.includes(item.id)
-                    }
-                    onChange={(event) => {
-                      setSelectionError('');
-                      setRecommendationIds((current) =>
-                        event.target.checked
-                          ? [...current, item.id]
-                          : current.filter((id) => id !== item.id),
-                      );
-                    }}
-                  />
-                  <span className="creatorCuratedProductThumb">
-                    {item.imageUrl ? <Image alt="" fill sizes="44px" src={item.imageUrl} unoptimized /> : null}
-                  </span>
-                  <span>
-                    {item.productName}
-                    {!brandId ? <small>{item.brandName}</small> : null}
-                  </span>
-                </label>
+                  <label key={item.id}>
+                    <input
+                      checked={recommendationIds.includes(item.id)}
+                      type="checkbox"
+                      disabled={
+                        recommendationIds.length >= 20 &&
+                        !recommendationIds.includes(item.id)
+                      }
+                      onChange={(event) => {
+                        setSelectionError('');
+                        setRecommendationIds((current) =>
+                          event.target.checked
+                            ? [...current, item.id]
+                            : current.filter((id) => id !== item.id),
+                        );
+                      }}
+                    />
+                    <span className="creatorCuratedProductThumb">
+                      {item.imageUrl ? (
+                        <Image alt="" fill sizes="44px" src={item.imageUrl} unoptimized />
+                      ) : null}
+                    </span>
+                    <span>
+                      {item.productName}
+                      {!brandId ? <small>{item.brandName}</small> : null}
+                    </span>
+                  </label>
                 ))}
               </section>
             ))}

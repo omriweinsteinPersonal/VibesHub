@@ -111,12 +111,19 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
           </span>
         </div>
         <TrafficChart series={dashboard.series} />
-        <button className="analyticsExpandButton" onClick={() => setAnalyticsOpen(true)} type="button">
+        <button
+          className="analyticsExpandButton"
+          onClick={() => setAnalyticsOpen(true)}
+          type="button"
+        >
           <Maximize2 aria-hidden="true" size={16} /> Open full analytics
         </button>
       </section>
       {analyticsOpen ? (
-        <div className="analyticsDialogBackdrop" onMouseDown={() => setAnalyticsOpen(false)}>
+        <div
+          className="analyticsDialogBackdrop"
+          onMouseDown={() => setAnalyticsOpen(false)}
+        >
           <section
             aria-labelledby="analytics-dialog-title"
             aria-modal="true"
@@ -129,11 +136,19 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
                 <p className="eyebrow">DETAILED INSIGHTS</p>
                 <h2 id="analytics-dialog-title">Traffic performance</h2>
               </div>
-              <button aria-label="Close analytics" onClick={() => setAnalyticsOpen(false)} type="button">
+              <button
+                aria-label="Close analytics"
+                onClick={() => setAnalyticsOpen(false)}
+                type="button"
+              >
                 <X aria-hidden="true" size={20} />
               </button>
             </header>
-            <div className="analyticsRangeButtons" role="group" aria-label="Analytics range">
+            <div
+              className="analyticsRangeButtons"
+              role="group"
+              aria-label="Analytics range"
+            >
               {[7, 30].map((days) => (
                 <button
                   aria-pressed={rangeDays === days}
@@ -156,7 +171,9 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
               ))}
             </div>
             <p className="analyticsDataNote">
-              Select a point on the graph to see that day&apos;s visits and clicks. Audience country and gender breakdowns will appear here once audience-source data is connected.
+              Select a point on the graph to see that day&apos;s visits and clicks.
+              Audience country and gender breakdowns will appear here once audience-source
+              data is connected.
             </p>
           </section>
         </div>
@@ -402,7 +419,10 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
 
   const active = hovered === null ? null : series[hovered];
   const activePoint = hovered === null ? null : geometry.visits[hovered];
-  const labelEvery = Math.max(1, Math.ceil(series.length / (chartWidth < 420 ? 3 : chartWidth < 560 ? 4 : 6)));
+  const labelEvery = Math.max(
+    1,
+    Math.ceil(series.length / (chartWidth < 420 ? 3 : chartWidth < 560 ? 4 : 6)),
+  );
   return (
     <div className="creatorTrafficChart" ref={chartRef}>
       <svg

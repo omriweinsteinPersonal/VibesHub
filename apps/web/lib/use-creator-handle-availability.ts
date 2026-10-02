@@ -26,7 +26,11 @@ export function useCreatorHandleAvailability({
   }>({ handle: '', status: 'idle' });
 
   useEffect(() => {
-    if (!isCreatorHandle(normalizedHandle) || normalizedHandle === normalizedCurrentHandle) return;
+    if (
+      !isCreatorHandle(normalizedHandle) ||
+      normalizedHandle === normalizedCurrentHandle
+    )
+      return;
     let active = true;
     const timeout = window.setTimeout(() => {
       void apiRequest<CreatorHandleAvailability>(

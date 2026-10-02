@@ -377,7 +377,10 @@ export function CreatorAccount() {
               {accountHandleMessage(handleStatus, profileEditor.handle)}
             </small>
           </label>
-          <Link className="creatorInlineLink" href={`/${encodeURIComponent(profile.handle)}`}>
+          <Link
+            className="creatorInlineLink"
+            href={`/${encodeURIComponent(profile.handle)}`}
+          >
             View your storefront
           </Link>
           <label>
@@ -671,7 +674,8 @@ function normalizeInstagram(value: string): string | null {
 function accountHandleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
+  if (status === 'invalid')
+    return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Public address: swavii.com/${handle}`;
 }
 

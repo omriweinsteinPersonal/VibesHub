@@ -272,12 +272,18 @@ export function StorefrontPhonePreview({
   }
 
   return (
-    <div className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}>
+    <div
+      className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}
+    >
       {canEdit ? (
         <div className="storefrontPreviewToolbar">
           <span>{previewMode ? 'Preview mode' : 'Editing mode'}</span>
           <button onClick={() => setPreviewMode((value) => !value)} type="button">
-            {previewMode ? <Pencil aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
+            {previewMode ? (
+              <Pencil aria-hidden="true" size={16} />
+            ) : (
+              <Eye aria-hidden="true" size={16} />
+            )}
             {previewMode ? 'Back to editing' : 'Preview storefront'}
           </button>
         </div>

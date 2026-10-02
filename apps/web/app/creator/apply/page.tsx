@@ -6,10 +6,7 @@ import { Sparkles } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { apiRequest, publicApiRequest } from '../../../lib/api';
-import {
-  isCreatorHandle,
-  suggestCreatorHandle,
-} from '../../../lib/creator-handle';
+import { isCreatorHandle, suggestCreatorHandle } from '../../../lib/creator-handle';
 import {
   type CreatorHandleStatus,
   useCreatorHandleAvailability,
@@ -285,6 +282,7 @@ function handleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'available') return `swavii.com/${handle} is available`;
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
+  if (status === 'invalid')
+    return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Your page will live at swavii.com/${handle}`;
 }

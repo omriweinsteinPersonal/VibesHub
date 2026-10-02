@@ -221,7 +221,10 @@ export default function CreatorProfilePage() {
             </p>
           </div>
           {profile ? (
-            <Link className="button secondary" href={`/${encodeURIComponent(profile.handle)}`}>
+            <Link
+              className="button secondary"
+              href={`/${encodeURIComponent(profile.handle)}`}
+            >
               View storefront
             </Link>
           ) : null}
@@ -382,7 +385,8 @@ function toEditor(profile: CreatorProfileSettings): EditorState {
 function profileHandleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
+  if (status === 'invalid')
+    return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Public address: swavii.com/${handle}`;
 }
 
