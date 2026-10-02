@@ -536,6 +536,9 @@ export const storefrontThemeSchema = z
       .object({
         blocks: z.array(z.string().min(1).max(160)).max(500),
         labels: z.array(idSchema).max(100),
+        // A creator can keep optional utility blocks out of the public page
+        // without losing their saved position when they turn them back on.
+        hiddenBlocks: z.array(z.string().min(1).max(160)).max(100).optional(),
       })
       .strict()
       .optional(),

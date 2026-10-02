@@ -1907,6 +1907,9 @@ function StorefrontLabelsEditor({
 }) {
   const [draft, setDraft] = useState(labels);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // A newly-created label is appended to the saved order, but temporarily
+  // surfaced first so its fields open directly beneath the add action.
+  const [newLabelId, setNewLabelId] = useState<string | null>(null);
   const brandGroups = useMemo(() => {
     const normalized = (value: string) => value.trim().toLocaleLowerCase();
     const groupedRecommendationIds = new Set<string>();
@@ -1951,14 +1954,17 @@ function StorefrontLabelsEditor({
     setDraft((current) =>
       current.map((label) => (label.id === id ? { ...label, ...patch } : label)),
     );
-  const move = (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= draft.length) return;
-    const next = [...draft];
-    const [label] = next.splice(index, 1);
-    if (!label) return;
-    next.splice(target, 0, label);
-    setDraft(next);
+  const visibleLabels =
+    newLabelId && expandedId === newLabelId
+      ? [
+          ...draft.filter(({ id }) => id === newLabelId),
+          ...draft.filter(({ id }) => id !== newLabelId),
+        ]
+      : draft;
+  const toggleLabel = (id: string) => {
+    const next = expandedId === id ? null : id;
+    setExpandedId(next);
+    if (newLabelId && next !== newLabelId) setNewLabelId(null);
   };
   return (
     <section className="creatorLabelsEditor">
@@ -1985,6 +1991,7 @@ function StorefrontLabelsEditor({
               },
             ]);
             setExpandedId(id);
+            setNewLabelId(id);
           }}
           type="button"
         >
@@ -1992,7 +1999,7 @@ function StorefrontLabelsEditor({
         </button>
       </div>
       <div className="creatorLabelList">
-        {draft.map((label, index) => (
+        {visibleLabels.map((label) => (
           <article className="creatorLabelEditorCard" key={label.id}>
             <div className="creatorLabelSummaryRow">
               <button
@@ -2000,9 +2007,7 @@ function StorefrontLabelsEditor({
                 type="button"
                 aria-expanded={expandedId === label.id}
                 aria-controls={`label-fields-${label.id}`}
-                onClick={() =>
-                  setExpandedId((current) => (current === label.id ? null : label.id))
-                }
+                onClick={() => toggleLabel(label.id)}
               >
                 <ChevronDown aria-hidden="true" size={16} />
                 <span>
@@ -2017,26 +2022,12 @@ function StorefrontLabelsEditor({
               </button>
               <div className="creatorLabelActions">
                 <button
-                  aria-label={`Move ${label.title} up`}
-                  disabled={index === 0}
-                  onClick={() => move(index, -1)}
-                  type="button"
-                >
-                  <ArrowUp aria-hidden="true" size={15} />
-                </button>
-                <button
-                  aria-label={`Move ${label.title} down`}
-                  disabled={index === draft.length - 1}
-                  onClick={() => move(index, 1)}
-                  type="button"
-                >
-                  <ArrowDown aria-hidden="true" size={15} />
-                </button>
-                <button
                   aria-label={`Delete ${label.title}`}
-                  onClick={() =>
-                    setDraft((current) => current.filter(({ id }) => id !== label.id))
-                  }
+                  onClick={() => {
+                    setDraft((current) => current.filter(({ id }) => id !== label.id));
+                    if (expandedId === label.id) setExpandedId(null);
+                    if (newLabelId === label.id) setNewLabelId(null);
+                  }}
                   type="button"
                 >
                   <Trash2 aria-hidden="true" size={15} />

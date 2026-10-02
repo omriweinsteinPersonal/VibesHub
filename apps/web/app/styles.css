@@ -1308,8 +1308,9 @@ svg.lucide {
   margin: 16px 0 22px;
 }
 .creatorConnectorChoices button {
-  gap: 5px;
-  padding: 0 14px;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 11px;
 }
 .creatorConnectorPlatform {
   align-items: center;
@@ -1318,8 +1319,8 @@ svg.lucide {
 }
 .creatorConnectorPlatform img,
 .creatorConnectorChoices img {
-  height: 22px;
-  width: 22px;
+  height: 18px;
+  width: 18px;
 }
 .creatorConnectorPlatform strong {
   font-weight: 600;
@@ -1388,9 +1389,6 @@ svg.lucide {
     justify-content: flex-start;
     min-width: 0;
     padding: 0 10px;
-  }
-  .creatorConnectorChoices button svg:last-child {
-    margin-left: auto;
   }
 }
 
@@ -11933,6 +11931,41 @@ dt {
 .storefrontContentEditor > p {
   color: #75695f;
   font-size: 0.85rem;
+}
+.storefrontSearchControl {
+  align-items: center;
+  background: #f8f3ed;
+  border: 1px solid #e3d7ca;
+  border-radius: 12px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 13px;
+}
+.storefrontSearchControl strong {
+  color: #3c3029;
+  font-size: 0.9rem;
+}
+.storefrontSearchControl p {
+  color: #75695f;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin: 3px 0 0;
+}
+.storefrontSearchControl label {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 7px;
+}
+.storefrontSearchControl input {
+  accent-color: #805a45;
+  block-size: 18px;
+  inline-size: 18px;
+  margin: 0;
 }
 .storefrontTitleEditor {
   border: 1px solid #ded5ca;

@@ -4,7 +4,7 @@ import type {
   CreatorProfileSettings,
   CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -151,7 +151,6 @@ export function CreatorConnectorsEditor({
                 >
                   <CreatorConnectorIcon platform={platform} />
                   <span>{label}</span>
-                  <Plus aria-hidden="true" size={15} />
                 </button>
               ))}
           </div>

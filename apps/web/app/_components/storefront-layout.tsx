@@ -218,8 +218,11 @@ export function StorefrontLayout({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const layout = pending ?? theme.layout;
+  const visibleSlots = slots.filter(
+    ({ id }) => !(layout?.hiddenBlocks ?? []).includes(id),
+  );
   const keys = orderedKeys(
-    slots.map(({ id }) => id),
+    visibleSlots.map(({ id }) => id),
     layout?.blocks,
   );
   async function saveLayout(next: NonNullable<StorefrontTheme['layout']>) {
@@ -252,7 +255,7 @@ export function StorefrontLayout({
       busy.current = false;
     }
   }
-  const ordered = keys.map((id) => slots.find((slot) => slot.id === id)!);
+  const ordered = keys.map((id) => visibleSlots.find((slot) => slot.id === id)!);
   // Adjacent platform links form one natural icon row, wherever they are placed.
   const groups: Slot[][] = [];
   ordered.forEach((slot) => {
@@ -272,6 +275,7 @@ export function StorefrontLayout({
           void saveLayout({
             blocks: moveKey(keys, source, target),
             labels: layout?.labels ?? [],
+            hiddenBlocks: layout?.hiddenBlocks,
           })
         }
       >
@@ -326,6 +330,7 @@ export function StorefrontLayout({
                       void saveLayout({
                         blocks: moveKey(keys, source, target),
                         labels: layout?.labels ?? [],
+                        hiddenBlocks: layout?.hiddenBlocks,
                       })
                     }
                   >
@@ -334,7 +339,13 @@ export function StorefrontLayout({
                       order={layout?.labels}
                       editable
                       disabled={saving}
-                      onMove={(labels) => void saveLayout({ blocks: keys, labels })}
+                      onMove={(labels) =>
+                        void saveLayout({
+                          blocks: keys,
+                          labels,
+                          hiddenBlocks: layout?.hiddenBlocks,
+                        })
+                      }
                     />
                   </Sortable>
                 ) : (

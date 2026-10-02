@@ -130,10 +130,11 @@ export function StorefrontPhonePreview({
   const [draft, setDraft] = useState<StorefrontTheme>(theme);
   const [selected, setSelected] = useState<ThemeSection>('profile');
   const [saving, setSaving] = useState(false);
+  const [savingSearch, setSavingSearch] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(true);
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -271,20 +272,56 @@ export function StorefrontPhonePreview({
     }
   }
 
+  const searchVisible = !(draft.layout?.hiddenBlocks ?? []).includes('search');
+  async function setSearchVisible(visible: boolean) {
+    if (!configuration || savingSearch) return;
+    const hiddenBlocks = new Set(configuration.theme.layout?.hiddenBlocks ?? []);
+    if (visible) hiddenBlocks.delete('search');
+    else hiddenBlocks.add('search');
+    const nextTheme: StorefrontTheme = {
+      ...configuration.theme,
+      layout: {
+        blocks: configuration.theme.layout?.blocks ?? [],
+        labels: configuration.theme.layout?.labels ?? [],
+        hiddenBlocks: [...hiddenBlocks],
+      },
+    };
+    setSavingSearch(true);
+    setError('');
+    setNotice('');
+    try {
+      const value = await apiRequest<StorefrontThemeConfiguration>(
+        '/creator/studio/storefront-theme',
+        {
+          method: 'PUT',
+          headers: { 'if-match': `"${configuration.version}"` },
+          body: JSON.stringify(nextTheme),
+        },
+      );
+      setConfiguration(value);
+      setDraft(value.theme);
+      setNotice(visible ? 'Search is visible on your storefront.' : 'Search is hidden.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not update search.');
+    } finally {
+      setSavingSearch(false);
+    }
+  }
+
   return (
     <div
       className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}
     >
       {canEdit ? (
         <div className="storefrontPreviewToolbar">
-          <span>{previewMode ? 'Preview mode' : 'Editing mode'}</span>
+          <span>{previewMode ? 'Preview' : 'Editing'}</span>
           <button onClick={() => setPreviewMode((value) => !value)} type="button">
             {previewMode ? (
               <Pencil aria-hidden="true" size={16} />
             ) : (
               <Eye aria-hidden="true" size={16} />
             )}
-            {previewMode ? 'Back to editing' : 'Preview storefront'}
+            {previewMode ? 'Editing' : 'Preview'}
           </button>
         </div>
       ) : null}
@@ -336,6 +373,24 @@ export function StorefrontPhonePreview({
               </button>
             </div>
             <div hidden={tab !== 'content'}>
+              <section className="storefrontSearchControl" aria-label="Store search">
+                <div>
+                  <strong>Store search</strong>
+                  <p>
+                    Let visitors search your recommendations from any part of the page.
+                  </p>
+                </div>
+                <label>
+                  <input
+                    aria-label="Show store search"
+                    checked={searchVisible}
+                    disabled={!configuration || savingSearch}
+                    onChange={(event) => void setSearchVisible(event.target.checked)}
+                    type="checkbox"
+                  />
+                  <span>{searchVisible ? 'Shown' : 'Hidden'}</span>
+                </label>
+              </section>
               <StorefrontContentEditor
                 creatorId={creatorId}
                 targets={contentTargets}

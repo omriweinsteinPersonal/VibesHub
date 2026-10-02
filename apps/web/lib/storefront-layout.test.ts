@@ -54,6 +54,7 @@ describe('storefront layout', () => {
     const layout = {
       blocks: ['social:instagram', 'bio', 'brand:a'],
       labels: ['b91d82c7-3340-4ffa-8745-a45b59c17621'],
+      hiddenBlocks: ['search'],
     };
     expect(
       storefrontThemeSchema.parse(

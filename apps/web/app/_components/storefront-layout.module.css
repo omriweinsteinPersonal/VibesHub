@@ -47,17 +47,28 @@
   color: var(--sf-text);
 }
 .content:global(.referenceStorefrontProducts) {
-  padding-block: 8px;
+  box-sizing: border-box;
+  margin: 0;
+  max-width: none;
+  padding: 8px 5vw;
+  width: 100%;
 }
-.content header:has(input) label {
+.content:global(.referenceStorefrontProducts) > header {
+  box-sizing: border-box;
+  width: 100%;
+}
+.content:global(.referenceStorefrontProducts) > header label {
   display: flex;
   align-items: center;
   gap: 8px;
   border: 1px solid #c5b8af;
   border-radius: 24px;
   padding: 6px 12px;
-  max-width: 420px;
-  margin-left: auto;
+  box-sizing: border-box;
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+  width: 100%;
 }
 .content header:has(input) input {
   min-width: 0;

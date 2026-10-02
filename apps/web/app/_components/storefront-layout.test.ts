@@ -77,4 +77,37 @@ describe('public storefront layout rendering', () => {
     expect(markup.indexOf('All')).toBeLessThan(markup.indexOf('HOME'));
     expect(markup.indexOf('HOME')).toBeLessThan(markup.indexOf('CLOSET'));
   });
+  it('omits a hidden utility block without changing the other saved blocks', () => {
+    const markup = renderToStaticMarkup(
+      h(StorefrontLayout, {
+        creatorId: 'test',
+        editable: false,
+        onTheme: () => undefined,
+        theme: {
+          ...defaultStorefrontTheme,
+          layout: {
+            blocks: ['search', 'bio'],
+            labels: [],
+            hiddenBlocks: ['search'],
+          },
+        },
+        children: [
+          h(StorefrontSlot, {
+            id: 'search',
+            label: 'Search',
+            children: h('div', null, 'SEARCH_FIELD'),
+            key: 'search',
+          }),
+          h(StorefrontSlot, {
+            id: 'bio',
+            label: 'Bio',
+            children: h('p', null, 'MY_BIO'),
+            key: 'bio',
+          }),
+        ],
+      }),
+    );
+    expect(markup).not.toContain('SEARCH_FIELD');
+    expect(markup).toContain('MY_BIO');
+  });
 });
