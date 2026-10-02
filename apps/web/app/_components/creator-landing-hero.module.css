@@ -495,6 +495,115 @@
     padding-inline: 20px;
   }
 }
+@media (min-width: 1080px) {
+  .hero {
+    align-items: center;
+    display: grid;
+    gap: clamp(52px, 7vw, 112px);
+    grid-template-columns: minmax(0, 0.84fr) minmax(560px, 1.16fr);
+    margin: 0 auto;
+    max-width: 1380px;
+    min-height: min(860px, calc(100vh - 58px));
+    padding: clamp(74px, 8vw, 120px) clamp(36px, 5vw, 76px) clamp(90px, 8vw, 132px);
+  }
+  .intro {
+    margin: 0;
+    max-width: 560px;
+    text-align: left;
+    transform: translateY(-76px);
+  }
+  .eyebrow {
+    justify-content: flex-start;
+  }
+  .intro h1 {
+    font-size: clamp(62px, 5.4vw, 90px);
+    margin: 25px 0 20px;
+  }
+  .lede {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  .claim {
+    margin: 36px 0 0;
+    max-width: 540px;
+  }
+  .claim > p {
+    justify-content: flex-start;
+  }
+  .showcase {
+    margin: 0;
+    max-width: none;
+    min-width: 0;
+  }
+  .galleryHeading {
+    margin: 0 4px 15px;
+  }
+  .stage {
+    min-height: 682px;
+    padding: 34px 22px 0;
+  }
+  .page {
+    height: 648px;
+    width: min(100%, 410px);
+  }
+  .pageAddress {
+    font-size: 10px;
+    padding: 13px 19px;
+  }
+  .profile {
+    padding: 24px 22px 19px;
+  }
+  .profile h2 {
+    font-size: 42px;
+  }
+  .avatar {
+    height: 70px;
+    width: 58px;
+  }
+  .category {
+    font-size: 9px;
+  }
+  .bio,
+  .product > span {
+    font-size: 11px;
+  }
+  .social {
+    font-size: 10px;
+  }
+  .content {
+    padding-inline: 18px;
+  }
+  .tags {
+    font-size: 9px;
+  }
+  .collection h3 {
+    font-size: 29px;
+  }
+  .collection p {
+    font-size: 10px;
+  }
+  .editHeading h3 {
+    font-size: 25px;
+  }
+  .controls {
+    margin-top: 15px;
+  }
+  .exampleNote {
+    font-size: 12px;
+  }
+}
+@media (min-width: 1400px) {
+  .hero {
+    grid-template-columns: minmax(0, 0.9fr) minmax(640px, 1.1fr);
+  }
+  .stage {
+    min-height: 736px;
+  }
+  .page {
+    height: 700px;
+    width: 448px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .page {
     animation: none;
