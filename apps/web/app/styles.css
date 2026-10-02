@@ -444,9 +444,10 @@ svg.lucide {
 
 .creatorWelcomeAction {
   gap: 7px;
-  margin-bottom: 28px;
+  margin: 0 0 28px auto;
   min-height: 42px;
-  padding: 0 16px;
+  padding: 0 15px;
+  width: fit-content;
 }
 
 .creatorWelcomeTitle {
@@ -1553,6 +1554,77 @@ svg.lucide {
 .creatorTrafficChart {
   position: relative;
 }
+.analyticsExpandButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #754961;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 7px;
+  margin: 14px 0 0 auto;
+  min-height: 44px;
+  padding: 0 4px;
+}
+.analyticsDialogBackdrop {
+  align-items: center;
+  background: rgb(33 24 31 / 52%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 80;
+}
+.analyticsDialog {
+  background: #fffdfa;
+  border-radius: 24px;
+  box-shadow: 0 28px 90px rgb(35 22 29 / 30%);
+  max-height: min(760px, calc(100dvh - 40px));
+  max-width: 820px;
+  overflow: auto;
+  padding: clamp(20px, 4vw, 38px);
+  width: min(100%, 820px);
+}
+.analyticsDialog > header {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.analyticsDialog h2 { margin: 4px 0 0; }
+.analyticsDialog > header > button {
+  align-items: center;
+  background: #f6eef2;
+  border: 0;
+  border-radius: 50%;
+  color: #5e4150;
+  cursor: pointer;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+.analyticsRangeButtons { display: flex; gap: 8px; margin: 24px 0 16px; }
+.analyticsRangeButtons button {
+  background: #fff;
+  border: 1px solid #dfd1d7;
+  border-radius: 999px;
+  color: #644b58;
+  cursor: pointer;
+  font: inherit;
+  min-height: 40px;
+  padding: 0 14px;
+}
+.analyticsRangeButtons button[aria-pressed='true'] { background: #754961; border-color: #754961; color: #fff; }
+.analyticsDetailMetrics { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; }
+.analyticsDetailMetrics article { background: #f8f1f4; border-radius: 14px; color: #72495e; display: grid; gap: 6px; min-width: 0; padding: 14px; }
+.analyticsDetailMetrics span { color: #7d6872; font-size: 0.75rem; }
+.analyticsDetailMetrics strong { color: #382936; font-size: 1.25rem; }
+.analyticsDataNote { color: #756871; font-size: 0.82rem; line-height: 1.5; margin: 22px 0 0; }
 .creatorTrafficChart svg {
   display: block;
   overflow: visible;
@@ -10375,6 +10447,7 @@ dt {
   border-radius: 28px;
   background: linear-gradient(145deg, #fffdfb, #fff0e7);
   box-shadow: 0 22px 60px rgb(27 17 60 / 24%);
+  color: #352736;
 }
 .creatorPricingCard > div > p {
   margin: 0 0 10px;
@@ -10384,13 +10457,14 @@ dt {
   letter-spacing: 0.16em;
 }
 .creatorPricingCard h3 {
+  color: #352736;
   margin: 0 0 8px;
   font-family: var(--font-vh-display), serif;
   font-size: 32px;
   font-weight: 400;
 }
 .creatorPricingCard > div > span {
-  color: var(--landing-muted);
+  color: #6c5962;
 }
 .creatorPrice {
   display: flex;
@@ -10564,6 +10638,35 @@ dt {
 }
 
 @media (max-width: 620px) {
+  .creatorWelcomeAction { margin-left: 0; margin-right: auto; }
+  .analyticsDialogBackdrop { align-items: end; padding: 0; }
+  .analyticsDialog { border-radius: 24px 24px 0 0; max-height: 86dvh; padding: 22px 18px calc(24px + env(safe-area-inset-bottom)); }
+  .analyticsDetailMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .creatorPricing {
+    gap: 26px;
+    margin: 26px 16px 44px;
+    max-width: none;
+    padding: 36px 20px 24px;
+    width: auto;
+  }
+  .creatorPricing .creatorSectionHeading h2 {
+    font-size: clamp(2.15rem, 11vw, 2.9rem);
+  }
+  .creatorPricingCard {
+    border-radius: 22px;
+    padding: 26px 18px;
+  }
+  .creatorPricingCard h3 {
+    font-size: 1.75rem;
+  }
+  .creatorPricingCard ul {
+    gap: 10px;
+    margin: 20px 0;
+    padding: 18px 0;
+  }
+  .creatorInstagram {
+    margin-top: 0;
+  }
   .creatorMarketingHeader .siteHeaderInner > nav,
   .creatorMarketingHeader .loginLink {
     display: none;

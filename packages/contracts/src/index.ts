@@ -43,7 +43,9 @@ export const creatorCardSchema = z
     handle: z
       .string()
       .trim()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/),
+      .min(2)
+      .max(100)
+      .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
@@ -591,7 +593,9 @@ export const creatorStorefrontSchema = z
     handle: z
       .string()
       .trim()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/),
+      .min(2)
+      .max(100)
+      .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),

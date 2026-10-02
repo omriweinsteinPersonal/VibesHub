@@ -366,7 +366,9 @@ export function CreatorAccount() {
             Storefront handle
             <input
               aria-describedby="account-handle-status"
+              dir="auto"
               maxLength={100}
+              placeholder="MayaStyle או מאיה-סטייל"
               required
               value={profileEditor.handle}
               onChange={(event) => updateProfile('handle', event.target.value)}

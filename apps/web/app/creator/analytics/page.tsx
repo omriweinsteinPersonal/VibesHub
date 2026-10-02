@@ -11,10 +11,12 @@ import {
   ChevronDown,
   ChevronRight,
   Eye,
+  Maximize2,
   MousePointerClick,
   Package,
   Tag,
   Users,
+  X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
@@ -70,6 +72,8 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
   );
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<AnalyticsProduct | null>(null);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [rangeDays, setRangeDays] = useState<7 | 30>(30);
   const metrics = [
     [Eye, 'Storefront visits', dashboard.summary.storefrontViews],
     [Users, 'Unique visitors', dashboard.summary.uniqueVisitors],
@@ -107,7 +111,56 @@ function AnalyticsDashboard({ dashboard }: { dashboard: CreatorAnalyticsDashboar
           </span>
         </div>
         <TrafficChart series={dashboard.series} />
+        <button className="analyticsExpandButton" onClick={() => setAnalyticsOpen(true)} type="button">
+          <Maximize2 aria-hidden="true" size={16} /> Open full analytics
+        </button>
       </section>
+      {analyticsOpen ? (
+        <div className="analyticsDialogBackdrop" onMouseDown={() => setAnalyticsOpen(false)}>
+          <section
+            aria-labelledby="analytics-dialog-title"
+            aria-modal="true"
+            className="analyticsDialog"
+            onMouseDown={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <header>
+              <div>
+                <p className="eyebrow">DETAILED INSIGHTS</p>
+                <h2 id="analytics-dialog-title">Traffic performance</h2>
+              </div>
+              <button aria-label="Close analytics" onClick={() => setAnalyticsOpen(false)} type="button">
+                <X aria-hidden="true" size={20} />
+              </button>
+            </header>
+            <div className="analyticsRangeButtons" role="group" aria-label="Analytics range">
+              {[7, 30].map((days) => (
+                <button
+                  aria-pressed={rangeDays === days}
+                  key={days}
+                  onClick={() => setRangeDays(days as 7 | 30)}
+                  type="button"
+                >
+                  Last {days} days
+                </button>
+              ))}
+            </div>
+            <TrafficChart series={dashboard.series.slice(-rangeDays)} />
+            <div className="analyticsDetailMetrics">
+              {metrics.map(([Icon, label, value]) => (
+                <article key={label}>
+                  <Icon aria-hidden="true" size={16} />
+                  <span>{label}</span>
+                  <strong>{value.toLocaleString('en-IL')}</strong>
+                </article>
+              ))}
+            </div>
+            <p className="analyticsDataNote">
+              Select a point on the graph to see that day&apos;s visits and clicks. Audience country and gender breakdowns will appear here once audience-source data is connected.
+            </p>
+          </section>
+        </div>
+      ) : null}
       {selectedProduct ? (
         <ProductLens product={selectedProduct} onBack={() => setSelectedProduct(null)} />
       ) : (
@@ -349,6 +402,7 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
 
   const active = hovered === null ? null : series[hovered];
   const activePoint = hovered === null ? null : geometry.visits[hovered];
+  const labelEvery = Math.max(1, Math.ceil(series.length / (chartWidth < 420 ? 3 : chartWidth < 560 ? 4 : 6)));
   return (
     <div className="creatorTrafficChart" ref={chartRef}>
       <svg
@@ -396,7 +450,7 @@ function TrafficChart({ series }: { series: CreatorAnalyticsDashboard['series'] 
           </>
         ) : null}
         {series.map((item, index) =>
-          index % (chartWidth < 560 ? 7 : 5) === 0 || index === series.length - 1 ? (
+          index % labelEvery === 0 ? (
             <text
               className="dateLabel"
               key={item.date}
