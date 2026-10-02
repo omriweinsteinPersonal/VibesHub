@@ -43,7 +43,7 @@ describe('shared API contracts', () => {
         requestedHandle: ' Noa_Levi ',
         socialLinks: [{ platform: 'instagram', url: 'https://instagram.com/noa' }],
       }).requestedHandle,
-    ).toBe('noa_levi');
+    ).toBe('Noa_Levi');
 
     expect(() =>
       creatorApplicationInputSchema.parse({

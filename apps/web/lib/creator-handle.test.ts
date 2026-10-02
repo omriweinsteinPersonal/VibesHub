@@ -10,6 +10,7 @@ describe('creator handles', () => {
   it('normalizes a creator chosen address', () => {
     expect(normalizeCreatorHandle('  Noa Levi! ')).toBe('noa-levi');
     expect(isCreatorHandle('noa-levi')).toBe(true);
+    expect(isCreatorHandle('Noa Levi')).toBe(true);
   });
 
   it('suggests an address for a Hebrew display name', () => {

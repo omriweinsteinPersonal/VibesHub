@@ -13,7 +13,7 @@ import { Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { ApiError, apiRequest, publicApiCollectionRequest } from '../../lib/api';
-import { isCreatorHandle, normalizeCreatorHandle } from '../../lib/creator-handle';
+import { isCreatorHandle } from '../../lib/creator-handle';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
@@ -225,7 +225,7 @@ export function CreatorAccount() {
           avatarAssetId: profileEditor.avatarAssetId || null,
           bioHe: profileEditor.bioHe,
           displayName: profileEditor.displayName,
-          handle: profileEditor.handle.trim().toLowerCase(),
+          handle: profileEditor.handle.trim(),
           primaryCategoryId: profileEditor.primaryCategoryId,
           socialLinks: instagramUrl
             ? [...otherLinks, { platform: 'instagram', url: instagramUrl }]
@@ -366,19 +366,16 @@ export function CreatorAccount() {
             Storefront handle
             <input
               aria-describedby="account-handle-status"
-              maxLength={30}
-              pattern="[a-z0-9][a-z0-9_-]{1,29}"
+              maxLength={100}
               required
               value={profileEditor.handle}
-              onChange={(event) =>
-                updateProfile('handle', normalizeCreatorHandle(event.target.value))
-              }
+              onChange={(event) => updateProfile('handle', event.target.value)}
             />
             <small className="fieldHint" id="account-handle-status">
               {accountHandleMessage(handleStatus, profileEditor.handle)}
             </small>
           </label>
-          <Link className="creatorInlineLink" href={`/${profile.handle}`}>
+          <Link className="creatorInlineLink" href={`/${encodeURIComponent(profile.handle)}`}>
             View your storefront
           </Link>
           <label>
@@ -672,7 +669,7 @@ function normalizeInstagram(value: string): string | null {
 function accountHandleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Public address: swavii.com/${handle}`;
 }
 

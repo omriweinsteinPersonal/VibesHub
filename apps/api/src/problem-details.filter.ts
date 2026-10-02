@@ -48,11 +48,12 @@ export class ProblemDetailsFilter implements ExceptionFilter {
             };
     } else {
       this.logger.error(
-        `Unhandled API error for ${request.method} ${request.url}`,
+        `Unhandled API error [${request.id}] for ${request.method} ${request.url}`,
         exception instanceof Error ? exception.stack : String(exception),
       );
       body = {
         code: 'INTERNAL_ERROR',
+        detail: 'The service could not complete this request. Please try again.',
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         title: 'An unexpected error occurred',
         type: 'about:blank',

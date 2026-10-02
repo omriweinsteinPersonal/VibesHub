@@ -8,7 +8,6 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { apiRequest, publicApiRequest } from '../../../lib/api';
 import {
   isCreatorHandle,
-  normalizeCreatorHandle,
   suggestCreatorHandle,
 } from '../../../lib/creator-handle';
 import {
@@ -89,9 +88,7 @@ export default function CreatorApplicationPage() {
 
   async function saveAndSubmit(event: FormEvent) {
     event.preventDefault();
-    const handle = normalizeCreatorHandle(
-      requestedHandle || suggestCreatorHandle(displayName),
-    );
+    const handle = (requestedHandle || suggestCreatorHandle(displayName)).trim();
     if (
       !isCreatorHandle(handle) ||
       handleStatus === 'invalid' ||
@@ -197,12 +194,11 @@ export default function CreatorApplicationPage() {
               <input
                 aria-describedby="storefront-handle-status"
                 disabled={!editable}
-                maxLength={30}
+                maxLength={100}
                 onChange={(event) => {
                   setHandleEdited(true);
-                  setRequestedHandle(normalizeCreatorHandle(event.target.value));
+                  setRequestedHandle(event.target.value);
                 }}
-                pattern="[a-z0-9][a-z0-9_-]{1,29}"
                 required
                 value={requestedHandle}
               />
@@ -289,6 +285,6 @@ function handleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'available') return `swavii.com/${handle} is available`;
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Your page will live at swavii.com/${handle}`;
 }

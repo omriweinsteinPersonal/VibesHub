@@ -1,4 +1,4 @@
-export const creatorHandlePattern = /^[a-z0-9][a-z0-9_-]{1,29}$/;
+export const creatorHandlePattern = /^(?=.{2,100}$)(?!.*[/?#%\\\p{Cc}]).+$/u;
 
 const hebrewTransliteration: Record<string, string> = {
   א: 'a',
@@ -49,5 +49,5 @@ export function suggestCreatorHandle(displayName: string): string {
 }
 
 export function isCreatorHandle(value: string): boolean {
-  return creatorHandlePattern.test(value);
+  return creatorHandlePattern.test(value.trim());
 }

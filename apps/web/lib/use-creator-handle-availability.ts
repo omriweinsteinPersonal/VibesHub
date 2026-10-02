@@ -18,38 +18,40 @@ export function useCreatorHandleAvailability({
   endpoint: string;
   handle: string;
 }): CreatorHandleStatus {
+  const normalizedHandle = handle.trim();
+  const normalizedCurrentHandle = currentHandle?.trim();
   const [remoteResult, setRemoteResult] = useState<{
     handle: string;
     status: 'available' | 'unavailable' | 'idle';
   }>({ handle: '', status: 'idle' });
 
   useEffect(() => {
-    if (!isCreatorHandle(handle) || handle === currentHandle) return;
+    if (!isCreatorHandle(normalizedHandle) || normalizedHandle === normalizedCurrentHandle) return;
     let active = true;
     const timeout = window.setTimeout(() => {
       void apiRequest<CreatorHandleAvailability>(
-        `${endpoint}?handle=${encodeURIComponent(handle)}`,
+        `${endpoint}?handle=${encodeURIComponent(normalizedHandle)}`,
       )
         .then(({ available }) => {
           if (active) {
             setRemoteResult({
-              handle,
+              handle: normalizedHandle,
               status: available ? 'available' : 'unavailable',
             });
           }
         })
         .catch(() => {
-          if (active) setRemoteResult({ handle, status: 'idle' });
+          if (active) setRemoteResult({ handle: normalizedHandle, status: 'idle' });
         });
     }, 350);
     return () => {
       active = false;
       window.clearTimeout(timeout);
     };
-  }, [currentHandle, endpoint, handle]);
+  }, [endpoint, normalizedCurrentHandle, normalizedHandle]);
 
-  if (!handle) return 'idle';
-  if (!isCreatorHandle(handle)) return 'invalid';
-  if (handle === currentHandle) return 'available';
-  return remoteResult.handle === handle ? remoteResult.status : 'checking';
+  if (!normalizedHandle) return 'idle';
+  if (!isCreatorHandle(normalizedHandle)) return 'invalid';
+  if (normalizedHandle === normalizedCurrentHandle) return 'available';
+  return remoteResult.handle === normalizedHandle ? remoteResult.status : 'checking';
 }

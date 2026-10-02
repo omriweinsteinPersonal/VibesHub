@@ -12,7 +12,6 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'r
 
 import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
 import { creatorConnectors } from '../../../lib/creator-connectors';
-import { normalizeCreatorHandle } from '../../../lib/creator-handle';
 import {
   creatorImageAccept,
   deleteRecommendationImage,
@@ -218,11 +217,11 @@ export default function CreatorProfilePage() {
             <p className="eyebrow">CREATOR PROFILE</p>
             <h1>Edit your storefront identity</h1>
             <p className="workspaceLead">
-              Keep your photo, expertise, Hebrew bio and public links current.
+              Keep your photo, expertise, bio and public links current.
             </p>
           </div>
           {profile ? (
-            <Link className="button secondary" href={`/${profile.handle}`}>
+            <Link className="button secondary" href={`/${encodeURIComponent(profile.handle)}`}>
               View storefront
             </Link>
           ) : null}
@@ -290,12 +289,9 @@ export default function CreatorProfilePage() {
                 Storefront handle
                 <input
                   aria-describedby="profile-handle-status"
-                  maxLength={30}
-                  onChange={(event) =>
-                    update('handle', normalizeCreatorHandle(event.target.value))
-                  }
-                  pattern="[a-z0-9][a-z0-9_-]{1,29}"
-                  required
+                  maxLength={100}
+                  dir="auto"
+                  onChange={(event) => update('handle', event.target.value)}
                   value={editor.handle}
                 />
                 <small className="fieldHint" id="profile-handle-status">
@@ -320,10 +316,9 @@ export default function CreatorProfilePage() {
             </label>
 
             <label>
-              Bio in Hebrew
+              Bio
               <textarea
-                dir="rtl"
-                lang="he"
+                dir="auto"
                 maxLength={1000}
                 onChange={(event) => update('bioHe', event.target.value)}
                 required
@@ -387,7 +382,7 @@ function toEditor(profile: CreatorProfileSettings): EditorState {
 function profileHandleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'checking') return 'Checking address availability…';
   if (status === 'unavailable') return 'That address is already taken.';
-  if (status === 'invalid') return 'Use 2–30 lowercase letters, numbers, - or _.';
+  if (status === 'invalid') return 'Use 2–100 characters without /, ?, #, %, or backslashes.';
   return `Public address: swavii.com/${handle}`;
 }
 

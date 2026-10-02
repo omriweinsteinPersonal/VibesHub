@@ -50,7 +50,7 @@ export default function CreatorAnalyticsPage() {
         </div>
         <Link
           className="button secondary"
-          href={studio ? `/${studio.handle}` : '/dashboard'}
+          href={studio ? `/${encodeURIComponent(studio.handle)}` : '/dashboard'}
         >
           View storefront
         </Link>

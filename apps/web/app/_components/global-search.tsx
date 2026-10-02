@@ -166,7 +166,7 @@ export function GlobalSearch() {
                       {results.creators.map((creator) => (
                         <Link
                           className="creatorSearchResult"
-                          href={`/${creator.handle}`}
+                          href={`/${encodeURIComponent(creator.handle)}`}
                           key={creator.id}
                           onClick={close}
                         >

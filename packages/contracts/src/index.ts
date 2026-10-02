@@ -10,12 +10,22 @@ export const moneySchema = z.object({
 export const directionalTextSchema = z.object({
   direction: z.enum(['ltr', 'rtl']),
   language: z.enum(['en', 'he']),
-  value: z.string().trim().min(1),
+  value: z.string().trim(),
 });
 
 const creatorBioSchema = directionalTextSchema.extend({
   value: z.string().trim(),
 });
+
+export const creatorHandleSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(100)
+  .refine(
+    (value) => !/[/?#%\\\p{Cc}]/u.test(value),
+    'Use a handle without URL separators or control characters',
+  );
 
 const publicAssetUrlSchema = z
   .url()
@@ -40,10 +50,7 @@ export const creatorCardSchema = z
     bio: creatorBioSchema,
     displayName: z.string().trim().min(1).max(100),
     followerCount: z.int().nonnegative(),
-    handle: z
-      .string()
-      .trim()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/),
+    handle: creatorHandleSchema,
     id: idSchema,
     primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
     recommendationCount: z.int().nonnegative(),
@@ -881,13 +888,7 @@ export const creatorApplicationInputSchema = z
     bioText: z.string().trim().max(1_000).nullable().optional(),
     displayName: z.string().trim().min(1).max(100).nullable().optional(),
     primaryCategoryId: idSchema.nullable().optional(),
-    requestedHandle: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/)
-      .nullable()
-      .optional(),
+    requestedHandle: creatorHandleSchema.nullable().optional(),
     socialLinks: z.array(creatorApplicationSocialLinkSchema).max(8).optional(),
   })
   .strict();
@@ -945,6 +946,7 @@ export const creatorProfilePatchSchema = z
     displayName: z.string().trim().min(1).max(100).optional(),
     handle: creatorCardSchema.shape.handle.optional(),
     primaryCategoryId: idSchema.optional(),
+    categoryIds: z.array(idSchema).min(1).max(8).optional(),
     socialLinks: z
       .array(creatorProfileSocialLinkSchema)
       .max(8)

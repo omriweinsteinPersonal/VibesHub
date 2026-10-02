@@ -76,7 +76,11 @@ function AuthExperience() {
       ? 'We could not complete that login. Please try again.'
       : '',
   );
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(
+    searchParams.get('reset') === 'success'
+      ? 'Your password has been updated. You can log in now.'
+      : '',
+  );
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [googleScriptReady, setGoogleScriptReady] = useState(false);
@@ -353,6 +357,14 @@ function AuthExperience() {
                 placeholder={mode === 'signup' ? 'At least 8 characters' : ''}
               />
             </label>
+            {mode === 'login' ? (
+              <Link
+                className="authRecoveryLink"
+                href={`/auth/reset-password?email=${encodeURIComponent(email)}`}
+              >
+                Forgot password?
+              </Link>
+            ) : null}
             {error ? <p className="formError">{error}</p> : null}
             {message ? <p className="formSuccess">{message}</p> : null}
             <button className="button primary" disabled={loading} type="submit">
