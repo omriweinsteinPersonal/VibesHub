@@ -3081,6 +3081,18 @@ function CuratedSectionForm({
   const [draggingRecommendationId, setDraggingRecommendationId] = useState<string | null>(
     null,
   );
+  const visibleRecommendations = brandId
+    ? recommendations.filter((item) => item.brandId === brandId)
+    : recommendations;
+  const recommendationGroups = Array.from(
+    visibleRecommendations.reduce((groups, item) => {
+      const key = item.brandId || `unassigned:${item.brandName}`;
+      const group = groups.get(key) ?? { name: item.brandName || 'Other products', items: [] };
+      group.items.push(item);
+      groups.set(key, group);
+      return groups;
+    }, new Map<string, { name: string; items: CreatorRecommendation[] }>()),
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -3144,7 +3156,7 @@ function CuratedSectionForm({
               );
             }}
           >
-            <option value="">Choose a brand</option>
+            <option value="">All brands — browse products</option>
             {availableBrands.map((brand) => (
               <option key={brand.brandId} value={brand.brandId}>
                 {brand.name}
@@ -3274,9 +3286,10 @@ function CuratedSectionForm({
         <legend>Products in this {kind}</legend>
         {recommendations.length ? (
           <div className="creatorCuratedChoices">
-            {recommendations
-              .filter((item) => !brandId || item.brandId === brandId)
-              .map((item) => (
+            {recommendationGroups.map(([id, group]) => (
+              <section className="creatorCuratedBrandGroup" key={id}>
+                {!brandId ? <h3>{group.name}</h3> : null}
+                {group.items.map((item) => (
                 <label key={item.id}>
                   <input
                     checked={recommendationIds.includes(item.id)}
@@ -3294,12 +3307,17 @@ function CuratedSectionForm({
                       );
                     }}
                   />
+                  <span className="creatorCuratedProductThumb">
+                    {item.imageUrl ? <Image alt="" fill sizes="44px" src={item.imageUrl} unoptimized /> : null}
+                  </span>
                   <span>
                     {item.productName}
-                    <small>{item.brandName}</small>
+                    {!brandId ? <small>{item.brandName}</small> : null}
                   </span>
                 </label>
-              ))}
+                ))}
+              </section>
+            ))}
           </div>
         ) : (
           <p>Add a product recommendation first.</p>

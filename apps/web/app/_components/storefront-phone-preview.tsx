@@ -8,7 +8,7 @@ import {
   type StorefrontThemeConfiguration,
   type CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
-import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Pencil, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -133,6 +133,7 @@ export function StorefrontPhonePreview({
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -182,6 +183,7 @@ export function StorefrontPhonePreview({
         socialLinks: previewSocialLinks,
         selectedBlock,
         editingContent: tab === 'content',
+        previewMode,
       },
       window.location.origin,
     );
@@ -192,6 +194,7 @@ export function StorefrontPhonePreview({
     previewBrandOrder,
     previewBio,
     previewSocialLinks,
+    previewMode,
     selectedBlock,
     tab,
     showPhone,
@@ -269,8 +272,17 @@ export function StorefrontPhonePreview({
   }
 
   return (
-    <div className={`storefrontDesignWorkspace${canEdit ? ' hasEditor' : ''}`}>
+    <div className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}>
       {canEdit ? (
+        <div className="storefrontPreviewToolbar">
+          <span>{previewMode ? 'Preview mode' : 'Editing mode'}</span>
+          <button onClick={() => setPreviewMode((value) => !value)} type="button">
+            {previewMode ? <Pencil aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
+            {previewMode ? 'Back to editing' : 'Preview storefront'}
+          </button>
+        </div>
+      ) : null}
+      {canEdit && !previewMode ? (
         <aside
           aria-label="Storefront design"
           className="storefrontDesignPanel"
@@ -474,6 +486,7 @@ export function StorefrontPhonePreview({
                   socialLinks: previewSocialLinks,
                   selectedBlock,
                   editingContent: tab === 'content',
+                  previewMode,
                 },
                 window.location.origin,
               )

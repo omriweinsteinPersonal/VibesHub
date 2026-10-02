@@ -69,6 +69,7 @@ export function CreatorStorefrontView({
     useState<CreatorStorefrontConfiguration | null>(null);
   const [order, setOrder] = useState<StorefrontLayer[]>([]);
   const [orderError, setOrderError] = useState('');
+  const [previewMode, setPreviewMode] = useState(false);
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -83,6 +84,7 @@ export function CreatorStorefrontView({
         socialLinks?: unknown;
         selectedBlock?: string | null;
         editingContent?: boolean;
+        previewMode?: boolean;
         type?: string;
       };
       if (data.type !== 'swavii:theme-preview' || data.creatorId !== storefront.id)
@@ -110,6 +112,7 @@ export function CreatorStorefrontView({
         setPreviewSocialLinks(data.socialLinks as typeof storefront.socialLinks);
       setSelectedBlock(data.selectedBlock ?? null);
       setEditingContent(data.editingContent === true);
+      setPreviewMode(data.previewMode === true);
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
@@ -437,7 +440,13 @@ export function CreatorStorefrontView({
         <StorefrontLayout
           creatorId={storefront.id}
           theme={previewTheme}
-          editable={canEdit && Boolean(configuration) && !query && !activeLabelId}
+          editable={
+            canEdit &&
+            !previewMode &&
+            Boolean(configuration) &&
+            !query &&
+            !activeLabelId
+          }
           onTheme={setPreviewTheme}
         >
           <StorefrontRegion>

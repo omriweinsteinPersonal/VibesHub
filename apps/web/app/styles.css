@@ -505,7 +505,9 @@ svg.lucide {
 
 .creatorWelcomeAvatar img,
 .creatorAccountAvatar img {
-  object-fit: cover;
+  background: #f8f4ee;
+  object-fit: contain;
+  padding: 2px;
 }
 
 .creatorCountPills {
@@ -7803,7 +7805,7 @@ dt {
   border: 1px solid #e6ddd2;
   border-radius: 8px;
   display: grid;
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -7811,9 +7813,9 @@ dt {
   align-items: center;
   border-bottom: 1px solid #eee5da;
   display: flex;
-  gap: 12px;
-  min-height: 58px;
-  padding: 8px 12px;
+  gap: 10px;
+  min-height: 54px;
+  padding: 6px 10px;
 }
 
 .creatorCuratedChoices label:last-child {
@@ -7824,6 +7826,59 @@ dt {
   flex: 0 0 auto;
   height: 18px;
   width: 18px;
+}
+.creatorCuratedBrandGroup + .creatorCuratedBrandGroup {
+  border-top: 1px solid #ded4ca;
+}
+.creatorCuratedBrandGroup h3 {
+  background: #faf6f1;
+  color: #725847;
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  margin: 0;
+  padding: 8px 10px 6px;
+  text-transform: uppercase;
+}
+.creatorCuratedProductThumb {
+  background: #faf8f5;
+  border: 1px solid #eee4da;
+  border-radius: 7px;
+  display: block;
+  flex: 0 0 38px;
+  height: 38px;
+  overflow: hidden;
+  position: relative;
+  width: 38px;
+}
+.creatorCuratedProductThumb img {
+  object-fit: contain;
+  padding: 2px;
+}
+.storefrontPreviewToolbar {
+  align-items: center;
+  background: #fffafc;
+  border-bottom: 1px solid #eadde3;
+  color: #644d58;
+  display: flex;
+  font-size: 0.78rem;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 8px max(16px, 5vw);
+}
+.storefrontPreviewToolbar > span { margin-right: auto; }
+.storefrontPreviewToolbar button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d8c5ce;
+  border-radius: 9px;
+  color: #543b48;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
 }
 
 .creatorCuratedChoices span {
@@ -10283,30 +10338,43 @@ dt {
 }
 
 .creatorPricing {
+  background:
+    radial-gradient(circle at 4% 104%, rgb(104 223 205 / 44%), transparent 34%),
+    radial-gradient(circle at 98% 1%, rgb(252 188 119 / 53%), transparent 31%),
+    linear-gradient(135deg, #33265f, #5a438d 54%, #8c5078);
+  border-radius: 32px;
+  box-shadow: 0 28px 75px rgb(56 39 92 / 18%);
+  color: #fffbff;
   display: grid;
   grid-template-columns: 0.85fr 1.15fr;
   align-items: center;
   gap: clamp(48px, 9vw, 130px);
+  margin-top: 36px;
+  max-width: 1192px;
+  overflow: hidden;
+  padding: clamp(42px, 6vw, 78px);
 }
 .creatorPricing .creatorSectionHeading {
   max-width: 420px;
   margin: 0;
 }
 .creatorPricing .creatorSectionHeading .creatorLandingEyebrow {
+  color: #f3ca9b;
   margin-bottom: 18px;
 }
 .creatorPricing .creatorSectionHeading h2 {
   max-width: 390px;
 }
 .creatorPricing .creatorSectionHeading > p:last-child {
+  color: #e9ddfb;
   max-width: 400px;
 }
 .creatorPricingCard {
   padding: 38px;
-  border: 1px solid #c9b8c4;
+  border: 1px solid rgb(255 255 255 / 50%);
   border-radius: 28px;
-  background: linear-gradient(145deg, #eee3ea, #e2d3df);
-  box-shadow: 0 22px 60px rgba(73, 46, 65, 0.1);
+  background: linear-gradient(145deg, #fffdfb, #fff0e7);
+  box-shadow: 0 22px 60px rgb(27 17 60 / 24%);
 }
 .creatorPricingCard > div > p {
   margin: 0 0 10px;
