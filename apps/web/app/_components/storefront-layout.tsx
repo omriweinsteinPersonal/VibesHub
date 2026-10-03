@@ -335,7 +335,6 @@ export function StorefrontLayout({
                     }
                   >
                     <LabelRail
-                      children={slot.children}
                       order={layout?.labels}
                       editable
                       disabled={saving}
@@ -346,16 +345,19 @@ export function StorefrontLayout({
                           hiddenBlocks: layout?.hiddenBlocks,
                         })
                       }
-                    />
+                    >
+                      {slot.children}
+                    </LabelRail>
                   </Sortable>
                 ) : (
                   <LabelRail
-                    children={slot.children}
                     order={layout?.labels}
                     editable={false}
                     disabled={false}
                     onMove={() => undefined}
-                  />
+                  >
+                    {slot.children}
+                  </LabelRail>
                 )}
               </Fragment>
             ) : (

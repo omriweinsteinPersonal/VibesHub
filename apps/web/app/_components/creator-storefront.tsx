@@ -116,7 +116,7 @@ export function CreatorStorefrontView({
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, [storefront.id]);
+  }, [storefront]);
   useEffect(() => {
     if (editable || !new URLSearchParams(window.location.search).has('mobilePreview'))
       return;
