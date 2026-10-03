@@ -31,6 +31,7 @@ export function SiteFooter() {
         <div className="siteFooterLegal">
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
+          <Link href="/account-deletion">Delete account</Link>
           <span>Built for creators.</span>
         </div>
       </div>

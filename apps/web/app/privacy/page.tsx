@@ -173,9 +173,11 @@ export default function PrivacyPage() {
             <p>
               We retain creator information while the account is active and as needed to
               provide the Service. A creator can permanently delete the account from the
-              account settings. Deletion removes the authentication account and associated
-              creator-owned profile and storefront data. Unreferenced creator uploads are
-              also scheduled for removal.
+              account settings. A creator who no longer has access to the app can also use
+              our public <Link href="/account-deletion">account deletion page</Link>.
+              Deletion removes the authentication account and associated creator-owned
+              profile and storefront data. Unreferenced creator uploads are also scheduled
+              for removal.
             </p>
             <p>
               Limited records may remain for a reasonable period in backups, security logs
