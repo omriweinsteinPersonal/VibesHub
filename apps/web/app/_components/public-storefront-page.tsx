@@ -30,6 +30,7 @@ async function StorefrontPage({
   mode: 'editor' | 'public';
 }) {
   const creatorSession = mode === 'editor' && (await hasCreatorSession(handle));
+  const creatorOwnsStorefront = mode === 'public' && (await hasCreatorSession(handle));
 
   let storefront: CreatorStorefront;
   let recommendations: RecommendationCard[] = [];
@@ -72,6 +73,7 @@ async function StorefrontPage({
             editable={false}
             recommendations={recommendations}
             storefront={storefront}
+            trackStorefrontView={!creatorOwnsStorefront}
           />
         </main>
       </div>

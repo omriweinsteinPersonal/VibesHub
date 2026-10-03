@@ -41,6 +41,10 @@ interface RecommendationMetricRow {
   views: number;
 }
 
+interface UniqueVisitorRow {
+  uniqueVisitors: number;
+}
+
 @Injectable()
 export class AnalyticsRepository {
   constructor(private readonly database: Database) {}
@@ -229,7 +233,7 @@ export class AnalyticsRepository {
     `;
     if (!creator) return null;
 
-    const [series, recommendations] = await Promise.all([
+    const [series, recommendations, [rangeVisitors]] = await Promise.all([
       this.database.sql<MetricRow[]>`
         select
           day::date::text as date,
@@ -281,9 +285,16 @@ export class AnalyticsRepository {
           coalesce(sum(metric.views), 0) desc,
           recommendation.id
       `,
+      this.database.sql<UniqueVisitorRow[]>`
+        select count(distinct visitor.anonymous_id_hash)::integer as "uniqueVisitors"
+        from analytics.creator_daily_visitors visitor
+        where visitor.creator_id = ${creator.id}
+          and visitor.metric_date >= current_date - (${days}::integer - 1)
+          and visitor.metric_date <= current_date
+      `,
     ]);
 
-    const summary = series.reduce(
+    const dailySummary = series.reduce(
       (total, metric) => ({
         codeCopies: total.codeCopies + metric.codeCopies,
         instagramTaps: total.instagramTaps + metric.instagramTaps,
@@ -292,10 +303,14 @@ export class AnalyticsRepository {
         storyCompletions: total.storyCompletions + metric.storyCompletions,
         storyOpens: total.storyOpens + metric.storyOpens,
         storefrontViews: total.storefrontViews + metric.storefrontViews,
-        uniqueVisitors: total.uniqueVisitors + metric.uniqueVisitors,
+        uniqueVisitors: 0,
       }),
       emptyMetric(),
     );
+    const summary = {
+      ...dailySummary,
+      uniqueVisitors: rangeVisitors?.uniqueVisitors ?? 0,
+    };
     return {
       range: {
         days,

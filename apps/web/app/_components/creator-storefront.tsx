@@ -43,11 +43,13 @@ export function CreatorStorefrontView({
   editable = false,
   recommendations,
   storefront,
+  trackStorefrontView = true,
 }: {
   codes: PublicDiscountCode[];
   editable?: boolean;
   recommendations: RecommendationCard[];
   storefront: CreatorStorefront;
+  trackStorefrontView?: boolean;
 }) {
   const [previewBrandOrder, setPreviewBrandOrder] = useState<string[]>(
     storefront.brandOrder ?? [],
@@ -437,7 +439,7 @@ export function CreatorStorefrontView({
           } as CSSProperties
         }
       >
-        <StorefrontViewTracker creatorId={storefront.id} />
+        {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
         <StorefrontLayout
           creatorId={storefront.id}
           theme={previewTheme}
