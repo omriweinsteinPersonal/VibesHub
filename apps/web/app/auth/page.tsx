@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import Script from 'next/script';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -13,8 +13,7 @@ import {
   type AuthenticatedAccount,
 } from '../../lib/account-destination';
 import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
-import { SiteFooter } from '../_components/site-footer';
-import { SiteHeader } from '../_components/site-header';
+import styles from './auth.module.css';
 
 type GoogleCredentialResponse = { credential?: string };
 
@@ -86,9 +85,9 @@ function AuthExperience() {
   const [googleScriptReady, setGoogleScriptReady] = useState(false);
   const [googleButtonReady, setGoogleButtonReady] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
-  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(
-    () => undefined,
-  );
+  const googleCallbackRef = useRef<
+    (response: GoogleCredentialResponse) => Promise<void>
+  >(() => Promise.resolve());
   const googleModeRef = useRef(mode);
   const googleNonceRef = useRef('');
   const googleInitializedRef = useRef(false);
@@ -204,7 +203,9 @@ function AuthExperience() {
       googleNonceRef.current = nonce;
       window.google.accounts.id.initialize({
         button_auto_select: false,
-        callback: (response) => googleCallbackRef.current(response),
+        callback: (response) => {
+          void googleCallbackRef.current(response);
+        },
         client_id: googleClientId,
         itp_support: true,
         nonce: hashedNonce,
@@ -245,150 +246,166 @@ function AuthExperience() {
   }, [googleButtonReady, mode]);
 
   return (
-    <div className="editorialPage authExperiencePage">
-      <SiteHeader />
-      <main className="referenceAuthMain">
-        <section className="referenceAuthIntro">
-          <p className="authEyebrow">
-            <Sparkles aria-hidden="true" size={14} />
-            FOR CREATORS
-          </p>
-          <h1>{mode === 'signup' ? 'Create your swavii page' : 'Welcome back'}</h1>
-          <p>
-            {mode === 'signup'
-              ? 'Give shoppers one trusted place to discover the products you truly recommend, watch your videos and use verified discount codes. Create your storefront in just a few minutes.'
-              : 'Log in to manage your page and recommendations.'}
-          </p>
-          <p dir="rtl" lang="he">
-            קהילה של יוצרות ויוצרים ישראלים שממליצים רק על מה שהם באמת אוהבים.
-          </p>
-        </section>
-        <section className="referenceAuthCard">
-          <div className="referenceAuthTabs" role="tablist">
-            <button
-              aria-selected={mode === 'login'}
-              className={mode === 'login' ? 'active' : ''}
-              onClick={() => setMode('login')}
-              role="tab"
-              type="button"
-            >
-              Log in
-            </button>
-            <button
-              aria-selected={mode === 'signup'}
-              className={mode === 'signup' ? 'active' : ''}
-              onClick={() => setMode('signup')}
-              role="tab"
-              type="button"
-            >
-              Create account
-            </button>
-          </div>
-          {googleClientId ? (
-            <>
-              <Script
-                onError={() =>
-                  setError('Google sign-in could not load. Please try again.')
-                }
-                onReady={() => setGoogleScriptReady(true)}
-                src="https://accounts.google.com/gsi/client"
-                strategy="afterInteractive"
-              />
-              <div
-                aria-busy={!googleButtonReady || oauthLoading}
-                className="googleIdentityButtonSlot"
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <Link aria-label="swavii home" className={styles.wordmark} href="/">
+          swavii
+        </Link>
+        <Link className={styles.backLink} href="/">
+          <span aria-hidden="true">←</span> Back to homepage
+        </Link>
+      </header>
+      <main className={styles.main}>
+        <div className={styles.visual}>
+          <Image
+            alt="Creator with examples of content and recommendations"
+            className={styles.visualImage}
+            height={1254}
+            loading="lazy"
+            src="/images/auth/creator-login.jpg"
+            width={1254}
+          />
+        </div>
+        <section aria-labelledby="auth-heading" className={styles.auth}>
+          <div className={styles.formWrap}>
+            <h1 id="auth-heading">
+              {mode === 'signup'
+                ? 'Make a page that feels like you.'
+                : 'Welcome back to your world.'}
+            </h1>
+            <p className={styles.intro}>
+              {mode === 'signup'
+                ? 'Start with your name. Make everything else your own.'
+                : 'Log in to keep shaping your page.'}
+            </p>
+            <div aria-label="Account mode" className={styles.tabs} role="tablist">
+              <button
+                aria-selected={mode === 'login'}
+                className={mode === 'login' ? styles.activeTab : ''}
+                onClick={() => setMode('login')}
+                role="tab"
+                type="button"
               >
-                <div ref={googleButtonRef} />
-                {!googleButtonReady || oauthLoading || loading ? (
-                  <span className="googleIdentityButtonStatus">
-                    {oauthLoading ? 'Signing you in…' : 'Loading Google…'}
-                  </span>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <button
-              aria-busy={oauthLoading}
-              className="referenceGoogleButton"
-              disabled={oauthLoading || loading}
-              onClick={() => void continueWithGoogleRedirect()}
-              type="button"
-            >
-              {oauthLoading
-                ? 'Opening Google…'
-                : `${mode === 'login' ? 'Continue' : 'Sign up'} with Google`}
-            </button>
-          )}
-          <div className="separator">OR</div>
-          <form onSubmit={submit}>
-            {mode === 'signup' ? (
-              <label>
-                Full name
+                Log in
+              </button>
+              <button
+                aria-selected={mode === 'signup'}
+                className={mode === 'signup' ? styles.activeTab : ''}
+                onClick={() => setMode('signup')}
+                role="tab"
+                type="button"
+              >
+                Create account
+              </button>
+            </div>
+            {googleClientId ? (
+              <>
+                <Script
+                  onError={() =>
+                    setError('Google sign-in could not load. Please try again.')
+                  }
+                  onReady={() => setGoogleScriptReady(true)}
+                  src="https://accounts.google.com/gsi/client"
+                  strategy="afterInteractive"
+                />
+                <div
+                  aria-busy={!googleButtonReady || oauthLoading}
+                  className={styles.googleSlot}
+                >
+                  <div ref={googleButtonRef} />
+                  {!googleButtonReady || oauthLoading || loading ? (
+                    <span className={styles.googleStatus}>
+                      {oauthLoading ? 'Signing you in…' : 'Loading Google…'}
+                    </span>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <button
+                aria-busy={oauthLoading}
+                className={styles.googleButton}
+                disabled={oauthLoading || loading}
+                onClick={() => void continueWithGoogleRedirect()}
+                type="button"
+              >
+                {oauthLoading
+                  ? 'Opening Google…'
+                  : `${mode === 'login' ? 'Continue' : 'Sign up'} with Google`}
+              </button>
+            )}
+            <div className={styles.separator}>OR USE EMAIL</div>
+            <form className={styles.form} onSubmit={submit}>
+              {mode === 'signup' ? (
+                <label className={styles.field}>
+                  Full name
+                  <input
+                    autoComplete="name"
+                    maxLength={100}
+                    onChange={(event) => setFullName(event.target.value)}
+                    required
+                    value={fullName}
+                    placeholder="Your full name"
+                  />
+                </label>
+              ) : null}
+              <label className={styles.field}>
+                Email
                 <input
-                  autoComplete="name"
-                  maxLength={100}
-                  onChange={(event) => setFullName(event.target.value)}
+                  autoComplete="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   required
-                  value={fullName}
-                  placeholder="Your full name"
+                  type="email"
+                  value={email}
+                  placeholder="you@example.com"
                 />
               </label>
-            ) : null}
-            <label>
-              Email
-              <input
-                autoComplete="email"
-                onChange={(event) => setEmail(event.target.value)}
-                required
-                type="email"
-                value={email}
-                placeholder="you@example.com"
-              />
-            </label>
-            <label>
-              Password
-              <input
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                minLength={8}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                type="password"
-                value={password}
-                placeholder={mode === 'signup' ? 'At least 8 characters' : ''}
-              />
-            </label>
-            {mode === 'login' ? (
-              <Link
-                className="authRecoveryLink"
-                href={`/auth/reset-password?email=${encodeURIComponent(email)}`}
-              >
-                Forgot password?
-              </Link>
-            ) : null}
-            {error ? <p className="formError">{error}</p> : null}
-            {message ? <p className="formSuccess">{message}</p> : null}
-            <button className="button primary" disabled={loading} type="submit">
-              {loading
-                ? 'Please wait…'
-                : mode === 'login'
-                  ? 'Log in'
-                  : 'Create your page'}
-            </button>
-          </form>
-          <p className="referenceAuthTerms">
-            By continuing, you agree to the <Link href="/terms">Terms of Service</Link>{' '}
-            and acknowledge the <Link href="/privacy">Privacy Policy</Link>.
-          </p>
+              <div className={styles.passwordField}>
+                <div className={styles.passwordHeading}>
+                  <label htmlFor="auth-password">Password</label>
+                  {mode === 'login' ? (
+                    <Link
+                      className={styles.recoveryLink}
+                      href={`/auth/reset-password?email=${encodeURIComponent(email)}`}
+                    >
+                      Forgot password?
+                    </Link>
+                  ) : null}
+                </div>
+                <input
+                  id="auth-password"
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  minLength={8}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  type="password"
+                  value={password}
+                  placeholder={mode === 'signup' ? 'At least 8 characters' : ''}
+                />
+              </div>
+              {error ? <p className="formError">{error}</p> : null}
+              {message ? <p className="formSuccess">{message}</p> : null}
+              <button className={styles.submit} disabled={loading} type="submit">
+                {loading
+                  ? 'Please wait…'
+                  : mode === 'login'
+                    ? 'Log in'
+                    : 'Create your page'}
+              </button>
+            </form>
+            <p className={styles.terms}>
+              By continuing, you agree to the <Link href="/terms">Terms of Service</Link>{' '}
+              and acknowledge the <Link href="/privacy">Privacy Policy</Link>.
+            </p>
+          </div>
         </section>
       </main>
-      <SiteFooter />
     </div>
   );
 }
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="referenceAuthMain" aria-busy="true" />}>
+    <Suspense fallback={<div aria-busy="true" className={styles.page} />}>
       <AuthExperience />
     </Suspense>
   );
