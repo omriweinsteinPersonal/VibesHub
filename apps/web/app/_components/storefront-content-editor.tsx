@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 import {
   creatorStorefrontConfigurationInputSchema,
   type CreatorStorefrontConfiguration,
@@ -40,6 +40,7 @@ export function StorefrontContentEditor({
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   useEffect(() => {
     let active = true;
     Promise.all([
@@ -71,6 +72,34 @@ export function StorefrontContentEditor({
       ...draft,
       titles: draft.titles.map((item) => (item.id === id ? { ...item, ...patch } : item)),
     });
+  function addBlock(kind: NonNullable<StorefrontTitle['contentKind']>) {
+    const id = randomUuid();
+    const defaults = {
+      text: 'New text',
+      'photo-gallery': 'Photo gallery',
+      video: 'Video',
+      instagram: 'Instagram post',
+    } as const;
+    change({
+      ...draft,
+      titles: [
+        ...draft.titles,
+        {
+          id,
+          text: defaults[kind],
+          contentKind: kind,
+          format: 'heading',
+          align: 'start',
+          size: 'medium',
+          beforeId: null,
+          appearance: 'card',
+          padding: 'medium',
+          radius: 'rounded',
+        },
+      ],
+    });
+    onSelect(id);
+  }
   const brands = targets
     .filter(({ kind }) => kind === 'brand')
     .sort((a, b) => {
@@ -82,13 +111,21 @@ export function StorefrontContentEditor({
   const layers = brands.flatMap((brand) => [
     ...draft.titles
       .filter(({ beforeId }) => beforeId === brand.id)
-      .map((item) => ({ id: item.id, title: item.text || 'Empty text', kind: 'text' })),
+      .map((item) => ({
+        id: item.id,
+        title: item.text || 'Empty text',
+        kind: item.contentKind ?? 'text',
+      })),
     { ...brand, kind: 'brand' },
   ]);
   layers.push(
     ...draft.titles
       .filter(({ beforeId }) => !beforeId || !brandIds.has(beforeId))
-      .map((item) => ({ id: item.id, title: item.text || 'Empty text', kind: 'text' })),
+      .map((item) => ({
+        id: item.id,
+        title: item.text || 'Empty text',
+        kind: item.contentKind ?? 'text',
+      })),
   );
   const selected = draft.titles.find(({ id }) => id === selectedId);
   const selectedTarget = targets.find(({ id }) => id === selectedId);
@@ -198,6 +235,45 @@ export function StorefrontContentEditor({
         Tap a block in the preview to edit it. Drag its dotted handle to change its
         position. Positions save automatically.
       </p>
+      <button
+        aria-expanded={addMenuOpen}
+        className="storefrontAddContentToggle"
+        disabled={!configuration || saving || draft.titles.length >= 24}
+        onClick={() => setAddMenuOpen((open) => !open)}
+        type="button"
+      >
+        <span><Plus aria-hidden="true" size={17} /> Add content</span>
+        <ChevronDown aria-hidden="true" size={17} />
+      </button>
+      {addMenuOpen ? (
+        <div
+          className="storefrontAddContentActions"
+          role="group"
+          aria-label="Add content block"
+        >
+          {(
+            [
+              ['text', 'Text or link'],
+              ['photo-gallery', 'Photo gallery'],
+              ['video', 'Video'],
+              ['instagram', 'Instagram post'],
+            ] as const
+          ).map(([kind, label]) => (
+            <button
+              className="button secondary"
+              type="button"
+              key={kind}
+              disabled={!configuration || saving || draft.titles.length >= 24}
+              onClick={() => {
+                addBlock(kind);
+                setAddMenuOpen(false);
+              }}
+            >
+              <Plus aria-hidden="true" size={16} /> {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {targets.some(({ kind }) => kind === 'bio' || kind === 'social') ? (
         <div
           className="storefrontProfileTargets"
@@ -218,34 +294,6 @@ export function StorefrontContentEditor({
             ))}
         </div>
       ) : null}
-      <button
-        className="button secondary"
-        type="button"
-        disabled={!configuration || saving || draft.titles.length >= 24}
-        onClick={() => {
-          const id = randomUuid();
-          change({
-            ...draft,
-            titles: [
-              ...draft.titles,
-              {
-                id,
-                text: 'New text',
-                format: 'heading',
-                align: 'start',
-                size: 'medium',
-                beforeId: null,
-                appearance: 'card',
-                padding: 'medium',
-                radius: 'rounded',
-              },
-            ],
-          });
-          onSelect(id);
-        }}
-      >
-        <Plus aria-hidden="true" size={16} /> Add text
-      </button>
       <h3>Layers</h3>
       <ol className="storefrontLayerList">
         {layers.map((layer) => (
@@ -255,7 +303,9 @@ export function StorefrontContentEditor({
               aria-pressed={selectedId === layer.id}
               onClick={() => onSelect(layer.id)}
             >
-              <small>{layer.kind === 'text' ? 'Text' : 'Brand'}</small>
+              <small>
+                {layer.kind === 'brand' ? 'Brand' : layer.kind.replace('-', ' ')}
+              </small>
               <span>{layer.title}</span>
             </button>
           </li>
@@ -334,7 +384,9 @@ export function StorefrontContentEditor({
         <section className="storefrontTitleEditor">
           <fieldset disabled={saving}>
             <label>
-              Text
+              {selected.contentKind && selected.contentKind !== 'text'
+                ? 'Heading or caption'
+                : 'Text'}
               <textarea
                 maxLength={2000}
                 dir="auto"
@@ -343,44 +395,108 @@ export function StorefrontContentEditor({
                 onChange={(e) => update(selected.id, { text: e.target.value })}
               />
             </label>
-            <label>
-              Destination link <small>Optional</small>
-              <input
-                inputMode="url"
-                placeholder="https://example.com"
-                type="url"
-                value={selected.url ?? ''}
-                onChange={(e) =>
-                  update(selected.id, { url: e.target.value.trim() || undefined })
-                }
-              />
-            </label>
-            <label>
-              Button label <small>Optional — shown only with a destination link</small>
-              <input
-                maxLength={80}
-                placeholder="e.g. Shop the collection"
-                type="text"
-                value={selected.buttonLabel ?? ''}
-                onChange={(e) =>
-                  update(selected.id, { buttonLabel: e.target.value.trim() || undefined })
-                }
-              />
-            </label>
-            <label>
-              Text style
-              <select
-                value={selected.format ?? 'heading'}
-                onChange={(e) =>
-                  update(selected.id, {
-                    format: e.target.value as 'heading' | 'paragraph',
-                  })
-                }
-              >
-                <option value="heading">Heading</option>
-                <option value="paragraph">Paragraph</option>
-              </select>
-            </label>
+            {selected.contentKind === 'photo-gallery' ? (
+              <label>
+                Photo URLs <small>One HTTPS image URL per line, up to six.</small>
+                <textarea
+                  rows={6}
+                  inputMode="url"
+                  placeholder={
+                    'https://example.com/photo-1.jpg\nhttps://example.com/photo-2.jpg'
+                  }
+                  value={(selected.mediaUrls ?? []).join('\n')}
+                  onChange={(event) =>
+                    update(selected.id, {
+                      mediaUrls: event.target.value
+                        .split(/\r?\n/)
+                        .map((value) => value.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                />
+              </label>
+            ) : null}
+            {selected.contentKind === 'video' ? (
+              <label>
+                Video URL <small>Direct HTTPS video file URL.</small>
+                <input
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://example.com/video.mp4"
+                  value={selected.videoUrl ?? ''}
+                  onChange={(event) =>
+                    update(selected.id, {
+                      videoUrl: event.target.value.trim() || undefined,
+                    })
+                  }
+                />
+              </label>
+            ) : null}
+            {selected.contentKind === 'instagram' ? (
+              <label>
+                Public Instagram post or reel URL
+                <input
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://www.instagram.com/p/.../"
+                  value={selected.instagramUrl ?? ''}
+                  onChange={(event) =>
+                    update(selected.id, {
+                      instagramUrl: event.target.value.trim() || undefined,
+                    })
+                  }
+                />
+                <small>
+                  Private or removed posts may not embed. Your page keeps a direct
+                  Instagram link.
+                </small>
+              </label>
+            ) : null}
+            {!selected.contentKind || selected.contentKind === 'text' ? (
+              <>
+                <label>
+                  Destination link <small>Optional</small>
+                  <input
+                    inputMode="url"
+                    placeholder="https://example.com"
+                    type="url"
+                    value={selected.url ?? ''}
+                    onChange={(e) =>
+                      update(selected.id, { url: e.target.value.trim() || undefined })
+                    }
+                  />
+                </label>
+                <label>
+                  Button label{' '}
+                  <small>Optional — shown only with a destination link</small>
+                  <input
+                    maxLength={80}
+                    placeholder="e.g. Shop the collection"
+                    type="text"
+                    value={selected.buttonLabel ?? ''}
+                    onChange={(e) =>
+                      update(selected.id, {
+                        buttonLabel: e.target.value.trim() || undefined,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Text style
+                  <select
+                    value={selected.format ?? 'heading'}
+                    onChange={(e) =>
+                      update(selected.id, {
+                        format: e.target.value as 'heading' | 'paragraph',
+                      })
+                    }
+                  >
+                    <option value="heading">Heading</option>
+                    <option value="paragraph">Paragraph</option>
+                  </select>
+                </label>
+              </>
+            ) : null}
             <label>
               Appearance
               <select
@@ -503,7 +619,7 @@ export function StorefrontContentEditor({
                 onSelect(null);
               }}
             >
-              <Trash2 size={15} /> Delete text
+              <Trash2 size={15} /> Delete block
             </button>
           </fieldset>
         </section>

@@ -12020,6 +12020,69 @@ dt {
   margin: 20px 0 12px;
   overflow-wrap: anywhere;
 }
+.storefrontAddContentActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.storefrontAddContentActions .button {
+  min-height: 44px;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+.referenceStorefrontProducts .storefrontMediaBlock {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.referenceStorefrontProducts .storefrontMediaHeading {
+  margin: 0;
+  font:
+    600 1.2rem var(--font-vh-body),
+    sans-serif;
+  color: var(--sf-text);
+}
+.referenceStorefrontProducts .storefrontPhotoGallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.referenceStorefrontProducts .storefrontPhotoGallery img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.referenceStorefrontProducts .storefrontMediaBlock video {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  border-radius: 8px;
+  background: #161616;
+}
+.referenceStorefrontProducts .storefrontMediaBlock iframe {
+  display: block;
+  width: 100%;
+  height: min(620px, 75dvh);
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+}
+.referenceStorefrontProducts .storefrontMediaBlock > a {
+  color: var(--sf-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 0.9rem;
+}
+.referenceStorefrontProducts .storefrontMediaEmpty {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed #c7bdb2;
+  border-radius: 8px;
+  color: #5f5f5f;
+  font-size: 0.9rem;
+}
 .referenceStorefrontProducts .storefrontContentTitle {
   color: var(--sf-text);
   font-family: var(--font-vh-display), Georgia, serif;
@@ -12784,5 +12847,420 @@ dt {
 
   .creatorTypeGrid small {
     display: none;
+  }
+}
+/* Storefront studio: visitor-first preview with a persistent editing canvas. */
+.storefrontPage:has(.storefrontDesignWorkspace) {
+  background: #fff;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader {
+  background: #c97853;
+  border-bottom: 0;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader .logoWordmark,
+.storefrontWorkspaceHeader .creatorShellHeader nav a,
+.storefrontWorkspaceHeader .creatorShellHeader .creatorShellActions > a,
+.storefrontWorkspaceHeader .creatorShellHeader a[aria-current='page'] {
+  color: #fff;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader nav a:hover,
+.storefrontWorkspaceHeader .creatorShellHeader nav a:focus-visible {
+  color: #fff7ee;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader .button.secondary {
+  background: transparent;
+  border-color: rgb(255 255 255 / 60%);
+  color: #fff;
+}
+
+.storefrontWorkspaceIntro {
+  align-items: end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 38px 32px 27px;
+}
+
+.storefrontWorkspaceIntro .eyebrow {
+  color: #a3573b;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  margin: 0 0 10px;
+}
+
+.storefrontWorkspaceIntro h1 {
+  color: #222624;
+  font-family: var(--font-vh-body), Arial, sans-serif;
+  font-size: clamp(2.1rem, 4vw, 3.15rem);
+  font-weight: 650;
+  letter-spacing: -0.065em;
+  line-height: 1.05;
+  margin: 0 0 9px;
+}
+
+.storefrontWorkspaceIntro p:last-child {
+  color: #606862;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.storefrontWorkspaceIntro > a {
+  align-items: center;
+  color: #35463d;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 5px;
+  min-height: 44px;
+}
+
+.storefrontWorkspaceIntro > a:hover {
+  color: #a3573b;
+}
+
+.storefrontPreviewToolbar {
+  background: #fff;
+  border-block: 1px solid #e4e3dc;
+  color: #7a817a;
+  justify-content: space-between;
+  min-height: 61px;
+  padding: 9px max(32px, calc((100% - 1216px) / 2));
+}
+
+.storefrontPreviewToolbar > span {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.storefrontModeSwitch {
+  background: #f1f1ed;
+  border-radius: 9px;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+}
+
+.storefrontModeSwitch button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #5c655e;
+  font-size: 0.79rem;
+  min-height: 39px;
+  padding: 0 14px;
+}
+
+.storefrontModeSwitch button[aria-pressed='true'] {
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(25 30 25 / 12%);
+  color: #232b25;
+}
+
+.storefrontModeSwitch button:focus-visible,
+.storefrontWorkspaceIntro > a:focus-visible {
+  outline: 2px solid #9d543a;
+  outline-offset: 2px;
+}
+
+.storefrontDesignWorkspace {
+  background: #f4f1ea;
+}
+
+.storefrontDesignWorkspace.hasEditor {
+  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+}
+
+.storefrontDesignWorkspace .storefrontDesignPanel {
+  background: #fff;
+  border-right: 1px solid #e3e3dd;
+  height: calc(100dvh - 69px);
+  padding: 24px 20px 34px;
+  top: 69px;
+}
+
+.storefrontDesignPanelHeading h2 {
+  color: #242a26;
+  font-family: var(--font-vh-body), Arial, sans-serif;
+  font-size: 1.23rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  margin: 0 0 5px;
+}
+
+.storefrontDesignPanelHeading > p:last-child {
+  color: #69716b;
+  font-size: 0.77rem;
+  line-height: 1.4;
+  margin-bottom: 13px;
+}
+
+.storefrontDesignPanel .storefrontDesignTabs {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #e3e3dd;
+  border-radius: 0;
+  display: flex;
+  gap: 22px;
+  min-height: 43px;
+  padding: 0;
+}
+
+.storefrontDesignPanel .storefrontDesignTabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #6c736d;
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0 2px 10px;
+}
+
+.storefrontDesignPanel .storefrontDesignTabs button[aria-pressed='true'] {
+  background: transparent;
+  border-color: #c97853;
+  color: #202822;
+}
+
+.storefrontDesignPanel .storefrontPaletteList {
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 19px;
+}
+
+.storefrontDesignPanel .storefrontPaletteList button {
+  align-items: center;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 13px;
+  min-height: 45px;
+  padding: 8px 13px;
+  text-align: left;
+}
+
+.storefrontDesignPanel .storefrontPaletteSwatches {
+  margin: 0;
+}
+
+.storefrontDesignPanel .storefrontSearchControl {
+  background: #f5f3ee;
+  border-color: #e4e1d9;
+  margin-top: 18px;
+}
+
+.storefrontDesignPanel .storefrontContentEditor > p {
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin: 3px 0 0;
+}
+
+.storefrontAddContentToggle {
+  align-items: center;
+  background: #c97853;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 13px;
+  width: 100%;
+}
+
+.storefrontAddContentToggle > span {
+  align-items: center;
+  display: inline-flex;
+  gap: 7px;
+}
+
+.storefrontAddContentToggle:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.storefrontAddContentToggle:focus-visible {
+  outline: 2px solid #633e2f;
+  outline-offset: 2px;
+}
+
+.storefrontDesignPanel .storefrontAddContentActions .button {
+  font-size: 0.76rem;
+  padding-inline: 10px;
+}
+
+.storefrontDesignWorkspace .storefrontPhoneStage {
+  align-items: center;
+  background: #f4f1ea;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: max(690px, calc(100dvh - 69px));
+  padding: 28px 24px 36px;
+}
+
+.storefrontDesignWorkspace.hasEditor .storefrontPhoneStage {
+  position: sticky;
+  top: 69px;
+}
+
+.storefrontVisitorLabel {
+  align-items: center;
+  color: #64716a;
+  display: flex;
+  font-size: 0.71rem;
+  gap: 7px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+}
+
+.storefrontVisitorLabel span {
+  background: #7ba386;
+  border-radius: 50%;
+  height: 7px;
+  width: 7px;
+}
+
+.storefrontDesignWorkspace .storefrontPhoneDevice {
+  background: #202525;
+  border: 7px solid #202525;
+  border-radius: 40px;
+  box-shadow: 0 22px 46px rgb(35 34 29 / 21%);
+  height: min(720px, calc(100dvh - 182px));
+  margin: 0 auto;
+  min-height: 510px;
+  overflow: hidden;
+  position: relative;
+  width: min(360px, 100%);
+}
+
+.storefrontDesignWorkspace .storefrontPhoneIsland {
+  background: #171b1c;
+  border-radius: 999px;
+  display: block;
+  height: 20px;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 7px;
+  transform: translateX(-50%);
+  width: 100px;
+  z-index: 1;
+}
+
+.storefrontDesignWorkspace .storefrontPhoneScreen {
+  background: #fff;
+  border: 0;
+  border-radius: 32px;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .storefrontWorkspaceIntro {
+    padding: 24px 18px 18px;
+  }
+
+  .storefrontWorkspaceIntro h1 {
+    font-size: 2rem;
+  }
+
+  .storefrontWorkspaceIntro p:last-child {
+    font-size: 0.75rem;
+  }
+
+  .storefrontWorkspaceIntro > a,
+  .storefrontPreviewToolbar > span {
+    display: none;
+  }
+
+  .storefrontPreviewToolbar {
+    padding: 8px 17px;
+  }
+
+  .storefrontModeSwitch {
+    width: 100%;
+  }
+
+  .storefrontModeSwitch button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .storefrontDesignWorkspace.hasEditor {
+    display: block;
+  }
+
+  .storefrontDesignWorkspace .storefrontPhoneStage,
+  .storefrontDesignWorkspace.hasEditor .storefrontPhoneStage {
+    background: #fff;
+    display: block;
+    min-height: 0;
+    padding: 0;
+    position: relative;
+    top: auto;
+  }
+
+  .storefrontVisitorLabel {
+    display: none;
+  }
+
+  .storefrontDesignWorkspace .storefrontPhoneDevice {
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    height: max(480px, calc(100dvh - 222px - env(safe-area-inset-bottom)));
+    min-height: 0;
+    width: 100%;
+  }
+
+  .storefrontDesignWorkspace .storefrontPhoneIsland {
+    display: none;
+  }
+
+  .storefrontDesignWorkspace .storefrontPhoneScreen {
+    border-radius: 0;
+  }
+
+  .storefrontDesignWorkspace .storefrontDesignPanel {
+    border: 0;
+    border-radius: 19px 19px 0 0;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    height: min(68dvh, 580px);
+    left: 0;
+    overflow-y: auto;
+    padding: 0;
+    position: fixed;
+    right: 0;
+    top: auto;
+    z-index: 1100;
+  }
+
+  .storefrontDesignPanelBody {
+    padding: 17px 18px 30px;
+  }
+
+  .mobileStorefrontEditorToggle {
+    min-height: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storefrontDesignPanel {
+    transition: none;
   }
 }

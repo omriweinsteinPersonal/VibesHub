@@ -576,6 +576,27 @@ export const storefrontTitleSchema = z
       .max(2_048)
       .optional(),
     buttonLabel: z.string().trim().min(1).max(80).optional(),
+    // Optional media content keeps existing text blocks and persisted JSON compatible.
+    contentKind: z.enum(['text', 'photo-gallery', 'video', 'instagram']).optional(),
+    mediaUrls: z
+      .array(z.url({ protocol: /^https$/ }).max(2_048))
+      .max(6)
+      .optional(),
+    videoUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .optional(),
+    instagramUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .refine((value) => {
+        const url = new URL(value);
+        return (
+          ['instagram.com', 'www.instagram.com'].includes(url.hostname) &&
+          /^\/(p|reel)\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)
+        );
+      }, 'Use a public Instagram post or reel URL')
+      .optional(),
   })
   .strict();
 export const storefrontTitlesSchema = z

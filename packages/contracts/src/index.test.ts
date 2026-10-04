@@ -489,6 +489,49 @@ describe('storefront text blocks', () => {
         .titles,
     ).toEqual([text]);
   });
+  it('accepts creator media blocks and rejects unsafe Instagram destinations', () => {
+    const base = {
+      id: '44444444-4444-4444-8444-444444444444',
+      text: 'From the studio',
+      align: 'start' as const,
+      size: 'medium' as const,
+      beforeId: null,
+    };
+    const titles = [
+      {
+        ...base,
+        contentKind: 'photo-gallery',
+        mediaUrls: ['https://example.com/photo.jpg'],
+      },
+      {
+        ...base,
+        id: '55555555-5555-4555-8555-555555555555',
+        contentKind: 'video',
+        videoUrl: 'https://example.com/film.mp4',
+      },
+      {
+        ...base,
+        id: '66666666-6666-4666-8666-666666666666',
+        contentKind: 'instagram',
+        instagramUrl: 'https://www.instagram.com/p/ABC_123/',
+      },
+    ];
+    expect(
+      creatorStorefrontConfigurationInputSchema.parse({ categoryIds: [], titles }).titles,
+    ).toEqual(titles);
+    expect(
+      creatorStorefrontConfigurationInputSchema.safeParse({
+        categoryIds: [],
+        titles: [
+          {
+            ...base,
+            contentKind: 'instagram',
+            instagramUrl: 'https://example.com/p/ABC_123/',
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe('storefront block editor', () => {

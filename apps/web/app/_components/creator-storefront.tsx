@@ -325,6 +325,7 @@ export function CreatorStorefrontView({
       .map((title) => {
         const Tag = title.format === 'paragraph' ? 'p' : 'h2';
         const showButton = Boolean(title.url && title.buttonLabel);
+        const contentKind = title.contentKind ?? 'text';
         const cardStyle =
           title.appearance === 'card'
             ? {
@@ -353,29 +354,98 @@ export function CreatorStorefrontView({
               data-selected={selectedBlock === title.id}
               style={cardStyle}
             >
-              <Tag
-                dir="auto"
-                className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
-                style={{ textAlign: title.align }}
-              >
-                {title.url && !showButton ? (
-                  <a href={title.url} rel="noreferrer" target="_blank">
+              {contentKind === 'text' ? (
+                <>
+                  <Tag
+                    dir="auto"
+                    className={`storefrontContentTitle storefrontContentTitle-${title.size} storefrontContentText-${title.format ?? 'heading'}`}
+                    style={{ textAlign: title.align }}
+                  >
+                    {title.url && !showButton ? (
+                      <a href={title.url} rel="noreferrer" target="_blank">
+                        {title.text}
+                      </a>
+                    ) : (
+                      title.text
+                    )}
+                  </Tag>
+                  {showButton ? (
+                    <a
+                      className="storefrontContentButton"
+                      href={title.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {title.buttonLabel}
+                    </a>
+                  ) : null}
+                </>
+              ) : (
+                <div className="storefrontMediaBlock">
+                  <h2 className="storefrontMediaHeading" dir="auto">
                     {title.text}
-                  </a>
-                ) : (
-                  title.text
-                )}
-              </Tag>
-              {showButton ? (
-                <a
-                  className="storefrontContentButton"
-                  href={title.url}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {title.buttonLabel}
-                </a>
-              ) : null}
+                  </h2>
+                  {contentKind === 'photo-gallery' && title.mediaUrls?.length ? (
+                    <div className="storefrontPhotoGallery">
+                      {title.mediaUrls.map((src, index) => (
+                        // External media URLs are creator-provided HTTPS images.
+                        <Image
+                          key={`${src}-${index}`}
+                          src={src}
+                          alt={`${title.text}, photo ${index + 1}`}
+                          loading="lazy"
+                          unoptimized
+                          width={600}
+                          height={600}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  {contentKind === 'photo-gallery' &&
+                  !title.mediaUrls?.length &&
+                  canEdit ? (
+                    <p className="storefrontMediaEmpty">
+                      Add photo URLs to fill this gallery.
+                    </p>
+                  ) : null}
+                  {contentKind === 'video' && title.videoUrl ? (
+                    <video
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={title.videoUrl}
+                      aria-label={title.text}
+                    />
+                  ) : null}
+                  {contentKind === 'video' && !title.videoUrl && canEdit ? (
+                    <p className="storefrontMediaEmpty">
+                      Add a video URL to show your video here.
+                    </p>
+                  ) : null}
+                  {contentKind === 'instagram' && title.instagramUrl ? (
+                    <>
+                      <iframe
+                        title={`${title.text} Instagram post`}
+                        src={`https://www.instagram.com${new URL(title.instagramUrl).pathname.replace(/\/$/, '')}/embed/`}
+                        loading="lazy"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                      />
+                      <a
+                        href={title.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View on Instagram ↗
+                      </a>
+                    </>
+                  ) : null}
+                  {contentKind === 'instagram' && !title.instagramUrl && canEdit ? (
+                    <p className="storefrontMediaEmpty">
+                      Add a public Instagram post URL to embed it here.
+                    </p>
+                  ) : null}
+                </div>
+              )}
             </div>
           </StorefrontSlot>
         );

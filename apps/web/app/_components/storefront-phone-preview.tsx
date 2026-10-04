@@ -8,7 +8,14 @@ import {
   type StorefrontThemeConfiguration,
   type CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
-import { ChevronDown, ChevronUp, Eye, Pencil, SlidersHorizontal } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Pencil,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -17,7 +24,7 @@ import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = Exclude<keyof StorefrontTheme, 'layout'>;
 type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
-const desktopQuery = '(min-width: 901px) and (pointer: fine)';
+const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
   id: ThemeSection;
   title: string;
@@ -114,7 +121,7 @@ export function StorefrontPhonePreview({
   // Creators need the same editor on a phone. The preview becomes a full-width
   // device there, while public storefront visitors still see the regular page.
   const showPhone = desktopPreview || editable;
-  const [tab, setTab] = useState<'design' | 'content'>('design');
+  const [tab, setTab] = useState<'design' | 'content'>('content');
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [previewBrandOrder, setPreviewBrandOrder] = useState<string[] | null>(null);
   const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[] | null>(null);
@@ -313,17 +320,43 @@ export function StorefrontPhonePreview({
       className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}
     >
       {canEdit ? (
-        <div className="storefrontPreviewToolbar">
-          <span>{previewMode ? 'Preview' : 'Editing'}</span>
-          <button onClick={() => setPreviewMode((value) => !value)} type="button">
-            {previewMode ? (
-              <Pencil aria-hidden="true" size={16} />
-            ) : (
-              <Eye aria-hidden="true" size={16} />
-            )}
-            {previewMode ? 'Editing' : 'Preview'}
-          </button>
-        </div>
+        <>
+          <div className="storefrontWorkspaceIntro">
+            <div>
+              <p className="eyebrow">CREATOR STUDIO / STOREFRONT</p>
+              <h1>Your storefront.</h1>
+              <p>See your page as visitors do. Switch to editing when you are ready.</p>
+            </div>
+            <a href={previewUrl.split('?')[0]} rel="noreferrer" target="_blank">
+              Open live page <ArrowUpRight aria-hidden="true" size={17} />
+            </a>
+          </div>
+          <div className="storefrontPreviewToolbar">
+            <div aria-label="Storefront mode" className="storefrontModeSwitch" role="group">
+              <button
+                aria-pressed={previewMode}
+                onClick={() => {
+                  setPreviewMode(true);
+                  setMobileEditorOpen(false);
+                }}
+                type="button"
+              >
+                <Eye aria-hidden="true" size={16} /> Preview
+              </button>
+              <button
+                aria-pressed={!previewMode}
+                onClick={() => {
+                  setPreviewMode(false);
+                  setMobileEditorOpen(true);
+                }}
+                type="button"
+              >
+                <Pencil aria-hidden="true" size={16} /> Edit page
+              </button>
+            </div>
+            <span>Your preview stays visible while you edit.</span>
+          </div>
+        </>
       ) : null}
       {canEdit && !previewMode ? (
         <aside
@@ -349,27 +382,23 @@ export function StorefrontPhonePreview({
           </button>
           <div className="storefrontDesignPanelBody">
             <div className="storefrontDesignPanelHeading">
-              <p className="eyebrow">YOUR STOREFRONT</p>
-              <h2>Design your page</h2>
-              <p>
-                Choose a palette, then refine each part. Changes appear in the phone
-                before you save.
-              </p>
+              <h2>Edit your page</h2>
+              <p>Choose what to change. See it update alongside.</p>
             </div>
             <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
-              <button
-                type="button"
-                aria-pressed={tab === 'design'}
-                onClick={() => setTab('design')}
-              >
-                Design
-              </button>
               <button
                 type="button"
                 aria-pressed={tab === 'content'}
                 onClick={() => setTab('content')}
               >
                 Content
+              </button>
+              <button
+                type="button"
+                aria-pressed={tab === 'design'}
+                onClick={() => setTab('design')}
+              >
+                Design
               </button>
             </div>
             <div hidden={tab !== 'content'}>
@@ -531,6 +560,11 @@ export function StorefrontPhonePreview({
         </aside>
       ) : null}
       <div className="storefrontPhoneStage">
+        {canEdit ? (
+          <p className="storefrontVisitorLabel">
+            <span aria-hidden="true" /> Visitor view · {previewUrl.split('?')[0]}
+          </p>
+        ) : null}
         <div className="storefrontPhoneDevice">
           <span aria-hidden="true" className="storefrontPhoneIsland" />
           <iframe
