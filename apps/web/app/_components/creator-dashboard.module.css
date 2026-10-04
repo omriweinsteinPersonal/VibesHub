@@ -3,6 +3,10 @@
   color: #1b1c1c;
 }
 
+.shell.analyticsShell {
+  background: #fafaf7;
+}
+
 .shell :global(.creatorShellHeader) {
   background: #c97853;
   border-bottom: 0;

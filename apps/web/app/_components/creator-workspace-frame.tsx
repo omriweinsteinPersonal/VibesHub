@@ -22,7 +22,7 @@ export function CreatorWorkspaceFrame({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className={`creatorShellPage${pathname === '/dashboard' || pathname === '/creator-home' ? ` ${dashboardStyles.shell}` : ''}`}
+      className={`creatorShellPage${pathname === '/dashboard' || pathname === '/creator-home' || pathname === '/creator/analytics' ? ` ${dashboardStyles.shell}` : ''}${pathname === '/creator/analytics' ? ` ${dashboardStyles.analyticsShell}` : ''}`}
     >
       <CreatorShellHeader />
       {children}
