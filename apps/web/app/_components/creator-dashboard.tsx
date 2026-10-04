@@ -17,7 +17,9 @@ import {
   ArrowLeft,
   ArrowDown,
   ArrowUp,
+  Check,
   ChevronDown,
+  Copy,
   ExternalLink,
   GripVertical,
   LayoutGrid,
@@ -53,6 +55,7 @@ import { randomUuid } from '../../lib/random-id';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
 import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
+import styles from './creator-dashboard.module.css';
 
 type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
@@ -1027,17 +1030,70 @@ export function CreatorDashboard() {
         ? !groupedRecommendationIds.has(entry.item.id)
         : true,
   );
+  const firstName = profile?.displayName.trim().split(/\s+/)[0];
+
+  async function copyStorefrontLink() {
+    if (!profile?.handle) return;
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/${encodeURIComponent(profile.handle)}`,
+      );
+      setNotice('Storefront link copied.');
+      setError('');
+    } catch {
+      setError('Could not copy the link. Open your storefront to copy its URL.');
+    }
+  }
+
   return (
-    <main className="creatorDashboardMain creatorDashboardMainWithSidebar">
+    <main
+      className={`creatorDashboardMain creatorDashboardMainWithSidebar ${styles.root}`}
+    >
       <section className="creatorDashboardIntro">
         <div>
-          <p className="eyebrow">CREATOR DASHBOARD</p>
+          <p className="eyebrow">CREATOR STUDIO / DASHBOARD</p>
           <h1 aria-busy={!profile}>
-            {profile?.displayName ?? <span aria-hidden="true">&nbsp;</span>}
+            {firstName ? (
+              `Your studio, ${firstName}.`
+            ) : (
+              <span aria-hidden="true">&nbsp;</span>
+            )}
           </h1>
-          <p>Add and manage everything that appears on your public storefront.</p>
+          <p>Make your page feel like you, one recommendation at a time.</p>
         </div>
+        {profile?.handle ? (
+          <Link
+            className={styles.storefrontLink}
+            href={`/${encodeURIComponent(profile.handle)}`}
+          >
+            <ExternalLink aria-hidden="true" size={16} />
+            View storefront
+          </Link>
+        ) : null}
       </section>
+
+      {profile?.handle ? (
+        <section aria-label="Your live storefront" className={styles.liveBanner}>
+          <span className={styles.liveIcon}>
+            <Check aria-hidden="true" size={18} />
+          </span>
+          <div className={styles.liveCopy}>
+            <strong>Your page is live</strong>
+            <span>
+              swavii.com/{profile.handle} · Share it wherever your audience finds you.
+            </span>
+          </div>
+          <button
+            aria-label="Copy storefront link"
+            className={styles.copyButton}
+            onClick={() => void copyStorefrontLink()}
+            type="button"
+          >
+            <Copy aria-hidden="true" size={15} />
+            <span>Copy link</span>
+          </button>
+        </section>
+      ) : null}
 
       {error ? (
         <p className="formError" role="alert">
@@ -1058,6 +1114,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('labels')}
             type="button"
           >
+            <Tag aria-hidden="true" size={17} />
             <span className="creatorDashboardNavDesktop">Storefront labels</span>
             <span className="creatorDashboardNavMobile">Storefront labels</span>
           </button>
@@ -1066,6 +1123,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
+            <LayoutGrid aria-hidden="true" size={17} />
             <span className="creatorDashboardNavDesktop">Recommendations</span>
             <span className="creatorDashboardNavMobile">Recommendations</span>
           </button>
@@ -1074,6 +1132,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
+            <Link2 aria-hidden="true" size={17} />
             <span className="creatorDashboardNavDesktop">Social links</span>
             <span className="creatorDashboardNavMobile">Social links</span>
           </button>
@@ -1085,8 +1144,8 @@ export function CreatorDashboard() {
                 <div>
                   <h2>Recommendations</h2>
                   <p>
-                    Add brands, collections and individual items. Every collection gets
-                    its own product page automatically.
+                    Keep your brands, collections and individual picks beautifully
+                    organized.
                   </p>
                 </div>
                 <button
@@ -1357,6 +1416,18 @@ export function CreatorDashboard() {
                   ) : null}
                 </div>
               ) : null}
+
+              <div aria-label="Recommendation totals" className={styles.counts}>
+                <span>
+                  <strong>{brands.length}</strong> brands
+                </span>
+                <span>
+                  <strong>{collections.length}</strong> collections
+                </span>
+                <span>
+                  <strong>{activeRecommendations.length}</strong> picks
+                </span>
+              </div>
 
               {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
               <div className="creatorManageList">

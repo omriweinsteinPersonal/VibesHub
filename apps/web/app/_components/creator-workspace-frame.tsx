@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { CreatorShellHeader } from './creator-shell-header';
+import dashboardStyles from './creator-dashboard.module.css';
 import { SiteFooter } from './site-footer';
 
 const workspacePaths = new Set([
@@ -20,7 +21,9 @@ export function CreatorWorkspaceFrame({ children }: { children: ReactNode }) {
   if (!workspacePaths.has(pathname)) return children;
 
   return (
-    <div className="creatorShellPage">
+    <div
+      className={`creatorShellPage${pathname === '/dashboard' ? ` ${dashboardStyles.shell}` : ''}`}
+    >
       <CreatorShellHeader />
       {children}
       <SiteFooter />
