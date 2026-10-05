@@ -44,7 +44,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { apiCollectionRequest, apiRequest } from '../../lib/api';
+import { ApiError, apiCollectionRequest, apiRequest } from '../../lib/api';
 import {
   recommendationImageAccept,
   storyVideoAccept,
@@ -121,6 +121,62 @@ interface BrandEditor {
   websiteUrl: string;
   storyClips: Array<{ mediaAssetId: string; url: string }>;
   storyLink: string;
+}
+
+type DiscountOfferPayload = {
+  brandId: string | null;
+  code: string | null;
+  detailsHe: string | null;
+  discountPercent: number | null;
+  discountAmountMinor: number | null;
+  storyClips: StoryClipInput[];
+  expiresAt: string | null;
+  label: string | null;
+  merchantUrl: string;
+  offerType: 'brand_promotion' | 'creator_code';
+  priority: number;
+  recurrenceRule: 'month_end_week' | 'none';
+  scopeId: string | null;
+  scopeKind: 'brand' | 'collection' | 'item';
+  source: 'manual';
+  stackable: boolean;
+  startsAt: string | null;
+};
+
+/**
+ * The web app can be released before the API deployment finishes. Retry the
+ * offer request using the previous API contract so a normal code/percentage
+ * offer never leaves a newly-created brand looking only half-saved.
+ */
+function legacyOfferPayload(input: DiscountOfferPayload) {
+  const legacy: Partial<DiscountOfferPayload> = { ...input };
+  delete legacy.discountAmountMinor;
+  delete legacy.storyClips;
+  return {
+    ...legacy,
+    // The earlier API only accepted Hebrew in this legacy field. Keeping it
+    // null is safer than rejecting the whole offer when a creator writes in
+    // another language; the current API preserves all languages.
+    detailsHe: legacy.detailsHe && /[א-ת]/u.test(legacy.detailsHe) ? legacy.detailsHe : null,
+  };
+}
+
+async function saveOffer<T>(
+  path: string,
+  input: DiscountOfferPayload,
+  init: { headers?: HeadersInit; idempotent?: boolean; method: 'PATCH' | 'POST' },
+) {
+  try {
+    return await apiRequest<T>(path, { ...init, body: JSON.stringify(input) });
+  } catch (cause) {
+    // An old, strict API reports a 400 for the newer fixed-amount/video
+    // properties. Retry without only those additions so codes still save.
+    if (!(cause instanceof ApiError) || cause.status !== 400) throw cause;
+    return apiRequest<T>(path, {
+      ...init,
+      body: JSON.stringify(legacyOfferPayload(input)),
+    });
+  }
 }
 
 const emptyProduct: ProductEditor = {
@@ -391,7 +447,7 @@ export function CreatorDashboard() {
         brand.code.trim() || brand.discountPercent || brand.discountAmount,
       );
       if (hasOffer) {
-        const offerBody = JSON.stringify({
+        const offerBody: DiscountOfferPayload = {
           brandId: savedBrand.id,
           code: brand.code.trim() || null,
           detailsHe: brand.detailsHe.trim() || null,
@@ -419,15 +475,17 @@ export function CreatorDashboard() {
           source: 'manual',
           stackable: false,
           startsAt: null,
-        });
+        };
         if (existingOffer) {
-          const updated = await apiRequest<CreatorDiscountCode>(
+          // Read a fresh version first: the dashboard list can be older than
+          // an offer just saved in another tab or by a previous composer.
+          const latest = await apiRequest<CreatorDiscountCode>(
             `/creator/discount-codes/${existingOffer.id}`,
-            {
-              body: offerBody,
-              headers: { 'if-match': `"${existingOffer.version}"` },
-              method: 'PATCH',
-            },
+          );
+          const updated = await saveOffer<CreatorDiscountCode>(
+            `/creator/discount-codes/${existingOffer.id}`,
+            offerBody,
+            { headers: { 'if-match': `"${latest.version}"` }, method: 'PATCH' },
           );
           await apiRequest(`/creator/discount-codes/${updated.id}/confirm`, {
             headers: { 'if-match': `"${updated.version}"` },
@@ -435,9 +493,10 @@ export function CreatorDashboard() {
             method: 'POST',
           });
         } else {
-          const created = await apiRequest<CreatorDiscountCode>(
+          const created = await saveOffer<CreatorDiscountCode>(
             '/creator/discount-codes',
-            { body: offerBody, idempotent: true, method: 'POST' },
+            offerBody,
+            { idempotent: true, method: 'POST' },
           );
           await apiRequest(`/creator/discount-codes/${created.id}/confirm`, {
             headers: { 'if-match': `"${created.version}"` },
@@ -879,8 +938,9 @@ export function CreatorDashboard() {
     }
     setSaving(true);
     setError('');
-    const [scopeKind, scopeId = ''] = discount.scopeTarget.split(':');
-    const body = JSON.stringify({
+    const [rawScopeKind = 'brand', scopeId = ''] = discount.scopeTarget.split(':');
+    const scopeKind = rawScopeKind as DiscountOfferPayload['scopeKind'];
+    const body: DiscountOfferPayload = {
       brandId: discount.brandId || null,
       code: discount.code.trim() || null,
       detailsHe: discount.detailsHe.trim() || null,
@@ -902,21 +962,19 @@ export function CreatorDashboard() {
       source: 'manual',
       stackable: discount.stackable,
       startsAt: toDateTimeIso(discount.startsAt),
-    });
+    };
     try {
       if (editingDiscount) {
         const latest = await apiRequest<CreatorDiscountCode>(
           `/creator/discount-codes/${editingDiscount.id}`,
         );
-        await apiRequest(`/creator/discount-codes/${editingDiscount.id}`, {
-          body,
+        await saveOffer(`/creator/discount-codes/${editingDiscount.id}`, body, {
           headers: { 'if-match': `"${latest.version}"` },
           method: 'PATCH',
         });
         setNotice('Brand discount updated.');
       } else {
-        const created = await apiRequest<CreatorDiscountCode>('/creator/discount-codes', {
-          body,
+        const created = await saveOffer<CreatorDiscountCode>('/creator/discount-codes', body, {
           idempotent: true,
           method: 'POST',
         });

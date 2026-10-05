@@ -104,28 +104,34 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  gap: 4px;
+  padding: 0 10px;
+  background: color-mix(in srgb, var(--sf-page) 88%, white);
   color: var(--sf-text);
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--sf-text) 18%, transparent);
+  border-radius: 999px;
   touch-action: none;
   cursor: grab;
   user-select: none;
   z-index: 2;
-  opacity: 0.55;
+  opacity: 1;
   transition:
     opacity 160ms ease,
     border-color 160ms ease;
 }
 .sortable:hover > .handle,
 .sortable:focus-within > .handle {
-  opacity: 1;
-  background: color-mix(in srgb, var(--sf-page) 88%, white);
+  border-color: #b6a59b;
+}
+.handleLabel {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
 }
 .handle:active {
   cursor: grabbing;
@@ -168,11 +174,10 @@
 }
 .compact .handle {
   position: static;
-  flex: 0 0 44px;
-  width: 44px;
+  flex: 0 0 auto;
+  min-width: 44px;
   height: 44px;
-  border: 0;
-  background: transparent;
+  margin: 4px;
 }
 @media (prefers-reduced-motion: reduce) {
   .sortable,

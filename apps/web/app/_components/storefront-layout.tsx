@@ -182,7 +182,7 @@ function Sortable({
         }}
       >
         <AlignJustify size={16} aria-hidden="true" />
-        <span className="srOnly">Drag to move</span>
+        <span className={styles.handleLabel}>Move</span>
       </button>
       {children}
       {moving ? (
@@ -293,7 +293,7 @@ export function StorefrontLayout({
       {editable ? (
         <div className={styles.instructions}>
           <p id="storefront-move-help">
-            Drag the dotted handle to move any block. Tap content to edit.
+            Drag Move to place any section. Tap content to edit.
           </p>
           <span className="srOnly">
             Use arrow keys on a focused handle to change position.
