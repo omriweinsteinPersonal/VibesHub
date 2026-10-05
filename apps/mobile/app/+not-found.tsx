@@ -1,7 +1,9 @@
 import { usePathname, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { openExternalWebPage } from '../lib/external-browser';
 
 export default function NotFoundScreen() {
   const pathname = usePathname();
@@ -19,7 +21,7 @@ export default function NotFoundScreen() {
         </Text>
         <Pressable
           accessibilityRole="link"
-          onPress={() => void Linking.openURL(webUrl)}
+          onPress={() => void openExternalWebPage(webUrl)}
           style={styles.primaryButton}
         >
           <Text style={styles.primaryText}>Open in browser</Text>

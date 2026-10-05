@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   SafeAreaView,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 
 import { signInWithApple, signInWithGoogle } from '../lib/auth';
+import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
 export default function LoginScreen() {
@@ -153,7 +153,7 @@ export default function LoginScreen() {
           By continuing, you agree to the{' '}
           <Text
             accessibilityRole="link"
-            onPress={() => void Linking.openURL('https://swavii.com/terms')}
+            onPress={() => void openExternalWebPage('https://swavii.com/terms')}
             style={styles.legalLink}
           >
             Terms of Service
@@ -161,7 +161,7 @@ export default function LoginScreen() {
           and acknowledge the{' '}
           <Text
             accessibilityRole="link"
-            onPress={() => void Linking.openURL('https://swavii.com/privacy')}
+            onPress={() => void openExternalWebPage('https://swavii.com/privacy')}
             style={styles.legalLink}
           >
             Privacy Policy

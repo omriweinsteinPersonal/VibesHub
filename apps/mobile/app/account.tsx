@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -15,6 +14,7 @@ import {
 
 import { deleteCurrentAccount } from '../lib/api';
 import { isNativeBillingConfigured, restoreNativePurchases } from '../lib/billing';
+import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
 const webLinks = {
@@ -49,7 +49,7 @@ export default function AccountScreen() {
 
   async function openExternalUrl(url: string) {
     try {
-      await Linking.openURL(url);
+      await openExternalWebPage(url);
     } catch {
       setError('This link could not be opened. Please try again.');
     }
