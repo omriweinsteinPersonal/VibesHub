@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   SafeAreaView,
@@ -148,6 +149,25 @@ export default function LoginScreen() {
             {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create your page'}
           </Text>
         </Pressable>
+        <Text style={styles.legalCopy}>
+          By continuing, you agree to the{' '}
+          <Text
+            accessibilityRole="link"
+            onPress={() => void Linking.openURL('https://swavii.com/terms')}
+            style={styles.legalLink}
+          >
+            Terms of Service
+          </Text>{' '}
+          and acknowledge the{' '}
+          <Text
+            accessibilityRole="link"
+            onPress={() => void Linking.openURL('https://swavii.com/privacy')}
+            style={styles.legalLink}
+          >
+            Privacy Policy
+          </Text>
+          .
+        </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -192,6 +212,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: 14,
   },
+  legalCopy: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: spacing.lg,
+    textAlign: 'center',
+  },
+  legalLink: { color: colors.ink, textDecorationLine: 'underline' },
   error: {
     backgroundColor: '#fff0ed',
     color: '#8a3028',

@@ -29,6 +29,18 @@ export async function resetNativeBilling(): Promise<void> {
   configuredCustomerId = undefined;
 }
 
+export async function restoreNativePurchases(): Promise<boolean> {
+  if (!getRevenueCatApiKey()) {
+    throw new Error('Purchases are not available in this build.');
+  }
+  const Purchases = (await import('react-native-purchases')).default;
+  if (!(await Purchases.isConfigured())) {
+    throw new Error('Purchases are still connecting. Please try again.');
+  }
+  const customerInfo = await Purchases.restorePurchases();
+  return Object.keys(customerInfo.entitlements.active).length > 0;
+}
+
 function getRevenueCatApiKey(): string | undefined {
   return resolveRevenueCatApiKey({
     androidApiKey: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
