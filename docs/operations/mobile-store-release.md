@@ -85,3 +85,7 @@ Android devices. Do not mark deep links complete based only on simulator navigat
       submission.
 - [ ] RevenueCat production keys and paywalls remain absent until paid subscriptions are
       intentionally enabled and store products are approved.
+
+Use `store-submission-metadata.md` for approved listing copy, privacy/data-safety working
+answers, reviewer notes, and console-only assets. Never commit reviewer credentials or
+store service-account keys.

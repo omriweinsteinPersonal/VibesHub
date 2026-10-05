@@ -1,0 +1,24 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "en-US": {
+        "title": "Swavii",
+        "subtitle": "Creator picks you can trust",
+        "description": "Discover authentic product recommendations from creators you trust. Browse public creator storefronts, explore the products they genuinely use, find discount codes, and open product links directly from one focused place.\n\nCreators can sign in to manage their Swavii account and continue to the creator studio. Shoppers can browse without creating an account.\n\nSwavii does not sell the products shown in the app. Purchases take place directly with independent merchants.",
+        "keywords": [
+          "creators",
+          "recommendations",
+          "products",
+          "discounts",
+          "storefront"
+        ],
+        "promoText": "Authentic creator recommendations, useful products and current discount codes in one place.",
+        "marketingUrl": "https://swavii.com",
+        "supportUrl": "https://swavii.com/support",
+        "privacyPolicyUrl": "https://swavii.com/privacy",
+        "privacyChoicesUrl": "https://swavii.com/account-deletion"
+      }
+    }
+  }
+}
