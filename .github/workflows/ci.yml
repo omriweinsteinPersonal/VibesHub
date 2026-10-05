@@ -42,3 +42,17 @@ jobs:
 
       - name: Build all applications and packages
         run: pnpm build
+
+      - name: Validate native release configuration
+        run: pnpm mobile:release:check
+
+      - name: Check Expo native project health
+        run: pnpm dlx expo-doctor@latest apps/mobile
+
+      - name: Bundle native applications
+        shell: bash
+        run: |
+          output_dir="$(mktemp -d)"
+          trap 'rm -rf "$output_dir"' EXIT
+          pnpm --filter @vibeshub/mobile exec expo export --platform ios --output-dir "$output_dir/ios"
+          pnpm --filter @vibeshub/mobile exec expo export --platform android --output-dir "$output_dir/android"
