@@ -1,4 +1,5 @@
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   View,
 } from 'react-native';
 
+import { signInWithApple, signInWithGoogle } from '../lib/auth';
 import { getSupabaseClient } from '../lib/supabase';
 
 export default function LoginScreen() {
@@ -53,6 +55,21 @@ export default function LoginScreen() {
     }
   }
 
+  async function authenticateWithProvider(provider: 'apple' | 'google') {
+    setLoading(true);
+    setError('');
+    setMessage('');
+    try {
+      const result =
+        provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
+      if (result === 'signed-in') router.replace('/account');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Authentication failed.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -79,6 +96,32 @@ export default function LoginScreen() {
           >
             <Text>Sign up</Text>
           </Pressable>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          disabled={loading}
+          onPress={() => void authenticateWithProvider('google')}
+          style={styles.providerButton}
+        >
+          <Text style={styles.providerText}>Continue with Google</Text>
+        </Pressable>
+        {Platform.OS === 'ios' ? (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            buttonType={
+              mode === 'login'
+                ? AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+                : AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP
+            }
+            cornerRadius={14}
+            onPress={() => void authenticateWithProvider('apple')}
+            style={styles.appleButton}
+          />
+        ) : null}
+        <View style={styles.dividerRow}>
+          <View style={styles.divider} />
+          <Text style={styles.dividerText}>or use email</Text>
+          <View style={styles.divider} />
         </View>
         <TextInput
           autoCapitalize="none"
@@ -131,6 +174,15 @@ const styles = StyleSheet.create({
   },
   segment: { alignItems: 'center', borderRadius: radii.control, flex: 1, padding: 12 },
   activeSegment: { backgroundColor: colors.white },
+  appleButton: { height: 50, marginBottom: spacing.md, width: '100%' },
+  divider: { backgroundColor: colors.border, flex: 1, height: 1 },
+  dividerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  dividerText: { color: colors.muted, fontSize: 13 },
   input: {
     backgroundColor: colors.white,
     borderColor: colors.border,
@@ -160,4 +212,14 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   submitText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  providerButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: spacing.md,
+    padding: 14,
+  },
+  providerText: { color: colors.ink, fontSize: 16, fontWeight: '600' },
 });
