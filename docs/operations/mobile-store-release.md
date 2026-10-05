@@ -45,3 +45,43 @@ Apple private keys, or Google service-account credentials to an `EXPO_PUBLIC_` v
 
 The first release keeps RevenueCat sandbox-only and does not expose a subscription or
 paywall.
+
+## Universal Links and Android App Links
+
+The native app claims `https://swavii.com/*` and `https://www.swavii.com/*`. Public
+creator URLs therefore open the installed app and continue to work in a browser when the
+app is not installed. Unknown native routes show a safe button that returns the visitor
+to the same path on the website.
+
+Before testing these links, configure two server-side Vercel values for the web project:
+
+- `APPLE_TEAM_ID`: the 10-character Team ID shown in Apple Developer membership details.
+- `ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS`: comma-separated SHA-256 fingerprints for
+  every currently accepted Android signing certificate. Include the Play App Signing
+  fingerprint before production testing in Google Play.
+
+These values are public application identifiers, not secrets. They power:
+
+- `https://swavii.com/.well-known/apple-app-site-association`
+- `https://swavii.com/.well-known/assetlinks.json`
+
+After deploying, both endpoints must return HTTP 200 with JSON and no redirect. Test a
+real `https://swavii.com/{creator-handle}` link from Messages or Notes on physical iOS and
+Android devices. Do not mark deep links complete based only on simulator navigation.
+
+## Store readiness checklist
+
+- [ ] `/privacy`, `/terms`, `/support`, and `/account-deletion` return HTTP 200 publicly.
+- [ ] The support mailbox receives and can reply to an external test email.
+- [ ] iOS Universal Links open a published creator storefront on a physical device.
+- [ ] Android App Links are verified for the Play signing certificate.
+- [ ] Sign-in, session restoration, sign-out, and account deletion pass on both platforms.
+- [ ] Storefront images, search, social links, discount links, and product links pass on
+      both platforms and at large accessibility text sizes.
+- [ ] Offline, timeout, empty, unavailable, and not-found states are understandable.
+- [ ] App icon, screenshots, store description, privacy answers, content rating, and
+      reviewer notes are complete.
+- [ ] iOS TestFlight internal testing and Google Play internal testing pass before public
+      submission.
+- [ ] RevenueCat production keys and paywalls remain absent until paid subscriptions are
+      intentionally enabled and store products are approved.

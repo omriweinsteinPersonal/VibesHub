@@ -9,7 +9,7 @@
     "clean": "rm -rf .expo dist",
     "dev": "expo start",
     "dev:client": "expo start --dev-client",
-    "eas-build-post-install": "pnpm --filter @vibeshub/design-tokens build",
+    "eas-build-post-install": "pnpm --filter @vibeshub/contracts build && pnpm --filter @vibeshub/design-tokens build",
     "ios": "expo run:ios",
     "lint": "eslint . --max-warnings=0",
     "start": "expo start",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",
+    "@vibeshub/contracts": "workspace:*",
     "@vibeshub/design-tokens": "workspace:*",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",

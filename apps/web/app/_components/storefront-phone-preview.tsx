@@ -332,7 +332,11 @@ export function StorefrontPhonePreview({
             </a>
           </div>
           <div className="storefrontPreviewToolbar">
-            <div aria-label="Storefront mode" className="storefrontModeSwitch" role="group">
+            <div
+              aria-label="Storefront mode"
+              className="storefrontModeSwitch"
+              role="group"
+            >
               <button
                 aria-pressed={previewMode}
                 onClick={() => {

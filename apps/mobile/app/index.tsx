@@ -54,7 +54,11 @@ export default function HomeScreen() {
           creators.
         </Text>
 
-        <Pressable accessibilityRole="button" style={styles.primaryButton}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/creators')}
+          style={styles.primaryButton}
+        >
           <Text style={styles.primaryButtonText}>Explore creators</Text>
         </Pressable>
 

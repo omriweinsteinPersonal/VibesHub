@@ -242,7 +242,9 @@ export function StorefrontContentEditor({
         onClick={() => setAddMenuOpen((open) => !open)}
         type="button"
       >
-        <span><Plus aria-hidden="true" size={17} /> Add content</span>
+        <span>
+          <Plus aria-hidden="true" size={17} /> Add content
+        </span>
         <ChevronDown aria-hidden="true" size={17} />
       </button>
       {addMenuOpen ? (

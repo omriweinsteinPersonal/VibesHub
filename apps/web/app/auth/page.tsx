@@ -85,9 +85,9 @@ function AuthExperience() {
   const [googleScriptReady, setGoogleScriptReady] = useState(false);
   const [googleButtonReady, setGoogleButtonReady] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
-  const googleCallbackRef = useRef<
-    (response: GoogleCredentialResponse) => Promise<void>
-  >(() => Promise.resolve());
+  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => Promise<void>>(
+    () => Promise.resolve(),
+  );
   const googleModeRef = useRef(mode);
   const googleNonceRef = useRef('');
   const googleInitializedRef = useRef(false);

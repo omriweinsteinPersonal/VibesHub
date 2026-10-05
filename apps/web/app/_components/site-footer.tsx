@@ -32,6 +32,7 @@ export function SiteFooter() {
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/account-deletion">Delete account</Link>
+          <Link href="/support">Support</Link>
           <span>Built for creators.</span>
         </div>
       </div>

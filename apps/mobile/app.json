@@ -4,9 +4,11 @@
     "slug": "swavii",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "scheme": "swavii",
     "userInterfaceStyle": "light",
     "ios": {
+      "associatedDomains": ["applinks:swavii.com", "applinks:www.swavii.com"],
       "bundleIdentifier": "com.swavii.app",
       "config": {
         "usesNonExemptEncryption": false
@@ -14,6 +16,17 @@
       "supportsTablet": false
     },
     "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            { "scheme": "https", "host": "swavii.com", "pathPrefix": "/" },
+            { "scheme": "https", "host": "www.swavii.com", "pathPrefix": "/" }
+          ]
+        }
+      ],
       "package": "com.swavii.app"
     },
     "web": {
