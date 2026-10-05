@@ -855,6 +855,9 @@ function BrandBlock({
   items: RecommendationCard[];
   offer: PublicDiscountCode | null;
 }) {
+  // Existing API deployments may not yet include the optional offer video field.
+  // Treat it as an empty rail so older offers keep rendering during rollout.
+  const storyClips = offer?.storyClips ?? [];
   const collectedIds = new Set(
     collections
       .filter(({ showItemsIndividually }) => !showItemsIndividually)
@@ -881,7 +884,7 @@ function BrandBlock({
           </div>
         ) : null}
       </header>
-      {offer && (offer.details || offer.expiresAt || offer.storyClips.length) ? (
+      {offer && (offer.details || offer.expiresAt || storyClips.length) ? (
         <div className="referenceBrandOfferBody">
           {offer.details ? (
             <p dir={offer.details.direction}>{offer.details.value}</p>
@@ -894,9 +897,9 @@ function BrandBlock({
               )}
             </small>
           ) : null}
-          {offer.storyClips.length ? (
+          {storyClips.length ? (
             <div className="referenceBrandVideoRail" aria-label={`${brand.name} videos`}>
-              {offer.storyClips.map((clip) => (
+              {storyClips.map((clip) => (
                 <video
                   key={clip.id}
                   controls
