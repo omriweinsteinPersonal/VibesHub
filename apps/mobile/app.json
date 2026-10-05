@@ -2,20 +2,48 @@
   "expo": {
     "name": "Swavii",
     "slug": "swavii",
-    "version": "0.1.0",
+    "description": "Discover authentic creator recommendations, storefronts and discount codes.",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "swavii",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#FBF6EC",
+    "primaryColor": "#C77850",
     "ios": {
       "associatedDomains": ["applinks:swavii.com", "applinks:www.swavii.com"],
       "bundleIdentifier": "com.swavii.app",
       "config": {
         "usesNonExemptEncryption": false
       },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1", "0A2A.1", "3B52.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": ["E174.1", "85F4.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+          }
+        ],
+        "NSPrivacyTracking": false
+      },
       "supportsTablet": false
     },
     "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#C77850",
+        "foregroundImage": "./assets/icon.png"
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -27,12 +55,25 @@
           ]
         }
       ],
-      "package": "com.swavii.app"
+      "package": "com.swavii.app",
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#C77850",
+          "image": "./assets/icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     },
