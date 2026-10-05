@@ -1,8 +1,11 @@
+import type { CreatorCard } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -12,12 +15,15 @@ import {
 } from 'react-native';
 
 import { getSupabaseClient } from '../lib/supabase';
+import { getCreators } from '../lib/api';
 
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
 export default function HomeScreen() {
   const router = useRouter();
   const [signedIn, setSignedIn] = useState(false);
+  const [featuredCreators, setFeaturedCreators] = useState<CreatorCard[]>([]);
+  const [creatorsLoading, setCreatorsLoading] = useState(true);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -28,6 +34,24 @@ export default function HomeScreen() {
       setSignedIn(Boolean(session));
     });
     return () => subscription.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void getCreators()
+      .then((creators) => {
+        if (active) setFeaturedCreators(creators.slice(0, 3));
+      })
+      .catch(() => {
+        // The directory remains available through the primary action and owns its
+        // detailed retry state. Keep the home page calm if this preview fails.
+      })
+      .finally(() => {
+        if (active) setCreatorsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -68,39 +92,68 @@ export default function HomeScreen() {
           contentContainerStyle={styles.categories}
         >
           {categories.map((category) => (
-            <Pressable
-              accessibilityRole="button"
-              key={category}
-              style={styles.categoryPill}
-            >
+            <View key={category} style={styles.categoryPill}>
               <Text style={styles.categoryText}>{category}</Text>
-            </Pressable>
+            </View>
           ))}
         </ScrollView>
 
-        <Text style={styles.sectionEyebrow}>TRENDING NOW</Text>
-        <Text style={styles.sectionTitle}>Recommendations worth discovering</Text>
-        <View style={styles.card}>
-          <View style={styles.cardImage}>
-            <View style={styles.videoPill}>
-              <Text style={styles.videoText}>◉ Video</Text>
-            </View>
+        <Text style={styles.sectionEyebrow}>FEATURED STOREFRONTS</Text>
+        <Text style={styles.sectionTitle}>Start with a creator</Text>
+        {creatorsLoading ? (
+          <View accessibilityRole="progressbar" style={styles.previewLoading}>
+            <ActivityIndicator color={colors.accent} />
+            <Text style={styles.previewLoadingText}>Finding creators…</Text>
           </View>
-          <View style={styles.cardBody}>
-            <Text style={styles.brand}>RARE BEAUTY</Text>
-            <Text style={styles.productName}>Soft Pinch Liquid Blush</Text>
-            <Text style={styles.price}>₪120</Text>
-            <Text style={styles.hebrew} numberOfLines={5}>
-              המוצר האהוב עליי למראה טבעי וזוהר שנשאר לאורך כל היום
+        ) : featuredCreators.length > 0 ? (
+          <View style={styles.creatorList}>
+            {featuredCreators.map((creator) => (
+              <Pressable
+                accessibilityHint="Opens this creator's public storefront"
+                accessibilityRole="button"
+                key={creator.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/[handle]',
+                    params: { handle: creator.handle },
+                  })
+                }
+                style={({ pressed }) => [
+                  styles.creatorCard,
+                  pressed && styles.creatorCardPressed,
+                ]}
+              >
+                {creator.avatarUrl ? (
+                  <Image source={{ uri: creator.avatarUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarFallback]}>
+                    <Text style={styles.avatarInitial}>
+                      {creator.displayName.slice(0, 1).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.creatorCardCopy}>
+                  <Text style={styles.creatorName}>{creator.displayName}</Text>
+                  <Text style={styles.creatorMeta}>
+                    @{creator.handle} · {creator.recommendationCount}{' '}
+                    {creator.recommendationCount === 1
+                      ? 'recommendation'
+                      : 'recommendations'}
+                  </Text>
+                </View>
+                <Text accessibilityElementsHidden style={styles.chevron}>
+                  ›
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.emptyPreview}>
+            <Text style={styles.emptyPreviewText}>
+              Published creator storefronts will appear here.
             </Text>
-            <View style={styles.creatorRow}>
-              <View style={styles.storyRing}>
-                <Text style={styles.storyText}>NL</Text>
-              </View>
-              <Text style={styles.creatorText}>Recommended by Noa Levi</Text>
-            </View>
           </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -189,50 +242,49 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
   },
-  card: {
+  creatorList: {
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  creatorCard: {
+    alignItems: 'center',
     backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: spacing.md,
+  },
+  creatorCardPressed: { opacity: 0.72 },
+  avatar: { borderRadius: 28, height: 56, width: 56 },
+  avatarFallback: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+  },
+  avatarInitial: { color: colors.accent, fontFamily: 'Georgia', fontSize: 24 },
+  creatorCardCopy: { flex: 1, marginLeft: spacing.md },
+  creatorName: { color: colors.ink, fontFamily: 'Georgia', fontSize: 21 },
+  creatorMeta: { color: colors.muted, fontSize: 12, marginTop: 4 },
+  chevron: { color: colors.muted, fontSize: 30, marginLeft: spacing.sm },
+  previewLoading: {
+    alignItems: 'center',
+    marginHorizontal: spacing.lg,
+    padding: spacing.xl,
+  },
+  previewLoadingText: { color: colors.muted, marginTop: spacing.sm },
+  emptyPreview: {
     borderColor: colors.border,
     borderRadius: radii.card,
     borderWidth: 1,
     marginHorizontal: spacing.lg,
     marginTop: spacing.lg,
-    overflow: 'hidden',
+    padding: spacing.xl,
   },
-  cardImage: {
-    aspectRatio: 1,
-    backgroundColor: '#ead5bd',
-    padding: spacing.md,
-  },
-  videoPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.white,
-    borderRadius: radii.control,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  videoText: { color: colors.ink, fontSize: 12 },
-  cardBody: { padding: spacing.lg },
-  brand: { color: colors.muted, fontSize: 11, letterSpacing: 2 },
-  productName: { color: colors.ink, fontFamily: 'Georgia', fontSize: 26, marginTop: 8 },
-  price: { color: colors.ink, fontSize: 19, marginTop: 8 },
-  hebrew: {
+  emptyPreviewText: {
     color: colors.muted,
-    fontSize: 16,
-    lineHeight: 27,
-    marginTop: spacing.md,
-    textAlign: 'right',
-    writingDirection: 'rtl',
+    lineHeight: 22,
+    textAlign: 'center',
   },
-  creatorRow: { alignItems: 'center', flexDirection: 'row', marginTop: spacing.lg },
-  storyRing: {
-    alignItems: 'center',
-    borderColor: colors.accent,
-    borderRadius: 18,
-    borderWidth: 2,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  storyText: { color: colors.ink, fontSize: 10 },
-  creatorText: { color: colors.muted, fontSize: 12, marginLeft: spacing.sm },
 });
