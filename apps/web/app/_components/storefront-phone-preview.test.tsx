@@ -25,5 +25,7 @@ describe('StorefrontPhonePreview', () => {
     expect(markup).toContain('storefrontPhoneDevice');
     expect(markup).toContain('src="/creator-name?mobilePreview=1"');
     expect(markup).not.toContain('class="storefrontDesignPanel"');
+    expect(markup).not.toContain('See your page as visitors do');
+    expect(markup).not.toContain('hasEditor');
   });
 });

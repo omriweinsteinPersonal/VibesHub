@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   CreatorDiscountCode,
   CreatorDiscountCodeInput,
+  StoryClipInput,
   DiscountCodeLifecycle,
   DiscountCodeVerificationStatus,
   PublicDiscountCode,
@@ -15,7 +16,9 @@ interface DiscountCodeRow {
   brandId: string | null;
   code: string | null;
   detailsHe: string | null;
+  discountAmountMinor: number | null;
   discountPercent: number | null;
+  storyClips: PublicDiscountCode['storyClips'];
   expiresAt: string | null;
   id: string;
   label: string | null;
@@ -65,6 +68,8 @@ export class DiscountCodeRepository {
           code,
           label,
           details_text,
+          details_locale,
+          discount_amount_minor,
           starts_at,
           expires_at,
           offer_type,
@@ -83,6 +88,8 @@ export class DiscountCodeRepository {
           ${input.code},
           ${input.label},
           ${input.detailsHe},
+          ${input.detailsHe && /[א-ת]/u.test(input.detailsHe) ? 'he' : 'en'},
+          ${input.discountAmountMinor},
           ${input.startsAt},
           ${input.expiresAt},
           ${input.offerType},
@@ -96,7 +103,9 @@ export class DiscountCodeRepository {
         )
         returning id
       `;
-      return inserted ? this.findOwnedWithSql(sql, inserted.id, userId) : null;
+      if (!inserted) return null;
+      await this.syncStoryClips(sql, inserted.id, userId, input.storyClips);
+      return this.findOwnedWithSql(sql, inserted.id, userId);
     });
   }
 
@@ -141,6 +150,8 @@ export class DiscountCodeRepository {
           code = ${input.code},
           label = ${input.label},
           details_text = ${input.detailsHe},
+          details_locale = ${input.detailsHe && /[א-ת]/u.test(input.detailsHe) ? 'he' : 'en'},
+          discount_amount_minor = ${input.discountAmountMinor},
           starts_at = ${input.startsAt},
           expires_at = ${input.expiresAt},
           offer_type = ${input.offerType},
@@ -165,7 +176,9 @@ export class DiscountCodeRepository {
           and deleted_at is null
         returning id
       `;
-      return updated ? this.findOwnedWithSql(sql, updated.id, userId) : null;
+      if (!updated) return null;
+      await this.syncStoryClips(sql, updated.id, userId, input.storyClips);
+      return this.findOwnedWithSql(sql, updated.id, userId);
     });
   }
 
@@ -313,7 +326,19 @@ export class DiscountCodeRepository {
         code.creator_brand_id as "brandId",
         code.label,
         code.details_text as "detailsHe",
+        code.discount_amount_minor as "discountAmountMinor",
         code.discount_percent as "discountPercent",
+        coalesce((
+          select jsonb_agg(jsonb_build_object(
+            'id', clip.id,
+            'mediaAssetId', clip.media_asset_id,
+            'position', clip.position,
+            'url', coalesce(media.public_url, clip.video_url)
+          ) order by clip.position)
+          from app.discount_code_story_clips clip
+          left join app.media_assets media on media.id = clip.media_asset_id and media.status = 'ready'
+          where clip.code_id = code.id and coalesce(media.public_url, clip.video_url) is not null
+        ), '[]'::jsonb) as "storyClips",
         code.starts_at as "startsAt",
         code.expires_at as "expiresAt",
         case
@@ -368,6 +393,29 @@ export class DiscountCodeRepository {
     return merchant.id;
   }
 
+  private async syncStoryClips(
+    sql: DatabaseClient,
+    codeId: string,
+    userId: string,
+    clips: StoryClipInput[],
+  ): Promise<void> {
+    await sql`delete from app.discount_code_story_clips where code_id = ${codeId}`;
+    for (const [position, clip] of clips.entries()) {
+      if (clip.mediaAssetId) {
+        const [asset] = await sql<{ id: string }[]>`
+          select id from app.media_assets
+          where id = ${clip.mediaAssetId} and owner_user_id = ${userId}
+            and media_kind = 'story_video' and status = 'ready' and deleted_at is null
+        `;
+        if (!asset) throw new Error('STORY_MEDIA_ASSET_NOT_READY_OR_OWNED');
+      }
+      await sql`
+        insert into app.discount_code_story_clips (code_id, position, media_asset_id, video_url)
+        values (${codeId}, ${position}, ${clip.mediaAssetId ?? null}, ${clip.videoUrl ?? null})
+      `;
+    }
+  }
+
   private async offerTargetsBelongToCreator(
     sql: DatabaseClient,
     creatorId: string,
@@ -402,10 +450,16 @@ function mapPublicDiscountCode(row: DiscountCodeRow): PublicDiscountCode {
     brandId: row.brandId,
     code: row.code,
     details: row.detailsHe
-      ? { direction: 'rtl', language: 'he', value: row.detailsHe }
+      ? {
+          direction: /[א-ת]/u.test(row.detailsHe) ? 'rtl' : 'ltr',
+          language: /[א-ת]/u.test(row.detailsHe) ? 'he' : 'en',
+          value: row.detailsHe,
+        }
       : null,
+    discountAmountMinor: row.discountAmountMinor,
     expiresAt: row.expiresAt,
     discountPercent: row.discountPercent,
+    storyClips: row.storyClips,
     id: row.id,
     label: row.label,
     lastVerifiedAt: row.lastVerifiedAt,

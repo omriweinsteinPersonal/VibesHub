@@ -154,13 +154,15 @@ export function ProductDetailView({
           {recommendation.discount ? (
             <div className="productDetailDiscount">
               <div>
-                <small>DISCOUNT CODE</small>
-                <strong>{recommendation.discount.code}</strong>
+                <small>{recommendation.discount.code ? 'DISCOUNT CODE' : 'OFFER'}</small>
+                {recommendation.discount.code ? (
+                  <strong>{recommendation.discount.code}</strong>
+                ) : null}
                 {recommendation.discount.label ? (
                   <span>{recommendation.discount.label}</span>
                 ) : null}
               </div>
-              {recommendation.discount.id ? (
+              {recommendation.discount.id && recommendation.discount.code ? (
                 <CopyDiscountCodeButton
                   code={recommendation.discount.code}
                   creatorId={recommendation.creator.id}

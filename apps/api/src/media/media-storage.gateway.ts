@@ -16,9 +16,13 @@ import { STORY_VIDEO_BUCKET, STORY_VIDEO_UPLOAD_BUCKET } from './video-media.js'
 @Injectable()
 export class MediaStorageGateway {
   private readonly client: SupabaseClient | null;
+  private readonly storageUrl: string | null;
+  private readonly serviceKey: string | null;
 
   constructor() {
     const config = parseApiConfig(process.env);
+    this.storageUrl = config.supabaseUrl ?? null;
+    this.serviceKey = config.supabaseServiceRoleKey ?? null;
     this.client =
       config.supabaseUrl && config.supabaseServiceRoleKey
         ? createClient(config.supabaseUrl, config.supabaseServiceRoleKey, {
@@ -56,6 +60,91 @@ export class MediaStorageGateway {
 
   async downloadVideoUpload(objectPath: string): Promise<Blob> {
     return this.downloadFrom(STORY_VIDEO_UPLOAD_BUCKET, objectPath);
+  }
+
+  async inspectVideoUpload(
+    objectPath: string,
+  ): Promise<{ size: number; prefix: Uint8Array }> {
+    const head = await this.videoObjectRequest(
+      STORY_VIDEO_UPLOAD_BUCKET,
+      objectPath,
+      'HEAD',
+    );
+    if (!head.ok) throw new Error(`Video upload not found (${head.status})`);
+    const size = Number(head.headers.get('content-length'));
+    if (!Number.isFinite(size) || size < 1)
+      throw new Error('Video upload size unavailable');
+    const preview = await this.videoObjectRequest(
+      STORY_VIDEO_UPLOAD_BUCKET,
+      objectPath,
+      'GET',
+      { Range: 'bytes=0-31' },
+    );
+    if (!preview.ok || !preview.body)
+      throw new Error('Video upload could not be inspected');
+    const reader: ReadableStreamDefaultReader<Uint8Array> = preview.body.getReader();
+    const bytes = new Uint8Array(32);
+    let length = 0;
+    while (length < bytes.length) {
+      const next = await reader.read();
+      if (next.done) break;
+      const part = next.value.slice(0, bytes.length - length);
+      bytes.set(part, length);
+      length += part.length;
+    }
+    await reader.cancel();
+    return { size, prefix: bytes.slice(0, length) };
+  }
+
+  async publishVerifiedVideoStream(
+    objectPath: string,
+    contentType: StoryVideoContentType,
+    size: number,
+  ): Promise<void> {
+    const source = await this.videoObjectRequest(
+      STORY_VIDEO_UPLOAD_BUCKET,
+      objectPath,
+      'GET',
+    );
+    if (!source.ok || !source.body) throw new Error('Verified video could not be read');
+    const target = await this.videoObjectRequest(
+      STORY_VIDEO_BUCKET,
+      objectPath,
+      'POST',
+      {
+        'Content-Type': contentType,
+        'Content-Length': String(size),
+        'cache-control': '31536000',
+        'x-upsert': 'true',
+      },
+      source.body,
+    );
+    if (!target.ok)
+      throw new Error(
+        `Video publication failed (${target.status}): ${await target.text()}`,
+      );
+  }
+
+  private videoObjectRequest(
+    bucket: string,
+    objectPath: string,
+    method: string,
+    extraHeaders: Record<string, string> = {},
+    body?: ReadableStream<Uint8Array>,
+  ): Promise<Response> {
+    if (!this.storageUrl || !this.serviceKey)
+      throw new Error('Media storage is not configured');
+    const path = objectPath.split('/').map(encodeURIComponent).join('/');
+    const url = `${this.storageUrl.replace(/\/$/u, '')}/storage/v1/object/${bucket === STORY_VIDEO_UPLOAD_BUCKET ? 'authenticated/' : ''}${bucket}/${path}`;
+    return fetch(url, {
+      method,
+      headers: {
+        apikey: this.serviceKey,
+        authorization: `Bearer ${this.serviceKey}`,
+        ...extraHeaders,
+      },
+      ...(body ? { body, duplex: 'half' } : {}),
+    });
   }
 
   async downloadUpload(objectPath: string): Promise<Blob> {

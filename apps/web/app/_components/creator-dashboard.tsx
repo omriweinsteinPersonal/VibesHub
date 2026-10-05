@@ -70,6 +70,7 @@ type CollectionManageEntry = {
 interface ProductEditor {
   additionalImages: Array<{ imageAssetId: string; url: string }>;
   brandName: string;
+  brandDiscountCodeId: string;
   categoryId: string;
   categoryIds: string[];
   collectionIds: string[];
@@ -95,7 +96,9 @@ interface DiscountEditor {
   brandId: string;
   code: string;
   detailsHe: string;
+  discountType: 'percent' | 'amount';
   discountPercent: string;
+  discountAmount: string;
   expiresAt: string;
   label: string;
   merchantUrl: string;
@@ -105,19 +108,25 @@ interface DiscountEditor {
   scopeTarget: string;
   stackable: boolean;
   startsAt: string;
+  storyClips: Array<{ mediaAssetId: string; url: string }>;
 }
 interface BrandEditor {
   code: string;
+  discountType: 'percent' | 'amount';
   detailsHe: string;
   discountPercent: string;
+  discountAmount: string;
   expiresAt: string;
   name: string;
   websiteUrl: string;
+  storyClips: Array<{ mediaAssetId: string; url: string }>;
+  storyLink: string;
 }
 
 const emptyProduct: ProductEditor = {
   additionalImages: [],
   brandName: '',
+  brandDiscountCodeId: '',
   categoryId: '',
   categoryIds: [],
   collectionIds: [],
@@ -143,7 +152,9 @@ const emptyDiscount: DiscountEditor = {
   brandId: '',
   code: '',
   detailsHe: '',
+  discountType: 'percent',
   discountPercent: '',
+  discountAmount: '',
   expiresAt: '',
   label: '',
   merchantUrl: '',
@@ -153,6 +164,7 @@ const emptyDiscount: DiscountEditor = {
   scopeTarget: 'brand',
   stackable: false,
   startsAt: '',
+  storyClips: [],
 };
 
 export function CreatorDashboard() {
@@ -170,11 +182,15 @@ export function CreatorDashboard() {
   const [discount, setDiscount] = useState<DiscountEditor>(emptyDiscount);
   const [brand, setBrand] = useState<BrandEditor>({
     code: '',
+    discountType: 'percent',
     detailsHe: '',
     discountPercent: '',
+    discountAmount: '',
     expiresAt: '',
     name: '',
     websiteUrl: '',
+    storyClips: [],
+    storyLink: '',
   });
   const [editingBrand, setEditingBrand] = useState<CreatorBrand | null>(null);
   const [editingProduct, setEditingProduct] = useState<CreatorRecommendation | null>(
@@ -196,6 +212,8 @@ export function CreatorDashboard() {
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [videoStage, setVideoStage] = useState('');
+  const [videoError, setVideoError] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const productFetchRequest = useRef(0);
@@ -287,6 +305,7 @@ export function CreatorDashboard() {
     setEditingDiscount(null);
     setEditingBrand(null);
     setError('');
+    setVideoError('');
     setNotice('');
   }
 
@@ -294,6 +313,7 @@ export function CreatorDashboard() {
     productFetchRequest.current += 1;
     setFetching(false);
     setError('');
+    setVideoError('');
     setNotice('');
     setComposer(null);
     setEditingProduct(null);
@@ -303,16 +323,51 @@ export function CreatorDashboard() {
     setDiscount(emptyDiscount);
     setBrand({
       code: '',
+      discountType: 'percent',
       detailsHe: '',
       discountPercent: '',
+      discountAmount: '',
       expiresAt: '',
       name: '',
       websiteUrl: '',
+      storyClips: [],
+      storyLink: '',
     });
   }
 
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (/\s/u.test(brand.code.trim())) {
+      setError('Discount codes cannot contain spaces.');
+      return;
+    }
+    if (
+      brand.discountPercent &&
+      (!Number.isInteger(Number(brand.discountPercent)) ||
+        Number(brand.discountPercent) < 1 ||
+        Number(brand.discountPercent) > 100)
+    ) {
+      setError('Enter a whole-number discount from 1 to 100%.');
+      return;
+    }
+    if (
+      brand.discountAmount &&
+      (!Number.isFinite(Number(brand.discountAmount)) ||
+        !Number.isInteger(Number(brand.discountAmount) * 100) ||
+        Number(brand.discountAmount) < 0.01)
+    ) {
+      setError('Enter a fixed discount of at least ₪0.01, with up to two decimals.');
+      return;
+    }
+    if (
+      (brand.detailsHe.trim() || brand.storyClips.length || brand.expiresAt) &&
+      !brand.code.trim() &&
+      !brand.discountPercent &&
+      !brand.discountAmount
+    ) {
+      setError('Add a discount code or amount before adding offer details or videos.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -333,10 +388,7 @@ export function CreatorDashboard() {
           )
         : null;
       const hasOffer = Boolean(
-        brand.code.trim() ||
-        brand.discountPercent ||
-        brand.expiresAt ||
-        brand.detailsHe.trim(),
+        brand.code.trim() || brand.discountPercent || brand.discountAmount,
       );
       if (hasOffer) {
         const offerBody = JSON.stringify({
@@ -344,8 +396,20 @@ export function CreatorDashboard() {
           code: brand.code.trim() || null,
           detailsHe: brand.detailsHe.trim() || null,
           discountPercent: brand.discountPercent ? Number(brand.discountPercent) : null,
+          discountAmountMinor: brand.discountAmount
+            ? Math.round(Number(brand.discountAmount) * 100)
+            : null,
+          storyClips: brand.storyClips.map((clip) =>
+            clip.mediaAssetId
+              ? { mediaAssetId: clip.mediaAssetId }
+              : { videoUrl: clip.url },
+          ),
           expiresAt: toDateTimeIso(brand.expiresAt),
-          label: brand.discountPercent ? `${brand.discountPercent}% off` : null,
+          label: brand.discountPercent
+            ? `${brand.discountPercent}% off`
+            : brand.discountAmount
+              ? `₪${brand.discountAmount} off`
+              : null,
           merchantUrl: savedBrand.websiteUrl,
           offerType: 'creator_code',
           priority: 0,
@@ -484,9 +548,16 @@ export function CreatorDashboard() {
     if (!files.length) return;
     setUploading(true);
     setError('');
+    setVideoError('');
     try {
       for (const file of files.slice(0, 10 - product.storyClips.length)) {
-        const asset = await uploadStoryVideo(file, () => undefined);
+        const asset = await uploadStoryVideo(file, (stage, percent) =>
+          setVideoStage(
+            stage === 'uploading' && percent !== undefined
+              ? `Uploading ${percent}%`
+              : stage,
+          ),
+        );
         setProduct((current) => ({
           ...current,
           storyClips: [
@@ -497,9 +568,46 @@ export function CreatorDashboard() {
       }
       setNotice('Story clip uploaded and verified.');
     } catch (cause) {
-      setError(messageFor(cause));
+      setVideoError(messageFor(cause));
     } finally {
       setUploading(false);
+      setVideoStage('');
+      event.target.value = '';
+    }
+  }
+
+  async function selectBrandClip(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []).slice(
+      0,
+      10 - brand.storyClips.length,
+    );
+    if (!files.length) return;
+    setUploading(true);
+    setError('');
+    setVideoError('');
+    try {
+      for (const file of files) {
+        const asset = await uploadStoryVideo(file, (stage, percent) =>
+          setVideoStage(
+            stage === 'uploading' && percent !== undefined
+              ? `Uploading ${percent}%`
+              : stage,
+          ),
+        );
+        setBrand((current) => ({
+          ...current,
+          storyClips: [
+            ...current.storyClips,
+            { mediaAssetId: asset.id, url: asset.publicUrl },
+          ],
+        }));
+      }
+      setNotice('Brand videos uploaded.');
+    } catch (cause) {
+      setVideoError(messageFor(cause));
+    } finally {
+      setUploading(false);
+      setVideoStage('');
       event.target.value = '';
     }
   }
@@ -565,6 +673,28 @@ export function CreatorDashboard() {
       setError('Enter a valid price.');
       return;
     }
+    if (!product.brandDiscountCodeId && /\s/u.test(product.discountCode.trim())) {
+      setError('Discount codes cannot contain spaces.');
+      return;
+    }
+    if (!product.brandDiscountCodeId && product.discountValue.trim()) {
+      const value = Number(product.discountValue);
+      if (
+        !Number.isFinite(value) ||
+        value <= 0 ||
+        (product.discountType === 'percent' &&
+          (!Number.isInteger(value) || value > 100)) ||
+        (product.discountType === 'amount' &&
+          (!Number.isInteger(value * 100) || value < 0.01))
+      ) {
+        setError(
+          product.discountType === 'percent'
+            ? 'Enter a whole-number discount from 1 to 100%.'
+            : 'Enter a fixed discount of at least ₪0.01, with up to two decimals.',
+        );
+        return;
+      }
+    }
     if (!isLinkCard && !product.imageAssetId && !product.imageUrl) {
       setError('Add a product photo to save this recommendation.');
       document.getElementById('creator-product-photos')?.scrollIntoView({
@@ -587,13 +717,31 @@ export function CreatorDashboard() {
           : [product.categoryId],
         commercialRelationship: 'organic',
         contentKind: product.contentKind,
-        discountCode: product.discountCode.trim() || null,
-        discountExpiresAt: toIso(product.discountExpiresAt),
-        discountLabel: product.discountValue.trim()
-          ? product.discountType === 'percent'
-            ? `${product.discountValue.trim()}% off`
-            : `₪${product.discountValue.trim()} off`
-          : null,
+        discountCode: product.brandDiscountCodeId
+          ? null
+          : product.discountCode.trim() || null,
+        brandDiscountCodeId: product.brandDiscountCodeId || null,
+        discountPercent:
+          !product.brandDiscountCodeId &&
+          product.discountType === 'percent' &&
+          product.discountValue
+            ? Number(product.discountValue)
+            : null,
+        discountAmountMinor:
+          !product.brandDiscountCodeId &&
+          product.discountType === 'amount' &&
+          product.discountValue
+            ? Math.round(Number(product.discountValue) * 100)
+            : null,
+        discountExpiresAt: product.brandDiscountCodeId
+          ? null
+          : toIso(product.discountExpiresAt),
+        discountLabel:
+          !product.brandDiscountCodeId && product.discountValue.trim()
+            ? product.discountType === 'percent'
+              ? `${product.discountValue.trim()}% off`
+              : `₪${product.discountValue.trim()} off`
+            : null,
         imageAssetId: product.imageAssetId || null,
         imageUrl: product.imageAssetId ? null : product.imageUrl,
         instagramStoryUrl: product.instagramStoryUrl.trim() || null,
@@ -708,6 +856,27 @@ export function CreatorDashboard() {
 
   async function saveDiscount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (/\s/u.test(discount.code.trim())) {
+      setError('Discount codes cannot contain spaces.');
+      return;
+    }
+    if (
+      discount.discountPercent &&
+      (!Number.isInteger(Number(discount.discountPercent)) ||
+        Number(discount.discountPercent) < 1 ||
+        Number(discount.discountPercent) > 100)
+    ) {
+      setError('Enter a whole-number discount from 1 to 100%.');
+      return;
+    }
+    if (
+      discount.discountAmount &&
+      (!Number.isFinite(Number(discount.discountAmount)) ||
+        Number(discount.discountAmount) <= 0)
+    ) {
+      setError('Enter a fixed discount greater than ₪0.');
+      return;
+    }
     setSaving(true);
     setError('');
     const [scopeKind, scopeId = ''] = discount.scopeTarget.split(':');
@@ -716,6 +885,12 @@ export function CreatorDashboard() {
       code: discount.code.trim() || null,
       detailsHe: discount.detailsHe.trim() || null,
       discountPercent: discount.discountPercent ? Number(discount.discountPercent) : null,
+      discountAmountMinor: discount.discountAmount
+        ? Math.round(Number(discount.discountAmount) * 100)
+        : null,
+      storyClips: discount.storyClips.map((clip) =>
+        clip.mediaAssetId ? { mediaAssetId: clip.mediaAssetId } : { videoUrl: clip.url },
+      ),
       expiresAt: toDateTimeIso(discount.expiresAt),
       label: discount.label.trim() || null,
       merchantUrl: discount.merchantUrl,
@@ -816,6 +991,13 @@ export function CreatorDashboard() {
         .map(({ id }) => id),
       contentKind: item.contentKind,
       discountCode: item.discount?.code ?? '',
+      brandDiscountCodeId:
+        discounts.find(
+          (offer) =>
+            offer.id === item.discount?.id &&
+            offer.brandId &&
+            offer.scopeKind === 'brand',
+        )?.id ?? '',
       discountExpiresAt: toLocalDate(item.discount?.expiresAt ?? null),
       discountLabel: item.discount?.label ?? '',
       discountType: item.discount?.label?.includes('%') ? 'percent' : 'amount',
@@ -845,6 +1027,10 @@ export function CreatorDashboard() {
       code: item.code ?? '',
       detailsHe: item.details?.value ?? '',
       discountPercent: item.discountPercent?.toString() ?? '',
+      discountType: item.discountAmountMinor ? 'amount' : 'percent',
+      discountAmount: item.discountAmountMinor
+        ? String(item.discountAmountMinor / 100)
+        : '',
       expiresAt: toLocalDateTime(item.expiresAt),
       label: item.label ?? '',
       merchantUrl: item.merchantUrl,
@@ -855,6 +1041,10 @@ export function CreatorDashboard() {
         item.scopeKind === 'brand' ? 'brand' : `${item.scopeKind}:${item.scopeId}`,
       stackable: item.stackable,
       startsAt: toLocalDateTime(item.startsAt),
+      storyClips: item.storyClips.map((clip) => ({
+        mediaAssetId: clip.mediaAssetId ?? '',
+        url: clip.url,
+      })),
     });
     setComposer('discount');
     window.scrollTo({ behavior: 'smooth', top: 120 });
@@ -1203,6 +1393,8 @@ export function CreatorDashboard() {
                   ) : null}
                   {composer === 'product' ? (
                     <ProductForm
+                      brands={brands}
+                      discounts={discounts}
                       categories={categories}
                       collections={curatedSections.filter(
                         ({ kind }) => kind === 'collection',
@@ -1231,6 +1423,8 @@ export function CreatorDashboard() {
                       onValidationError={() => setNotice('')}
                       onSave={saveProduct}
                       onStory={selectStoryClip}
+                      videoStage={videoStage}
+                      videoError={videoError}
                       saving={saving || uploading}
                     />
                   ) : null}
@@ -1288,22 +1482,48 @@ export function CreatorDashboard() {
                             onChange={(event) =>
                               setBrand({
                                 ...brand,
-                                code: event.target.value.toUpperCase(),
+                                code: event.target.value,
                               })
                             }
                           />
                         </label>
                         <label>
-                          Discount percent <span className="fieldOptional">Optional</span>
-                          <input
-                            min="1"
-                            max="100"
-                            type="number"
-                            value={brand.discountPercent}
+                          Discount type <span className="fieldOptional">Optional</span>
+                          <select
+                            value={brand.discountType}
                             onChange={(event) =>
                               setBrand({
                                 ...brand,
-                                discountPercent: event.target.value,
+                                discountType: event.target
+                                  .value as BrandEditor['discountType'],
+                                discountPercent: '',
+                                discountAmount: '',
+                              })
+                            }
+                          >
+                            <option value="percent">Percent off</option>
+                            <option value="amount">Fixed ₪ amount off</option>
+                          </select>
+                        </label>
+                        <label>
+                          {brand.discountType === 'amount'
+                            ? 'Amount off (₪)'
+                            : 'Percent off'}
+                          <input
+                            min="1"
+                            max={brand.discountType === 'amount' ? undefined : '100'}
+                            type="number"
+                            value={
+                              brand.discountType === 'amount'
+                                ? brand.discountAmount
+                                : brand.discountPercent
+                            }
+                            onChange={(event) =>
+                              setBrand({
+                                ...brand,
+                                [brand.discountType === 'amount'
+                                  ? 'discountAmount'
+                                  : 'discountPercent']: event.target.value,
                               })
                             }
                           />
@@ -1321,6 +1541,7 @@ export function CreatorDashboard() {
                         <label className="creatorFullField">
                           Details <span className="fieldOptional">Optional</span>
                           <textarea
+                            dir="auto"
                             rows={3}
                             value={brand.detailsHe}
                             onChange={(event) =>
@@ -1328,6 +1549,84 @@ export function CreatorDashboard() {
                             }
                           />
                         </label>
+                        <fieldset className="creatorStoryFields creatorFullField">
+                          <legend>
+                            Related videos <span className="fieldOptional">Optional</span>
+                          </legend>
+                          <label className="button secondary creatorVideoUploadButton">
+                            <Upload aria-hidden="true" size={16} />
+                            {videoStage ? `${videoStage}…` : 'Add videos'}
+                            <input
+                              accept={storyVideoAccept}
+                              disabled={uploading}
+                              multiple
+                              onChange={selectBrandClip}
+                              type="file"
+                            />
+                          </label>
+                          {brand.storyClips.length ? (
+                            <div className="creatorStoryThumbs">
+                              {brand.storyClips.map((clip, index) => (
+                                <span key={`${clip.url}:${index}`}>
+                                  <video muted playsInline src={clip.url} />
+                                  <button
+                                    aria-label={`Remove video ${index + 1}`}
+                                    onClick={() =>
+                                      setBrand({
+                                        ...brand,
+                                        storyClips: brand.storyClips.filter(
+                                          (_, clipIndex) => clipIndex !== index,
+                                        ),
+                                      })
+                                    }
+                                    type="button"
+                                  >
+                                    <Trash2 aria-hidden="true" size={12} />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                          <span className="creatorInlineField">
+                            <input
+                              aria-label="Video link"
+                              type="url"
+                              placeholder="Or paste a video link (https://)"
+                              value={brand.storyLink}
+                              onChange={(event) =>
+                                setBrand({ ...brand, storyLink: event.target.value })
+                              }
+                            />
+                            <button
+                              className="button secondary"
+                              onClick={() => {
+                                try {
+                                  const url = new URL(brand.storyLink.trim());
+                                  if (url.protocol !== 'https:') throw new Error();
+                                  setBrand({
+                                    ...brand,
+                                    storyClips: [
+                                      ...brand.storyClips,
+                                      { mediaAssetId: '', url: url.href },
+                                    ].slice(0, 10),
+                                    storyLink: '',
+                                  });
+                                  setVideoError('');
+                                } catch {
+                                  setVideoError('Use a valid HTTPS video link.');
+                                }
+                              }}
+                              type="button"
+                            >
+                              Add link
+                            </button>
+                          </span>
+                          {videoError ? (
+                            <p className="formError" role="alert">
+                              {videoError}
+                            </p>
+                          ) : null}
+                        </fieldset>
                         <div className="creatorFullField">
                           <button
                             className="button primary"
@@ -1489,11 +1788,23 @@ export function CreatorDashboard() {
                               setEditingBrand(managedBrand);
                               setBrand({
                                 code: offer?.code ?? '',
+                                discountType: offer?.discountAmountMinor
+                                  ? 'amount'
+                                  : 'percent',
                                 detailsHe: offer?.details?.value ?? '',
                                 discountPercent: offer?.discountPercent?.toString() ?? '',
+                                discountAmount: offer?.discountAmountMinor
+                                  ? String(offer.discountAmountMinor / 100)
+                                  : '',
                                 expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
                                 name: managedBrand.name,
                                 websiteUrl: managedBrand.websiteUrl,
+                                storyClips:
+                                  offer?.storyClips.map((clip) => ({
+                                    mediaAssetId: clip.mediaAssetId ?? '',
+                                    url: clip.url,
+                                  })) ?? [],
+                                storyLink: '',
                               });
                               setComposer('brand');
                               window.scrollTo({ behavior: 'smooth', top: 120 });
@@ -2265,8 +2576,10 @@ function StorefrontLabelsEditor({
 }
 
 function ProductForm({
+  brands,
   categories,
   collections,
+  discounts,
   recommendations,
   editor,
   editing,
@@ -2283,9 +2596,13 @@ function ProductForm({
   onSave,
   onStory,
   saving,
+  videoStage,
+  videoError,
 }: {
+  brands: CreatorBrand[];
   categories: CategoryCard[];
   collections: CuratedSection[];
+  discounts: CreatorDiscountCode[];
   recommendations: CreatorRecommendation[];
   editor: ProductEditor;
   editing: boolean;
@@ -2302,11 +2619,24 @@ function ProductForm({
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   onStory: (event: ChangeEvent<HTMLInputElement>) => void;
   saving: boolean;
+  videoStage: string;
+  videoError: string;
 }) {
   const [validationError, setValidationError] = useState('');
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
   const isLinkCard = editor.contentKind === 'link';
+  const matchingBrand = brands.find(
+    (brand) =>
+      brand.name.toLocaleLowerCase() === editor.brandName.trim().toLocaleLowerCase(),
+  );
+  const brandOffer = discounts.find(
+    (offer) =>
+      offer.brandId === matchingBrand?.id &&
+      offer.scopeKind === 'brand' &&
+      offer.lifecycle === 'published' &&
+      offer.code,
+  );
   const matchingCollections = collections.filter((collection) => {
     const brandName =
       recommendations.find(({ brandId }) => brandId === collection.brandId)?.brandName ??
@@ -2423,15 +2753,22 @@ function ProductForm({
               Brand
               <input
                 required
+                list="creator-saved-brands"
                 value={editor.brandName}
                 onChange={(event) =>
                   onChange({
                     ...editor,
                     brandName: event.target.value,
+                    brandDiscountCodeId: '',
                     collectionIds: [],
                   })
                 }
               />
+              <datalist id="creator-saved-brands">
+                {brands.map((brand) => (
+                  <option key={brand.id} value={brand.name} />
+                ))}
+              </datalist>
             </label>
           ) : null}
           {isLinkCard ? (
@@ -2651,52 +2988,72 @@ function ProductForm({
                   </div>
                 </details>
               </div>
-              <label>
-                Discount code
-                <input
-                  value={editor.discountCode}
-                  onChange={(event) =>
-                    update('discountCode', event.target.value.toUpperCase())
-                  }
-                />
-              </label>
-              <label>
-                Discount
-                <span
-                  className="creatorDiscountType"
-                  role="group"
-                  aria-label="Discount type"
-                >
-                  <button
-                    aria-pressed={editor.discountType === 'percent'}
-                    onClick={() => update('discountType', 'percent')}
-                    type="button"
+              {brandOffer ? (
+                <label className="creatorCheckboxField creatorFullField">
+                  <input
+                    type="checkbox"
+                    checked={editor.brandDiscountCodeId === brandOffer.id}
+                    onChange={(event) =>
+                      update(
+                        'brandDiscountCodeId',
+                        event.target.checked ? brandOffer.id : '',
+                      )
+                    }
+                  />
+                  Use {matchingBrand?.name}&apos;s offer ({brandOffer.code}) — code and
+                  expiry stay in sync
+                </label>
+              ) : null}
+              {!editor.brandDiscountCodeId ? (
+                <label>
+                  Discount code
+                  <input
+                    value={editor.discountCode}
+                    onChange={(event) => update('discountCode', event.target.value)}
+                  />
+                </label>
+              ) : null}
+              {!editor.brandDiscountCodeId ? (
+                <label>
+                  Discount
+                  <span
+                    className="creatorDiscountType"
+                    role="group"
+                    aria-label="Discount type"
                   >
-                    Percent
-                  </button>
-                  <button
-                    aria-pressed={editor.discountType === 'amount'}
-                    onClick={() => update('discountType', 'amount')}
-                    type="button"
-                  >
-                    Fixed amount
-                  </button>
-                </span>
-                <input
-                  inputMode="decimal"
-                  onChange={(event) => update('discountValue', event.target.value)}
-                  placeholder={editor.discountType === 'percent' ? '20' : '100'}
-                  value={editor.discountValue}
-                />
-              </label>
-              <label>
-                Expires at
-                <input
-                  type="date"
-                  value={editor.discountExpiresAt}
-                  onChange={(event) => update('discountExpiresAt', event.target.value)}
-                />
-              </label>
+                    <button
+                      aria-pressed={editor.discountType === 'percent'}
+                      onClick={() => update('discountType', 'percent')}
+                      type="button"
+                    >
+                      Percent
+                    </button>
+                    <button
+                      aria-pressed={editor.discountType === 'amount'}
+                      onClick={() => update('discountType', 'amount')}
+                      type="button"
+                    >
+                      Fixed amount
+                    </button>
+                  </span>
+                  <input
+                    inputMode="decimal"
+                    onChange={(event) => update('discountValue', event.target.value)}
+                    placeholder={editor.discountType === 'percent' ? '20' : '100'}
+                    value={editor.discountValue}
+                  />
+                </label>
+              ) : null}
+              {!editor.brandDiscountCodeId ? (
+                <label>
+                  Expires at
+                  <input
+                    type="date"
+                    value={editor.discountExpiresAt}
+                    onChange={(event) => update('discountExpiresAt', event.target.value)}
+                  />
+                </label>
+              ) : null}
             </>
           ) : null}
         </div>
@@ -2729,15 +3086,22 @@ function ProductForm({
                 Attach short videos like your Instagram stories. They appear on this
                 recommendation card in order.
               </p>
-              <label className="creatorStoryUpload">
+              <label className="creatorStoryUpload creatorVideoUploadButton">
                 <Upload aria-hidden="true" size={16} />
+                <span>{videoStage ? `${videoStage}…` : 'Upload videos'}</span>
                 <input
                   accept={storyVideoAccept}
+                  disabled={saving}
                   multiple
                   onChange={onStory}
                   type="file"
                 />
               </label>
+              {videoError ? (
+                <p className="formError" role="alert">
+                  {videoError}
+                </p>
+              ) : null}
               {editor.storyClips.length ? (
                 <div className="creatorStoryThumbs">
                   {editor.storyClips.map((clip, index) => (
@@ -2906,17 +3270,43 @@ function DiscountForm({
             Code (optional)
             <input
               value={editor.code}
-              onChange={(event) => update('code', event.target.value.toUpperCase())}
+              onChange={(event) => update('code', event.target.value)}
             />
           </label>
           <label>
-            Discount percent
+            Discount type
+            <select
+              value={editor.discountType}
+              onChange={(event) =>
+                onChange({
+                  ...editor,
+                  discountType: event.target.value as DiscountEditor['discountType'],
+                  discountPercent: '',
+                  discountAmount: '',
+                })
+              }
+            >
+              <option value="percent">Percent off</option>
+              <option value="amount">Fixed ₪ amount off</option>
+            </select>
+          </label>
+          <label>
+            {editor.discountType === 'amount' ? 'Amount off (₪)' : 'Percent off'}
             <input
               min="1"
-              max="100"
+              max={editor.discountType === 'amount' ? undefined : '100'}
               type="number"
-              value={editor.discountPercent}
-              onChange={(event) => update('discountPercent', event.target.value)}
+              value={
+                editor.discountType === 'amount'
+                  ? editor.discountAmount
+                  : editor.discountPercent
+              }
+              onChange={(event) =>
+                update(
+                  editor.discountType === 'amount' ? 'discountAmount' : 'discountPercent',
+                  event.target.value,
+                )
+              }
             />
           </label>
           <label>
@@ -2978,10 +3368,9 @@ function DiscountForm({
           </label>
         </div>
         <label className="creatorFullField">
-          Details (Hebrew)
+          Details (optional)
           <textarea
-            dir="rtl"
-            lang="he"
+            dir="auto"
             rows={4}
             value={editor.detailsHe}
             onChange={(event) => update('detailsHe', event.target.value)}
@@ -3212,6 +3601,7 @@ function CuratedSectionForm({
             value={brandId}
             onChange={(event) => {
               setBrandId(event.target.value);
+              if (event.target.value) setCreatingBrand(false);
               setRecommendationIds((ids) =>
                 ids.filter(
                   (id) =>
@@ -3228,6 +3618,9 @@ function CuratedSectionForm({
               </option>
             ))}
           </select>
+          {brandId && availableBrands.find((item) => item.brandId === brandId) ? (
+            <small>Using this brand&apos;s saved name and website.</small>
+          ) : null}
           {onCreateBrand ? (
             <button
               className="creatorInlineAction"

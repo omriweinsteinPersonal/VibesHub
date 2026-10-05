@@ -21,6 +21,7 @@ import {
   recommendationCardSchema,
   recommendationImageAssetSchema,
   recommendationImageUploadInputSchema,
+  storyVideoUploadInputSchema,
 } from './index.js';
 
 describe('shared API contracts', () => {
@@ -301,17 +302,33 @@ describe('shared API contracts', () => {
     ).toThrow();
   });
 
-  it('normalizes discount codes and enforces Hebrew details and validity windows', () => {
+  it('preserves discount code casing, accepts creator language, and validates offer amounts', () => {
     expect(
       creatorDiscountCodeInputSchema.parse({
-        code: ' noa10 ',
+        code: ' Noa10 ',
         detailsHe: 'עשרה אחוזי הנחה באתר',
         expiresAt: '2026-09-01T00:00:00.000Z',
         label: '10% off',
         merchantUrl: 'https://shop.example.com',
         startsAt: '2026-08-01T00:00:00.000Z',
       }).code,
-    ).toBe('NOA10');
+    ).toBe('Noa10');
+
+    const fixed = creatorDiscountCodeInputSchema.parse({
+      code: 'save100',
+      detailsHe: 'A little something for your next visit',
+      discountAmountMinor: 10_000,
+      discountPercent: null,
+      expiresAt: null,
+      label: null,
+      merchantUrl: 'https://shop.example.com',
+      startsAt: null,
+    });
+    expect(fixed.discountAmountMinor).toBe(10_000);
+    expect(fixed.detailsHe).toMatch(/A little/);
+    expect(() =>
+      creatorDiscountCodeInputSchema.parse({ ...fixed, discountPercent: 20 }),
+    ).toThrow();
 
     expect(() =>
       creatorDiscountCodeInputSchema.parse({
@@ -321,6 +338,33 @@ describe('shared API contracts', () => {
         label: null,
         merchantUrl: 'http://shop.example.com',
         startsAt: '2026-09-01T00:00:00.000Z',
+      }),
+    ).toThrow();
+  });
+
+  it('accepts a linked brand offer and a 200 MB video upload', () => {
+    const input = creatorRecommendationInputSchema.parse({
+      brandName: 'Atelier Nove',
+      brandDiscountCodeId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+      categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca011',
+      discountCode: null,
+      imageUrl: 'https://images.example.com/bag.jpg',
+      priceAmountMinor: 12000,
+      productName: 'Everyday Bag',
+      productUrl: 'https://shop.example.com/bag',
+      reviewHe: 'A favorite bag',
+    });
+    expect(input.brandDiscountCodeId).toBe('01989f72-07e4-7f32-9b42-1ba55d4ca010');
+    expect(
+      storyVideoUploadInputSchema.parse({
+        contentType: 'video/quicktime',
+        fileSizeBytes: 200 * 1024 * 1024,
+      }).fileSizeBytes,
+    ).toBe(200 * 1024 * 1024);
+    expect(() =>
+      storyVideoUploadInputSchema.parse({
+        contentType: 'video/mp4',
+        fileSizeBytes: 200 * 1024 * 1024 + 1,
       }),
     ).toThrow();
   });

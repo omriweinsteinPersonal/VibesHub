@@ -82,41 +82,56 @@
 .sortable {
   position: relative;
   min-width: 0;
-  padding-top: 48px;
-  border-radius: 12px;
-  outline: 1px dashed #b6a59b;
-  outline-offset: 2px;
+  border-radius: 10px;
+  outline: 1px dashed color-mix(in srgb, var(--sf-text) 24%, transparent);
+  outline-offset: -1px;
+  transition:
+    outline-color 160ms ease,
+    background-color 160ms ease;
+}
+.sortable:hover,
+.sortable:focus-within {
+  outline-color: #b6a59b;
 }
 .sortable[data-moving='true'] {
   opacity: 0.55;
 }
 .sortable[data-drop-target='true'] {
-  outline: 3px solid #855875;
-  background: #eee4ec;
+  outline: 2px dashed #c87650;
+  background: #fbf1e9;
 }
 .handle {
   position: absolute;
-  top: -2px;
-  right: 4px;
+  top: 8px;
+  right: 8px;
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #faf6f8;
-  color: #68465c;
-  border: 1px solid #c8b6c2;
+  background: transparent;
+  color: var(--sf-text);
+  border: 0;
   border-radius: 8px;
   touch-action: none;
   cursor: grab;
   user-select: none;
   z-index: 2;
+  opacity: 0.55;
+  transition:
+    opacity 160ms ease,
+    border-color 160ms ease;
+}
+.sortable:hover > .handle,
+.sortable:focus-within > .handle {
+  opacity: 1;
+  background: color-mix(in srgb, var(--sf-page) 88%, white);
 }
 .handle:active {
   cursor: grabbing;
 }
 .handle:focus-visible {
-  outline: 3px solid #855875;
+  outline: 3px solid #c87650;
   outline-offset: 2px;
 }
 .handle:disabled {
@@ -158,6 +173,12 @@
   height: 44px;
   border: 0;
   background: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sortable,
+  .handle {
+    transition: none;
+  }
 }
 .compact > button:not(.handle) {
   white-space: nowrap;

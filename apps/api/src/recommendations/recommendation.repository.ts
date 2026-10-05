@@ -152,7 +152,7 @@ export class RecommendationRepository {
           ${input.instagramStoryUrl ?? null},
           ${input.reviewHe},
           ${input.videoUrl ?? null},
-          ${input.discountCode?.toUpperCase() ?? null},
+          ${input.discountCode ?? null},
           ${input.discountLabel ?? null},
           ${input.commercialRelationship},
           'published',
@@ -182,6 +182,10 @@ export class RecommendationRepository {
         input.discountCode ?? null,
         input.discountLabel ?? null,
         input.discountExpiresAt ?? null,
+        input.brandDiscountCodeId ?? null,
+        input.brandName,
+        input.discountPercent ?? null,
+        input.discountAmountMinor ?? null,
       );
       await this.syncStoryClips(sql, inserted.id, userId, input);
       await this.syncAdditionalImages(sql, inserted.id, userId, input);
@@ -332,7 +336,7 @@ export class RecommendationRepository {
           instagram_story_url = ${input.instagramStoryUrl ?? null},
           review_he = ${input.reviewHe},
           video_url = ${input.videoUrl ?? null},
-          discount_code = ${input.discountCode?.toUpperCase() ?? null},
+          discount_code = ${input.discountCode ?? null},
           discount_label = ${input.discountLabel ?? null},
           commercial_relationship = ${input.commercialRelationship},
           version = version + 1
@@ -386,6 +390,10 @@ export class RecommendationRepository {
         input.discountCode ?? null,
         input.discountLabel ?? null,
         input.discountExpiresAt ?? null,
+        input.brandDiscountCodeId ?? null,
+        input.brandName,
+        input.discountPercent ?? null,
+        input.discountAmountMinor ?? null,
       );
       await this.syncStoryClips(sql, updated.id, userId, input);
       await this.syncAdditionalImages(sql, updated.id, userId, input);
@@ -972,12 +980,79 @@ export class RecommendationRepository {
     discountCode: string | null,
     discountLabel: string | null,
     discountExpiresAt: string | null,
+    brandDiscountCodeId: string | null,
+    brandName: string,
+    discountPercent: number | null,
+    discountAmountMinor: number | null,
   ): Promise<void> {
+    const [previousNoCode] = await sql<{ id: string }[]>`
+      select code.id from app.recommendation_discount_codes placement
+      join app.discount_codes code on code.id = placement.code_id
+      where placement.recommendation_id = ${recommendationId}
+        and code.code is null and code.scope_kind = 'item'
+        and code.scope_id = ${recommendationId}
+      limit 1
+    `;
     await sql`
       delete from app.recommendation_discount_codes
       where recommendation_id = ${recommendationId}
     `;
+    if (brandDiscountCodeId) {
+      const [brandCode] = await sql<{ id: string }[]>`
+        select code.id from app.discount_codes code
+        join app.creator_brands brand on brand.id = code.creator_brand_id
+        join app.brands catalog_brand on catalog_brand.id = brand.brand_id
+        where code.id = ${brandDiscountCodeId} and code.creator_id = ${creatorId}
+          and code.scope_kind = 'brand' and code.lifecycle_status = 'published'
+          and code.deleted_at is null and brand.lifecycle = 'active'
+          and lower(coalesce(brand.display_name, catalog_brand.name)) = lower(${brandName})
+      `;
+      if (!brandCode) throw new Error('BRAND_DISCOUNT_NOT_AVAILABLE');
+      await sql`
+        insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
+        values (${recommendationId}, ${brandCode.id}, 0)
+      `;
+      if (previousNoCode)
+        await sql`delete from app.discount_codes where id = ${previousNoCode.id}`;
+      return;
+    }
+    if (!discountCode && discountLabel) {
+      const [offer] = previousNoCode
+        ? await sql<{ id: string }[]>`
+            update app.discount_codes set label = ${discountLabel}, expires_at = ${discountExpiresAt},
+              discount_percent = ${discountPercent}, discount_amount_minor = ${discountAmountMinor},
+              verification_status = 'unverified', last_verified_at = null, lifecycle_status = 'draft',
+              version = version + 1
+            where id = ${previousNoCode.id} returning id
+          `
+        : await sql<{ id: string }[]>`
+            insert into app.discount_codes (
+              creator_id, merchant_id, brand_id, code, label, expires_at,
+              discount_percent, discount_amount_minor, scope_kind, scope_id, offer_type
+            ) values (
+              ${creatorId}, ${catalog.merchantId}, ${catalog.brandId}, null, ${discountLabel},
+              ${discountExpiresAt}, ${discountPercent}, ${discountAmountMinor},
+              'item', ${recommendationId}, 'brand_promotion'
+            ) returning id
+          `;
+      if (!offer) throw new Error('Discount offer could not be saved');
+      await sql`
+        insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
+        values (${recommendationId}, ${offer.id}, 0)
+      `;
+      return;
+    }
+    if (previousNoCode)
+      await sql`delete from app.discount_codes where id = ${previousNoCode.id}`;
     if (!discountCode) return;
+    const [sharedBrandOffer] = await sql<{ id: string }[]>`
+      select id from app.discount_codes
+      where creator_id = ${creatorId} and merchant_id = ${catalog.merchantId}
+        and code = ${discountCode} and creator_brand_id is not null
+        and scope_kind = 'brand' and deleted_at is null and lifecycle_status <> 'archived'
+      limit 1
+    `;
+    if (sharedBrandOffer) throw new Error('BRAND_DISCOUNT_REQUIRES_LINK');
 
     const [code] = await sql<{ id: string }[]>`
       insert into app.discount_codes (
@@ -986,14 +1061,18 @@ export class RecommendationRepository {
         brand_id,
         code,
         label,
+        discount_percent,
+        discount_amount_minor,
         expires_at,
         lifecycle_status
       ) values (
         ${creatorId},
         ${catalog.merchantId},
         ${catalog.brandId},
-        ${discountCode.toUpperCase()},
+        ${discountCode},
         ${discountLabel},
+        ${discountPercent},
+        ${discountAmountMinor},
         ${discountExpiresAt},
         'draft'
       )
@@ -1002,6 +1081,8 @@ export class RecommendationRepository {
       do update set
         brand_id = excluded.brand_id,
         label = excluded.label,
+        discount_percent = excluded.discount_percent,
+        discount_amount_minor = excluded.discount_amount_minor,
         expires_at = excluded.expires_at
       returning id
     `;
@@ -1219,16 +1300,17 @@ function mapRecommendationCard(
     commercialRelationship: row.commercialRelationship,
     contentKind: row.brandName === 'Links' ? 'link' : 'product',
     createdAt: row.createdAt,
-    discount: row.discountCode
-      ? {
-          code: row.discountCode,
-          expiresAt: row.discountExpiresAt,
-          id: row.discountId,
-          label: row.discountLabel,
-          lastVerifiedAt: row.discountLastVerifiedAt,
-          verificationStatus: row.discountVerificationStatus ?? undefined,
-        }
-      : null,
+    discount:
+      row.discountCode || row.discountLabel
+        ? {
+            code: row.discountCode,
+            expiresAt: row.discountExpiresAt,
+            id: row.discountId,
+            label: row.discountLabel,
+            lastVerifiedAt: row.discountLastVerifiedAt,
+            verificationStatus: row.discountVerificationStatus ?? undefined,
+          }
+        : null,
     id: row.id,
     imageAssetId: row.imageAssetId,
     imageUrl: row.imageUrl,

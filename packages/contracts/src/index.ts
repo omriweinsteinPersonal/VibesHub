@@ -160,7 +160,7 @@ export const storyVideoUploadInputSchema = z
     fileSizeBytes: z
       .int()
       .min(1)
-      .max(50 * 1_024 * 1_024),
+      .max(200 * 1_024 * 1_024),
   })
   .strict();
 
@@ -183,7 +183,7 @@ export const storyVideoAssetSchema = z
     sizeBytes: z
       .int()
       .min(1)
-      .max(50 * 1_024 * 1_024),
+      .max(200 * 1_024 * 1_024),
     status: z.literal('ready'),
   })
   .strict();
@@ -238,6 +238,9 @@ const creatorRecommendationInputFieldsSchema = z
     categoryIds: z.array(idSchema).min(1).max(8).optional(),
     commercialRelationship: commercialRelationshipSchema.default('organic'),
     discountCode: optionalTrimmedStringSchema(50).optional(),
+    brandDiscountCodeId: idSchema.nullable().optional(),
+    discountAmountMinor: z.number().int().positive().nullable().optional(),
+    discountPercent: z.number().int().min(1).max(100).nullable().optional(),
     discountExpiresAt: z.iso.datetime().nullable().optional(),
     discountLabel: optionalTrimmedStringSchema(100).optional(),
     imageAssetId: idSchema.nullable().optional(),
@@ -253,8 +256,8 @@ const creatorRecommendationInputFieldsSchema = z
   })
   .strict();
 
-export const creatorRecommendationInputSchema =
-  creatorRecommendationInputFieldsSchema.refine(
+export const creatorRecommendationInputSchema = creatorRecommendationInputFieldsSchema
+  .refine(
     (value) =>
       value.contentKind === 'link' ||
       Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) === 1,
@@ -262,7 +265,11 @@ export const creatorRecommendationInputSchema =
       message: 'Choose exactly one recommendation image source',
       path: ['imageAssetId'],
     },
-  );
+  )
+  .refine((value) => !value.discountPercent || !value.discountAmountMinor, {
+    message: 'Choose either percent or fixed amount',
+    path: ['discountAmountMinor'],
+  });
 
 export const creatorRecommendationPatchSchema = creatorRecommendationInputFieldsSchema
   .partial()
@@ -301,7 +308,7 @@ export const creatorRecommendationMoveInputSchema = z
 
 export const recommendationDiscountSchema = z
   .object({
-    code: z.string().trim().min(1).max(50),
+    code: z.string().trim().min(1).max(50).nullable(),
     expiresAt: z.iso.datetime().nullable().optional(),
     id: idSchema.nullable(),
     label: z.string().trim().min(1).max(100).nullable(),
@@ -389,17 +396,12 @@ const discountCodeInputFieldsSchema = z
       .trim()
       .max(50)
       .regex(/^\S*$/, 'Discount codes cannot contain spaces')
-      .transform((value) => value.toUpperCase())
       .nullable(),
-    detailsHe: z
-      .string()
-      .trim()
-      .min(1)
-      .max(1_000)
-      .refine((value) => /[א-ת]/u.test(value), 'Hebrew details are required')
-      .nullable(),
+    detailsHe: z.string().trim().min(1).max(1_000).nullable(),
     expiresAt: z.iso.datetime().nullable(),
     discountPercent: z.number().int().min(1).max(100).nullable().default(null),
+    discountAmountMinor: z.number().int().positive().nullable().default(null),
+    storyClips: z.array(storyClipInputSchema).max(10).default([]),
     label: z.string().trim().min(1).max(100).nullable(),
     merchantUrl: z.url({ protocol: /^https$/ }).max(2_048),
     offerType: z.enum(['creator_code', 'brand_promotion']).default('creator_code'),
@@ -420,13 +422,15 @@ function validDiscountWindow(value: {
   return !value.expiresAt || !value.startsAt || value.expiresAt > value.startsAt;
 }
 
-export const creatorDiscountCodeInputSchema = discountCodeInputFieldsSchema.refine(
-  validDiscountWindow,
-  {
+export const creatorDiscountCodeInputSchema = discountCodeInputFieldsSchema
+  .refine(validDiscountWindow, {
     message: 'Expiration must be after the start date',
     path: ['expiresAt'],
-  },
-);
+  })
+  .refine((value) => !value.discountPercent || !value.discountAmountMinor, {
+    message: 'Choose either a percent or a fixed amount',
+    path: ['discountAmountMinor'],
+  });
 
 export const creatorDiscountCodePatchSchema = discountCodeInputFieldsSchema
   .partial()
@@ -442,6 +446,8 @@ export const publicDiscountCodeSchema = z
     code: z.string().trim().min(1).max(50).nullable(),
     details: directionalTextSchema.nullable(),
     discountPercent: z.number().int().min(1).max(100).nullable(),
+    discountAmountMinor: z.number().int().positive().nullable(),
+    storyClips: z.array(storyClipSchema).max(10),
     expiresAt: z.iso.datetime().nullable(),
     id: idSchema,
     label: z.string().trim().min(1).max(100).nullable(),

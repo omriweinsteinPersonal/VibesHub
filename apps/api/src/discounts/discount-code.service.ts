@@ -53,6 +53,10 @@ export class DiscountCodeService {
       code: current.code,
       detailsHe: current.details?.value ?? null,
       discountPercent: current.discountPercent,
+      discountAmountMinor: current.discountAmountMinor,
+      storyClips: current.storyClips.map((clip) =>
+        clip.mediaAssetId ? { mediaAssetId: clip.mediaAssetId } : { videoUrl: clip.url },
+      ),
       expiresAt: current.expiresAt,
       label: current.label,
       merchantUrl: current.merchantUrl,
@@ -166,6 +170,16 @@ export class DiscountCodeService {
   }
 
   private translateError(error: unknown): never {
+    if (
+      error instanceof Error &&
+      error.message === 'STORY_MEDIA_ASSET_NOT_READY_OR_OWNED'
+    ) {
+      throw problem(
+        422,
+        'MEDIA_NOT_READY',
+        'Upload the video before attaching it to this offer',
+      );
+    }
     if (
       error instanceof Error &&
       (error.message === 'UNSAFE_REDIRECT_DESTINATION' ||

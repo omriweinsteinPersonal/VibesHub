@@ -57,6 +57,9 @@
   width: min(1480px, calc(100% - 96px));
   margin-inline: auto;
 }
+.footerNoSnippet {
+  display: contents;
+}
 .header {
   min-height: 96px;
   display: flex;

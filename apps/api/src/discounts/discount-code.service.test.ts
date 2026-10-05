@@ -14,6 +14,8 @@ const discountCode: CreatorDiscountCode = {
   },
   expiresAt: '2026-09-01T00:00:00.000Z',
   discountPercent: 10,
+  discountAmountMinor: null,
+  storyClips: [],
   id: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
   label: '10% off',
   lastVerifiedAt: null,

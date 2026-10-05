@@ -121,6 +121,9 @@ export class MediaRepository {
         and not exists (
           select 1 from app.recommendation_story_clips where media_asset_id = media.id
         )
+        and not exists (
+          select 1 from app.discount_code_story_clips where media_asset_id = media.id
+        )
       returning
         media_kind as "mediaKind",
         object_path as "objectPath"
@@ -186,6 +189,7 @@ export class MediaRepository {
         + (select count(*) from app.products where primary_image_asset_id = ${id})
         + (select count(*) from app.creator_profiles where avatar_media_asset_id = ${id})
         + (select count(*) from app.recommendation_story_clips where media_asset_id = ${id})
+        + (select count(*) from app.discount_code_story_clips where media_asset_id = ${id})
       )::integer as count
     `;
     return row?.count ?? 0;

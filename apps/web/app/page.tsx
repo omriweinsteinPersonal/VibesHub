@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import {
   ArrowRight,
   Camera,
@@ -17,6 +18,14 @@ import { HomeGallery, HomeStudio } from './_components/home-experience';
 import styles from './home.module.css';
 
 const signup = '/auth?mode=signup';
+const description =
+  'Swavii lets creators build a personal page that looks and feels like them—bringing together recommendations, collections, links, photos, videos and more in one place.';
+
+export const metadata: Metadata = {
+  description,
+  openGraph: { description },
+  twitter: { description },
+};
 
 export default function HomePage() {
   return (
@@ -408,7 +417,8 @@ export default function HomePage() {
             ))}
           </div>
           <a href="https://www.instagram.com/swavii_/" target="_blank" rel="noreferrer">
-            <Camera size={20} aria-hidden="true" /> Follow us on Instagram @swavii_
+            <Camera size={20} aria-hidden="true" />{' '}
+            <span data-nosnippet>Follow us on Instagram @swavii_</span>
             <span className={styles.srOnly}> (opens in a new tab)</span>
           </a>
         </section>
@@ -422,14 +432,18 @@ export default function HomePage() {
             height={430}
           />
         </Link>
-        <nav aria-label="Footer navigation">
-          <a href="#how-it-works">How it works</a>
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-        </nav>
-        <small>© 2026 Swavii. All rights reserved.</small>
+        <div data-nosnippet className={styles.footerNoSnippet}>
+          <nav aria-label="Footer navigation">
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </nav>
+        </div>
+        <small>
+          <span data-nosnippet>© 2026 Swavii. All rights reserved.</span>
+        </small>
       </footer>
       <nav className={styles.mobileFooter} aria-label="Mobile navigation">
         <a href="#main" aria-current="page">

@@ -13,6 +13,7 @@ import type {
   CreatorStorefrontConfiguration,
   CreatorDiscountCode,
   CreatorRecommendation,
+  CreatorProfileSocialLink,
   PublicDiscountCode,
   RecommendationCard,
 } from '@vibeshub/contracts';
@@ -71,7 +72,7 @@ export function CreatorStorefrontView({
     useState<CreatorStorefrontConfiguration | null>(null);
   const [order, setOrder] = useState<StorefrontLayer[]>([]);
   const [orderError, setOrderError] = useState('');
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(true);
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -111,7 +112,12 @@ export function CreatorStorefrontView({
             'url' in link,
         )
       )
-        setPreviewSocialLinks(data.socialLinks as typeof storefront.socialLinks);
+        setPreviewSocialLinks(
+          (data.socialLinks as CreatorProfileSocialLink[]).map((link) => ({
+            ...link,
+            handle: link.handle ?? null,
+          })),
+        );
       setSelectedBlock(data.selectedBlock ?? null);
       setEditingContent(data.editingContent === true);
       setPreviewMode(data.previewMode === true);
@@ -403,7 +409,8 @@ export function CreatorStorefrontView({
                   ) : null}
                   {contentKind === 'photo-gallery' &&
                   !title.mediaUrls?.length &&
-                  canEdit ? (
+                  canEdit &&
+                  !previewMode ? (
                     <p className="storefrontMediaEmpty">
                       Add photo URLs to fill this gallery.
                     </p>
@@ -417,7 +424,10 @@ export function CreatorStorefrontView({
                       aria-label={title.text}
                     />
                   ) : null}
-                  {contentKind === 'video' && !title.videoUrl && canEdit ? (
+                  {contentKind === 'video' &&
+                  !title.videoUrl &&
+                  canEdit &&
+                  !previewMode ? (
                     <p className="storefrontMediaEmpty">
                       Add a video URL to show your video here.
                     </p>
@@ -439,7 +449,10 @@ export function CreatorStorefrontView({
                       </a>
                     </>
                   ) : null}
-                  {contentKind === 'instagram' && !title.instagramUrl && canEdit ? (
+                  {contentKind === 'instagram' &&
+                  !title.instagramUrl &&
+                  canEdit &&
+                  !previewMode ? (
                     <p className="storefrontMediaEmpty">
                       Add a public Instagram post URL to embed it here.
                     </p>
@@ -550,7 +563,7 @@ export function CreatorStorefrontView({
                 </div>
               </div>
             </StorefrontSlot>
-            {previewBio || canEdit ? (
+            {previewBio || (canEdit && !previewMode) ? (
               <StorefrontSlot id="bio" label="Bio" kind="profile">
                 <p
                   className="referenceStorefrontBio"
@@ -697,12 +710,16 @@ export function CreatorStorefrontView({
             ) : null}
             {!showingCompactLabelGrid
               ? storefront.brands
-                  .filter((brand) =>
-                    filtered.some(
-                      (item) =>
-                        item.brandName.toLocaleLowerCase() ===
-                        brand.name.toLocaleLowerCase(),
-                    ),
+                  .filter(
+                    (brand) =>
+                      codes.some(
+                        (code) => code.brandId === brand.id && code.scopeKind === 'brand',
+                      ) ||
+                      filtered.some(
+                        (item) =>
+                          item.brandName.toLocaleLowerCase() ===
+                          brand.name.toLocaleLowerCase(),
+                      ),
                   )
                   .sort((a, b) => {
                     const ai = previewBrandOrder.indexOf(a.id),
@@ -857,15 +874,42 @@ function BrandBlock({
         <h3>{brand.name}</h3>
         {offer ? (
           <div className="referenceBrandOffer">
-            {offer.discountPercent || offer.label ? (
-              <span>
-                {offer.discountPercent ? `${offer.discountPercent}% off` : offer.label}
-              </span>
+            {offer.discountPercent || offer.discountAmountMinor || offer.label ? (
+              <span>{offerValue(offer)}</span>
             ) : null}
             {offer.code ? <strong>{offer.code}</strong> : null}
           </div>
         ) : null}
       </header>
+      {offer && (offer.details || offer.expiresAt || offer.storyClips.length) ? (
+        <div className="referenceBrandOfferBody">
+          {offer.details ? (
+            <p dir={offer.details.direction}>{offer.details.value}</p>
+          ) : null}
+          {offer.expiresAt ? (
+            <small>
+              Offer ends{' '}
+              {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+                new Date(offer.expiresAt),
+              )}
+            </small>
+          ) : null}
+          {offer.storyClips.length ? (
+            <div className="referenceBrandVideoRail" aria-label={`${brand.name} videos`}>
+              {offer.storyClips.map((clip) => (
+                <video
+                  key={clip.id}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  src={clip.url}
+                  aria-label={`${brand.name} video ${clip.position + 1}`}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {collections.length || standaloneItems.length ? (
         <div
           className="referenceBrandShelf"
@@ -942,10 +986,7 @@ function DiscountBlock({ code }: { code: PublicDiscountCode }) {
           />
           <div>
             <p>{brandName}</p>
-            <h3>
-              {code.label ||
-                (code.discountPercent ? `${code.discountPercent}% off` : 'Brand offer')}
-            </h3>
+            <h3>{offerValue(code) || 'Brand offer'}</h3>
           </div>
         </div>
         {code.code ? (
@@ -957,13 +998,23 @@ function DiscountBlock({ code }: { code: PublicDiscountCode }) {
           <p className="referenceDiscountCode">
             <span>Offer</span>
             <strong>
-              {code.discountPercent ? `${code.discountPercent}%` : 'Active'}
+              {code.discountPercent
+                ? `${code.discountPercent}%`
+                : code.discountAmountMinor
+                  ? `₪${code.discountAmountMinor / 100}`
+                  : 'Active'}
             </strong>
           </p>
         )}
       </article>
     </section>
   );
+}
+
+function offerValue(offer: PublicDiscountCode): string | null {
+  if (offer.discountPercent) return `${offer.discountPercent}% off`;
+  if (offer.discountAmountMinor) return `₪${offer.discountAmountMinor / 100} off`;
+  return offer.label;
 }
 
 function StorefrontRow({

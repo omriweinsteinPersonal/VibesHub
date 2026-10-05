@@ -298,6 +298,20 @@ export class RecommendationService {
         'That product link already belongs to another catalog product',
       );
     }
+    if (error instanceof Error && error.message === 'BRAND_DISCOUNT_NOT_AVAILABLE') {
+      throw problem(
+        422,
+        'BRAND_DISCOUNT_NOT_AVAILABLE',
+        'Choose a published offer for this brand or use a custom item discount',
+      );
+    }
+    if (error instanceof Error && error.message === 'BRAND_DISCOUNT_REQUIRES_LINK') {
+      throw problem(
+        422,
+        'BRAND_DISCOUNT_REQUIRES_LINK',
+        'This code belongs to a brand offer. Select Use brand offer to keep it linked.',
+      );
+    }
     if (hasPostgresCode(error, '23505')) {
       throw problem(
         409,

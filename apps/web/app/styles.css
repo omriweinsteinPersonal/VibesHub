@@ -11174,6 +11174,59 @@ dt {
   line-height: 1;
   padding: 6px 9px;
 }
+.referenceBrandOfferBody {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  color: var(--sf-text);
+}
+.referenceBrandOfferBody p {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.referenceBrandOfferBody small {
+  opacity: 0.72;
+}
+.referenceBrandVideoRail {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-top: 12px;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+.referenceBrandVideoRail video {
+  flex: 0 0 min(42%, 138px);
+  width: min(42%, 138px);
+  aspect-ratio: 9 / 12;
+  border-radius: 10px;
+  background: #221d1a;
+  object-fit: cover;
+  scroll-snap-align: start;
+}
+.creatorVideoUploadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.creatorVideoUploadButton input {
+  display: block !important;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.creatorVideoUploadButton:focus-within {
+  outline: 3px solid var(--vh-accent);
+  outline-offset: 2px;
+}
 
 .creatorStorefrontCanvas .referenceBrandShelf {
   gap: 10px;
@@ -12885,6 +12938,9 @@ dt {
   margin: 0 auto;
   max-width: 1280px;
   padding: 38px 32px 27px;
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .storefrontWorkspaceIntro .eyebrow {
@@ -12933,6 +12989,12 @@ dt {
   justify-content: space-between;
   min-height: 61px;
   padding: 9px max(32px, calc((100% - 1216px) / 2));
+}
+.storefrontWorkspaceIntro .storefrontPreviewToolbar {
+  background: transparent;
+  border: 0;
+  min-height: 0;
+  padding: 8px 0 0;
 }
 
 .storefrontPreviewToolbar > span {

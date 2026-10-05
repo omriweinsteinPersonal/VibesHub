@@ -177,16 +177,14 @@ export class MediaService {
     if (asset.status !== 'pending_upload') {
       throw problem(409, 'INVALID_STATE_TRANSITION', 'This video upload is not active');
     }
-    let blob: Blob;
+    let inspected: { size: number; prefix: Uint8Array };
     try {
-      blob = await this.storage.downloadVideoUpload(asset.objectPath);
+      inspected = await this.storage.inspectVideoUpload(asset.objectPath);
     } catch {
       await this.failVideoUpload(asset, userId, 'missing_object');
       throw problem(422, 'MEDIA_NOT_READY', 'The video upload could not be found');
     }
-    const detectedType = detectVideoContentType(
-      new Uint8Array(await blob.slice(0, 32).arrayBuffer()),
-    );
+    const detectedType = detectVideoContentType(inspected.prefix);
     if (!detectedType || detectedType !== asset.contentType) {
       await this.failVideoUpload(asset, userId, 'invalid_content');
       throw problem(
@@ -195,7 +193,7 @@ export class MediaService {
         'The uploaded file does not match its declared video type',
       );
     }
-    if (blob.size !== Number(asset.declaredSizeBytes)) {
+    if (inspected.size !== Number(asset.declaredSizeBytes)) {
       await this.failVideoUpload(asset, userId, 'size_mismatch');
       throw problem(
         422,
@@ -203,12 +201,16 @@ export class MediaService {
         'The uploaded video size does not match the requested upload',
       );
     }
-    await this.storage.publishVerifiedVideo(asset.objectPath, asset.contentType, blob);
+    await this.storage.publishVerifiedVideoStream(
+      asset.objectPath,
+      asset.contentType,
+      inspected.size,
+    );
     const ready = await this.media.markReady(
       asset.id,
       userId,
       asset.version,
-      blob.size,
+      inspected.size,
       this.storage.videoPublicUrl(asset.objectPath),
     );
     if (!ready) {

@@ -10,7 +10,7 @@ import {
   type ReactNode,
   type PointerEvent,
 } from 'react';
-import { GripVertical } from 'lucide-react';
+import { AlignJustify } from 'lucide-react';
 import type { StorefrontTheme, StorefrontThemeConfiguration } from '@vibeshub/contracts';
 import {
   moveKey,
@@ -181,7 +181,7 @@ function Sortable({
           if (next) onMove(id, next);
         }}
       >
-        <GripVertical size={16} aria-hidden="true" />
+        <AlignJustify size={16} aria-hidden="true" />
         <span className="srOnly">Drag to move</span>
       </button>
       {children}

@@ -325,40 +325,38 @@ export function StorefrontPhonePreview({
             <div>
               <p className="eyebrow">CREATOR STUDIO / STOREFRONT</p>
               <h1>Your storefront.</h1>
-              <p>See your page as visitors do. Switch to editing when you are ready.</p>
+              <div className="storefrontPreviewToolbar">
+                <div
+                  aria-label="Storefront mode"
+                  className="storefrontModeSwitch"
+                  role="group"
+                >
+                  <button
+                    aria-pressed={previewMode}
+                    onClick={() => {
+                      setPreviewMode(true);
+                      setMobileEditorOpen(false);
+                    }}
+                    type="button"
+                  >
+                    <Eye aria-hidden="true" size={16} /> Preview
+                  </button>
+                  <button
+                    aria-pressed={!previewMode}
+                    onClick={() => {
+                      setPreviewMode(false);
+                      setMobileEditorOpen(true);
+                    }}
+                    type="button"
+                  >
+                    <Pencil aria-hidden="true" size={16} /> Edit page
+                  </button>
+                </div>
+              </div>
             </div>
             <a href={previewUrl.split('?')[0]} rel="noreferrer" target="_blank">
               Open live page <ArrowUpRight aria-hidden="true" size={17} />
             </a>
-          </div>
-          <div className="storefrontPreviewToolbar">
-            <div
-              aria-label="Storefront mode"
-              className="storefrontModeSwitch"
-              role="group"
-            >
-              <button
-                aria-pressed={previewMode}
-                onClick={() => {
-                  setPreviewMode(true);
-                  setMobileEditorOpen(false);
-                }}
-                type="button"
-              >
-                <Eye aria-hidden="true" size={16} /> Preview
-              </button>
-              <button
-                aria-pressed={!previewMode}
-                onClick={() => {
-                  setPreviewMode(false);
-                  setMobileEditorOpen(true);
-                }}
-                type="button"
-              >
-                <Pencil aria-hidden="true" size={16} /> Edit page
-              </button>
-            </div>
-            <span>Your preview stays visible while you edit.</span>
           </div>
         </>
       ) : null}
