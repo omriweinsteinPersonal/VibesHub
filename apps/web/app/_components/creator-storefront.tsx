@@ -142,13 +142,21 @@ export function CreatorStorefrontView({
   useEffect(() => {
     if (!canEdit) return;
     let active = true;
-    Promise.all([
+    Promise.allSettled([
       apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections'),
       loadCreatorInventory<CreatorRecommendation>('/creator/recommendations'),
       loadCreatorInventory<CreatorDiscountCode>('/creator/discount-codes'),
     ])
-      .then(([value, inventory, discounts]) => {
+      .then(([configurationResult, inventoryResult, discountResult]) => {
         if (!active) return;
+        if (configurationResult.status !== 'fulfilled') {
+          setOrderError('Could not load storefront editing. Refresh and try again.');
+          return;
+        }
+        const value = configurationResult.value;
+        const inventory =
+          inventoryResult.status === 'fulfilled' ? inventoryResult.value : recommendations;
+        const discounts = discountResult.status === 'fulfilled' ? discountResult.value : [];
         const validRecommendations = new Set(
           inventory
             .filter(({ lifecycle }) => lifecycle !== 'archived')
@@ -179,6 +187,13 @@ export function CreatorStorefrontView({
         // Match the public grouping exactly; synthesizing individual layers here
         // would create editor-only keys that the public page cannot restore.
         setOrder(cleaned.contentOrder);
+        if (inventoryResult.status === 'rejected' || discountResult.status === 'rejected') {
+          setOrderError(
+            'Some storefront data could not be refreshed. You can still edit the available content.',
+          );
+        } else {
+          setOrderError('');
+        }
       })
       .catch(() => {
         if (active)
