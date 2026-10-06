@@ -180,6 +180,31 @@ async function saveOffer<T>(
   }
 }
 
+function legacyRecommendationPayload(input: Record<string, unknown>) {
+  const legacy = { ...input };
+  delete legacy.discountAmountMinor;
+  delete legacy.storyClips;
+  return legacy;
+}
+
+async function saveRecommendation<T>(
+  path: string,
+  input: Record<string, unknown>,
+  init: { headers?: HeadersInit; idempotent?: boolean; method: 'PATCH' | 'POST' },
+) {
+  try {
+    return await apiRequest<T>(path, { ...init, body: JSON.stringify(input) });
+  } catch (cause) {
+    // Older API deployments do not yet know these optional additions. Retrying
+    // preserves the recommendation instead of blocking the entire dashboard.
+    if (!(cause instanceof ApiError) || cause.status !== 400) throw cause;
+    return apiRequest<T>(path, {
+      ...init,
+      body: JSON.stringify(legacyRecommendationPayload(input)),
+    });
+  }
+}
+
 const emptyProduct: ProductEditor = {
   additionalImages: [],
   brandName: '',
@@ -278,21 +303,21 @@ export function CreatorDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [
-        categoryPage,
-        loadedProfile,
-        loadedRecommendations,
-        discountPage,
-        config,
-        loadedBrands,
-      ] = await Promise.all([
+      const [categoryPage, loadedProfile, loadedRecommendations, config] = await Promise.all([
         apiCollectionRequest<CategoryCard>('/creator/categories'),
         apiRequest<CreatorProfileSettings>('/creator/profile'),
         loadCreatorRecommendations(),
-        apiCollectionRequest<CreatorDiscountCode>('/creator/discount-codes?limit=48'),
         apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections'),
+      ]);
+      const [discountResult, brandResult] = await Promise.allSettled([
+        apiCollectionRequest<CreatorDiscountCode>('/creator/discount-codes?limit=48'),
         apiRequest<CreatorBrand[]>('/creator/brands'),
       ]);
+      const discountPage =
+        discountResult.status === 'fulfilled'
+          ? discountResult.value
+          : { data: [], page: { hasMore: false, nextCursor: null } };
+      const loadedBrands = brandResult.status === 'fulfilled' ? brandResult.value : [];
       setCategories(categoryPage.data);
       setLoadedProfile(loadedProfile);
       setCreatorProfile(loadedProfile);
@@ -331,6 +356,9 @@ export function CreatorDashboard() {
           recommendationIds: section.recommendationIds.filter((id) => activeIds.has(id)),
         })),
       );
+      if (discountResult.status === 'rejected' || brandResult.status === 'rejected') {
+        setNotice('Some optional brand data could not be refreshed. You can continue editing.');
+      }
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -769,7 +797,7 @@ export function CreatorDashboard() {
       const storyClips: StoryClipInput[] = product.storyClips.map((clip) =>
         clip.mediaAssetId ? { mediaAssetId: clip.mediaAssetId } : { videoUrl: clip.url },
       );
-      const body = JSON.stringify({
+      const body = {
         brandName: isLinkCard ? 'Links' : product.brandName,
         categoryId: product.categoryId,
         categoryIds: product.categoryIds.length
@@ -824,17 +852,14 @@ export function CreatorDashboard() {
         videoUrl: isLinkCard
           ? null
           : (storyClips.find((clip) => clip.videoUrl)?.videoUrl ?? null),
-      });
+      };
       let savedProduct: CreatorRecommendation;
       if (editingProduct) {
         const update = (version: number) =>
-          apiRequest<CreatorRecommendation>(
+          saveRecommendation<CreatorRecommendation>(
             `/creator/recommendations/${editingProduct.id}`,
-            {
-              body,
-              headers: { 'if-match': `"${version}"` },
-              method: 'PATCH',
-            },
+            body,
+            { headers: { 'if-match': `"${version}"` }, method: 'PATCH' },
           );
         try {
           savedProduct = await update(editingProduct.version);
@@ -851,13 +876,10 @@ export function CreatorDashboard() {
           savedProduct = await update(current.version);
         }
       } else {
-        savedProduct = await apiRequest<CreatorRecommendation>(
+        savedProduct = await saveRecommendation<CreatorRecommendation>(
           '/creator/recommendations',
-          {
-            body,
-            idempotent: true,
-            method: 'POST',
-          },
+          body,
+          { idempotent: true, method: 'POST' },
         );
       }
       const currentCollectionIds = curatedSections
