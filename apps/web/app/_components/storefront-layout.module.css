@@ -185,6 +185,12 @@
     transition: none;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .sortable,
+  .handle {
+    transition: none;
+  }
+}
 .compact > button:not(.handle) {
   white-space: nowrap;
 }

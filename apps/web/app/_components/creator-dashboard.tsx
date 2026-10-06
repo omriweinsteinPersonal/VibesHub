@@ -1007,8 +1007,11 @@ export function CreatorDashboard() {
   ) {
     setError('');
     try {
+      const latest = await apiRequest<CreatorRecommendation>(
+        `/creator/recommendations/${item.id}`,
+      );
       await apiRequest(`/creator/recommendations/${item.id}/${command}`, {
-        headers: { 'if-match': `"${item.version}"` },
+        headers: { 'if-match': `"${latest.version}"` },
         idempotent: true,
         method: 'POST',
       });
@@ -1025,8 +1028,28 @@ export function CreatorDashboard() {
     const command = item.lifecycle === 'published' ? 'hide' : 'confirm';
     setError('');
     try {
+      const latest = await apiRequest<CreatorDiscountCode>(
+        `/creator/discount-codes/${item.id}`,
+      );
       await apiRequest(`/creator/discount-codes/${item.id}/${command}`, {
-        headers: { 'if-match': `"${item.version}"` },
+        headers: { 'if-match': `"${latest.version}"` },
+        idempotent: true,
+        method: 'POST',
+      });
+      await load();
+    } catch (cause) {
+      setError(messageFor(cause));
+    }
+  }
+
+  async function archiveDiscount(item: CreatorDiscountCode) {
+    setError('');
+    try {
+      const latest = await apiRequest<CreatorDiscountCode>(
+        `/creator/discount-codes/${item.id}`,
+      );
+      await apiRequest(`/creator/discount-codes/${item.id}/archive`, {
+        headers: { 'if-match': `"${latest.version}"` },
         idempotent: true,
         method: 'POST',
       });
@@ -2148,18 +2171,7 @@ export function CreatorDashboard() {
                     <DiscountManageCard
                       item={entry.item}
                       key={entry.item.id}
-                      onArchive={() =>
-                        void apiRequest(
-                          `/creator/discount-codes/${entry.item.id}/archive`,
-                          {
-                            headers: { 'if-match': `"${entry.item.version}"` },
-                            idempotent: true,
-                            method: 'POST',
-                          },
-                        )
-                          .then(load)
-                          .catch((cause: unknown) => setError(messageFor(cause)))
-                      }
+                      onArchive={() => void archiveDiscount(entry.item)}
                       onEdit={() => editDiscount(entry.item)}
                       onToggle={() => void toggleDiscount(entry.item)}
                     />
