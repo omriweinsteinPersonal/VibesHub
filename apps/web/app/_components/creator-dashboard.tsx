@@ -303,12 +303,15 @@ export function CreatorDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [categoryPage, loadedProfile, loadedRecommendations, config] = await Promise.all([
-        apiCollectionRequest<CategoryCard>('/creator/categories'),
-        apiRequest<CreatorProfileSettings>('/creator/profile'),
-        loadCreatorRecommendations(),
-        apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections'),
-      ]);
+      const [categoryPage, loadedProfile, loadedRecommendations, config] =
+        await Promise.all([
+          apiCollectionRequest<CategoryCard>('/creator/categories'),
+          apiRequest<CreatorProfileSettings>('/creator/profile'),
+          loadCreatorRecommendations(),
+          apiRequest<CreatorStorefrontConfiguration>(
+            '/creator/studio/storefront-sections',
+          ),
+        ]);
       const [discountResult, brandResult] = await Promise.allSettled([
         apiCollectionRequest<CreatorDiscountCode>('/creator/discount-codes?limit=48'),
         apiRequest<CreatorBrand[]>('/creator/brands'),
@@ -357,7 +360,9 @@ export function CreatorDashboard() {
         })),
       );
       if (discountResult.status === 'rejected' || brandResult.status === 'rejected') {
-        setNotice('Some optional brand data could not be refreshed. You can continue editing.');
+        setNotice(
+          'Some optional brand data could not be refreshed. You can continue editing.',
+        );
       }
     } catch (cause) {
       setError(messageFor(cause));
