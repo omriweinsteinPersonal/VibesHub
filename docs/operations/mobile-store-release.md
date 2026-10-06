@@ -48,10 +48,11 @@ paywall.
 
 ## Universal Links and Android App Links
 
-The native app claims `https://swavii.com/*` and `https://www.swavii.com/*`. Public
-creator URLs therefore open the installed app and continue to work in a browser when the
-app is not installed. Unknown native routes show a safe button that returns the visitor
-to the same path on the website.
+The native app claims `https://swavii.com/*`. Public creator URLs therefore open the
+installed app and continue to work in a browser when the app is not installed. Unknown
+native routes show a safe button that returns the visitor to the same path on the
+website. Do not add `www.swavii.com` until that host has working DNS and serves its own
+association files without a redirect.
 
 Before testing these links, configure two server-side Vercel values for the web project:
 

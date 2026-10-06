@@ -11,7 +11,7 @@
     "backgroundColor": "#FBF6EC",
     "primaryColor": "#C77850",
     "ios": {
-      "associatedDomains": ["applinks:swavii.com", "applinks:www.swavii.com"],
+      "associatedDomains": ["applinks:swavii.com"],
       "bundleIdentifier": "com.swavii.app",
       "usesAppleSignIn": true,
       "config": {
@@ -54,11 +54,6 @@
             {
               "scheme": "https",
               "host": "swavii.com",
-              "pathPrefix": "/"
-            },
-            {
-              "scheme": "https",
-              "host": "www.swavii.com",
               "pathPrefix": "/"
             }
           ]

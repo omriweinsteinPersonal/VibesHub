@@ -47,7 +47,7 @@ for (const plugin of [
   requireValue(plugins.includes(plugin), `Required Expo plugin is missing: ${plugin}.`);
 }
 
-for (const domain of ['applinks:swavii.com', 'applinks:www.swavii.com']) {
+for (const domain of ['applinks:swavii.com']) {
   requireValue(
     appConfig.ios?.associatedDomains?.includes(domain),
     `Required iOS associated domain is missing: ${domain}.`,
@@ -61,7 +61,7 @@ const verifiedHosts = new Set(
     .filter((entry) => entry.scheme === 'https')
     .map((entry) => entry.host),
 );
-for (const host of ['swavii.com', 'www.swavii.com']) {
+for (const host of ['swavii.com']) {
   requireValue(
     verifiedHosts.has(host),
     `Required verified Android host is missing: ${host}.`,
