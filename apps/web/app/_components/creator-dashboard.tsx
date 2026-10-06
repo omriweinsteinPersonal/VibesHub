@@ -157,7 +157,8 @@ function legacyOfferPayload(input: DiscountOfferPayload) {
     // The earlier API only accepted Hebrew in this legacy field. Keeping it
     // null is safer than rejecting the whole offer when a creator writes in
     // another language; the current API preserves all languages.
-    detailsHe: legacy.detailsHe && /[א-ת]/u.test(legacy.detailsHe) ? legacy.detailsHe : null,
+    detailsHe:
+      legacy.detailsHe && /[א-ת]/u.test(legacy.detailsHe) ? legacy.detailsHe : null,
   };
 }
 
@@ -974,10 +975,14 @@ export function CreatorDashboard() {
         });
         setNotice('Brand discount updated.');
       } else {
-        const created = await saveOffer<CreatorDiscountCode>('/creator/discount-codes', body, {
-          idempotent: true,
-          method: 'POST',
-        });
+        const created = await saveOffer<CreatorDiscountCode>(
+          '/creator/discount-codes',
+          body,
+          {
+            idempotent: true,
+            method: 'POST',
+          },
+        );
         if (
           !(await saveSections(selectedSections, curatedSections, [
             ...contentOrder,
