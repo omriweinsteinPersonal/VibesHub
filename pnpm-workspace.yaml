@@ -14,6 +14,7 @@ overrides:
   fastify: 5.12.5
   find-my-way: 9.9.0
   js-yaml@4: 4.3.2
+  shell-quote: 1.12.0
   source-map-js@1: 1.2.2
 
 allowBuilds:
@@ -21,22 +22,34 @@ allowBuilds:
   unrs-resolver: true
 
 minimumReleaseAgeExclude:
-  - '@expo/cli@57.0.13'
-  - '@expo/config-plugins@57.0.7'
+  - '@expo/cli@57.0.13 || 57.0.28'
+  - '@expo/config-plugins@57.0.7 || 57.0.10'
   - '@supabase/auth-js@2.112.2'
   - '@supabase/functions-js@2.112.2'
   - '@supabase/postgrest-js@2.112.2'
   - '@supabase/realtime-js@2.112.2'
   - '@supabase/storage-js@2.112.2'
   - '@supabase/supabase-js@2.112.2'
-  - babel-preset-expo@57.0.6
-  - expo-asset@57.0.9
+  - babel-preset-expo@57.0.6 || 57.0.14
+  - expo-asset@57.0.9 || 57.0.19
   - expo-file-system@57.0.2
-  - expo-modules-core@57.0.10
-  - expo-router@57.0.11
+  - expo-modules-core@57.0.10 || 57.0.21
+  - expo-router@57.0.11 || 57.0.25
   - expo-symbols@57.0.2
-  - expo@57.0.11
+  - expo@57.0.11 || 57.0.27
   - tsx@4.23.9
+  - '@expo/config@57.0.10'
+  - '@expo/image-utils@0.11.6'
+  - '@expo/metro-config@57.0.13'
+  - '@expo/metro-file-map@57.0.4'
+  - '@expo/prebuild-config@57.0.17'
+  - '@expo/require-utils@57.0.6'
+  - '@expo/router-server@57.0.12'
+  - '@expo/ui@57.0.22'
+  - expo-auth-session@57.0.14
+  - expo-constants@57.0.21
+  - expo-linking@57.0.12
+  - expo-modules-autolinking@57.0.14
 
 onlyBuiltDependencies:
   - '@nestjs/core'
