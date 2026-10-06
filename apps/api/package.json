@@ -29,6 +29,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "tsx": "4.23.9"
+    "tsx": "4.23.9",
+    "undici-types": "8.3.0"
   }
 }

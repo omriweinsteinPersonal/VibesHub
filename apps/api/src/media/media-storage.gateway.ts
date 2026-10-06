@@ -4,6 +4,7 @@ import type {
   RecommendationImageContentType,
   StoryVideoContentType,
 } from '@vibeshub/contracts';
+import type { fetch as NodeFetch } from 'undici-types';
 
 import { parseApiConfig } from '../config.js';
 import type { AccountMediaAsset } from './media.repository.js';
@@ -12,6 +13,10 @@ import {
   RECOMMENDATION_IMAGE_UPLOAD_BUCKET,
 } from './image-media.js';
 import { STORY_VIDEO_BUCKET, STORY_VIDEO_UPLOAD_BUCKET } from './video-media.js';
+
+// Vercel's function compiler injects web globals that erase Node's Response shape.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+const nodeFetch = fetch as typeof NodeFetch;
 
 @Injectable()
 export class MediaStorageGateway {
@@ -131,12 +136,12 @@ export class MediaStorageGateway {
     method: string,
     extraHeaders: Record<string, string> = {},
     body?: ReadableStream<Uint8Array>,
-  ): Promise<Response> {
+  ): ReturnType<typeof nodeFetch> {
     if (!this.storageUrl || !this.serviceKey)
       throw new Error('Media storage is not configured');
     const path = objectPath.split('/').map(encodeURIComponent).join('/');
     const url = `${this.storageUrl.replace(/\/$/u, '')}/storage/v1/object/${bucket === STORY_VIDEO_UPLOAD_BUCKET ? 'authenticated/' : ''}${bucket}/${path}`;
-    return fetch(url, {
+    return nodeFetch(url, {
       method,
       headers: {
         apikey: this.serviceKey,
