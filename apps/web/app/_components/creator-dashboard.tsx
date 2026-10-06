@@ -1189,41 +1189,53 @@ export function CreatorDashboard() {
           normalizedOrder.push({ kind: 'category', id });
         }
       }
-      const updated = await apiRequest<CreatorStorefrontConfiguration>(
-        '/creator/studio/storefront-sections',
-        {
-          body: JSON.stringify({
-            categoryIds: nextCategories,
-            curatedSections: collectionSections.map(
-              ({
-                id,
-                kind,
-                brandId,
-                recommendationIds,
-                title,
-                description,
-                imageUrl,
-                parentCollectionId,
-                showItemsIndividually,
-              }) => ({
-                id,
-                kind,
-                brandId,
-                recommendationIds,
-                title,
-                description,
-                imageUrl,
-                parentCollectionId,
-                showItemsIndividually,
-              }),
-            ),
-            contentOrder: normalizedOrder,
-            labels: nextLabels,
+      const input = {
+        categoryIds: nextCategories,
+        curatedSections: collectionSections.map(
+          ({
+            id,
+            kind,
+            brandId,
+            recommendationIds,
+            title,
+            description,
+            imageUrl,
+            parentCollectionId,
+            showItemsIndividually,
+          }) => ({
+            id,
+            kind,
+            brandId,
+            recommendationIds,
+            title,
+            description,
+            imageUrl,
+            parentCollectionId,
+            showItemsIndividually,
           }),
-          headers: { 'if-match': `"${configuration.version}"` },
-          method: 'PUT',
-        },
-      );
+        ),
+        contentOrder: normalizedOrder,
+        labels: nextLabels,
+      };
+      const persist = (version: number) =>
+        apiRequest<CreatorStorefrontConfiguration>(
+          '/creator/studio/storefront-sections',
+          {
+            body: JSON.stringify(input),
+            headers: { 'if-match': `"${version}"` },
+            method: 'PUT',
+          },
+        );
+      let updated: CreatorStorefrontConfiguration;
+      try {
+        updated = await persist(configuration.version);
+      } catch (cause) {
+        if (!(cause instanceof ApiError) || cause.status !== 412) throw cause;
+        const latest = await apiRequest<CreatorStorefrontConfiguration>(
+          '/creator/studio/storefront-sections',
+        );
+        updated = await persist(latest.version);
+      }
       const savedOrder = Array.isArray(updated.contentOrder)
         ? updated.contentOrder
         : normalizedOrder;

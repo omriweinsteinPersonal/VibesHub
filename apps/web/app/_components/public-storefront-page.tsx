@@ -36,17 +36,22 @@ async function StorefrontPage({
   let recommendations: RecommendationCard[] = [];
   let discountCodes: PublicDiscountCode[] = [];
   try {
-    const [creatorResponse, recommendationResponse, discountCodeResponse] =
-      await Promise.all([
+    const [creatorResult, recommendationResult, discountCodeResult] =
+      await Promise.allSettled([
         publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
         loadStorefrontRecommendations(handle),
         publicApiCollectionRequest<PublicDiscountCode>(
           `/creators/${encodeURIComponent(handle)}/discount-codes`,
         ),
       ]);
-    storefront = creatorResponse;
-    recommendations = recommendationResponse;
-    discountCodes = discountCodeResponse.data;
+    if (creatorResult.status === 'rejected') throw creatorResult.reason;
+    storefront = creatorResult.value;
+    if (recommendationResult.status === 'fulfilled') {
+      recommendations = recommendationResult.value;
+    }
+    if (discountCodeResult.status === 'fulfilled') {
+      discountCodes = discountCodeResult.value.data;
+    }
   } catch (cause) {
     if (cause instanceof ApiError && cause.status === 404) notFound();
     return <UnavailableStorefront creatorSession={creatorSession} />;
