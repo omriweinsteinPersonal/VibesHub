@@ -1875,10 +1875,23 @@ export function CreatorDashboard() {
                           </span>
                         </button>
                         <div className="creatorManageCollectionActions">
-                          <label className="creatorLiveToggle" title={hiddenBrandIds.includes(managedBrand.id) ? 'Show brand' : 'Hide brand'}>
+                          <label
+                            className="creatorLiveToggle"
+                            title={
+                              hiddenBrandIds.includes(managedBrand.id)
+                                ? 'Show brand'
+                                : 'Hide brand'
+                            }
+                          >
                             <input
                               checked={!hiddenBrandIds.includes(managedBrand.id)}
-                              onChange={(event) => void toggleVisibility('brand', managedBrand.id, event.target.checked)}
+                              onChange={(event) =>
+                                void toggleVisibility(
+                                  'brand',
+                                  managedBrand.id,
+                                  event.target.checked,
+                                )
+                              }
                               type="checkbox"
                             />
                             <span />
@@ -2002,10 +2015,24 @@ export function CreatorDashboard() {
                                   });
                                 }}
                                 onEditItem={editProduct}
-                                onToggleItem={(item) => toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
-                                isItemVisible={(item) => !hiddenRecommendationIds.includes(item.id)}
+                                onToggleItem={(item) =>
+                                  toggleVisibility(
+                                    'recommendation',
+                                    item.id,
+                                    !hiddenRecommendationIds.includes(item.id),
+                                  )
+                                }
+                                isItemVisible={(item) =>
+                                  !hiddenRecommendationIds.includes(item.id)
+                                }
                                 visible={!hiddenCollectionIds.includes(entry.section.id)}
-                                onToggleVisibility={(visible) => toggleVisibility('collection', entry.section.id, visible)}
+                                onToggleVisibility={(visible) =>
+                                  toggleVisibility(
+                                    'collection',
+                                    entry.section.id,
+                                    visible,
+                                  )
+                                }
                                 onEditState={(editing) =>
                                   setEditingCollectionId(
                                     editing ? entry.section.id : null,
@@ -2032,7 +2059,13 @@ export function CreatorDashboard() {
                                   <RecommendationManageCard
                                     item={item}
                                     key={item.id}
-                                    onToggle={() => void toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
+                                    onToggle={() =>
+                                      void toggleVisibility(
+                                        'recommendation',
+                                        item.id,
+                                        !hiddenRecommendationIds.includes(item.id),
+                                      )
+                                    }
                                     visible={!hiddenRecommendationIds.includes(item.id)}
                                     onArchive={() => {
                                       if (
@@ -2078,14 +2111,29 @@ export function CreatorDashboard() {
                           </p>
                         </div>
                         <div className="creatorManageCollectionActions">
-                          <label className="creatorLiveToggle" title={hiddenCollectionIds.includes(entry.section.id) ? 'Show collection' : 'Hide collection'}>
+                          <label
+                            className="creatorLiveToggle"
+                            title={
+                              hiddenCollectionIds.includes(entry.section.id)
+                                ? 'Show collection'
+                                : 'Hide collection'
+                            }
+                          >
                             <input
                               checked={!hiddenCollectionIds.includes(entry.section.id)}
-                              onChange={(event) => void toggleVisibility('collection', entry.section.id, event.target.checked)}
+                              onChange={(event) =>
+                                void toggleVisibility(
+                                  'collection',
+                                  entry.section.id,
+                                  event.target.checked,
+                                )
+                              }
                               type="checkbox"
                             />
                             <span />
-                            {hiddenCollectionIds.includes(entry.section.id) ? 'Off' : 'On'}
+                            {hiddenCollectionIds.includes(entry.section.id)
+                              ? 'Off'
+                              : 'On'}
                           </label>
                           {profile ? (
                             <Link
@@ -2172,7 +2220,13 @@ export function CreatorDashboard() {
                             <RecommendationManageCard
                               item={item}
                               key={item.id}
-                              onToggle={() => void toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
+                              onToggle={() =>
+                                void toggleVisibility(
+                                  'recommendation',
+                                  item.id,
+                                  !hiddenRecommendationIds.includes(item.id),
+                                )
+                              }
                               visible={!hiddenRecommendationIds.includes(item.id)}
                               onArchive={() => {
                                 if (
@@ -2196,7 +2250,13 @@ export function CreatorDashboard() {
                     <RecommendationManageCard
                       item={entry.item}
                       key={entry.item.id}
-                      onToggle={() => void toggleVisibility('recommendation', entry.item.id, !hiddenRecommendationIds.includes(entry.item.id))}
+                      onToggle={() =>
+                        void toggleVisibility(
+                          'recommendation',
+                          entry.item.id,
+                          !hiddenRecommendationIds.includes(entry.item.id),
+                        )
+                      }
                       visible={!hiddenRecommendationIds.includes(entry.item.id)}
                       onArchive={() => {
                         if (

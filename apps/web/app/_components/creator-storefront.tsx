@@ -218,28 +218,47 @@ export function CreatorStorefrontView({
           : [],
     [configuration, order, storefront.contentOrder],
   );
-  const hiddenBrandIds = useMemo(() => new Set(storefront.hiddenBrandIds ?? []), [storefront.hiddenBrandIds]);
-  const hiddenCollectionIds = useMemo(() => new Set(storefront.hiddenCollectionIds ?? []), [storefront.hiddenCollectionIds]);
+  const hiddenBrandIds = useMemo(
+    () => new Set(storefront.hiddenBrandIds ?? []),
+    [storefront.hiddenBrandIds],
+  );
+  const hiddenCollectionIds = useMemo(
+    () => new Set(storefront.hiddenCollectionIds ?? []),
+    [storefront.hiddenCollectionIds],
+  );
   const hiddenRecommendationIds = useMemo(() => {
     const ids = new Set(storefront.hiddenRecommendationIds ?? []);
     for (const section of storefront.curatedSections ?? []) {
-      if (hiddenCollectionIds.has(section.id)) section.recommendationIds.forEach((id) => ids.add(id));
+      if (hiddenCollectionIds.has(section.id))
+        section.recommendationIds.forEach((id) => ids.add(id));
     }
     return ids;
-  }, [hiddenCollectionIds, storefront.curatedSections, storefront.hiddenRecommendationIds]);
+  }, [
+    hiddenCollectionIds,
+    storefront.curatedSections,
+    storefront.hiddenRecommendationIds,
+  ]);
   const visibleCuratedSections = useMemo(
-    () => (storefront.curatedSections ?? []).filter((section) =>
-      !hiddenCollectionIds.has(section.id) && !hiddenBrandIds.has(section.brandId ?? ''),
-    ),
+    () =>
+      (storefront.curatedSections ?? []).filter(
+        (section) =>
+          !hiddenCollectionIds.has(section.id) &&
+          !hiddenBrandIds.has(section.brandId ?? ''),
+      ),
     [hiddenBrandIds, hiddenCollectionIds, storefront.curatedSections],
   );
   const visibleRecommendations = useMemo(
-    () => recommendations.filter((item) =>
-      !hiddenRecommendationIds.has(item.id) &&
-      ![...hiddenBrandIds].some((brandId) =>
-        storefront.brands.find((brand) => brand.id === brandId && brandKey(brand.name) === brandKey(item.brandName)),
+    () =>
+      recommendations.filter(
+        (item) =>
+          !hiddenRecommendationIds.has(item.id) &&
+          ![...hiddenBrandIds].some((brandId) =>
+            storefront.brands.find(
+              (brand) =>
+                brand.id === brandId && brandKey(brand.name) === brandKey(item.brandName),
+            ),
+          ),
       ),
-    ),
     [hiddenBrandIds, hiddenRecommendationIds, recommendations, storefront.brands],
   );
   const orderedStorefront = useMemo(
