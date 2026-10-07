@@ -15,6 +15,7 @@ interface RecommendationCardViewProps {
   backTo?: string;
   creator?: RecommendationCreator;
   creatorId?: string;
+  hideDiscount?: boolean;
   recommendation: RecommendationCard;
   showBrand?: boolean;
   showPrice?: boolean;
@@ -24,6 +25,7 @@ export function RecommendationCardView({
   backTo,
   creator,
   creatorId,
+  hideDiscount = false,
   recommendation,
   showBrand = false,
   showPrice = true,
@@ -152,7 +154,7 @@ export function RecommendationCardView({
             ) : null}
           </div>
         ) : null}
-        {recommendation.discount ? (
+        {recommendation.discount && !hideDiscount ? (
           <div className="compactProductDiscount" dir="ltr">
             {recommendation.discount.code ? (
               <strong>{recommendation.discount.code}</strong>

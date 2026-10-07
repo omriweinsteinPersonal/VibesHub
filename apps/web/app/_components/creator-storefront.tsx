@@ -1093,6 +1093,7 @@ function BrandBlock({
           {standaloneItems.map((item) => (
             <RecommendationCardView
               creatorId={creatorId}
+              hideDiscount={offer?.id === item.discount?.id}
               key={item.id}
               recommendation={item}
               showPrice={false}
