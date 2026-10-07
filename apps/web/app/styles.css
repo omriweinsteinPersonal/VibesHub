@@ -9159,7 +9159,10 @@ dt {
 }
 @media (max-width: 900px) {
   .storefrontDesignWorkspace.hasEditor {
-    display: block;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .storefrontDesignPanel {
@@ -13649,7 +13652,10 @@ dt {
   }
 
   .storefrontDesignWorkspace.hasEditor {
-    display: block;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .storefrontDesignWorkspace .storefrontPhoneStage,
@@ -13673,7 +13679,7 @@ dt {
     border-radius: 0;
     box-shadow: none;
     flex: 1 1 auto;
-    height: auto;
+    height: calc(100dvh - 128px - env(safe-area-inset-bottom));
     min-height: 0;
     width: 100%;
   }
