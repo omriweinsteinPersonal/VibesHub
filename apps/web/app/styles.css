@@ -37,6 +37,10 @@ svg.lucide {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --storefront-mobile-footer-height: 53px;
+  }
+
   body:has(.creatorBottomBar) {
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
@@ -61,12 +65,16 @@ svg.lucide {
 
   /* Keep the mobile storefront navigation visible in both Preview and Edit. */
   body:has(.storefrontPage .creatorBottomBar) {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: calc(
+      var(--storefront-mobile-footer-height) + env(safe-area-inset-bottom)
+    );
   }
 
   /* In Edit page the bottom navigation remains below the design sheet. */
   body:has(.storefrontDesignWorkspace.hasEditor) {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: calc(
+      var(--storefront-mobile-footer-height) + env(safe-area-inset-bottom)
+    );
   }
 
   .storefrontPage:has(.storefrontDesignWorkspace.hasEditor) .creatorBottomBar {
@@ -13714,7 +13722,7 @@ dt {
   .storefrontDesignWorkspace .storefrontDesignPanel {
     border: 0;
     border-radius: 19px 19px 0 0;
-    bottom: calc(64px + env(safe-area-inset-bottom));
+    bottom: calc(var(--storefront-mobile-footer-height) + env(safe-area-inset-bottom));
     height: min(68dvh, 580px);
     left: 0;
     overflow-y: auto;
