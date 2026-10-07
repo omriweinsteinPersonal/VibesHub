@@ -119,8 +119,6 @@ interface BrandEditor {
   expiresAt: string;
   name: string;
   websiteUrl: string;
-  storyClips: Array<{ mediaAssetId: string; url: string }>;
-  storyLink: string;
 }
 
 type DiscountOfferPayload = {
@@ -129,7 +127,7 @@ type DiscountOfferPayload = {
   detailsHe: string | null;
   discountPercent: number | null;
   discountAmountMinor: number | null;
-  storyClips: StoryClipInput[];
+  storyClips?: StoryClipInput[];
   expiresAt: string | null;
   label: string | null;
   merchantUrl: string;
@@ -271,8 +269,6 @@ export function CreatorDashboard() {
     expiresAt: '',
     name: '',
     websiteUrl: '',
-    storyClips: [],
-    storyLink: '',
   });
   const [editingBrand, setEditingBrand] = useState<CreatorBrand | null>(null);
   const [editingProduct, setEditingProduct] = useState<CreatorRecommendation | null>(
@@ -420,8 +416,6 @@ export function CreatorDashboard() {
       expiresAt: '',
       name: '',
       websiteUrl: '',
-      storyClips: [],
-      storyLink: '',
     });
   }
 
@@ -450,12 +444,12 @@ export function CreatorDashboard() {
       return;
     }
     if (
-      (brand.detailsHe.trim() || brand.storyClips.length || brand.expiresAt) &&
+      (brand.detailsHe.trim() || brand.expiresAt) &&
       !brand.code.trim() &&
       !brand.discountPercent &&
       !brand.discountAmount
     ) {
-      setError('Add a discount code or amount before adding offer details or videos.');
+      setError('Add a discount code or amount before adding offer details.');
       return;
     }
     setSaving(true);
@@ -489,11 +483,6 @@ export function CreatorDashboard() {
           discountAmountMinor: brand.discountAmount
             ? Math.round(Number(brand.discountAmount) * 100)
             : null,
-          storyClips: brand.storyClips.map((clip) =>
-            clip.mediaAssetId
-              ? { mediaAssetId: clip.mediaAssetId }
-              : { videoUrl: clip.url },
-          ),
           expiresAt: toDateTimeIso(brand.expiresAt),
           label: brand.discountPercent
             ? `${brand.discountPercent}% off`
@@ -660,42 +649,6 @@ export function CreatorDashboard() {
         }));
       }
       setNotice('Story clip uploaded and verified.');
-    } catch (cause) {
-      setVideoError(messageFor(cause));
-    } finally {
-      setUploading(false);
-      setVideoStage('');
-      event.target.value = '';
-    }
-  }
-
-  async function selectBrandClip(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []).slice(
-      0,
-      10 - brand.storyClips.length,
-    );
-    if (!files.length) return;
-    setUploading(true);
-    setError('');
-    setVideoError('');
-    try {
-      for (const file of files) {
-        const asset = await uploadStoryVideo(file, (stage, percent) =>
-          setVideoStage(
-            stage === 'uploading' && percent !== undefined
-              ? `Uploading ${percent}%`
-              : stage,
-          ),
-        );
-        setBrand((current) => ({
-          ...current,
-          storyClips: [
-            ...current.storyClips,
-            { mediaAssetId: asset.id, url: asset.publicUrl },
-          ],
-        }));
-      }
-      setNotice('Brand videos uploaded.');
     } catch (cause) {
       setVideoError(messageFor(cause));
     } finally {
@@ -1674,84 +1627,6 @@ export function CreatorDashboard() {
                             }
                           />
                         </label>
-                        <fieldset className="creatorStoryFields creatorFullField">
-                          <legend>
-                            Related videos <span className="fieldOptional">Optional</span>
-                          </legend>
-                          <label className="button secondary creatorVideoUploadButton">
-                            <Upload aria-hidden="true" size={16} />
-                            {videoStage ? `${videoStage}…` : 'Add videos'}
-                            <input
-                              accept={storyVideoAccept}
-                              disabled={uploading}
-                              multiple
-                              onChange={selectBrandClip}
-                              type="file"
-                            />
-                          </label>
-                          {brand.storyClips.length ? (
-                            <div className="creatorStoryThumbs">
-                              {brand.storyClips.map((clip, index) => (
-                                <span key={`${clip.url}:${index}`}>
-                                  <video muted playsInline src={clip.url} />
-                                  <button
-                                    aria-label={`Remove video ${index + 1}`}
-                                    onClick={() =>
-                                      setBrand({
-                                        ...brand,
-                                        storyClips: brand.storyClips.filter(
-                                          (_, clipIndex) => clipIndex !== index,
-                                        ),
-                                      })
-                                    }
-                                    type="button"
-                                  >
-                                    <Trash2 aria-hidden="true" size={12} />
-                                  </button>
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-                          <span className="creatorInlineField">
-                            <input
-                              aria-label="Video link"
-                              type="url"
-                              placeholder="Or paste a video link (https://)"
-                              value={brand.storyLink}
-                              onChange={(event) =>
-                                setBrand({ ...brand, storyLink: event.target.value })
-                              }
-                            />
-                            <button
-                              className="button secondary"
-                              onClick={() => {
-                                try {
-                                  const url = new URL(brand.storyLink.trim());
-                                  if (url.protocol !== 'https:') throw new Error();
-                                  setBrand({
-                                    ...brand,
-                                    storyClips: [
-                                      ...brand.storyClips,
-                                      { mediaAssetId: '', url: url.href },
-                                    ].slice(0, 10),
-                                    storyLink: '',
-                                  });
-                                  setVideoError('');
-                                } catch {
-                                  setVideoError('Use a valid HTTPS video link.');
-                                }
-                              }}
-                              type="button"
-                            >
-                              Add link
-                            </button>
-                          </span>
-                          {videoError ? (
-                            <p className="formError" role="alert">
-                              {videoError}
-                            </p>
-                          ) : null}
-                        </fieldset>
                         <div className="creatorFullField">
                           <button
                             className="button primary"
@@ -1924,12 +1799,6 @@ export function CreatorDashboard() {
                                 expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
                                 name: managedBrand.name,
                                 websiteUrl: managedBrand.websiteUrl,
-                                storyClips:
-                                  offer?.storyClips.map((clip) => ({
-                                    mediaAssetId: clip.mediaAssetId ?? '',
-                                    url: clip.url,
-                                  })) ?? [],
-                                storyLink: '',
                               });
                               setComposer('brand');
                               window.scrollTo({ behavior: 'smooth', top: 120 });

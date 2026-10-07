@@ -124,7 +124,7 @@ export async function uploadVideoResumable(
   upload: StoryVideoUpload,
   onStage: (stage: 'authorizing' | 'uploading' | 'validating', percent?: number) => void,
 ): Promise<void> {
-  const { url } = getSupabasePublicConfig();
+  const { publishableKey, url } = getSupabasePublicConfig();
   const endpoint = new URL('/storage/v1/upload/resumable', url);
   if (
     endpoint.hostname.endsWith('.supabase.co') &&
@@ -135,7 +135,14 @@ export async function uploadVideoResumable(
       '.storage.supabase.co',
     );
   }
-  const commonHeaders = { 'Tus-Resumable': '1.0.0', 'x-signature': upload.token };
+  // A signed upload token authorizes the object, but the Storage TUS gateway
+  // still requires the project's public API key. `uploadToSignedUrl` adds this
+  // header for normal uploads; our resumable path must do the same.
+  const commonHeaders = {
+    apikey: publishableKey,
+    'Tus-Resumable': '1.0.0',
+    'x-signature': upload.token,
+  };
   const metadata = [
     ['bucketName', upload.bucket],
     ['objectName', upload.objectPath],

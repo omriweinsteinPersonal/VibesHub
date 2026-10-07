@@ -53,6 +53,7 @@ describe('resumable video upload', () => {
 
     expect(requests.map((request) => request.method)).toEqual(['POST', 'PATCH', 'PATCH']);
     expect(requests[0]?.url).toContain('example.storage.supabase.co');
+    expect(requests[0]?.headers.get('apikey')).toBe('test');
     expect(requests[1]?.headers.get('x-signature')).toBe('signed-token');
     expect(requests[2]?.headers.get('Upload-Offset')).toBe(String(6 * 1024 * 1024));
     expect(progress.at(-1)).toBe(100);
