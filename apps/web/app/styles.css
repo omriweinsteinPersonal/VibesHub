@@ -59,24 +59,24 @@ svg.lucide {
     z-index: 1200;
   }
 
-  /* The storefront navigation belongs to the page flow so it cannot cover the
-     last recommendation while a creator scrolls through the preview. */
+  /* Keep storefront navigation pinned to the viewport edge. The phone preview
+     already reserves this height, so it never covers the last recommendation. */
   body:has(.storefrontPage .creatorBottomBar) {
-    padding-bottom: 0;
+    padding-bottom: calc(62px + env(safe-area-inset-bottom));
   }
 
   .storefrontPage .creatorBottomBar {
-    bottom: auto;
-    box-shadow: none;
-    left: auto;
+    bottom: 0;
+    box-shadow: 0 -6px 24px rgb(43 33 28 / 7%);
+    left: 0;
     margin: 0;
     min-height: 0;
     padding: 4px max(8px, env(safe-area-inset-right))
       max(4px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-    position: static;
-    right: auto;
+    position: fixed;
+    right: 0;
     width: 100%;
-    z-index: auto;
+    z-index: 1200;
   }
 
   .storefrontPage .creatorBottomBar a {
