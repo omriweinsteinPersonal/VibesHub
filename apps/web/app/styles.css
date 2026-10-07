@@ -59,15 +59,12 @@ svg.lucide {
     z-index: 1200;
   }
 
-  /* On mobile the storefront preview and its navigation share one viewport.
-     Keeping them in a flex column makes the iframe end exactly above the bar. */
+  /* Keep the mobile storefront navigation visible in both Preview and Edit. */
   body:has(.storefrontPage .creatorBottomBar) {
-    padding-bottom: 0;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
-  /* In Edit page the bottom navigation is part of the viewport chrome. Keep
-     it visible while the design sheet floats above it. Preview keeps the
-     regular storefront flow and does not receive this fixed treatment. */
+  /* In Edit page the bottom navigation remains below the design sheet. */
   body:has(.storefrontDesignWorkspace.hasEditor) {
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
@@ -111,17 +108,17 @@ svg.lucide {
   }
 
   .storefrontPage .creatorBottomBar {
-    bottom: auto;
-    box-shadow: none;
-    left: auto;
+    bottom: 0;
+    box-shadow: 0 -6px 24px rgb(43 33 28 / 7%);
+    left: 0;
     margin: 0;
     min-height: 0;
     padding: 4px max(8px, env(safe-area-inset-right))
       max(4px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-    position: static;
-    right: auto;
+    position: fixed;
+    right: 0;
     width: 100%;
-    z-index: auto;
+    z-index: 1200;
   }
 
   .storefrontPage .creatorBottomBar a {
