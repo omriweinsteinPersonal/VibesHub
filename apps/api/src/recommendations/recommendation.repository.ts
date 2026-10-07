@@ -1001,11 +1001,16 @@ export class RecommendationRepository {
     discountAmountMinor: number | null,
     creatorBrandId: string,
   ): Promise<void> {
-    const [previousNoCode] = await sql<{ id: string }[]>`
-      select code.id from app.recommendation_discount_codes placement
+    const [previousItemDiscount] = await sql<
+      {
+        code: string | null;
+        id: string;
+      }[]
+    >`
+      select code.id, code.code as code from app.recommendation_discount_codes placement
       join app.discount_codes code on code.id = placement.code_id
       where placement.recommendation_id = ${recommendationId}
-        and code.code is null and code.scope_kind = 'item'
+        and code.scope_kind = 'item'
         and code.scope_id = ${recommendationId}
       limit 1
     `;
@@ -1028,22 +1033,23 @@ export class RecommendationRepository {
         insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
         values (${recommendationId}, ${brandCode.id}, 0)
       `;
-      if (previousNoCode)
-        await sql`delete from app.discount_codes where id = ${previousNoCode.id}`;
+      if (previousItemDiscount)
+        await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
       return;
     }
     if (!discountCode && discountLabel) {
-      const [offer] = previousNoCode
-        ? await sql<{ id: string }[]>`
+      const [offer] =
+        previousItemDiscount?.code === null
+          ? await sql<{ id: string }[]>`
             update app.discount_codes set label = ${discountLabel}, expires_at = ${discountExpiresAt},
               discount_percent = ${discountPercent}, discount_amount_minor = ${discountAmountMinor},
               creator_brand_id = ${creatorBrandId},
               verification_status = 'creator_confirmed', last_verified_at = statement_timestamp(),
               lifecycle_status = 'published',
               version = version + 1
-            where id = ${previousNoCode.id} returning id
+            where id = ${previousItemDiscount.id} returning id
           `
-        : await sql<{ id: string }[]>`
+          : await sql<{ id: string }[]>`
             insert into app.discount_codes (
               creator_id, merchant_id, brand_id, creator_brand_id, code, label, expires_at,
               discount_percent, discount_amount_minor, scope_kind, scope_id, offer_type,
@@ -1055,6 +1061,8 @@ export class RecommendationRepository {
               'creator_confirmed', statement_timestamp()
             ) returning id
           `;
+      if (previousItemDiscount && previousItemDiscount.code !== null)
+        await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
       if (!offer) throw new Error('Discount offer could not be saved');
       await sql`
         insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
@@ -1062,8 +1070,8 @@ export class RecommendationRepository {
       `;
       return;
     }
-    if (previousNoCode)
-      await sql`delete from app.discount_codes where id = ${previousNoCode.id}`;
+    if (previousItemDiscount)
+      await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
     if (!discountCode) return;
     const [sharedBrandOffer] = await sql<{ id: string }[]>`
       select id from app.discount_codes

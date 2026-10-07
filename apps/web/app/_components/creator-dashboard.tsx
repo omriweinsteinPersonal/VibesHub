@@ -964,16 +964,48 @@ export function CreatorDashboard() {
       stackable: discount.stackable,
       startsAt: toDateTimeIso(discount.startsAt),
     };
+    const removingOffer = Boolean(
+      editingDiscount &&
+      !body.code &&
+      !body.discountPercent &&
+      !body.discountAmountMinor &&
+      !body.label &&
+      !body.detailsHe &&
+      !body.storyClips?.length,
+    );
     try {
       if (editingDiscount) {
         const latest = await apiRequest<CreatorDiscountCode>(
           `/creator/discount-codes/${editingDiscount.id}`,
         );
-        await saveOffer(`/creator/discount-codes/${editingDiscount.id}`, body, {
-          headers: { 'if-match': `"${latest.version}"` },
-          method: 'PATCH',
-        });
-        setNotice('Brand discount updated.');
+        if (removingOffer) {
+          await apiRequest(`/creator/discount-codes/${editingDiscount.id}/archive`, {
+            headers: { 'if-match': `"${latest.version}"` },
+            idempotent: true,
+            method: 'POST',
+          });
+          setNotice('Discount removed from your storefront.');
+        } else {
+          const updated = await saveOffer<CreatorDiscountCode>(
+            `/creator/discount-codes/${editingDiscount.id}`,
+            body,
+            {
+              headers: { 'if-match': `"${latest.version}"` },
+              method: 'PATCH',
+            },
+          );
+          const refreshed = await apiRequest<CreatorDiscountCode>(
+            `/creator/discount-codes/${updated.id}`,
+          );
+          if (refreshed.lifecycle !== 'published') {
+            await apiRequest(`/creator/discount-codes/${updated.id}/confirm`, {
+              headers: { 'if-match': `"${refreshed.version}"` },
+              idempotent: true,
+              method: 'POST',
+            });
+          }
+          setNotice('Discount updated and published.');
+        }
       } else {
         const created = await saveOffer<CreatorDiscountCode>(
           '/creator/discount-codes',
@@ -3042,12 +3074,20 @@ function ProductForm({
                     <input
                       type="checkbox"
                       checked={editor.brandDiscountCodeId === brandOffer.id}
-                      onChange={(event) =>
-                        update(
-                          'brandDiscountCodeId',
-                          event.target.checked ? brandOffer.id : '',
-                        )
-                      }
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          update('brandDiscountCodeId', brandOffer.id);
+                        } else {
+                          onChange({
+                            ...editor,
+                            brandDiscountCodeId: '',
+                            discountCode: '',
+                            discountExpiresAt: '',
+                            discountLabel: '',
+                            discountValue: '',
+                          });
+                        }
+                      }}
                     />
                     Use {matchingBrand?.name}&apos;s offer ({brandOffer.code}) — code and
                     expiry stay in sync
