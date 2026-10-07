@@ -13593,7 +13593,8 @@ dt {
   .storefrontDesignWorkspace .storefrontPhoneStage,
   .storefrontDesignWorkspace.hasEditor .storefrontPhoneStage {
     background: #fff;
-    display: block;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     padding: 0 0 1px;
     position: relative;
@@ -13609,7 +13610,8 @@ dt {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    height: 100%;
+    flex: 1 1 auto;
+    height: auto;
     min-height: 0;
     width: 100%;
   }
