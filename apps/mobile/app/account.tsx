@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { deleteCurrentAccount } from '../lib/api';
+import { getAppleAccountDeletionAuthorizationCode } from '../lib/auth';
 import { isNativeBillingConfigured, restoreNativePurchases } from '../lib/billing';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
@@ -94,8 +95,21 @@ export default function AccountScreen() {
     setDeleting(true);
     setError('');
     try {
-      await deleteCurrentAccount();
-      await getSupabaseClient().auth.signOut({ scope: 'local' });
+      const supabase = getSupabaseClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const providers = session?.user.app_metadata.providers;
+      const signedInWithApple = Array.isArray(providers)
+        ? providers.includes('apple')
+        : session?.user.app_metadata.provider === 'apple';
+      const appleAuthorizationCode = signedInWithApple
+        ? await getAppleAccountDeletionAuthorizationCode()
+        : undefined;
+      await deleteCurrentAccount(
+        appleAuthorizationCode ? { appleAuthorizationCode } : {},
+      );
+      await supabase.auth.signOut({ scope: 'local' });
       Alert.alert('Account deleted', 'Your Swavii account and storefront were deleted.', [
         { onPress: () => router.replace('/'), text: 'Done' },
       ]);

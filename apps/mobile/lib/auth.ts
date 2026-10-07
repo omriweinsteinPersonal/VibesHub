@@ -98,3 +98,14 @@ export async function signInWithApple(): Promise<'cancelled' | 'signed-in'> {
     throw cause;
   }
 }
+
+export async function getAppleAccountDeletionAuthorizationCode(): Promise<string> {
+  const available = await AppleAuthentication.isAvailableAsync();
+  if (!available) throw new Error('Apple authorization is unavailable on this device.');
+
+  const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] });
+  if (!credential.authorizationCode) {
+    throw new Error('Apple did not return the authorization needed for deletion.');
+  }
+  return credential.authorizationCode;
+}

@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
 const environmentSchema = z.object({
+  APPLE_CLIENT_ID: z.string().trim().min(1).optional(),
+  APPLE_KEY_ID: z.string().trim().min(1).optional(),
+  APPLE_PRIVATE_KEY: z.string().trim().min(1).optional(),
+  APPLE_TEAM_ID: z.string().trim().min(1).optional(),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
   DATABASE_POOL_MAX: z.coerce.number().int().positive().max(20).default(2),
   DATABASE_URL: z.string().trim().min(1).optional(),
@@ -19,6 +23,10 @@ const environmentSchema = z.object({
 });
 
 export interface ApiConfig {
+  appleClientId?: string;
+  appleKeyId?: string;
+  applePrivateKey?: string;
+  appleTeamId?: string;
   corsOrigins: string[];
   databasePoolMax: number;
   databaseUrl?: string;
@@ -38,6 +46,17 @@ export interface ApiConfig {
 
 export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
   const parsed = environmentSchema.parse(environment);
+  const appleConfiguration = [
+    parsed.APPLE_CLIENT_ID,
+    parsed.APPLE_KEY_ID,
+    parsed.APPLE_PRIVATE_KEY,
+    parsed.APPLE_TEAM_ID,
+  ];
+  if (appleConfiguration.some(Boolean) && !appleConfiguration.every(Boolean)) {
+    throw new Error(
+      'APPLE_CLIENT_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY, and APPLE_TEAM_ID must be configured together',
+    );
+  }
   if (
     Boolean(parsed.REVENUECAT_WEBHOOK_AUTHORIZATION) !==
     Boolean(parsed.REVENUECAT_WEBHOOK_SIGNING_SECRET)
@@ -79,6 +98,12 @@ export function parseApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
     revenueCatAllowedEnvironment: parsed.REVENUECAT_ALLOWED_ENVIRONMENT,
     revenueCatEntitlementId: parsed.REVENUECAT_ENTITLEMENT_ID,
   };
+
+  if (parsed.APPLE_CLIENT_ID) config.appleClientId = parsed.APPLE_CLIENT_ID;
+  if (parsed.APPLE_KEY_ID) config.appleKeyId = parsed.APPLE_KEY_ID;
+  if (parsed.APPLE_PRIVATE_KEY)
+    config.applePrivateKey = parsed.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n');
+  if (parsed.APPLE_TEAM_ID) config.appleTeamId = parsed.APPLE_TEAM_ID;
 
   if (parsed.DATABASE_URL) config.databaseUrl = parsed.DATABASE_URL;
   if (parsed.SUPABASE_PUBLISHABLE_KEY)

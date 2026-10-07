@@ -1,4 +1,5 @@
-import { Controller, Delete, Get, HttpCode, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Req } from '@nestjs/common';
+import { accountDeletionInputSchema } from '@vibeshub/contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { CurrentActor } from '../auth/auth.decorators.js';
@@ -21,7 +22,16 @@ export class AccountController {
 
   @Delete()
   @HttpCode(204)
-  async deleteAccount(@CurrentActor() actor: RequestActor): Promise<void> {
-    await this.deletion.deleteAccount(actor.userId);
+  async deleteAccount(
+    @Body() body: unknown,
+    @CurrentActor() actor: RequestActor,
+  ): Promise<void> {
+    const input = accountDeletionInputSchema.parse(body ?? {});
+    await this.deletion.deleteAccount(actor.userId, {
+      ...(input.appleAuthorizationCode
+        ? { appleAuthorizationCode: input.appleAuthorizationCode }
+        : {}),
+      providers: actor.providers ?? [],
+    });
   }
 }

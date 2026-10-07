@@ -2,6 +2,7 @@ import type { Capability } from '@vibeshub/auth';
 
 export interface VerifiedIdentity {
   email?: string;
+  providers?: string[];
   userId: string;
 }
 

@@ -33,6 +33,25 @@ describe('API configuration', () => {
     });
   });
 
+  it('requires the complete server-side Apple revocation configuration', () => {
+    expect(() => parseApiConfig({ APPLE_CLIENT_ID: 'com.swavii.app' })).toThrow(
+      'must be configured together',
+    );
+    expect(
+      parseApiConfig({
+        APPLE_CLIENT_ID: 'com.swavii.app',
+        APPLE_KEY_ID: 'KEY123',
+        APPLE_PRIVATE_KEY: 'line-one\\nline-two',
+        APPLE_TEAM_ID: 'TEAM123',
+      }),
+    ).toMatchObject({
+      appleClientId: 'com.swavii.app',
+      appleKeyId: 'KEY123',
+      applePrivateKey: 'line-one\nline-two',
+      appleTeamId: 'TEAM123',
+    });
+  });
+
   it('caps the configured database pool size', () => {
     expect(parseApiConfig({ DATABASE_POOL_MAX: '4' }).databasePoolMax).toBe(4);
     expect(() => parseApiConfig({ DATABASE_POOL_MAX: '21' })).toThrow();

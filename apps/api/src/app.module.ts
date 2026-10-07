@@ -5,6 +5,7 @@ import { AccountController } from './account/account.controller.js';
 import { AccountAuthGateway } from './account/account-auth.gateway.js';
 import { AccountDeletionService } from './account/account-deletion.service.js';
 import { AccountRepository } from './account/account.repository.js';
+import { AppleAuthorizationGateway } from './account/apple-authorization.gateway.js';
 import {
   AnalyticsController,
   CreatorAnalyticsController,
@@ -99,6 +100,7 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     SupabaseTokenVerifier,
     ActorRepository,
     AccountAuthGateway,
+    AppleAuthorizationGateway,
     AccountDeletionService,
     AccountRepository,
     AnalyticsRepository,

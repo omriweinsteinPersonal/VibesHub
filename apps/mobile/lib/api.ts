@@ -47,8 +47,14 @@ function getApiUrl(): string {
   return value.replace(/\/$/, '');
 }
 
-export async function deleteCurrentAccount(): Promise<void> {
-  const response = await authenticatedRequest('/v1/me', { method: 'DELETE' });
+export async function deleteCurrentAccount(
+  input: { appleAuthorizationCode?: string } = {},
+): Promise<void> {
+  const response = await authenticatedRequest('/v1/me', {
+    body: JSON.stringify(input),
+    headers: { 'Content-Type': 'application/json' },
+    method: 'DELETE',
+  });
   if (response.ok) return;
 
   throw await apiError(response, 'Account deletion failed.');

@@ -2,6 +2,14 @@ import { z } from 'zod';
 
 export const idSchema = z.uuid();
 
+export const accountDeletionInputSchema = z
+  .object({
+    appleAuthorizationCode: z.string().trim().min(1).max(2048).optional(),
+  })
+  .strict();
+
+export type AccountDeletionInput = z.infer<typeof accountDeletionInputSchema>;
+
 export const contentReportReasonSchema = z.enum([
   'inappropriate',
   'misleading',
