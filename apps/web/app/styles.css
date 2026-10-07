@@ -9407,9 +9407,9 @@ dt {
 }
 
 .productDetailDiscount {
-  background: var(--vh-surface);
-  border-block: 1px solid var(--vh-border);
-  padding: 12px 0;
+  background: transparent;
+  border: 0;
+  padding: 4px 0 12px;
 }
 
 .productDetailDiscountMain {

@@ -145,18 +145,6 @@ export function ProductDetailView({
             </p>
           ) : null}
 
-          <div className="productDetailActions">
-            <a
-              className="button primary"
-              href={publicShopUrl(recommendation.shopUrl)}
-              rel="nofollow sponsored noopener noreferrer"
-              target="_blank"
-            >
-              Shop at {brand}
-              <ExternalLink aria-hidden="true" size={17} />
-            </a>
-          </div>
-
           {recommendation.discount ? (
             <div className="productDetailDiscount">
               <div className="productDetailDiscountMain">
@@ -188,6 +176,18 @@ export function ProductDetailView({
               </div>
             </div>
           ) : null}
+
+          <div className="productDetailActions">
+            <a
+              className="button primary"
+              href={publicShopUrl(recommendation.shopUrl)}
+              rel="nofollow sponsored noopener noreferrer"
+              target="_blank"
+            >
+              Shop at {brand}
+              <ExternalLink aria-hidden="true" size={17} />
+            </a>
+          </div>
 
           {recommendation.review.value !== 'לא צורפה ביקורת' ? (
             <section className="productDetailDescription">
