@@ -52,6 +52,7 @@ import {
   uploadStoryVideo,
 } from '../../lib/recommendation-media';
 import { randomUuid } from '../../lib/random-id';
+import { hasRecommendationImage } from '../../lib/recommendation-image';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
 import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
@@ -641,7 +642,7 @@ export function CreatorDashboard() {
               ? metadata.priceAmountMinor === null
                 ? 'Product details fetched. This store did not expose a price, so add it manually before saving.'
                 : 'Product details fetched. Review them, then select Save recommendation.'
-              : 'Product details fetched, but this store did not provide a photo. Add one before selecting Save recommendation.',
+              : 'Product details fetched, but this store did not provide a photo. You can add one or save this as a text-only recommendation.',
           );
         }
       } catch (cause) {
@@ -781,14 +782,6 @@ export function CreatorDashboard() {
       setError('Use a valid HTTPS Instagram Story or Highlight link.');
       return;
     }
-    if (!isLinkCard && !product.imageAssetId && !product.imageUrl) {
-      setError('Add a product photo to save this recommendation.');
-      document.getElementById('creator-product-photos')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-      return;
-    }
     setSaving(true);
     setError('');
     try {
@@ -829,7 +822,7 @@ export function CreatorDashboard() {
               : `₪${product.discountValue.trim()} off`
             : null,
         imageAssetId: product.imageAssetId || null,
-        imageUrl: product.imageAssetId ? null : product.imageUrl,
+        imageUrl: product.imageAssetId ? null : product.imageUrl || null,
         instagramStoryUrl: normalizeInstagramStoryUrl(product.instagramStoryUrl),
         additionalImages: isLinkCard
           ? []
@@ -2924,14 +2917,14 @@ function ProductForm({
           <small>
             {isLinkCard
               ? 'This opens directly when someone taps the card.'
-              : 'Select Fetch details to fill in details from a link. Or leave it blank and add the item manually with a photo.'}
+              : 'Select Fetch details to fill in details from a link. Or leave it blank and add the item manually — a photo is optional.'}
           </small>
         </div>
         <div className="creatorProductSavePrompt">
           <span>
             {isLinkCard
               ? 'A title and destination link are all you need.'
-              : 'Add a photo and the item details, then save. A shopping link is optional.'}
+              : 'Add the item details, then save. A photo and shopping link are optional.'}
           </span>
           <button className="button primary" disabled={saving || fetching} type="submit">
             {fetching ? 'Fetching details…' : saving ? 'Saving…' : saveLabel}
@@ -3036,13 +3029,8 @@ function ProductForm({
               <p>
                 {isLinkCard
                   ? 'A cover is optional. Without one, your link will use a clean text-first card.'
-                  : 'Add at least one photo. The first is shown by default; you can add up to 10.'}
+                  : 'A photo is optional. Add one if you want the recommendation to include product imagery; text-only items are supported.'}
               </p>
-              {photoError && !isLinkCard ? (
-                <p className="formError" role="alert">
-                  Add a product photo to save this recommendation.
-                </p>
-              ) : null}
               {editor.imageUrl ? (
                 <div className="creatorProductPhotoGrid">
                   {[
@@ -3676,9 +3664,13 @@ function RecommendationManageCard({
 }) {
   return (
     <article className="creatorManageCard">
-      <span className="creatorManageImage">
-        <Image alt="" fill sizes="120px" src={item.imageUrl} unoptimized />
-      </span>
+      {hasRecommendationImage(item.imageUrl) ? (
+        <span className="creatorManageImage">
+          <Image alt="" fill sizes="120px" src={item.imageUrl} unoptimized />
+        </span>
+      ) : (
+        <span aria-hidden="true" className="creatorManageImage creatorManageImageEmpty" />
+      )}
       <div className="creatorManageCopy">
         <p className="productBrand">{item.brandName}</p>
         <h3>{item.productName}</h3>

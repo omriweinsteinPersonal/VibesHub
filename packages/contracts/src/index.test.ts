@@ -201,8 +201,21 @@ describe('shared API contracts', () => {
         productName: 'My sleep secret',
         productUrl: 'https://shop.example.com/sleep',
         reviewHe: 'Link card',
-      }).contentKind,
+  }).contentKind,
     ).toBe('link');
+  });
+
+  it('allows an item recommendation without a photo', () => {
+    expect(
+      creatorRecommendationInputSchema.parse({
+        brandName: 'Pilates Studio',
+        categoryId: '01989f72-07e4-7f32-9b42-1ba55d4ca010',
+        priceAmountMinor: 0,
+        productName: 'My favorite class',
+        productUrl: 'https://shop.example.com/pilates',
+        reviewHe: 'המלצה אישית בלי תמונה',
+      }).productName,
+    ).toBe('My favorite class');
   });
 
   it('accepts Instagram story and Highlight links but rejects other destinations', () => {

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { publicShopUrl } from '../../lib/public-shop-url';
+import { hasRecommendationImage } from '../../lib/recommendation-image';
 import { CopyDiscountCodeButton } from './analytics-events';
 import { StoryVideo } from './story-video';
 
@@ -28,7 +29,9 @@ export function ProductDetailView({
   const [activeImage, setActiveImage] = useState(0);
   const images = recommendation.images?.length
     ? recommendation.images
-    : [{ id: null, url: recommendation.imageUrl }];
+    : hasRecommendationImage(recommendation.imageUrl)
+      ? [{ id: null, url: recommendation.imageUrl }]
+      : [];
   const shownImage = images[activeImage] ?? images[0]!;
   const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
     recommendation.productName,
@@ -63,15 +66,19 @@ export function ProductDetailView({
 
       <div className="productDetailLayout">
         <div className="productDetailGallery">
-          <div className="productDetailMedia">
-            <Image
-              alt={`${recommendation.productName} by ${brand}, photo ${activeImage + 1}`}
-              fill
-              priority
-              sizes="(max-width: 480px) calc(100vw - 32px), 328px"
-              src={publicAssetUrl(shownImage.url)}
-              unoptimized
-            />
+          <div className="productDetailMedia" data-has-image={Boolean(images.length)}>
+            {shownImage ? (
+              <Image
+                alt={`${recommendation.productName} by ${brand}, photo ${activeImage + 1}`}
+                fill
+                priority
+                sizes="(max-width: 480px) calc(100vw - 32px), 328px"
+                src={publicAssetUrl(shownImage.url)}
+                unoptimized
+              />
+            ) : (
+              <div className="productDetailMediaEmpty">No product image</div>
+            )}
             {clips.length ? (
               <StoryVideo
                 creatorId={recommendation.creator.id}

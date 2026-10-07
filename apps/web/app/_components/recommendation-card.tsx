@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { publicAssetUrl } from '../../lib/public-asset-url';
+import { hasRecommendationImage } from '../../lib/recommendation-image';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { StoryVideo } from './story-video';
 
@@ -43,6 +44,7 @@ export function RecommendationCardView({
     ? 'rtl'
     : 'ltr';
   const isLinkCard = recommendation.contentKind === 'link';
+  const hasImage = hasRecommendationImage(recommendation.imageUrl);
   if (isLinkCard) {
     return (
       <article
@@ -73,6 +75,7 @@ export function RecommendationCardView({
     <article
       className="storeProductCard compactProductCard"
       data-content-kind={recommendation.contentKind}
+      data-has-image={hasImage}
       data-show-price={showPrice}
       data-text-direction={textDirection}
     >
@@ -92,41 +95,43 @@ export function RecommendationCardView({
             : `/products/${recommendation.id}`
         }
       />
-      <div className="storeProductImage" data-image-layout={imageLayout}>
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="storeProductImageBackdrop"
-          fill
-          sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
-          src={publicAssetUrl(recommendation.imageUrl)}
-          unoptimized
-        />
-        <Image
-          alt={recommendation.productName}
-          className="storeProductPrimaryImage"
-          fill
-          onLoad={({ currentTarget }) => {
-            const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
-            const isWideWoltPhoto =
-              ratio >= 1.6 && /(^|\.)wolt\.com$/i.test(recommendation.merchantHostname);
-            setImageLayout(isWideWoltPhoto ? 'editorial' : 'catalog');
-          }}
-          sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
-          src={publicAssetUrl(recommendation.imageUrl)}
-          unoptimized
-        />
-        {clips.length ? (
-          <StoryVideo
-            creatorId={attributedCreatorId}
-            posterUrl={publicAssetUrl(recommendation.imageUrl)}
-            productId={recommendation.productId}
-            productName={recommendation.productName}
-            recommendationId={recommendation.id}
-            videoUrls={clips}
+      {hasImage ? (
+        <div className="storeProductImage" data-image-layout={imageLayout}>
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="storeProductImageBackdrop"
+            fill
+            sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
+            src={publicAssetUrl(recommendation.imageUrl)}
+            unoptimized
           />
-        ) : null}
-      </div>
+          <Image
+            alt={recommendation.productName}
+            className="storeProductPrimaryImage"
+            fill
+            onLoad={({ currentTarget }) => {
+              const ratio = currentTarget.naturalWidth / currentTarget.naturalHeight;
+              const isWideWoltPhoto =
+                ratio >= 1.6 && /(^|\.)wolt\.com$/i.test(recommendation.merchantHostname);
+              setImageLayout(isWideWoltPhoto ? 'editorial' : 'catalog');
+            }}
+            sizes="(max-width: 700px) 240px, (max-width: 1100px) 50vw, 25vw"
+            src={publicAssetUrl(recommendation.imageUrl)}
+            unoptimized
+          />
+          {clips.length ? (
+            <StoryVideo
+              creatorId={attributedCreatorId}
+              posterUrl={publicAssetUrl(recommendation.imageUrl)}
+              productId={recommendation.productId}
+              productName={recommendation.productName}
+              recommendationId={recommendation.id}
+              videoUrls={clips}
+            />
+          ) : null}
+        </div>
+      ) : null}
       <div className="storeProductDetails" dir={textDirection}>
         {showBrand ? (
           <p className="compactProductBrand" dir="auto">

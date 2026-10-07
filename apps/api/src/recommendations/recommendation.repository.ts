@@ -119,12 +119,7 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId, true);
       if (!creator) return null;
-      const image = await this.resolveImageSource(
-        sql,
-        userId,
-        input,
-        input.contentKind === 'link',
-      );
+      const image = await this.resolveImageSource(sql, userId, input, true);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
       const creatorBrandId = await this.ensureCreatorBrand(
         sql,
@@ -324,12 +319,7 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
-      const image = await this.resolveImageSource(
-        sql,
-        userId,
-        input,
-        input.contentKind === 'link',
-      );
+      const image = await this.resolveImageSource(sql, userId, input, true);
       const catalog = await this.upsertCatalog(sql, userId, input, image);
       const creatorBrandId = await this.ensureCreatorBrand(
         sql,
@@ -873,7 +863,18 @@ export class RecommendationRepository {
         ${userId}
       )
       on conflict (brand_id, normalized_name) do update
-      set name = excluded.name
+      set
+        name = excluded.name,
+        primary_image_asset_id = case
+          when excluded.primary_image_asset_id is not null then excluded.primary_image_asset_id
+          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then null
+          else app.products.primary_image_asset_id
+        end,
+        primary_image_url = case
+          when excluded.primary_image_asset_id is not null then null
+          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then excluded.primary_image_url
+          else app.products.primary_image_url
+        end
       returning id
     `;
     if (!product) throw new Error('Product upsert did not return an identity');

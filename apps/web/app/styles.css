@@ -1212,6 +1212,10 @@ svg.lucide {
 .creatorManageImage img {
   object-fit: cover;
 }
+.creatorManageImageEmpty {
+  background: linear-gradient(135deg, #f7f1e8, #eee5d9);
+  border: 1px dashed var(--vh-border);
+}
 .creatorManageCopy h3 {
   font-size: 1.65rem;
   margin: 7px 0 12px;
@@ -8953,6 +8957,16 @@ dt {
   object-position: center;
 }
 
+.productDetailMediaEmpty {
+  align-items: center;
+  color: var(--vh-muted);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
 .productDetailGalleryArrow {
   align-items: center;
   background: rgb(255 255 255 / 94%);
@@ -9832,6 +9846,14 @@ dt {
 .discoverProducts .storeProductCard.compactProductCard .storeProductImage,
 .referenceCollectionFrame .storeProductCard.compactProductCard .storeProductImage {
   aspect-ratio: 1 / 1.08;
+}
+
+.storeProductCard.compactProductCard[data-has-image='false'] {
+  min-height: 150px;
+}
+
+.storeProductCard.compactProductCard[data-has-image='false'] .storeProductDetails {
+  min-height: 150px;
 }
 
 /* Label grids keep the brand context without wrapping each group in a large card. */

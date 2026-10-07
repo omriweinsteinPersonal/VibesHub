@@ -259,20 +259,17 @@ const creatorRecommendationInputFieldsSchema = z
   })
   .strict();
 
-export const creatorRecommendationInputSchema = creatorRecommendationInputFieldsSchema
-  .refine(
-    (value) =>
-      value.contentKind === 'link' ||
-      Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) === 1,
-    {
-      message: 'Choose exactly one recommendation image source',
-      path: ['imageAssetId'],
-    },
-  )
-  .refine((value) => !value.discountPercent || !value.discountAmountMinor, {
-    message: 'Choose either percent or fixed amount',
-    path: ['discountAmountMinor'],
-  });
+export const creatorRecommendationInputSchema = creatorRecommendationInputFieldsSchema.refine(
+  (value) =>
+    Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) <= 1,
+  {
+    message: 'Choose at most one recommendation image source',
+    path: ['imageAssetId'],
+  },
+).refine((value) => !value.discountPercent || !value.discountAmountMinor, {
+  message: 'Choose either percent or fixed amount',
+  path: ['discountAmountMinor'],
+});
 
 export const creatorRecommendationPatchSchema = creatorRecommendationInputFieldsSchema
   .partial()
