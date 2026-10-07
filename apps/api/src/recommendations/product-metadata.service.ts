@@ -488,7 +488,7 @@ function strings(value: unknown): string[] {
   return record ? strings(record.url) : [];
 }
 
-function isString(value: string | null): value is string {
+function isString(value: string | null | undefined): value is string {
   return Boolean(value);
 }
 
