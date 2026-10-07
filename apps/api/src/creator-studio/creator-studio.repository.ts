@@ -27,6 +27,9 @@ interface StorefrontSectionRow {
   labels: CreatorStorefrontConfiguration['labels'];
   titles: CreatorStorefrontConfiguration['titles'];
   brandOrder: string[];
+  hiddenBrandIds: string[];
+  hiddenCollectionIds: string[];
+  hiddenRecommendationIds: string[];
   categoryId: string;
   categoryName: string;
   categorySlug: string;
@@ -373,7 +376,10 @@ export class CreatorStudioRepository {
             content_order = ${sql.json(input.contentOrder)},
             navigation_labels = ${sql.json(input.labels)},
             titles = coalesce(${input.titles === undefined ? null : sql.json(input.titles)}, titles),
-            brand_order = coalesce(${input.brandOrder === undefined ? null : sql.json(input.brandOrder)}, brand_order)
+            brand_order = coalesce(${input.brandOrder === undefined ? null : sql.json(input.brandOrder)}, brand_order),
+            hidden_brand_ids = ${sql.json(input.hiddenBrandIds ?? [])},
+            hidden_collection_ids = ${sql.json(input.hiddenCollectionIds ?? [])},
+            hidden_recommendation_ids = ${sql.json(input.hiddenRecommendationIds ?? [])}
         where creator_id = ${identity.id}
       `;
       return {
@@ -494,6 +500,9 @@ export class CreatorStudioRepository {
         , preference.navigation_labels as labels
         , preference.titles as titles
         , preference.brand_order as "brandOrder"
+        , preference.hidden_brand_ids as "hiddenBrandIds"
+        , preference.hidden_collection_ids as "hiddenCollectionIds"
+        , preference.hidden_recommendation_ids as "hiddenRecommendationIds"
       from app.creator_storefront_preferences preference
       left join app.creator_storefront_sections section
         on section.creator_id = preference.creator_id
@@ -526,6 +535,9 @@ export class CreatorStudioRepository {
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
       brandOrder: rows[0]?.brandOrder ?? [],
+      hiddenBrandIds: rows[0]?.hiddenBrandIds ?? [],
+      hiddenCollectionIds: rows[0]?.hiddenCollectionIds ?? [],
+      hiddenRecommendationIds: rows[0]?.hiddenRecommendationIds ?? [],
       sections: rows.flatMap((row) =>
         row.categoryId
           ? [

@@ -31,6 +31,9 @@ interface CreatorCardRow {
   labels?: CreatorStorefront['labels'];
   titles?: CreatorStorefront['titles'];
   brandOrder?: string[];
+  hiddenBrandIds?: string[];
+  hiddenCollectionIds?: string[];
+  hiddenRecommendationIds?: string[];
   theme?: CreatorStorefront['theme'];
 }
 
@@ -202,6 +205,9 @@ export class CreatorDirectoryRepository {
         coalesce((select navigation_labels from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as labels,
         coalesce((select titles from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as titles,
         coalesce((select brand_order from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "brandOrder",
+        coalesce((select hidden_brand_ids from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "hiddenBrandIds",
+        coalesce((select hidden_collection_ids from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "hiddenCollectionIds",
+        coalesce((select hidden_recommendation_ids from app.creator_storefront_preferences where creator_id = creator.id), '[]'::jsonb) as "hiddenRecommendationIds",
         (select theme from app.creator_storefront_preferences where creator_id = creator.id) as theme,
         (
           select count(*)::integer
@@ -243,6 +249,9 @@ export class CreatorDirectoryRepository {
           labels: Array.isArray(row.labels) ? row.labels : [],
           titles: Array.isArray(row.titles) ? row.titles : [],
           brandOrder: row.brandOrder ?? [],
+          hiddenBrandIds: row.hiddenBrandIds ?? [],
+          hiddenCollectionIds: row.hiddenCollectionIds ?? [],
+          hiddenRecommendationIds: row.hiddenRecommendationIds ?? [],
           theme: row.theme ?? defaultStorefrontTheme,
         }
       : null;

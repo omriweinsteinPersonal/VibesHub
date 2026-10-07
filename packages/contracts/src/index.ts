@@ -686,6 +686,9 @@ export const creatorStorefrontSchema = z
       )
       .max(200)
       .default([]),
+    hiddenBrandIds: z.array(idSchema).max(100).default([]),
+    hiddenCollectionIds: z.array(idSchema).max(100).default([]),
+    hiddenRecommendationIds: z.array(idSchema).max(200).default([]),
     titles: storefrontTitlesSchema.optional(),
     brandOrder: z
       .array(idSchema)
@@ -1056,6 +1059,9 @@ export const creatorStorefrontConfigurationSchema = z
       )
       .max(200)
       .default([]),
+    hiddenBrandIds: z.array(idSchema).max(100).default([]),
+    hiddenCollectionIds: z.array(idSchema).max(100).default([]),
+    hiddenRecommendationIds: z.array(idSchema).max(200).default([]),
     titles: storefrontTitlesSchema.optional(),
     brandOrder: z
       .array(idSchema)
@@ -1101,6 +1107,9 @@ export const creatorStorefrontConfigurationInputSchema = z
       )
       .max(200)
       .default([]),
+    hiddenBrandIds: z.array(idSchema).max(100).optional(),
+    hiddenCollectionIds: z.array(idSchema).max(100).optional(),
+    hiddenRecommendationIds: z.array(idSchema).max(200).optional(),
     categoryIds: z
       .array(idSchema)
       .max(24)

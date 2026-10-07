@@ -218,9 +218,33 @@ export function CreatorStorefrontView({
           : [],
     [configuration, order, storefront.contentOrder],
   );
+  const hiddenBrandIds = useMemo(() => new Set(storefront.hiddenBrandIds ?? []), [storefront.hiddenBrandIds]);
+  const hiddenCollectionIds = useMemo(() => new Set(storefront.hiddenCollectionIds ?? []), [storefront.hiddenCollectionIds]);
+  const hiddenRecommendationIds = useMemo(() => {
+    const ids = new Set(storefront.hiddenRecommendationIds ?? []);
+    for (const section of storefront.curatedSections ?? []) {
+      if (hiddenCollectionIds.has(section.id)) section.recommendationIds.forEach((id) => ids.add(id));
+    }
+    return ids;
+  }, [hiddenCollectionIds, storefront.curatedSections, storefront.hiddenRecommendationIds]);
+  const visibleCuratedSections = useMemo(
+    () => (storefront.curatedSections ?? []).filter((section) =>
+      !hiddenCollectionIds.has(section.id) && !hiddenBrandIds.has(section.brandId ?? ''),
+    ),
+    [hiddenBrandIds, hiddenCollectionIds, storefront.curatedSections],
+  );
+  const visibleRecommendations = useMemo(
+    () => recommendations.filter((item) =>
+      !hiddenRecommendationIds.has(item.id) &&
+      ![...hiddenBrandIds].some((brandId) =>
+        storefront.brands.find((brand) => brand.id === brandId && brandKey(brand.name) === brandKey(item.brandName)),
+      ),
+    ),
+    [hiddenBrandIds, hiddenRecommendationIds, recommendations, storefront.brands],
+  );
   const orderedStorefront = useMemo(
-    () => ({ ...storefront, contentOrder }),
-    [storefront, contentOrder],
+    () => ({ ...storefront, contentOrder, curatedSections: visibleCuratedSections }),
+    [storefront, contentOrder, visibleCuratedSections],
   );
   const labels = useMemo(
     () => configuration?.labels ?? storefront.labels ?? [],
@@ -239,8 +263,8 @@ export function CreatorStorefrontView({
         : false;
       if (!current || (hasOffer && !currentHasOffer)) byName.set(key, brand);
     }
-    return [...byName.values()];
-  }, [codes, storefront.brands]);
+    return [...byName.values()].filter((brand) => !hiddenBrandIds.has(brand.id));
+  }, [codes, hiddenBrandIds, storefront.brands]);
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
     const label = labels.find(({ id }) => id === activeLabelId);
@@ -248,7 +272,7 @@ export function CreatorStorefrontView({
       (label?.collectionIds ?? [])
         .flatMap(
           (collectionId) =>
-            storefront.curatedSections.find(
+            visibleCuratedSections.find(
               ({ id, kind }) => id === collectionId && kind === 'collection',
             )?.recommendationIds ?? [],
         )
@@ -259,7 +283,7 @@ export function CreatorStorefrontView({
         .filter((brand) => (label?.brandIds ?? []).includes(brand.id))
         .map((brand) => brandKey(brand.name)),
     );
-    return recommendations.filter((item) => {
+    return visibleRecommendations.filter((item) => {
       const matchesLabel =
         !label ||
         (label.categorySlug
@@ -278,9 +302,9 @@ export function CreatorStorefrontView({
     activeLabelId,
     labels,
     query,
-    recommendations,
+    visibleRecommendations,
     displayBrands,
-    storefront.curatedSections,
+    visibleCuratedSections,
   ]);
   const rows = useMemo(() => {
     const brandNames = new Set(displayBrands.map(({ name }) => brandKey(name)));
@@ -707,7 +731,7 @@ export function CreatorStorefrontView({
                   {selectedCardBrands.map((brand) => (
                     <BrandBlock
                       brand={brand}
-                      collections={storefront.curatedSections.filter(
+                      collections={visibleCuratedSections.filter(
                         (section) =>
                           section.kind === 'collection' &&
                           section.brandId === brand.brandId,
@@ -769,7 +793,7 @@ export function CreatorStorefrontView({
                         >
                           <BrandBlock
                             brand={brand}
-                            collections={storefront.curatedSections.filter(
+                            collections={visibleCuratedSections.filter(
                               (section) =>
                                 section.kind === 'collection' &&
                                 section.brandId === brand.brandId,
@@ -794,11 +818,11 @@ export function CreatorStorefrontView({
                   ))
               : null}
             {!showingCompactLabelGrid &&
-            storefront.curatedSections.some(
+            visibleCuratedSections.some(
               (section) => section.kind === 'page' && !section.parentCollectionId,
             ) ? (
               <StorefrontRegion>
-                {storefront.curatedSections
+                {visibleCuratedSections
                   .filter(
                     (section) => section.kind === 'page' && !section.parentCollectionId,
                   )
@@ -831,7 +855,7 @@ export function CreatorStorefrontView({
             ) : null}
             {!showingCompactLabelGrid &&
             !blocks.length &&
-            !storefront.curatedSections.some(({ kind }) => kind === 'page')
+            !visibleCuratedSections.some(({ kind }) => kind === 'page')
               ? null
               : !showingCompactLabelGrid
                 ? blocks.map(({ key, row, code }) => {
@@ -839,7 +863,7 @@ export function CreatorStorefrontView({
                       <StorefrontRow
                         creatorId={storefront.id}
                         framed={row.framed}
-                        pages={storefront.curatedSections.filter(
+                        pages={visibleCuratedSections.filter(
                           (section) =>
                             section.kind === 'page' &&
                             section.parentCollectionId === row.key,

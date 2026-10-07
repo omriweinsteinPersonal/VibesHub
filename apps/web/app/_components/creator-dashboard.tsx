@@ -281,6 +281,9 @@ export function CreatorDashboard() {
   const [curatedSections, setCuratedSections] = useState<CuratedSection[]>([]);
   const [contentOrder, setContentOrder] = useState<ContentLayer[]>([]);
   const [storefrontLabels, setStorefrontLabels] = useState<StorefrontLabel[]>([]);
+  const [hiddenBrandIds, setHiddenBrandIds] = useState<string[]>([]);
+  const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
+  const [hiddenRecommendationIds, setHiddenRecommendationIds] = useState<string[]>([]);
   const [expandedBrandId, setExpandedBrandId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
   const [dashboardView, setDashboardView] = useState<
@@ -327,6 +330,9 @@ export function CreatorDashboard() {
       const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
       setConfiguration({ ...config, contentOrder: loadedOrder });
       setStorefrontLabels(config.labels ?? []);
+      setHiddenBrandIds(config.hiddenBrandIds ?? []);
+      setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
+      setHiddenRecommendationIds(config.hiddenRecommendationIds ?? []);
       setContentOrder(
         loadedOrder.filter(({ kind, id }) =>
           kind === 'collection' || kind === 'section'
@@ -1187,6 +1193,9 @@ export function CreatorDashboard() {
     nextCurated = curatedSections,
     nextOrder = contentOrder,
     nextLabels = storefrontLabels,
+    nextHiddenBrands = hiddenBrandIds,
+    nextHiddenCollections = hiddenCollectionIds,
+    nextHiddenRecommendations = hiddenRecommendationIds,
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
@@ -1235,6 +1244,9 @@ export function CreatorDashboard() {
         ),
         contentOrder: normalizedOrder,
         labels: nextLabels,
+        hiddenBrandIds: nextHiddenBrands,
+        hiddenCollectionIds: nextHiddenCollections,
+        hiddenRecommendationIds: nextHiddenRecommendations,
       };
       const persist = (version: number) =>
         apiRequest<CreatorStorefrontConfiguration>(
@@ -1263,6 +1275,9 @@ export function CreatorDashboard() {
       setCuratedSections(updated.curatedSections);
       setContentOrder(savedOrder);
       setStorefrontLabels(updated.labels);
+      setHiddenBrandIds(updated.hiddenBrandIds ?? []);
+      setHiddenCollectionIds(updated.hiddenCollectionIds ?? []);
+      setHiddenRecommendationIds(updated.hiddenRecommendationIds ?? []);
       setNotice('Storefront sections saved.');
       return true;
     } catch (cause) {
@@ -1286,6 +1301,29 @@ export function CreatorDashboard() {
       }
     }
     return saveSections(selectedSections, nextCurated, nextOrder);
+  }
+
+  function toggleVisibility(
+    kind: 'brand' | 'collection' | 'recommendation',
+    id: string,
+    visible: boolean,
+  ) {
+    const current =
+      kind === 'brand'
+        ? hiddenBrandIds
+        : kind === 'collection'
+          ? hiddenCollectionIds
+          : hiddenRecommendationIds;
+    const next = visible ? current.filter((value) => value !== id) : [...current, id];
+    return saveSections(
+      selectedSections,
+      curatedSections,
+      contentOrder,
+      storefrontLabels,
+      kind === 'brand' ? next : hiddenBrandIds,
+      kind === 'collection' ? next : hiddenCollectionIds,
+      kind === 'recommendation' ? next : hiddenRecommendationIds,
+    );
   }
 
   const activeRecommendations = recommendations.filter(
@@ -1837,6 +1875,15 @@ export function CreatorDashboard() {
                           </span>
                         </button>
                         <div className="creatorManageCollectionActions">
+                          <label className="creatorLiveToggle" title={hiddenBrandIds.includes(managedBrand.id) ? 'Show brand' : 'Hide brand'}>
+                            <input
+                              checked={!hiddenBrandIds.includes(managedBrand.id)}
+                              onChange={(event) => void toggleVisibility('brand', managedBrand.id, event.target.checked)}
+                              type="checkbox"
+                            />
+                            <span />
+                            {hiddenBrandIds.includes(managedBrand.id) ? 'Off' : 'On'}
+                          </label>
                           <a
                             href={managedBrand.websiteUrl}
                             rel="noopener noreferrer"
@@ -1955,6 +2002,10 @@ export function CreatorDashboard() {
                                   });
                                 }}
                                 onEditItem={editProduct}
+                                onToggleItem={(item) => toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
+                                isItemVisible={(item) => !hiddenRecommendationIds.includes(item.id)}
+                                visible={!hiddenCollectionIds.includes(entry.section.id)}
+                                onToggleVisibility={(visible) => toggleVisibility('collection', entry.section.id, visible)}
                                 onEditState={(editing) =>
                                   setEditingCollectionId(
                                     editing ? entry.section.id : null,
@@ -1981,6 +2032,8 @@ export function CreatorDashboard() {
                                   <RecommendationManageCard
                                     item={item}
                                     key={item.id}
+                                    onToggle={() => void toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
+                                    visible={!hiddenRecommendationIds.includes(item.id)}
                                     onArchive={() => {
                                       if (
                                         window.confirm(
@@ -2025,6 +2078,15 @@ export function CreatorDashboard() {
                           </p>
                         </div>
                         <div className="creatorManageCollectionActions">
+                          <label className="creatorLiveToggle" title={hiddenCollectionIds.includes(entry.section.id) ? 'Show collection' : 'Hide collection'}>
+                            <input
+                              checked={!hiddenCollectionIds.includes(entry.section.id)}
+                              onChange={(event) => void toggleVisibility('collection', entry.section.id, event.target.checked)}
+                              type="checkbox"
+                            />
+                            <span />
+                            {hiddenCollectionIds.includes(entry.section.id) ? 'Off' : 'On'}
+                          </label>
                           {profile ? (
                             <Link
                               href={`/${profile.handle}/pages/${entry.section.id}`}
@@ -2110,6 +2172,8 @@ export function CreatorDashboard() {
                             <RecommendationManageCard
                               item={item}
                               key={item.id}
+                              onToggle={() => void toggleVisibility('recommendation', item.id, !hiddenRecommendationIds.includes(item.id))}
+                              visible={!hiddenRecommendationIds.includes(item.id)}
                               onArchive={() => {
                                 if (
                                   window.confirm(
@@ -2132,6 +2196,8 @@ export function CreatorDashboard() {
                     <RecommendationManageCard
                       item={entry.item}
                       key={entry.item.id}
+                      onToggle={() => void toggleVisibility('recommendation', entry.item.id, !hiddenRecommendationIds.includes(entry.item.id))}
+                      visible={!hiddenRecommendationIds.includes(entry.item.id)}
                       onArchive={() => {
                         if (
                           window.confirm(
@@ -2197,6 +2263,10 @@ function CollectionManageCard({
   onCreateBrand,
   onDelete,
   onEditItem,
+  onToggleItem,
+  onToggleVisibility,
+  isItemVisible,
+  visible = true,
   onEditState,
   onSave,
   profileHandle,
@@ -2211,6 +2281,10 @@ function CollectionManageCard({
   onCreateBrand: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
   onDelete: () => void;
   onEditItem: (item: CreatorRecommendation) => void;
+  onToggleItem: (item: CreatorRecommendation) => Promise<boolean> | void;
+  onToggleVisibility: (visible: boolean) => Promise<boolean> | void;
+  isItemVisible: (item: CreatorRecommendation) => boolean;
+  visible?: boolean;
   onEditState: (editing: boolean) => void;
   onSave: (updated: CuratedSection) => Promise<boolean>;
   profileHandle: string | undefined;
@@ -2238,6 +2312,14 @@ function CollectionManageCard({
           </span>
         </button>
         <div className="creatorManageCollectionActions">
+          <label className="creatorLiveToggle" title="Toggle collection visibility">
+            <input
+              checked={visible}
+              onChange={(event) => void onToggleVisibility(event.target.checked)}
+              type="checkbox"
+            />
+            <span /> {visible ? 'On' : 'Off'}
+          </label>
           {profileHandle ? (
             <Link href={`/${profileHandle}/pages/${entry.section.id}`} target="_blank">
               View page
@@ -2283,6 +2365,8 @@ function CollectionManageCard({
               <RecommendationManageCard
                 item={item}
                 key={item.id}
+                onToggle={() => void onToggleItem(item)}
+                visible={isItemVisible(item)}
                 onArchive={() => onArchiveItem(item)}
                 onEdit={() => onEditItem(item)}
               />
@@ -3521,10 +3605,14 @@ function RecommendationManageCard({
   item,
   onArchive,
   onEdit,
+  onToggle,
+  visible = true,
 }: {
   item: CreatorRecommendation;
   onArchive: () => void;
   onEdit: () => void;
+  onToggle?: () => void;
+  visible?: boolean;
 }) {
   return (
     <article className="creatorManageCard">
@@ -3542,6 +3630,12 @@ function RecommendationManageCard({
         ) : null}
       </div>
       <div className="creatorManageActions">
+        {onToggle ? (
+          <label className="creatorLiveToggle" title="Toggle recommendation visibility">
+            <input checked={visible} onChange={onToggle} type="checkbox" />
+            <span /> {visible ? 'On' : 'Off'}
+          </label>
+        ) : null}
         <button aria-label="Edit recommendation" onClick={onEdit} type="button">
           <Pencil aria-hidden="true" size={16} />
         </button>
