@@ -228,7 +228,18 @@ describe('shared API contracts', () => {
       }).instagramStoryUrl,
     ).toBe('https://instagram.com/stories/highlights/123456/');
     for (const url of [
+      'https://www.instagram.com/s/aGlnaGxpZ2h0OjE3OS8=/',
+      'https://www.instagram.com/share/abc123/?igsh=xyz',
+      'https://ig.me/2AbCdEf/',
+    ]) {
+      expect(
+        creatorRecommendationInputSchema.parse({ ...input, instagramStoryUrl: url })
+          .instagramStoryUrl,
+      ).toBe(url);
+    }
+    for (const url of [
       'https://instagram.com.evil.example/stories/creator/123456/',
+      'https://www.instagram.com/creator/',
       'https://www.instagram.com/reel/123456/',
       'http://www.instagram.com/stories/creator/123456/',
     ]) {

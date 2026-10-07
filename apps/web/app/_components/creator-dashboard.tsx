@@ -3940,10 +3940,17 @@ function normalizeInstagramStoryUrl(value: string): string | null {
   if (!trimmed) return null;
   try {
     const url = new URL(trimmed);
+    if (url.protocol !== 'https:' || url.username || url.password || url.port) {
+      return null;
+    }
+    if (url.hostname === 'ig.me') return url.pathname.length > 1 ? url.toString() : null;
+    if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
+    const path = url.pathname.toLowerCase();
     if (
-      url.protocol !== 'https:' ||
-      !['instagram.com', 'www.instagram.com'].includes(url.hostname) ||
-      !url.pathname.startsWith('/stories/')
+      !path.startsWith('/stories/') &&
+      !path.startsWith('/s/') &&
+      !path.startsWith('/share/') &&
+      !path.startsWith('/highlights/')
     ) {
       return null;
     }

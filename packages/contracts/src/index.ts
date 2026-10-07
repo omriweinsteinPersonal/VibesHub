@@ -85,12 +85,15 @@ const optionalInstagramStoryUrlSchema = z
   .max(2_048)
   .refine((value) => {
     const url = new URL(value);
+    if (url.username || url.password || url.port) return false;
+    if (url.hostname === 'ig.me') return url.pathname.length > 1;
+    if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return false;
+    const path = url.pathname.toLowerCase();
     return (
-      ['instagram.com', 'www.instagram.com'].includes(url.hostname) &&
-      !url.username &&
-      !url.password &&
-      !url.port &&
-      url.pathname.startsWith('/stories/')
+      path.startsWith('/stories/') ||
+      path.startsWith('/s/') ||
+      path.startsWith('/share/') ||
+      path.startsWith('/highlights/')
     );
   }, 'Use an Instagram story or Highlight link')
   .nullable();
