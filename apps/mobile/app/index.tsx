@@ -7,12 +7,12 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getSupabaseClient } from '../lib/supabase';
 import { getCreators } from '../lib/api';

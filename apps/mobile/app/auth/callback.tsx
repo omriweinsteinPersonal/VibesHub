@@ -1,7 +1,8 @@
 import { colors, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { establishSessionFromCallback } from '../../lib/auth';
 

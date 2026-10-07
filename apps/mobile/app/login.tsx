@@ -6,12 +6,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithApple, signInWithGoogle } from '../lib/auth';
 import { openExternalWebPage } from '../lib/external-browser';

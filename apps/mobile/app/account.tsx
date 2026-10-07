@@ -5,12 +5,12 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { deleteCurrentAccount } from '../lib/api';
 import { getAppleAccountDeletionAuthorizationCode } from '../lib/auth';
