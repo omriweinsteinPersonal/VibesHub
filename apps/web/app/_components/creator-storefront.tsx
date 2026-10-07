@@ -867,10 +867,16 @@ function StandaloneRecommendationCard({
 }: {
   brand: CreatorStorefront['brands'][number];
   item: RecommendationCard;
-}) {
+  }) {
   const discount = item.discount;
   return (
-    <article className="referenceStandaloneRecommendation">
+    <Link
+      aria-label={`View ${item.productName} at ${brand.name}`}
+      className="referenceStandaloneRecommendation"
+      href={item.shopUrl}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
       <div className="referenceStandaloneRecommendationContent" dir="auto">
         <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
         <h3>{item.productName}</h3>
@@ -888,17 +894,8 @@ function StandaloneRecommendationCard({
             )}
           </small>
         ) : null}
-        <Link className="referenceStandaloneRecommendationLink" href={item.shopUrl}>
-          View product
-        </Link>
       </div>
-      <Link
-        aria-label={`View ${item.productName} at ${brand.name}`}
-        className="referenceStandaloneRecommendationImage"
-        href={item.shopUrl}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <div className="referenceStandaloneRecommendationImage">
         <Image
           alt={item.productName}
           fill
@@ -906,8 +903,8 @@ function StandaloneRecommendationCard({
           src={publicAssetUrl(item.imageUrl)}
           unoptimized
         />
-      </Link>
-    </article>
+      </div>
+    </Link>
   );
 }
 

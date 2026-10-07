@@ -7469,19 +7469,21 @@ dt {
   background: var(--sf-discount, #f8f6f2);
   border: 1px solid #e2d5c8;
   border-radius: 18px;
+  color: inherit;
   direction: ltr;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(38%, 42%);
-  margin-top: 14px;
-  min-height: 182px;
+  margin-top: 7px;
+  min-height: 154px;
   overflow: hidden;
+  text-decoration: none;
 }
 .referenceStandaloneRecommendationContent {
-  align-content: center;
+  align-content: start;
   display: grid;
   gap: 7px;
   grid-column: 1;
-  padding: 18px 20px;
+  padding: 16px 20px;
   text-align: right;
 }
 .referenceStandaloneRecommendationBrand {
@@ -7524,19 +7526,11 @@ dt {
   color: #75685f;
   font-size: 0.68rem;
 }
-.referenceStandaloneRecommendationLink {
-  color: #8f4e2f;
-  font-size: 0.74rem;
-  font-weight: 600;
-  justify-self: end;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .referenceStandaloneRecommendationImage {
   background: #eee7df;
   display: block;
   grid-column: 2;
-  min-height: 182px;
+  min-height: 154px;
   overflow: hidden;
   position: relative;
 }
@@ -7550,14 +7544,14 @@ dt {
 @media (max-width: 620px) {
   .referenceStandaloneRecommendation {
     grid-template-columns: minmax(0, 1fr) 42%;
-    min-height: 154px;
+    min-height: 132px;
   }
   .referenceStandaloneRecommendationContent {
     gap: 5px;
     padding: 14px;
   }
   .referenceStandaloneRecommendationImage {
-    min-height: 154px;
+    min-height: 132px;
   }
   .referenceStandaloneRecommendationBrand {
     font-size: 0.6rem;
