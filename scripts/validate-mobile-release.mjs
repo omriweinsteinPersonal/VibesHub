@@ -3,6 +3,17 @@ import { readFile } from 'node:fs/promises';
 const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).expo;
 const loginSource = await readFile('apps/mobile/app/login.tsx', 'utf8');
 const accountSource = await readFile('apps/mobile/app/account.tsx', 'utf8');
+const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
+const rootLayoutSource = await readFile('apps/mobile/app/_layout.tsx', 'utf8');
+const storefrontSource = await readFile('apps/mobile/app/[handle].tsx', 'utf8');
+const reportControllerSource = await readFile(
+  'apps/api/src/reports/report.controller.ts',
+  'utf8',
+);
+const appleRevocationSource = await readFile(
+  'apps/api/src/account/apple-authorization.gateway.ts',
+  'utf8',
+);
 const errors = [];
 
 function requireValue(condition, message) {
@@ -83,6 +94,24 @@ for (const path of ['/privacy', '/terms', '/support', '/creator-home']) {
 requireValue(
   accountSource.includes('Delete account'),
   'Account deletion must remain discoverable in the native app.',
+);
+requireValue(
+  storefrontSource.includes('ContentReportModal') &&
+    storefrontSource.includes('Hide creator'),
+  'Public native storefronts must retain report and hide controls.',
+);
+requireValue(
+  reportControllerSource.includes("@Controller('reports')"),
+  'The public content-report intake endpoint is missing.',
+);
+requireValue(
+  authSource.includes('getAppleAccountDeletionAuthorizationCode') &&
+    appleRevocationSource.includes('appleid.apple.com/auth/revoke'),
+  'Sign in with Apple account deletion must revoke Apple authorization.',
+);
+requireValue(
+  rootLayoutSource.includes('SafeAreaProvider'),
+  'The native root must retain the safe-area provider.',
 );
 
 if (errors.length > 0) {
