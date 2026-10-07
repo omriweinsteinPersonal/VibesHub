@@ -545,6 +545,7 @@ export function CreatorStorefrontView({
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
         <StorefrontLayout
+          compactPreview={new URLSearchParams(window.location.search).has('mobilePreview')}
           creatorId={storefront.id}
           theme={previewTheme}
           editable={

@@ -3,6 +3,9 @@
   color: var(--sf-text);
   background: var(--sf-page);
 }
+.layout[data-compact-preview='true'] {
+  padding-bottom: 0;
+}
 .instructions {
   padding: 10px 20px;
   background: #f4edf2;

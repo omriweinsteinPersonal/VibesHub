@@ -196,6 +196,7 @@ function Sortable({
 
 export function StorefrontLayout({
   children,
+  compactPreview = false,
   theme,
   editable,
   creatorId,
@@ -203,6 +204,7 @@ export function StorefrontLayout({
   persistLayout = persistStorefrontLayout,
 }: {
   children: ReactNode;
+  compactPreview?: boolean;
   theme: StorefrontTheme;
   editable: boolean;
   creatorId: string;
@@ -287,6 +289,7 @@ export function StorefrontLayout({
   return (
     <div
       className={styles.layout}
+      data-compact-preview={compactPreview}
       data-sort-region="page"
       data-layout-editable={editable}
     >

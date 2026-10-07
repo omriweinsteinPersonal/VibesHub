@@ -152,6 +152,24 @@ export function RecommendationCardView({
             ) : null}
           </div>
         ) : null}
+        {recommendation.discount ? (
+          <div className="compactProductDiscount" dir="ltr">
+            {recommendation.discount.code ? (
+              <strong>{recommendation.discount.code}</strong>
+            ) : null}
+            {recommendation.discount.label ? (
+              <span>{recommendation.discount.label}</span>
+            ) : null}
+            {recommendation.discount.expiresAt ? (
+              <small>
+                Ends{' '}
+                {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+                  new Date(recommendation.discount.expiresAt),
+                )}
+              </small>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </article>
   );
