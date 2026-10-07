@@ -7465,6 +7465,107 @@ dt {
 .referenceCollectionPages small {
   color: #8f4e2f;
 }
+.referenceStandaloneRecommendation {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  direction: ltr;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(38%, 42%);
+  margin-top: 14px;
+  min-height: 182px;
+  overflow: hidden;
+}
+.referenceStandaloneRecommendationContent {
+  align-content: center;
+  display: grid;
+  gap: 7px;
+  grid-column: 1;
+  padding: 18px 20px;
+  text-align: right;
+}
+.referenceStandaloneRecommendationBrand {
+  color: #8f4e2f;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.referenceStandaloneRecommendationContent h3 {
+  color: #30251f;
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: clamp(1.15rem, 3.5vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.12;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.referenceStandaloneRecommendationOffer {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+.referenceStandaloneRecommendationOffer span {
+  color: #75685f;
+  font-size: 0.76rem;
+}
+.referenceStandaloneRecommendationOffer strong {
+  background: #fff;
+  border: 1px solid #d9c8b9;
+  border-radius: 999px;
+  color: #8f4e2f;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 5px 9px;
+}
+.referenceStandaloneRecommendationContent small {
+  color: #75685f;
+  font-size: 0.68rem;
+}
+.referenceStandaloneRecommendationLink {
+  color: #8f4e2f;
+  font-size: 0.74rem;
+  font-weight: 600;
+  justify-self: end;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.referenceStandaloneRecommendationImage {
+  background: #eee7df;
+  display: block;
+  grid-column: 2;
+  min-height: 182px;
+  overflow: hidden;
+  position: relative;
+}
+.referenceStandaloneRecommendationImage img {
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+.referenceStandaloneRecommendationImage:hover img {
+  transform: scale(1.03);
+}
+@media (max-width: 620px) {
+  .referenceStandaloneRecommendation {
+    grid-template-columns: minmax(0, 1fr) 42%;
+    min-height: 154px;
+  }
+  .referenceStandaloneRecommendationContent {
+    gap: 5px;
+    padding: 14px;
+  }
+  .referenceStandaloneRecommendationImage {
+    min-height: 154px;
+  }
+  .referenceStandaloneRecommendationBrand {
+    font-size: 0.6rem;
+  }
+  .referenceStandaloneRecommendationContent h3 {
+    font-size: 1.05rem;
+  }
+}
 .referenceBrandBlock {
   background: var(--sf-discount, #f8f6f2);
   border: 1px solid #e2d5c8;

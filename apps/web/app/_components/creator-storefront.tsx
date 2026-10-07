@@ -861,6 +861,56 @@ export function CreatorStorefrontView({
   );
 }
 
+function StandaloneRecommendationCard({
+  brand,
+  item,
+}: {
+  brand: CreatorStorefront['brands'][number];
+  item: RecommendationCard;
+}) {
+  const discount = item.discount;
+  return (
+    <article className="referenceStandaloneRecommendation">
+      <div className="referenceStandaloneRecommendationContent" dir="auto">
+        <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+        <h3>{item.productName}</h3>
+        {discount?.code || discount?.label ? (
+          <div className="referenceStandaloneRecommendationOffer">
+            {discount.label ? <span>{discount.label}</span> : null}
+            {discount.code ? <strong>{discount.code}</strong> : null}
+          </div>
+        ) : null}
+        {discount?.expiresAt ? (
+          <small>
+            Offer ends{' '}
+            {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
+              new Date(discount.expiresAt),
+            )}
+          </small>
+        ) : null}
+        <Link className="referenceStandaloneRecommendationLink" href={item.shopUrl}>
+          View product
+        </Link>
+      </div>
+      <Link
+        aria-label={`View ${item.productName} at ${brand.name}`}
+        className="referenceStandaloneRecommendationImage"
+        href={item.shopUrl}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <Image
+          alt={item.productName}
+          fill
+          sizes="(max-width: 620px) 42vw, 220px"
+          src={publicAssetUrl(item.imageUrl)}
+          unoptimized
+        />
+      </Link>
+    </article>
+  );
+}
+
 function BrandBlock({
   brand,
   collections,
@@ -885,6 +935,9 @@ function BrandBlock({
       .flatMap(({ recommendationIds }) => recommendationIds),
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
+  if (items.length === 1 && !offer && collections.length === 0) {
+    return <StandaloneRecommendationCard brand={brand} item={items[0]!} />;
+  }
   return (
     <section className="referenceBrandBlock">
       <a
