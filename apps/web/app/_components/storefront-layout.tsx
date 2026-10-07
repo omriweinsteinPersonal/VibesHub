@@ -266,7 +266,7 @@ export function StorefrontLayout({
     else groups.push([slot]);
   });
   const render = (slot: Slot) =>
-    editable ? (
+    editable && slot.kind !== 'profile' && slot.kind !== 'social' ? (
       <Sortable
         key={slot.id}
         id={slot.id}
@@ -296,7 +296,7 @@ export function StorefrontLayout({
       {editable ? (
         <div className={styles.instructions}>
           <p id="storefront-move-help">
-            Drag Move to place any section. Tap content to edit.
+            Move sections below your profile and social links. Tap content to edit.
           </p>
           <span className="srOnly">
             Use arrow keys on a focused handle to change position.
