@@ -400,14 +400,30 @@ function ProductCard({
         >
           {recommendation.review.value}
         </Text>
-        {recommendation.discount?.code ? (
+        {recommendation.discount ? (
           <View
-            style={[styles.inlineCode, { backgroundColor: theme.discountBackground }]}
+            style={[styles.offerMeta, { backgroundColor: theme.discountBackground }]}
           >
-            <Text style={[styles.inlineCodeLabel, { color: theme.textColor }]}>Code</Text>
-            <Text style={[styles.inlineCodeValue, { color: theme.accentColor }]}>
-              {recommendation.discount.code}
-            </Text>
+            <View style={styles.offerMetaMain}>
+              {recommendation.discount.code ? (
+                <>
+                  <Text style={[styles.inlineCodeLabel, { color: theme.textColor }]}>Code</Text>
+                  <Text style={[styles.inlineCodeValue, { color: theme.accentColor }]}>
+                    {recommendation.discount.code}
+                  </Text>
+                </>
+              ) : null}
+              {recommendation.discount.label ? (
+                <Text style={[styles.offerLabel, { color: theme.textColor }]}>
+                  {recommendation.discount.label}
+                </Text>
+              ) : null}
+            </View>
+            {recommendation.discount.expiresAt ? (
+              <Text style={[styles.offerExpiry, { color: theme.textColor + 'cc' }]}>
+                Ends {formatDiscountDate(recommendation.discount.expiresAt)}
+              </Text>
+            ) : null}
           </View>
         ) : null}
         <Pressable
@@ -432,6 +448,10 @@ function formatPrice(amountMinor: number): string {
     maximumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
     style: 'currency',
   }).format(amountMinor / 100);
+}
+
+function formatDiscountDate(value: string): string {
+  return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(value));
 }
 
 function socialLabel(platform: CreatorStorefront['socialLinks'][number]['platform']) {
@@ -581,6 +601,20 @@ const styles = StyleSheet.create({
   },
   inlineCodeLabel: { fontSize: 12 },
   inlineCodeValue: { fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
+  offerMeta: {
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 14,
+    padding: 12,
+  },
+  offerMetaMain: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  offerLabel: { fontSize: 13 },
+  offerExpiry: { fontSize: 12 },
   shopButton: {
     alignItems: 'center',
     borderRadius: 999,
