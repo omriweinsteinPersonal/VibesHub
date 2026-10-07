@@ -221,15 +221,21 @@ export function parseProductMetadata(
     if (property && content) meta.set(property.toLowerCase(), decodeEntities(content));
   }
   const jsonLd = parseJsonLd(html);
+  const title = firstString(jsonLd?.name) ?? meta.get('og:title') ?? htmlTitle(html);
   const image = firstString(jsonLd?.image) ?? meta.get('og:image') ?? null;
   const absoluteImage = image ? safeAbsoluteHttpsUrl(image, productUrl) : null;
   const imageUrls = uniqueHttpsUrls(
-    [absoluteImage, ...strings(jsonLd?.image)].filter((value): value is string =>
-      Boolean(value),
-    ),
+    [
+      absoluteImage,
+      ...strings(jsonLd?.image),
+      ...extractImageUrlsFromHtml(html, title),
+    ].filter((value): value is string => Boolean(value)),
     productUrl,
   );
-  const price = offerPrice(jsonLd?.offers) ?? meta.get('product:price:amount') ?? null;
+  const price =
+    offerPrice(jsonLd?.offers) ??
+    meta.get('product:price:amount') ??
+    extractPriceFromHtml(html);
   return {
     brandName:
       meta.get('og:site_name') ??
@@ -253,16 +259,10 @@ export function parseProductMetadata(
       meta.get('og:description') ??
       meta.get('description') ??
       null,
-    imageUrl: absoluteImage,
+    imageUrl: imageUrls[0] ?? null,
     imageUrls,
     priceAmountMinor: priceAmountMinor(price),
-    productName:
-      firstString(jsonLd?.name) ??
-      meta.get('og:title') ??
-      (decodeEntities(
-        html.match(/<title[^>]*>([\s\S]*?)<\/title>/iu)?.[1]?.trim() ?? '',
-      ) ||
-        null),
+    productName: cleanProductTitle(title, productUrl),
     productUrl,
   };
 }
@@ -409,7 +409,64 @@ function parseJsonLd(html: string): Record<string, unknown> | null {
 }
 
 function attribute(tag: string, name: string): string | null {
-  return tag.match(new RegExp(`\\b${name}\\s*=\\s*["']([^"']*)["']`, 'iu'))?.[1] ?? null;
+  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'iu'));
+  return match?.[1] ?? match?.[2] ?? null;
+}
+
+function htmlTitle(html: string): string | null {
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/iu)?.[1];
+  return title ? decodeEntities(title).replace(/\s+/gu, ' ').trim() || null : null;
+}
+
+function extractImageUrlsFromHtml(html: string, productName: string | null): string[] {
+  const preferred: string[] = [];
+  const candidates: string[] = [];
+  for (const tag of html.match(/<(?:img|source|link)\s+[^>]*>/giu) ?? []) {
+    const alt = attribute(tag, 'alt') ?? '';
+    const values = [
+      attribute(tag, 'src'),
+      attribute(tag, 'data-src'),
+      attribute(tag, 'data-original'),
+      attribute(tag, 'href'),
+      ...(attribute(tag, 'srcset') ?? '')
+        .split(',')
+        .map((value) => value.trim().split(/\s+/u)[0]),
+    ].filter(isString);
+    if (tag.startsWith('<link') && !/image_src|preload/iu.test(tag)) continue;
+    if (
+      productName &&
+      alt &&
+      productName.toLocaleLowerCase().includes(alt.toLocaleLowerCase())
+    ) {
+      preferred.push(...values);
+    } else {
+      candidates.push(...values);
+    }
+  }
+  return [...preferred, ...candidates].filter(
+    (value) =>
+      /\.(?:jpe?g|png|webp)(?:[?#]|$)/iu.test(value) || /scene7|image/iu.test(value),
+  );
+}
+
+function extractPriceFromHtml(html: string): string | null {
+  const match = html.match(
+    /(?:sale\s+price|current\s+price|price)\s*(?:is|:|=)?\s*([$€£₪]\s?[\d,.]+)/iu,
+  );
+  return match?.[1]?.replace(/\s+/gu, '') ?? null;
+}
+
+function cleanProductTitle(value: string | null, productUrl: string): string | null {
+  if (!value) return null;
+  const cleaned = value
+    .replace(/\s+[|–—-]\s+(?:Levi['’]s|Levis|official site).*$/iu, '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  return looksLikeSku(cleaned) ? productNameFromUrl(productUrl) : cleaned || null;
+}
+
+function looksLikeSku(value: string): boolean {
+  return /^[a-z]{0,4}[-_]?\d[a-z0-9_-]*$/iu.test(value);
 }
 
 function objectValue(value: unknown): Record<string, unknown> | null {
@@ -491,6 +548,10 @@ function productNameFromUrl(productUrl: string): string | null {
       .map((segment) => decodeURIComponent(segment).trim())
       .filter(Boolean);
     let candidate = segments.at(-1) ?? '';
+    const productMarker = segments.findIndex((segment) => /^p$/iu.test(segment));
+    if (productMarker > 0 && looksLikeSku(candidate)) {
+      candidate = segments[productMarker - 1] ?? candidate;
+    }
     if (/^[a-z]{0,4}\d[a-z0-9_-]*\.html$/iu.test(candidate) && segments.length > 1) {
       candidate = segments.at(-2) ?? candidate;
     }

@@ -102,6 +102,35 @@ describe('parseProductMetadata', () => {
       parseProductMetadata(localized, 'https://shop.example/localized').priceAmountMinor,
     ).toBe(129_990);
   });
+
+  it('extracts title, gallery images, and visible prices from dynamic merchant HTML', () => {
+    const html = `
+      <title>501® Original Fit Women's Jeans - Light Wash | Levi's® US</title>
+      <meta property="og:site_name" content="Levi's">
+      <img alt="501® Original Fit Women's Jeans" src="//lscoglobal.scene7.com/jeans-1.jpg">
+      <img alt="501® Original Fit Women's Jeans" data-src="https://lscoglobal.scene7.com/jeans-2.jpg">
+      <div>Sale price is $82.98 Original Price Was $110.00</div>`;
+    expect(
+      parseProductMetadata(html, 'https://www.levi.com/US/en_US/p/125010415'),
+    ).toMatchObject({
+      brandName: "Levi's",
+      imageUrl: 'https://lscoglobal.scene7.com/jeans-1.jpg',
+      imageUrls: [
+        'https://lscoglobal.scene7.com/jeans-1.jpg',
+        'https://lscoglobal.scene7.com/jeans-2.jpg',
+      ],
+      priceAmountMinor: 8_298,
+      productName: "501® Original Fit Women's Jeans - Light Wash",
+    });
+  });
+
+  it('uses the human-readable slug instead of a numeric product id', () => {
+    expect(
+      productMetadataFromUrl(
+        'https://www.levi.com/US/en_US/clothing/women/jeans/straight/501-original-fit-womens-jeans/p/125010415',
+      ).productName,
+    ).toBe('501 original fit womens jeans');
+  });
 });
 
 describe('ProductMetadataService Shopify import', () => {
