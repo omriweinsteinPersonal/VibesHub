@@ -1,4 +1,5 @@
 import type {
+  ContentReportReason,
   CreatorStorefront,
   PublicDiscountCode,
   RecommendationCard,
@@ -8,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Linking,
   Pressable,
@@ -20,17 +22,30 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ContentReportModal } from '../components/content-report-modal';
 import {
   ApiError,
+  createContentReport,
   getPublicStorefront,
   getStorefrontDiscountCodes,
   getStorefrontRecommendations,
 } from '../lib/api';
+import {
+  getContentSafetyInstallationId,
+  getHiddenCreatorIds,
+  hideCreator,
+  showCreator,
+} from '../lib/content-safety';
 
 interface StorefrontData {
   codes: PublicDiscountCode[];
   recommendations: RecommendationCard[];
   storefront: CreatorStorefront;
+}
+
+interface ReportTarget {
+  targetId: string;
+  targetType: 'creator' | 'recommendation';
 }
 
 const fallbackTheme = {
@@ -51,6 +66,9 @@ export default function PublicStorefrontScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
+  const [creatorHidden, setCreatorHidden] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
 
   const loadStorefront = useCallback(
     async (refresh = false) => {
@@ -63,12 +81,14 @@ export default function PublicStorefrontScreen() {
       else setLoading(true);
       setError(null);
       try {
-        const [storefront, recommendations, codes] = await Promise.all([
+        const [storefront, recommendations, codes, hiddenCreatorIds] = await Promise.all([
           getPublicStorefront(handle),
           getStorefrontRecommendations(handle),
           getStorefrontDiscountCodes(handle),
+          getHiddenCreatorIds(),
         ]);
         setData({ codes, recommendations, storefront });
+        setCreatorHidden(hiddenCreatorIds.has(storefront.id));
       } catch (cause) {
         if (cause instanceof ApiError && cause.status === 404) {
           setError('This creator storefront could not be found.');
@@ -94,9 +114,13 @@ export default function PublicStorefrontScreen() {
       getPublicStorefront(handle),
       getStorefrontRecommendations(handle),
       getStorefrontDiscountCodes(handle),
+      getHiddenCreatorIds(),
     ])
-      .then(([storefront, recommendations, codes]) => {
-        if (active) setData({ codes, recommendations, storefront });
+      .then(([storefront, recommendations, codes, hiddenCreatorIds]) => {
+        if (active) {
+          setData({ codes, recommendations, storefront });
+          setCreatorHidden(hiddenCreatorIds.has(storefront.id));
+        }
       })
       .catch((cause: unknown) => {
         if (!active) return;
@@ -130,6 +154,55 @@ export default function PublicStorefrontScreen() {
     );
   }, [data?.recommendations, query]);
 
+  const confirmHideCreator = useCallback(() => {
+    if (!data) return;
+    Alert.alert(
+      `Hide ${data.storefront.displayName}?`,
+      'Their storefront will be removed from creator lists on this device. You can show it again here.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => {
+            void hideCreator(data.storefront.id).then(() => setCreatorHidden(true));
+          },
+          style: 'destructive',
+          text: 'Hide creator',
+        },
+      ],
+    );
+  }, [data]);
+
+  const restoreCreator = useCallback(() => {
+    if (!data) return;
+    void showCreator(data.storefront.id).then(() => setCreatorHidden(false));
+  }, [data]);
+
+  const submitReport = useCallback(
+    async (reason: ContentReportReason, details?: string) => {
+      if (!reportTarget) return;
+      setReportBusy(true);
+      try {
+        await createContentReport({
+          details,
+          installationId: await getContentSafetyInstallationId(),
+          reason,
+          targetId: reportTarget.targetId,
+          targetType: reportTarget.targetType,
+        });
+        setReportTarget(null);
+        Alert.alert('Report received', 'Thank you. We will review this privately.');
+      } catch (cause) {
+        Alert.alert(
+          'Report not sent',
+          cause instanceof Error ? cause.message : 'Please try again.',
+        );
+      } finally {
+        setReportBusy(false);
+      }
+    },
+    [reportTarget],
+  );
+
   if (loading) {
     return <StorefrontLoading />;
   }
@@ -146,6 +219,35 @@ export default function PublicStorefrontScreen() {
             <Text style={styles.retryText}>Try again</Text>
           </Pressable>
           <Pressable
+            onPress={() => router.replace('/creators')}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryText}>Browse creators</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (creatorHidden) {
+    return (
+      <SafeAreaView style={styles.hiddenScreen}>
+        <StatusBar style="dark" />
+        <Text style={styles.logo}>swavii</Text>
+        <View style={styles.hiddenBody}>
+          <Text style={styles.errorTitle}>Creator hidden</Text>
+          <Text style={styles.errorCopy}>
+            {data.storefront.displayName} will not appear in creator lists on this device.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={restoreCreator}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryText}>Show creator again</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
             onPress={() => router.replace('/creators')}
             style={styles.secondaryButton}
           >
@@ -240,6 +342,31 @@ export default function PublicStorefrontScreen() {
               ))}
             </View>
           ) : null}
+          <View style={styles.safetyActions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                setReportTarget({
+                  targetId: data.storefront.id,
+                  targetType: 'creator',
+                })
+              }
+              style={[styles.safetyButton, { borderColor: theme.textColor + '33' }]}
+            >
+              <Text style={[styles.safetyButtonText, { color: theme.textColor }]}>
+                Report
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={confirmHideCreator}
+              style={[styles.safetyButton, { borderColor: theme.textColor + '33' }]}
+            >
+              <Text style={[styles.safetyButtonText, { color: theme.textColor }]}>
+                Hide creator
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View
@@ -316,6 +443,12 @@ export default function PublicStorefrontScreen() {
               filteredRecommendations.map((recommendation) => (
                 <ProductCard
                   key={recommendation.id}
+                  onReport={() =>
+                    setReportTarget({
+                      targetId: recommendation.id,
+                      targetType: 'recommendation',
+                    })
+                  }
                   recommendation={recommendation}
                   theme={theme}
                 />
@@ -327,6 +460,14 @@ export default function PublicStorefrontScreen() {
           </Text>
         </View>
       </ScrollView>
+      {reportTarget ? (
+        <ContentReportModal
+          busy={reportBusy}
+          onClose={() => setReportTarget(null)}
+          onSubmit={(reason, details) => void submitReport(reason, details)}
+          visible
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -345,9 +486,11 @@ function StorefrontLoading() {
 }
 
 function ProductCard({
+  onReport,
   recommendation,
   theme,
 }: {
+  onReport: () => void;
   recommendation: RecommendationCard;
   theme: typeof fallbackTheme;
 }) {
@@ -433,6 +576,16 @@ function ProductCard({
         >
           <Text style={styles.shopButtonText}>View product</Text>
         </Pressable>
+        <Pressable
+          accessibilityLabel={`Report ${recommendation.productName}`}
+          accessibilityRole="button"
+          onPress={onReport}
+          style={styles.reportProductButton}
+        >
+          <Text style={[styles.reportProductText, { color: theme.textColor }]}>
+            Report recommendation
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -474,6 +627,8 @@ const styles = StyleSheet.create({
   loadingBody: { alignItems: 'center', flex: 1, justifyContent: 'center' },
   loadingText: { color: '#766b64', fontSize: 15, marginTop: 14 },
   errorScreen: { backgroundColor: '#fbf9f6', flex: 1, padding: 22 },
+  hiddenScreen: { backgroundColor: '#fbf9f6', flex: 1, padding: 22 },
+  hiddenBody: { alignItems: 'center', flex: 1, justifyContent: 'center' },
   errorBody: { alignItems: 'center', flex: 1, justifyContent: 'center' },
   errorTitle: { color: '#30251f', fontFamily: 'Georgia', fontSize: 30 },
   errorCopy: {
@@ -526,6 +681,14 @@ const styles = StyleSheet.create({
     width: 44,
   },
   socialText: { fontSize: 12, fontWeight: '700' },
+  safetyActions: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  safetyButton: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  safetyButtonText: { fontSize: 12, fontWeight: '600' },
   catalog: { minHeight: 500, padding: 18, paddingBottom: 40 },
   search: {
     borderRadius: 999,
@@ -622,5 +785,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   shopButtonText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  reportProductButton: { alignItems: 'center', marginTop: 10, paddingVertical: 8 },
+  reportProductText: { fontSize: 12, opacity: 0.65, textDecorationLine: 'underline' },
   footer: { fontSize: 12, marginTop: 34, textAlign: 'center' },
 });

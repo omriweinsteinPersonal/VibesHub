@@ -62,6 +62,9 @@ import { CreatorRecommendationsController } from './recommendations/creator-reco
 import { RecommendationRepository } from './recommendations/recommendation.repository.js';
 import { RecommendationService } from './recommendations/recommendation.service.js';
 import { ProductMetadataService } from './recommendations/product-metadata.service.js';
+import { ReportController } from './reports/report.controller.js';
+import { ReportRepository } from './reports/report.repository.js';
+import { ReportService } from './reports/report.service.js';
 import { CreatorBrandController } from './brands/creator-brand.controller.js';
 import { CreatorBrandRepository } from './brands/creator-brand.repository.js';
 import { CreatorBrandService } from './brands/creator-brand.service.js';
@@ -89,6 +92,7 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     AdminMerchantDomainController,
     RedirectController,
     BillingController,
+    ReportController,
   ],
   providers: [
     Database,
@@ -126,6 +130,8 @@ import { CreatorBrandService } from './brands/creator-brand.service.js';
     BillingRepository,
     BillingService,
     RevenueCatWebhookVerifier,
+    ReportRepository,
+    ReportService,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: CapabilityGuard },
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },

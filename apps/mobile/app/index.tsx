@@ -16,6 +16,7 @@ import {
 
 import { getSupabaseClient } from '../lib/supabase';
 import { getCreators } from '../lib/api';
+import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
 
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
@@ -24,6 +25,10 @@ export default function HomeScreen() {
   const [signedIn, setSignedIn] = useState(false);
   const [featuredCreators, setFeaturedCreators] = useState<CreatorCard[]>([]);
   const [creatorsLoading, setCreatorsLoading] = useState(true);
+  const hiddenCreatorIds = useHiddenCreatorIds();
+  const visibleFeaturedCreators = featuredCreators.filter(
+    (creator) => !hiddenCreatorIds.has(creator.id),
+  );
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -105,9 +110,9 @@ export default function HomeScreen() {
             <ActivityIndicator color={colors.accent} />
             <Text style={styles.previewLoadingText}>Finding creators…</Text>
           </View>
-        ) : featuredCreators.length > 0 ? (
+        ) : visibleFeaturedCreators.length > 0 ? (
           <View style={styles.creatorList}>
-            {featuredCreators.map((creator) => (
+            {visibleFeaturedCreators.map((creator) => (
               <Pressable
                 accessibilityHint="Opens this creator's public storefront"
                 accessibilityRole="button"

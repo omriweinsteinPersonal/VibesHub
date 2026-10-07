@@ -5,6 +5,8 @@ import {
   recommendationCardSchema,
 } from '@vibeshub/contracts';
 import type {
+  ContentReportInput,
+  ContentReportReceipt,
   CreatorCard,
   CreatorStorefront,
   PublicDiscountCode,
@@ -50,6 +52,19 @@ export async function deleteCurrentAccount(): Promise<void> {
   if (response.ok) return;
 
   throw await apiError(response, 'Account deletion failed.');
+}
+
+export async function createContentReport(
+  input: ContentReportInput,
+): Promise<ContentReportReceipt> {
+  const response = await fetchWithTimeout(`${getApiUrl()}/v1/reports`, {
+    body: JSON.stringify(input),
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+  });
+  if (!response.ok) throw await apiError(response, 'The report could not be sent.');
+  const body = (await response.json()) as { data: ContentReportReceipt };
+  return body.data;
 }
 
 export async function getBillingSummary(): Promise<BillingSummary> {
@@ -122,11 +137,14 @@ async function publicCollectionRequest(path: string): Promise<unknown[]> {
   return body?.data ?? [];
 }
 
-async function fetchWithTimeout(input: string): Promise<Response> {
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
   const controller = new AbortController();
   const timer = globalThis.setTimeout(() => controller.abort(), defaultRequestTimeoutMs);
   try {
-    return await fetch(input, { signal: controller.signal });
+    return await fetch(input, { ...init, signal: controller.signal });
   } catch (cause) {
     if (controller.signal.aborted) {
       throw new ApiError('The request took too long. Please try again.', 408);
