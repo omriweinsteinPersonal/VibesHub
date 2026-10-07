@@ -8,14 +8,7 @@ import {
   type StorefrontThemeConfiguration,
   type CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
-import {
-  ArrowUpRight,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  Pencil,
-  SlidersHorizontal,
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Pencil, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -322,41 +315,34 @@ export function StorefrontPhonePreview({
       {canEdit ? (
         <>
           <div className="storefrontWorkspaceIntro">
-            <div>
-              <p className="eyebrow">CREATOR STUDIO / STOREFRONT</p>
-              <h1>Your storefront.</h1>
-              <div className="storefrontPreviewToolbar">
-                <div
-                  aria-label="Storefront mode"
-                  className="storefrontModeSwitch"
-                  role="group"
+            <div className="storefrontPreviewToolbar">
+              <div
+                aria-label="Storefront mode"
+                className="storefrontModeSwitch"
+                role="group"
+              >
+                <button
+                  aria-pressed={previewMode}
+                  onClick={() => {
+                    setPreviewMode(true);
+                    setMobileEditorOpen(false);
+                  }}
+                  type="button"
                 >
-                  <button
-                    aria-pressed={previewMode}
-                    onClick={() => {
-                      setPreviewMode(true);
-                      setMobileEditorOpen(false);
-                    }}
-                    type="button"
-                  >
-                    <Eye aria-hidden="true" size={16} /> Preview
-                  </button>
-                  <button
-                    aria-pressed={!previewMode}
-                    onClick={() => {
-                      setPreviewMode(false);
-                      setMobileEditorOpen(true);
-                    }}
-                    type="button"
-                  >
-                    <Pencil aria-hidden="true" size={16} /> Edit page
-                  </button>
-                </div>
+                  <Eye aria-hidden="true" size={16} /> Preview
+                </button>
+                <button
+                  aria-pressed={!previewMode}
+                  onClick={() => {
+                    setPreviewMode(false);
+                    setMobileEditorOpen(true);
+                  }}
+                  type="button"
+                >
+                  <Pencil aria-hidden="true" size={16} /> Edit page
+                </button>
               </div>
             </div>
-            <a href={previewUrl.split('?')[0]} rel="noreferrer" target="_blank">
-              Open live page <ArrowUpRight aria-hidden="true" size={17} />
-            </a>
           </div>
         </>
       ) : null}

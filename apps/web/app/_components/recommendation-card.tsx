@@ -5,10 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
-import {
-  isRedundantBrandTitleLine,
-  splitBilingualProductTitle,
-} from '../../lib/bilingual-product-title';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { RecommendationImpressionTracker } from './analytics-events';
 import { StoryVideo } from './story-video';
@@ -39,26 +35,11 @@ export function RecommendationCardView({
     : recommendation.videoUrl
       ? [publicAssetUrl(recommendation.videoUrl)]
       : [];
-  const title = splitBilingualProductTitle(recommendation.productName);
   const textDirection = /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(
     recommendation.productName,
   )
     ? 'rtl'
     : 'ltr';
-  const titleLines = title
-    ? title.firstLanguage === 'he'
-      ? [
-          { direction: 'rtl' as const, language: 'he', text: title.hebrew },
-          { direction: 'ltr' as const, language: 'en', text: title.english },
-        ]
-      : [
-          { direction: 'ltr' as const, language: 'en', text: title.english },
-          { direction: 'rtl' as const, language: 'he', text: title.hebrew },
-        ]
-    : null;
-  const visibleTitleLines = titleLines?.filter(
-    ({ text }) => !isRedundantBrandTitleLine(text, recommendation.brandName),
-  );
   const isLinkCard = recommendation.contentKind === 'link';
   if (isLinkCard) {
     return (
@@ -151,28 +132,10 @@ export function RecommendationCardView({
           </p>
         ) : null}
         <div className="compactProductHeading">
-          <h3
-            className={title ? 'bilingualProductTitle' : 'singleLanguageProductTitle'}
-            dir={textDirection}
-          >
-            {visibleTitleLines?.length ? (
-              visibleTitleLines.map((line, index) => (
-                <span
-                  className={
-                    index === 0 ? 'productTitlePrimary' : 'productTitleSecondary'
-                  }
-                  dir={line.direction}
-                  key={line.language}
-                  lang={line.language}
-                >
-                  {line.text}
-                </span>
-              ))
-            ) : titleLines ? null : (
-              <span className="productTitlePrimary" dir={textDirection}>
-                {isolateMeasurements(recommendation.productName)}
-              </span>
-            )}
+          <h3 className="singleLanguageProductTitle" dir={textDirection}>
+            <span className="productTitlePrimary" dir="auto">
+              {isolateMeasurements(recommendation.productName)}
+            </span>
           </h3>
         </div>
         {showPrice ? (

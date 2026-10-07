@@ -8455,6 +8455,26 @@ dt {
   line-height: 1.25;
 }
 
+.storeProductDetails h3.singleLanguageProductTitle,
+.savedProductRail .storeProductDetails h3.singleLanguageProductTitle,
+.discoverProducts .storeProductDetails h3.singleLanguageProductTitle {
+  display: block;
+  min-height: 1.25em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: unset;
+}
+
+.singleLanguageProductTitle .productTitlePrimary {
+  display: block;
+  overflow: hidden;
+  text-align: start;
+  text-overflow: ellipsis;
+  unicode-bidi: plaintext;
+  white-space: nowrap;
+}
+
 .storeProductDetails .storePrice {
   align-self: stretch;
   direction: rtl;
@@ -8698,6 +8718,10 @@ dt {
 
 .compactProductCard .storeProductDetails h3.bilingualProductTitle {
   gap: 1px;
+}
+
+.compactProductCard .storeProductDetails h3.singleLanguageProductTitle {
+  min-height: 1.22em;
 }
 
 .compactProductCard .storeProductDetails .storePrice {
@@ -12931,55 +12955,15 @@ dt {
 }
 
 .storefrontWorkspaceIntro {
-  align-items: end;
+  align-items: center;
   display: flex;
-  gap: 24px;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin: 0 auto;
   max-width: 1280px;
-  padding: 38px 32px 27px;
+  padding: 16px 32px;
   grid-column: 1 / -1;
   width: 100%;
   box-sizing: border-box;
-}
-
-.storefrontWorkspaceIntro .eyebrow {
-  color: #a3573b;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  margin: 0 0 10px;
-}
-
-.storefrontWorkspaceIntro h1 {
-  color: #222624;
-  font-family: var(--font-vh-body), Arial, sans-serif;
-  font-size: clamp(2.1rem, 4vw, 3.15rem);
-  font-weight: 650;
-  letter-spacing: -0.065em;
-  line-height: 1.05;
-  margin: 0 0 9px;
-}
-
-.storefrontWorkspaceIntro p:last-child {
-  color: #606862;
-  font-size: 0.84rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.storefrontWorkspaceIntro > a {
-  align-items: center;
-  color: #35463d;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 0.8rem;
-  font-weight: 700;
-  gap: 5px;
-  min-height: 44px;
-}
-
-.storefrontWorkspaceIntro > a:hover {
-  color: #a3573b;
 }
 
 .storefrontPreviewToolbar {
@@ -12994,7 +12978,7 @@ dt {
   background: transparent;
   border: 0;
   min-height: 0;
-  padding: 8px 0 0;
+  padding: 0;
 }
 
 .storefrontPreviewToolbar > span {
@@ -13026,8 +13010,7 @@ dt {
   color: #232b25;
 }
 
-.storefrontModeSwitch button:focus-visible,
-.storefrontWorkspaceIntro > a:focus-visible {
+.storefrontModeSwitch button:focus-visible {
   outline: 2px solid #9d543a;
   outline-offset: 2px;
 }
@@ -13233,20 +13216,7 @@ dt {
 
 @media (max-width: 900px) {
   .storefrontWorkspaceIntro {
-    padding: 24px 18px 18px;
-  }
-
-  .storefrontWorkspaceIntro h1 {
-    font-size: 2rem;
-  }
-
-  .storefrontWorkspaceIntro p:last-child {
-    font-size: 0.75rem;
-  }
-
-  .storefrontWorkspaceIntro > a,
-  .storefrontPreviewToolbar > span {
-    display: none;
+    padding: 12px 18px;
   }
 
   .storefrontPreviewToolbar {
