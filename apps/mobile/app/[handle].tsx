@@ -401,13 +401,13 @@ function ProductCard({
           {recommendation.review.value}
         </Text>
         {recommendation.discount ? (
-          <View
-            style={[styles.offerMeta, { backgroundColor: theme.discountBackground }]}
-          >
+          <View style={[styles.offerMeta, { backgroundColor: theme.discountBackground }]}>
             <View style={styles.offerMetaMain}>
               {recommendation.discount.code ? (
                 <>
-                  <Text style={[styles.inlineCodeLabel, { color: theme.textColor }]}>Code</Text>
+                  <Text style={[styles.inlineCodeLabel, { color: theme.textColor }]}>
+                    Code
+                  </Text>
                   <Text style={[styles.inlineCodeValue, { color: theme.accentColor }]}>
                     {recommendation.discount.code}
                   </Text>

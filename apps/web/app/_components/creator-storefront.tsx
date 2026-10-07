@@ -489,9 +489,9 @@ export function CreatorStorefrontView({
     <>
       <div
         className="creatorStorefrontCanvas"
-        data-mobile-preview={
-          new URLSearchParams(window.location.search).has('mobilePreview')
-        }
+        data-mobile-preview={new URLSearchParams(window.location.search).has(
+          'mobilePreview',
+        )}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
@@ -548,7 +548,9 @@ export function CreatorStorefrontView({
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
         <StorefrontLayout
-          compactPreview={new URLSearchParams(window.location.search).has('mobilePreview')}
+          compactPreview={new URLSearchParams(window.location.search).has(
+            'mobilePreview',
+          )}
           creatorId={storefront.id}
           theme={previewTheme}
           editable={
@@ -937,7 +939,9 @@ function BrandBlock({
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
   if (items.length === 1 && !offer && collections.length === 0) {
-    return <StandaloneRecommendationCard brand={brand} handle={handle} item={items[0]!} />;
+    return (
+      <StandaloneRecommendationCard brand={brand} handle={handle} item={items[0]!} />
+    );
   }
   return (
     <section className="referenceBrandBlock">
