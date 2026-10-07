@@ -883,16 +883,7 @@ function StandaloneRecommendationCard({
   handle: string;
   item: RecommendationCard;
 }) {
-  const description = discount
-    ? 'details' in discount && discount.details
-      ? discount.details.value
-      : (discount.label ??
-        ('discountPercent' in discount && discount.discountPercent
-          ? `${discount.discountPercent}% off`
-          : 'discountAmountMinor' in discount && discount.discountAmountMinor
-            ? `₪${discount.discountAmountMinor / 100} off`
-            : null))
-    : null;
+  const value = discount ? discountValue(discount) : null;
   return (
     <Link
       aria-label={`View ${item.productName} at ${brand.name}`}
@@ -900,28 +891,67 @@ function StandaloneRecommendationCard({
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
       <div className="referenceStandaloneRecommendationContent" dir="auto">
-        <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
-        <h3>{item.productName}</h3>
-        {discount?.code || description ? (
+        <div className="referenceStandaloneRecommendationTopline">
+          <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+          {value ? <span>{value}</span> : null}
+        </div>
+        {discount?.expiresAt || discount?.code ? (
           <div className="referenceStandaloneRecommendationOffer">
-            {description ? <span>{description}</span> : null}
-            {discount?.code ? <strong>{discount.code}</strong> : null}
+            {discount.expiresAt ? (
+              <span>🗓️ {formatOfferDate(discount.expiresAt)}</span>
+            ) : null}
+            {discount.code ? <strong>{discount.code}</strong> : null}
           </div>
         ) : null}
-        {discount?.expiresAt ? (
-          <small>
-            Offer ends{' '}
-            {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
-              new Date(discount.expiresAt),
-            )}
-          </small>
-        ) : null}
+        <h3>{item.productName}</h3>
       </div>
       <div className="referenceStandaloneRecommendationImage">
         <Image
           alt={item.productName}
           fill
           sizes="(max-width: 620px) 42vw, 220px"
+          src={publicAssetUrl(item.imageUrl)}
+          unoptimized
+        />
+      </div>
+    </Link>
+  );
+}
+
+function SingleBrandProductCard({
+  brand,
+  handle,
+  item,
+  offer,
+}: {
+  brand: CreatorStorefront['brands'][number];
+  handle: string;
+  item: RecommendationCard;
+  offer: PublicDiscountCode;
+}) {
+  return (
+    <Link
+      aria-label={`View ${item.productName} at ${brand.name}`}
+      className="referenceBrandSingleProduct"
+      href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
+    >
+      <div className="referenceBrandSingleProductCopy" dir="auto">
+        <div className="referenceBrandSingleProductMeta">
+          <span>{brand.name}</span>
+          {offerValue(offer) ? <strong>{offerValue(offer)}</strong> : null}
+        </div>
+        <div className="referenceBrandSingleProductOffer">
+          {offer.expiresAt ? <span>🗓️ {formatOfferDate(offer.expiresAt)}</span> : null}
+          {offer.code ? <strong>{offer.code}</strong> : null}
+        </div>
+        <h3>{item.productName}</h3>
+        {offer.details ? <p>{offer.details.value}</p> : null}
+      </div>
+      <div className="referenceBrandSingleProductImage">
+        <Image
+          alt={item.productName}
+          fill
+          sizes="(max-width: 620px) 42vw, 300px"
           src={publicAssetUrl(item.imageUrl)}
           unoptimized
         />
@@ -956,8 +986,13 @@ function BrandBlock({
       .flatMap(({ recommendationIds }) => recommendationIds),
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
-  if (items.length === 1 && !offer && collections.length === 0) {
+  if (items.length === 1 && collections.length === 0) {
     const item = items[0]!;
+    if (offer) {
+      return (
+        <SingleBrandProductCard brand={brand} handle={handle} item={item} offer={offer} />
+      );
+    }
     const discount =
       item.discount ??
       discountCodes.find(
@@ -1067,6 +1102,27 @@ function BrandBlock({
       ) : null}
     </section>
   );
+}
+
+function formatOfferDate(value: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function discountValue(
+  discount: NonNullable<RecommendationCard['discount']> | PublicDiscountCode,
+): string | null {
+  if ('discountPercent' in discount && discount.discountPercent) {
+    return `${discount.discountPercent}% off`;
+  }
+  if ('discountAmountMinor' in discount && discount.discountAmountMinor) {
+    return `₪${discount.discountAmountMinor / 100} off`;
+  }
+  if ('details' in discount && discount.details) return discount.details.value;
+  return discount.label;
 }
 
 function DiscountBlock({ code }: { code: PublicDiscountCode }) {

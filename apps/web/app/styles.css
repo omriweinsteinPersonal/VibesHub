@@ -7518,6 +7518,17 @@ dt {
   margin: 0;
   text-transform: uppercase;
 }
+.referenceStandaloneRecommendationTopline {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+.referenceStandaloneRecommendationTopline > span {
+  color: #75685f;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
 .referenceStandaloneRecommendationContent h3 {
   color: #30251f;
   font-family: var(--font-vh-display), Georgia, serif;
@@ -7566,6 +7577,84 @@ dt {
 .referenceStandaloneRecommendationImage:hover img {
   transform: scale(1.03);
 }
+.referenceBrandSingleProduct {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  color: inherit;
+  display: grid;
+  grid-template-columns: minmax(0, 58%) minmax(38%, 42%);
+  margin-top: 14px;
+  min-height: 190px;
+  overflow: hidden;
+  text-decoration: none;
+}
+.referenceBrandSingleProductCopy {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  padding: 18px 22px;
+  text-align: right;
+}
+.referenceBrandSingleProductMeta,
+.referenceBrandSingleProductOffer {
+  align-items: baseline;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.referenceBrandSingleProductMeta span {
+  color: #8f4e2f;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.referenceBrandSingleProductMeta strong {
+  color: #75685f;
+  font-size: 0.76rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.referenceBrandSingleProductOffer {
+  color: #75685f;
+  font-size: 0.72rem;
+}
+.referenceBrandSingleProductOffer strong {
+  background: #fff;
+  border: 1px dashed #c9b6a7;
+  border-radius: 7px;
+  color: #43352d;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 5px 8px;
+}
+.referenceBrandSingleProductCopy h3 {
+  align-self: center;
+  color: #30251f;
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: clamp(1.35rem, 3.6vw, 2.15rem);
+  font-weight: 400;
+  line-height: 1.08;
+  margin: 10px 0 0;
+}
+.referenceBrandSingleProductCopy p {
+  color: #75685f;
+  font-size: 0.76rem;
+  margin: 0;
+}
+.referenceBrandSingleProductImage {
+  background: #ebe9e6;
+  min-height: 190px;
+  overflow: hidden;
+  position: relative;
+}
+.referenceBrandSingleProductImage img {
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+.referenceBrandSingleProduct:hover .referenceBrandSingleProductImage img {
+  transform: scale(1.03);
+}
 @media (max-width: 620px) {
   .referenceStandaloneRecommendation {
     grid-template-columns: minmax(0, 1fr) 42%;
@@ -7583,6 +7672,25 @@ dt {
   }
   .referenceStandaloneRecommendationContent h3 {
     font-size: 1.05rem;
+  }
+  .referenceBrandSingleProduct {
+    grid-template-columns: minmax(0, 58%) 42%;
+    min-height: 156px;
+  }
+  .referenceBrandSingleProductCopy {
+    gap: 5px;
+    padding: 14px;
+  }
+  .referenceBrandSingleProductMeta span,
+  .referenceBrandSingleProductMeta strong,
+  .referenceBrandSingleProductOffer {
+    font-size: 0.64rem;
+  }
+  .referenceBrandSingleProductCopy h3 {
+    font-size: 1.25rem;
+  }
+  .referenceBrandSingleProductImage {
+    min-height: 156px;
   }
 }
 .referenceBrandBlock {
