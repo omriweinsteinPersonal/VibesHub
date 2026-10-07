@@ -741,6 +741,13 @@ export function CreatorDashboard() {
         return;
       }
     }
+    if (
+      product.instagramStoryUrl.trim() &&
+      !normalizeInstagramStoryUrl(product.instagramStoryUrl)
+    ) {
+      setError('Use a valid HTTPS Instagram Story or Highlight link.');
+      return;
+    }
     if (!isLinkCard && !product.imageAssetId && !product.imageUrl) {
       setError('Add a product photo to save this recommendation.');
       document.getElementById('creator-product-photos')?.scrollIntoView({
@@ -790,7 +797,7 @@ export function CreatorDashboard() {
             : null,
         imageAssetId: product.imageAssetId || null,
         imageUrl: product.imageAssetId ? null : product.imageUrl,
-        instagramStoryUrl: product.instagramStoryUrl.trim() || null,
+        instagramStoryUrl: normalizeInstagramStoryUrl(product.instagramStoryUrl),
         additionalImages: isLinkCard
           ? []
           : product.additionalImages.map((image) =>
@@ -3056,11 +3063,12 @@ function ProductForm({
               Instagram story or Highlight link (optional)
               <input
                 inputMode="url"
-                pattern="https://(www\.)?instagram\.com/stories/.+"
                 placeholder="https://www.instagram.com/stories/..."
                 type="url"
                 value={editor.instagramStoryUrl}
-                onChange={(event) => update('instagramStoryUrl', event.target.value)}
+                onChange={(event) =>
+                  update('instagramStoryUrl', event.target.value.trim())
+                }
               />
             </label>
             <fieldset className="creatorStoryFields">
@@ -3926,6 +3934,23 @@ function toLocalDateTime(value: string | null) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+function normalizeInstagramStoryUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const url = new URL(trimmed);
+    if (
+      url.protocol !== 'https:' ||
+      !['instagram.com', 'www.instagram.com'].includes(url.hostname) ||
+      !url.pathname.startsWith('/stories/')
+    ) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 function messageFor(cause: unknown) {
   return cause instanceof Error ? cause.message : 'The request could not be completed.';

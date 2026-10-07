@@ -159,10 +159,33 @@ export async function uploadVideoResumable(
       'Upload-Metadata': metadata,
     },
   });
-  if (!created.ok)
+  if (created.status === 403) {
+    // Some Supabase regions reject the TUS handshake for signed uploads even
+    // though the token is valid. The SDK's signed-upload path sends the same
+    // token with the required project headers and is a reliable fallback.
+    const { error } = await getSupabaseBrowserClient()
+      .storage.from(upload.bucket)
+      .uploadToSignedUrl(upload.objectPath, upload.token, file, {
+        cacheControl: '31536000',
+        contentType: upload.contentType,
+      });
+    if (!error) {
+      onStage('uploading', 100);
+      return;
+    }
+    throw new Error(`Video upload was rejected (403): ${error.message}`);
+  }
+  if (!created.ok) {
+    if (created.status === 413) {
+      throw new Error(
+        'This video exceeds the storage size limit. Try a smaller file or contact support.',
+      );
+    }
+    const detail = await created.text().catch(() => '');
     throw new Error(
-      `Video upload could not start (${created.status}). Check the storage size limit and try again.`,
+      `Video upload could not start (${created.status})${detail ? `: ${detail}` : ''}.`,
     );
+  }
   const location = created.headers.get('Location');
   if (!location) throw new Error('Storage did not return an upload address. Try again.');
   const uploadUrl = new URL(location, endpoint);
@@ -192,7 +215,7 @@ export async function uploadVideoResumable(
       } catch (error) {
         if (error instanceof Error && error.message === 'VIDEO_STORAGE_LIMIT')
           throw new Error(
-            'This video exceeds the current storage limit. Try a smaller file or contact support.',
+            'This video exceeds the storage size limit. Try a smaller file or contact support.',
           );
         const head = await fetch(uploadUrl, {
           method: 'HEAD',

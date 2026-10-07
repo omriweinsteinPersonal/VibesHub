@@ -126,6 +126,12 @@ export default function CreatorRecommendationsPage() {
       if (!editor.imageAssetId && !editor.imageUrl) {
         throw new Error('Upload a product image before saving.');
       }
+      if (
+        editor.instagramStoryUrl.trim() &&
+        !normalizeInstagramStoryUrl(editor.instagramStoryUrl)
+      ) {
+        throw new Error('Use a valid HTTPS Instagram Story or Highlight link.');
+      }
       const body = JSON.stringify({
         brandName: editor.brandName,
         categoryId: editor.categoryId,
@@ -134,7 +140,7 @@ export default function CreatorRecommendationsPage() {
         discountLabel: editor.discountLabel.trim() || null,
         imageAssetId: editor.imageAssetId || null,
         imageUrl: editor.imageAssetId ? null : editor.imageUrl || null,
-        instagramStoryUrl: editor.instagramStoryUrl.trim() || null,
+        instagramStoryUrl: normalizeInstagramStoryUrl(editor.instagramStoryUrl),
         priceAmountMinor: Math.round(amount * 100),
         productName: editor.productName,
         productUrl: editor.productUrl,
@@ -462,11 +468,12 @@ export default function CreatorRecommendationsPage() {
             <label>
               Instagram story or Highlight link (optional)
               <input
-                pattern="https://(www\.)?instagram\.com/stories/.+"
                 placeholder="https://www.instagram.com/stories/..."
                 type="url"
                 value={editor.instagramStoryUrl}
-                onChange={(event) => update('instagramStoryUrl', event.target.value)}
+                onChange={(event) =>
+                  update('instagramStoryUrl', event.target.value.trim())
+                }
               />
             </label>
             <label>
@@ -677,6 +684,24 @@ function uploadStageLabel(
     uploading: 'Uploading image…',
     validating: 'Checking image type and size…',
   }[stage];
+}
+
+function normalizeInstagramStoryUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const url = new URL(trimmed);
+    if (
+      url.protocol !== 'https:' ||
+      !['instagram.com', 'www.instagram.com'].includes(url.hostname) ||
+      !url.pathname.startsWith('/stories/')
+    ) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function messageFor(cause: unknown): string {
