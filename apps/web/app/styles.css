@@ -13339,6 +13339,11 @@ dt {
 }
 
 @media (max-width: 900px) {
+  .storefrontDesignWorkspace {
+    background: #fff;
+    border-radius: 0;
+  }
+
   .storefrontWorkspaceIntro {
     padding: 12px 18px;
   }
@@ -13365,7 +13370,7 @@ dt {
     background: #fff;
     display: block;
     min-height: 0;
-    padding: 0;
+    padding: 0 0 1px;
     position: relative;
     top: auto;
   }
