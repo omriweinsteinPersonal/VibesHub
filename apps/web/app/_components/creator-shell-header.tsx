@@ -9,7 +9,9 @@ import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { Brand } from './brand';
 import { useCreatorNavigation } from './creator-navigation-provider';
 
-export function CreatorShellHeader() {
+export function CreatorShellHeader({
+  showBottomBar = true,
+}: { showBottomBar?: boolean } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const {
@@ -103,27 +105,43 @@ export function CreatorShellHeader() {
           </div>
         </div>
       </header>
-      <nav aria-label="Mobile creator workspace" className="creatorBottomBar">
-        {links.map(({ href, icon: Icon, label }) => (
-          <Link
-            aria-current={pathname === href ? 'page' : undefined}
-            aria-disabled={!href || undefined}
-            data-pending={pendingHref === href || undefined}
-            href={href ?? pathname}
-            key={label}
-            onClick={(event) => {
-              if (!href) event.preventDefault();
-            }}
-            onNavigate={() => {
-              if (href) startNavigation(href);
-            }}
-            tabIndex={href ? undefined : -1}
-          >
-            <Icon aria-hidden="true" />
-            <span>{label}</span>
-          </Link>
-        ))}
-      </nav>
+      {showBottomBar ? <CreatorBottomBar /> : null}
     </>
+  );
+}
+
+export function CreatorBottomBar() {
+  const pathname = usePathname();
+  const { pendingHref, startNavigation, storefrontHref } = useCreatorNavigation();
+  const links = [
+    { href: '/creator-home', icon: House, label: 'Home' },
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: storefrontHref, icon: Store, label: 'Storefront' },
+    { href: '/analytics', icon: ChartColumn, label: 'Analytics' },
+    { href: '/account', icon: User, label: 'Account' },
+  ];
+
+  return (
+    <nav aria-label="Mobile creator workspace" className="creatorBottomBar">
+      {links.map(({ href, icon: Icon, label }) => (
+        <Link
+          aria-current={pathname === href ? 'page' : undefined}
+          aria-disabled={!href || undefined}
+          data-pending={pendingHref === href || undefined}
+          href={href ?? pathname}
+          key={label}
+          onClick={(event) => {
+            if (!href) event.preventDefault();
+          }}
+          onNavigate={() => {
+            if (href) startNavigation(href);
+          }}
+          tabIndex={href ? undefined : -1}
+        >
+          <Icon aria-hidden="true" />
+          <span>{label}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }

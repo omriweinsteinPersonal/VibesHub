@@ -19,7 +19,7 @@ export function StorefrontHeader({
   }
   return (
     <div className={workspace ? 'storefrontWorkspaceHeader' : 'storefrontDetailHeader'}>
-      <CreatorShellHeader />
+      <CreatorShellHeader showBottomBar={false} />
     </div>
   );
 }

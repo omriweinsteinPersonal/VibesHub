@@ -11,6 +11,7 @@ import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../li
 import { loadStorefrontRecommendations } from '../../lib/storefront-recommendations';
 import { hasCreatorSession } from '../../lib/server-session';
 import { CreatorStorefrontView } from './creator-storefront';
+import { CreatorBottomBar } from './creator-shell-header';
 import { StorefrontHeader } from './storefront-header';
 import { StorefrontPhonePreview } from './storefront-phone-preview';
 
@@ -120,6 +121,7 @@ async function StorefrontPage({
           />
         </StorefrontPhonePreview>
       </main>
+      {creatorSession ? <CreatorBottomBar /> : null}
     </div>
   );
 }
@@ -138,6 +140,7 @@ function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) 
           </Link>
         </section>
       </main>
+      {creatorSession ? <CreatorBottomBar /> : null}
     </div>
   );
 }

@@ -59,6 +59,22 @@ svg.lucide {
     z-index: 1200;
   }
 
+  /* The storefront navigation belongs to the page flow so it cannot cover the
+     last recommendation while a creator scrolls through the preview. */
+  body:has(.storefrontPage .creatorBottomBar) {
+    padding-bottom: 0;
+  }
+
+  .storefrontPage .creatorBottomBar {
+    bottom: auto;
+    box-shadow: none;
+    left: auto;
+    position: static;
+    right: auto;
+    width: 100%;
+    z-index: auto;
+  }
+
   .creatorBottomBar a {
     align-items: center;
     color: var(--vh-muted);
