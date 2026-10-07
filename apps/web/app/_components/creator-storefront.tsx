@@ -489,6 +489,9 @@ export function CreatorStorefrontView({
     <>
       <div
         className="creatorStorefrontCanvas"
+        data-mobile-preview={
+          new URLSearchParams(window.location.search).has('mobilePreview')
+        }
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (

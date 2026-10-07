@@ -8890,6 +8890,9 @@ dt {
   background: var(--sf-page);
   color: var(--sf-text);
 }
+.creatorStorefrontCanvas[data-mobile-preview='true'] {
+  min-height: 100vh;
+}
 .creatorStorefrontCanvas .referenceStorefrontHero {
   background: var(--sf-profile);
 }
