@@ -9407,28 +9407,44 @@ dt {
 }
 
 .productDetailDiscount {
-  align-items: center;
   background: var(--vh-surface);
   border-block: 1px solid var(--vh-border);
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 18px 0;
+  padding: 12px 0;
 }
 
-.productDetailDiscount > div {
+.productDetailDiscountMain {
   display: grid;
-  gap: 2px;
+  gap: 5px;
 }
 
-.productDetailDiscount small,
+.productDetailDiscountLabel,
 .productDetailStore {
   color: var(--vh-muted);
   font-size: 0.75rem;
 }
 
+.productDetailDiscountCode {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 .productDetailDiscount strong {
-  font-size: 1.2rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.productDetailDiscountExpiry {
+  align-items: center;
+  color: var(--vh-muted);
+  display: inline-flex;
+  font-size: 0.78rem;
+  gap: 5px;
+}
+
+.productDetailDiscount .copyDiscountCodeButton {
+  min-height: 26px;
+  padding: 0 8px;
 }
 
 .productDetailDescription,
@@ -9464,6 +9480,52 @@ dt {
   display: inline-flex;
   gap: 8px;
   min-height: 44px;
+}
+
+.productDetailInstagramStory {
+  align-items: center;
+  background: var(--vh-surface);
+  border: 1px solid var(--vh-border);
+  border-radius: 14px;
+  color: var(--vh-ink);
+  display: inline-flex;
+  gap: 10px;
+  min-height: 54px;
+  padding: 8px 12px;
+  text-decoration: none;
+}
+
+.productDetailInstagramStory:hover,
+.productDetailInstagramStory:focus-visible {
+  border-color: var(--vh-accent);
+  color: var(--vh-accent-strong);
+}
+
+.productDetailInstagramIcon {
+  align-items: center;
+  background: var(--vh-accent);
+  border-radius: 50%;
+  color: var(--vh-accent-ink, #fff);
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.productDetailInstagramStory > span:nth-child(2) {
+  display: grid;
+  gap: 1px;
+}
+
+.productDetailInstagramStory small {
+  color: var(--vh-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.productDetailInstagramStory strong {
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .productDetailStore {

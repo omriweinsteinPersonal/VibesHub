@@ -3,7 +3,13 @@
 import type { PublicRecommendationDetail } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Camera, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import {
+  CalendarDays,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import { merchantNameFromHostname } from '../../lib/merchant-name';
@@ -153,23 +159,33 @@ export function ProductDetailView({
 
           {recommendation.discount ? (
             <div className="productDetailDiscount">
-              <div>
-                <small>{recommendation.discount.code ? 'DISCOUNT CODE' : 'OFFER'}</small>
+              <div className="productDetailDiscountMain">
+                <small className="productDetailDiscountLabel">
+                  {recommendation.discount.code ? 'DISCOUNT CODE' : 'OFFER'}
+                </small>
                 {recommendation.discount.code ? (
-                  <strong>{recommendation.discount.code}</strong>
+                  <div className="productDetailDiscountCode">
+                    <strong>{recommendation.discount.code}</strong>
+                    {recommendation.discount.id ? (
+                      <CopyDiscountCodeButton
+                        code={recommendation.discount.code}
+                        creatorId={recommendation.creator.id}
+                        discountCodeId={recommendation.discount.id}
+                        recommendationId={recommendation.id}
+                      />
+                    ) : null}
+                  </div>
                 ) : null}
                 {recommendation.discount.label ? (
                   <span>{recommendation.discount.label}</span>
                 ) : null}
+                {recommendation.discount.expiresAt ? (
+                  <span className="productDetailDiscountExpiry">
+                    <CalendarDays aria-hidden="true" size={14} />
+                    Expires {formatOfferDate(recommendation.discount.expiresAt)}
+                  </span>
+                ) : null}
               </div>
-              {recommendation.discount.id && recommendation.discount.code ? (
-                <CopyDiscountCodeButton
-                  code={recommendation.discount.code}
-                  creatorId={recommendation.creator.id}
-                  discountCodeId={recommendation.discount.id}
-                  recommendationId={recommendation.id}
-                />
-              ) : null}
             </div>
           ) : null}
 
@@ -187,7 +203,7 @@ export function ProductDetailView({
 
           {clips.length || recommendation.instagramStoryUrl ? (
             <section className="productDetailStories">
-              <h2>Creator stories</h2>
+              {clips.length ? <h2>Creator stories</h2> : null}
               <div>
                 {clips.length ? (
                   <StoryVideo
@@ -202,13 +218,18 @@ export function ProductDetailView({
                 ) : null}
                 {recommendation.instagramStoryUrl ? (
                   <a
-                    className="button secondary"
+                    className="productDetailInstagramStory"
                     href={recommendation.instagramStoryUrl}
                     rel="nofollow noopener noreferrer"
                     target="_blank"
                   >
-                    <Camera aria-hidden="true" size={16} />
-                    View on Instagram
+                    <span className="productDetailInstagramIcon">
+                      <Camera aria-hidden="true" size={16} />
+                    </span>
+                    <span>
+                      <small>CREATOR STORY</small>
+                      <strong>View on Instagram</strong>
+                    </span>
                     <ExternalLink aria-hidden="true" size={14} />
                   </a>
                 ) : null}
@@ -219,4 +240,12 @@ export function ProductDetailView({
       </div>
     </article>
   );
+}
+
+function formatOfferDate(value: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(value));
 }
