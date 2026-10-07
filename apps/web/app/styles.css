@@ -59,24 +59,53 @@ svg.lucide {
     z-index: 1200;
   }
 
-  /* Keep storefront navigation pinned to the viewport edge. The phone preview
-     already reserves this height, so it never covers the last recommendation. */
+  /* On mobile the storefront preview and its navigation share one viewport.
+     Keeping them in a flex column makes the iframe end exactly above the bar. */
   body:has(.storefrontPage .creatorBottomBar) {
-    padding-bottom: calc(62px + env(safe-area-inset-bottom));
+    padding-bottom: 0;
+  }
+
+  .storefrontPage:has(.storefrontDesignWorkspace) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .storefrontPage:has(.storefrontDesignWorkspace) > main {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .storefrontPage .storefrontDesignWorkspace {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .storefrontPage .storefrontWorkspaceIntro {
+    flex: 0 0 auto;
+  }
+
+  .storefrontPage .storefrontPhoneStage,
+  .storefrontPage .storefrontPhoneDevice {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .storefrontPage .creatorBottomBar {
-    bottom: 0;
-    box-shadow: 0 -6px 24px rgb(43 33 28 / 7%);
-    left: 0;
+    bottom: auto;
+    box-shadow: none;
+    left: auto;
     margin: 0;
     min-height: 0;
     padding: 4px max(8px, env(safe-area-inset-right))
       max(4px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-    position: fixed;
-    right: 0;
+    position: static;
+    right: auto;
     width: 100%;
-    z-index: 1200;
+    z-index: auto;
   }
 
   .storefrontPage .creatorBottomBar a {
@@ -13580,7 +13609,7 @@ dt {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    height: max(480px, calc(100dvh - 222px - env(safe-area-inset-bottom)));
+    height: 100%;
     min-height: 0;
     width: 100%;
   }
