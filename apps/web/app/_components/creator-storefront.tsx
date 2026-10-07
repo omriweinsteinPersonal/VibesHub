@@ -863,19 +863,19 @@ export function CreatorStorefrontView({
 
 function StandaloneRecommendationCard({
   brand,
+  handle,
   item,
 }: {
   brand: CreatorStorefront['brands'][number];
+  handle: string;
   item: RecommendationCard;
-  }) {
+}) {
   const discount = item.discount;
   return (
     <Link
       aria-label={`View ${item.productName} at ${brand.name}`}
       className="referenceStandaloneRecommendation"
-      href={item.shopUrl}
-      rel="noopener noreferrer"
-      target="_blank"
+      href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
       <div className="referenceStandaloneRecommendationContent" dir="auto">
         <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
@@ -933,7 +933,7 @@ function BrandBlock({
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
   if (items.length === 1 && !offer && collections.length === 0) {
-    return <StandaloneRecommendationCard brand={brand} item={items[0]!} />;
+    return <StandaloneRecommendationCard brand={brand} handle={handle} item={items[0]!} />;
   }
   return (
     <section className="referenceBrandBlock">
