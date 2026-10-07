@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getCreators } from '../lib/api';
+import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
 
 const palette = {
   accent: '#b77856',
@@ -31,6 +32,8 @@ export default function CreatorsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const hiddenCreatorIds = useHiddenCreatorIds();
+  const visibleCreators = creators.filter((creator) => !hiddenCreatorIds.has(creator.id));
 
   const loadCreators = useCallback(async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -107,13 +110,13 @@ export default function CreatorsScreen() {
           <Text style={styles.intro}>
             Open a creator&apos;s storefront to explore their recommendations and codes.
           </Text>
-          {creators.length === 0 ? (
+          {visibleCreators.length === 0 ? (
             <View style={styles.emptyCard}>
               <Text style={styles.errorTitle}>No published creators yet</Text>
               <Text style={styles.statusText}>Come back soon.</Text>
             </View>
           ) : (
-            creators.map((creator) => (
+            visibleCreators.map((creator) => (
               <Pressable
                 accessibilityHint="Opens this creator's public storefront"
                 accessibilityRole="button"

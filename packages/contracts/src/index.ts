@@ -2,6 +2,36 @@ import { z } from 'zod';
 
 export const idSchema = z.uuid();
 
+export const contentReportReasonSchema = z.enum([
+  'inappropriate',
+  'misleading',
+  'spam',
+  'unsafe',
+  'intellectual_property',
+  'other',
+]);
+
+export const contentReportInputSchema = z
+  .object({
+    details: z.string().trim().min(1).max(500).optional(),
+    installationId: idSchema,
+    reason: contentReportReasonSchema,
+    targetId: idSchema,
+    targetType: z.enum(['creator', 'recommendation']),
+  })
+  .strict();
+
+export const contentReportReceiptSchema = z
+  .object({
+    id: idSchema,
+    status: z.enum(['received', 'reviewing']),
+  })
+  .strict();
+
+export type ContentReportInput = z.infer<typeof contentReportInputSchema>;
+export type ContentReportReason = z.infer<typeof contentReportReasonSchema>;
+export type ContentReportReceipt = z.infer<typeof contentReportReceiptSchema>;
+
 export const moneySchema = z.object({
   amountMinor: z.int().nonnegative(),
   currency: z.literal('ILS'),
