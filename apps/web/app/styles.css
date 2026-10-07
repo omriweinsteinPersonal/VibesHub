@@ -65,6 +65,22 @@ svg.lucide {
     padding-bottom: 0;
   }
 
+  /* In Edit page the bottom navigation is part of the viewport chrome. Keep
+     it visible while the design sheet floats above it. Preview keeps the
+     regular storefront flow and does not receive this fixed treatment. */
+  body:has(.storefrontDesignWorkspace.hasEditor) {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .storefrontPage:has(.storefrontDesignWorkspace.hasEditor) .creatorBottomBar {
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    right: 0;
+    width: 100%;
+    z-index: 1200;
+  }
+
   .storefrontPage:has(.storefrontDesignWorkspace) {
     display: flex;
     flex-direction: column;
@@ -9165,6 +9181,11 @@ dt {
     min-height: 0;
   }
 
+  .storefrontDesignWorkspace.hasEditor .storefrontPhoneStage {
+    flex: 1 1 auto;
+    min-height: calc(100dvh - 64px - env(safe-area-inset-bottom));
+  }
+
   .storefrontDesignPanel {
     border-bottom: 1px solid #e7ded5;
     border-right: 0;
@@ -13663,7 +13684,8 @@ dt {
     background: #fff;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    flex: 1 1 auto;
+    min-height: calc(100dvh - 64px - env(safe-area-inset-bottom));
     padding: 0 0 1px;
     position: relative;
     top: auto;
