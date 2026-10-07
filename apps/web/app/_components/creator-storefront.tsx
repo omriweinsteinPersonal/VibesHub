@@ -704,6 +704,7 @@ export function CreatorStorefrontView({
                           section.brandId === brand.brandId,
                       )}
                       creatorId={storefront.id}
+                      discountCodes={codes}
                       handle={storefront.handle}
                       items={filtered.filter(
                         (item) =>
@@ -769,6 +770,7 @@ export function CreatorStorefrontView({
                                 section.brandId === brand.brandId,
                             )}
                             creatorId={storefront.id}
+                            discountCodes={codes}
                             handle={storefront.handle}
                             items={filtered.filter(
                               (item) =>
@@ -869,14 +871,25 @@ export function CreatorStorefrontView({
 
 function StandaloneRecommendationCard({
   brand,
+  discount,
   handle,
   item,
 }: {
   brand: CreatorStorefront['brands'][number];
+  discount: RecommendationCard['discount'] | PublicDiscountCode | null;
   handle: string;
   item: RecommendationCard;
 }) {
-  const discount = item.discount;
+  const description = discount
+    ? 'details' in discount && discount.details
+      ? discount.details.value
+      : (discount.label ??
+        ('discountPercent' in discount && discount.discountPercent
+          ? `${discount.discountPercent}% off`
+          : 'discountAmountMinor' in discount && discount.discountAmountMinor
+            ? `₪${discount.discountAmountMinor / 100} off`
+            : null))
+    : null;
   return (
     <Link
       aria-label={`View ${item.productName} at ${brand.name}`}
@@ -886,10 +899,10 @@ function StandaloneRecommendationCard({
       <div className="referenceStandaloneRecommendationContent" dir="auto">
         <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
         <h3>{item.productName}</h3>
-        {discount?.code || discount?.label ? (
+        {discount?.code || description ? (
           <div className="referenceStandaloneRecommendationOffer">
-            {discount.label ? <span>{discount.label}</span> : null}
-            {discount.code ? <strong>{discount.code}</strong> : null}
+            {description ? <span>{description}</span> : null}
+            {discount?.code ? <strong>{discount.code}</strong> : null}
           </div>
         ) : null}
         {discount?.expiresAt ? (
@@ -918,6 +931,7 @@ function BrandBlock({
   brand,
   collections,
   creatorId,
+  discountCodes,
   handle,
   items,
   offer,
@@ -925,6 +939,7 @@ function BrandBlock({
   brand: CreatorStorefront['brands'][number];
   collections: CreatorStorefront['curatedSections'];
   creatorId: string;
+  discountCodes: PublicDiscountCode[];
   handle: string;
   items: RecommendationCard[];
   offer: PublicDiscountCode | null;
@@ -939,8 +954,20 @@ function BrandBlock({
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
   if (items.length === 1 && !offer && collections.length === 0) {
+    const item = items[0]!;
+    const discount =
+      item.discount ??
+      discountCodes.find(
+        (code) => code.scopeKind === 'item' && code.scopeId === item.id,
+      ) ??
+      null;
     return (
-      <StandaloneRecommendationCard brand={brand} handle={handle} item={items[0]!} />
+      <StandaloneRecommendationCard
+        brand={brand}
+        discount={discount}
+        handle={handle}
+        item={item}
+      />
     );
   }
   return (
