@@ -155,8 +155,11 @@ export function CreatorStorefrontView({
         }
         const value = configurationResult.value;
         const inventory =
-          inventoryResult.status === 'fulfilled' ? inventoryResult.value : recommendations;
-        const discounts = discountResult.status === 'fulfilled' ? discountResult.value : [];
+          inventoryResult.status === 'fulfilled'
+            ? inventoryResult.value
+            : recommendations;
+        const discounts =
+          discountResult.status === 'fulfilled' ? discountResult.value : [];
         const validRecommendations = new Set(
           inventory
             .filter(({ lifecycle }) => lifecycle !== 'archived')
@@ -187,7 +190,10 @@ export function CreatorStorefrontView({
         // Match the public grouping exactly; synthesizing individual layers here
         // would create editor-only keys that the public page cannot restore.
         setOrder(cleaned.contentOrder);
-        if (inventoryResult.status === 'rejected' || discountResult.status === 'rejected') {
+        if (
+          inventoryResult.status === 'rejected' ||
+          discountResult.status === 'rejected'
+        ) {
           setOrderError(
             'Some storefront data could not be refreshed. You can still edit the available content.',
           );
