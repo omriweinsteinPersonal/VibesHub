@@ -289,6 +289,7 @@ export function CreatorDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [fetchWarnings, setFetchWarnings] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [videoStage, setVideoStage] = useState('');
   const [videoError, setVideoError] = useState('');
@@ -401,6 +402,7 @@ export function CreatorDashboard() {
     setError('');
     setVideoError('');
     setNotice('');
+    setFetchWarnings([]);
     setComposer(null);
     setEditingProduct(null);
     setEditingDiscount(null);
@@ -558,6 +560,7 @@ export function CreatorDashboard() {
       if (!requestedUrl) return;
       const requestId = ++productFetchRequest.current;
       setFetching(true);
+      setFetchWarnings([]);
       setError('');
       try {
         const metadata = await apiRequest<CreatorProductMetadata>(
@@ -569,6 +572,15 @@ export function CreatorDashboard() {
           },
         );
         if (productFetchRequest.current !== requestId) return;
+        const warnings = [
+          metadata.productName ? null : 'Product name was not found.',
+          metadata.brandName ? null : 'Brand was not found.',
+          metadata.imageUrl ? null : 'No product image was found.',
+          metadata.priceAmountMinor === null ? 'Price was not found.' : null,
+          metadata.categorySlug ? null : 'Category was not identified.',
+          metadata.description ? null : 'Product description was not found.',
+        ].filter((value): value is string => Boolean(value));
+        setFetchWarnings(warnings);
         setProduct((current) => {
           const detectedCategoryId = categories.find(
             (category) => category.slug === metadata.categorySlug,
@@ -614,6 +626,7 @@ export function CreatorDashboard() {
         }
       } catch (cause) {
         if (productFetchRequest.current === requestId) {
+          setFetchWarnings([]);
           setError(messageFor(cause));
         }
       } finally {
@@ -1488,6 +1501,7 @@ export function CreatorDashboard() {
                       editor={product}
                       editing={Boolean(editingProduct)}
                       fetching={fetching}
+                      fetchWarnings={fetchWarnings}
                       photoError={
                         error === 'Add a product photo to save this recommendation.' &&
                         !product.imageAssetId &&
@@ -2574,6 +2588,7 @@ function ProductForm({
   editor,
   editing,
   fetching,
+  fetchWarnings,
   photoError,
   onAddStoryLink,
   onCategoryCreated,
@@ -2597,6 +2612,7 @@ function ProductForm({
   editor: ProductEditor;
   editing: boolean;
   fetching: boolean;
+  fetchWarnings: string[];
   photoError: boolean;
   onAddStoryLink: () => void;
   onCategoryCreated: (category: CategoryCard) => void;
@@ -2642,7 +2658,9 @@ function ProductForm({
       : 'Add link card'
     : editor.collectionIds.length
       ? `Save to ${editor.collectionIds.length} ${editor.collectionIds.length === 1 ? 'collection' : 'collections'}`
-      : 'Save recommendation';
+      : fetchWarnings.length
+        ? 'Save anyway'
+        : 'Save recommendation';
   const update = <K extends keyof ProductEditor>(key: K, value: ProductEditor[K]) =>
     onChange({ ...editor, [key]: value });
 
@@ -2729,6 +2747,30 @@ function ProductForm({
             {fetching ? 'Fetching details…' : saving ? 'Saving…' : saveLabel}
           </button>
         </div>
+        {fetchWarnings.length ? (
+          <aside className="creatorFetchWarnings" role="status">
+            <strong>Some details need review</strong>
+            <ul>
+              {fetchWarnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+            <button
+              className="button secondary"
+              onClick={() => {
+                const target = document.querySelector<HTMLElement>(
+                  '[data-fetch-field="price"], [data-fetch-field="image"], [data-fetch-field="category"]',
+                );
+                target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target?.focus();
+              }}
+              type="button"
+            >
+              Complete details
+            </button>
+            <small>Or choose “Save anyway” to keep the recommendation as-is.</small>
+          </aside>
+        ) : null}
         <div className="creatorFormGrid">
           <label>
             {isLinkCard ? 'Link title' : 'Item name'}
@@ -2777,6 +2819,7 @@ function ProductForm({
           {!isLinkCard ? (
             <fieldset
               className="creatorProductPhotos creatorFullField"
+              data-fetch-field="image"
               id="creator-product-photos"
             >
               <legend>
@@ -2857,6 +2900,7 @@ function ProductForm({
               <label>
                 Price (₪) <small>Optional</small>
                 <input
+                  data-fetch-field="price"
                   inputMode="decimal"
                   value={editor.priceIls}
                   onChange={(event) => update('priceIls', event.target.value)}
@@ -2866,7 +2910,7 @@ function ProductForm({
                 <span>
                   Categories <small>Optional</small>
                 </span>
-                <details>
+                <details data-fetch-field="category">
                   <summary>
                     {categories
                       .filter(({ id }) => editor.categoryIds.includes(id))
@@ -2979,20 +3023,36 @@ function ProductForm({
                 </details>
               </div>
               {brandOffer ? (
-                <label className="creatorCheckboxField creatorFullField">
-                  <input
-                    type="checkbox"
-                    checked={editor.brandDiscountCodeId === brandOffer.id}
-                    onChange={(event) =>
-                      update(
-                        'brandDiscountCodeId',
-                        event.target.checked ? brandOffer.id : '',
-                      )
-                    }
-                  />
-                  Use {matchingBrand?.name}&apos;s offer ({brandOffer.code}) — code and
-                  expiry stay in sync
-                </label>
+                <div className="creatorBrandOfferChoice creatorFullField">
+                  <div className="creatorActiveOfferSummary" role="status">
+                    <strong>Active brand discount</strong>
+                    <span>
+                      {brandOffer.discountPercent
+                        ? `${brandOffer.discountPercent}% off`
+                        : brandOffer.discountAmountMinor
+                          ? `₪${(brandOffer.discountAmountMinor / 100).toFixed(2)} off`
+                          : 'Discount'}{' '}
+                      · {brandOffer.code}
+                      {brandOffer.expiresAt
+                        ? ` · ends ${new Date(brandOffer.expiresAt).toLocaleDateString()}`
+                        : ''}
+                    </span>
+                  </div>
+                  <label className="creatorCheckboxField">
+                    <input
+                      type="checkbox"
+                      checked={editor.brandDiscountCodeId === brandOffer.id}
+                      onChange={(event) =>
+                        update(
+                          'brandDiscountCodeId',
+                          event.target.checked ? brandOffer.id : '',
+                        )
+                      }
+                    />
+                    Use {matchingBrand?.name}&apos;s offer ({brandOffer.code}) — code and
+                    expiry stay in sync
+                  </label>
+                </div>
               ) : null}
               {!editor.brandDiscountCodeId ? (
                 <label>

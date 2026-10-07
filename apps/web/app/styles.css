@@ -907,6 +907,31 @@ svg.lucide {
 .creatorProductSavePrompt button {
   flex: 0 0 auto;
 }
+.creatorFetchWarnings {
+  background: #fff8e8;
+  border: 1px solid #ead3a2;
+  border-radius: 14px;
+  color: #5f4b2e;
+  display: grid;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+}
+.creatorFetchWarnings strong {
+  color: #49371f;
+  font-size: 0.86rem;
+}
+.creatorFetchWarnings ul {
+  margin: 0;
+  padding-inline-start: 20px;
+}
+.creatorFetchWarnings li,
+.creatorFetchWarnings small {
+  font-size: 0.78rem;
+}
+.creatorFetchWarnings .button {
+  justify-self: start;
+}
 @media (max-width: 560px) {
   .creatorProductSavePrompt {
     align-items: stretch;

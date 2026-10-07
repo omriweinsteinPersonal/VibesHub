@@ -126,7 +126,12 @@ export class RecommendationRepository {
         input.contentKind === 'link',
       );
       const catalog = await this.upsertCatalog(sql, userId, input, image);
-      await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
+      const creatorBrandId = await this.ensureCreatorBrand(
+        sql,
+        creator.id,
+        catalog.brandId,
+        input.productUrl,
+      );
       const [inserted] = await sql<{ id: string }[]>`
         insert into app.recommendations (
           creator_id,
@@ -186,6 +191,7 @@ export class RecommendationRepository {
         input.brandName,
         input.discountPercent ?? null,
         input.discountAmountMinor ?? null,
+        creatorBrandId,
       );
       await this.syncStoryClips(sql, inserted.id, userId, input);
       await this.syncAdditionalImages(sql, inserted.id, userId, input);
@@ -325,7 +331,12 @@ export class RecommendationRepository {
         input.contentKind === 'link',
       );
       const catalog = await this.upsertCatalog(sql, userId, input, image);
-      await this.ensureCreatorBrand(sql, creator.id, catalog.brandId, input.productUrl);
+      const creatorBrandId = await this.ensureCreatorBrand(
+        sql,
+        creator.id,
+        catalog.brandId,
+        input.productUrl,
+      );
       const [updated] = await sql<{ id: string; lifecycle: string }[]>`
         update app.recommendations
         set
@@ -394,6 +405,7 @@ export class RecommendationRepository {
         input.brandName,
         input.discountPercent ?? null,
         input.discountAmountMinor ?? null,
+        creatorBrandId,
       );
       await this.syncStoryClips(sql, updated.id, userId, input);
       await this.syncAdditionalImages(sql, updated.id, userId, input);
@@ -961,15 +973,18 @@ export class RecommendationRepository {
     creatorId: string,
     brandId: string,
     productUrl: string,
-  ) {
+  ): Promise<string> {
     const url = new URL(productUrl);
     const websiteUrl = `${url.protocol}//${url.host}`;
-    await sql`
+    const [brand] = await sql<{ id: string }[]>`
       insert into app.creator_brands (creator_id, brand_id, website_url, position)
       values (${creatorId}, ${brandId}, ${websiteUrl},
         (select coalesce(max(position), -1) + 1 from app.creator_brands where creator_id = ${creatorId}))
       on conflict (creator_id, brand_id) do update set lifecycle = 'active'
+      returning id
     `;
+    if (!brand) throw new Error('CREATOR_BRAND_NOT_CREATED');
+    return brand.id;
   }
 
   private async syncDiscountPlacement(
@@ -984,6 +999,7 @@ export class RecommendationRepository {
     brandName: string,
     discountPercent: number | null,
     discountAmountMinor: number | null,
+    creatorBrandId: string,
   ): Promise<void> {
     const [previousNoCode] = await sql<{ id: string }[]>`
       select code.id from app.recommendation_discount_codes placement
@@ -1021,18 +1037,22 @@ export class RecommendationRepository {
         ? await sql<{ id: string }[]>`
             update app.discount_codes set label = ${discountLabel}, expires_at = ${discountExpiresAt},
               discount_percent = ${discountPercent}, discount_amount_minor = ${discountAmountMinor},
-              verification_status = 'unverified', last_verified_at = null, lifecycle_status = 'draft',
+              creator_brand_id = ${creatorBrandId},
+              verification_status = 'creator_confirmed', last_verified_at = statement_timestamp(),
+              lifecycle_status = 'published',
               version = version + 1
             where id = ${previousNoCode.id} returning id
           `
         : await sql<{ id: string }[]>`
             insert into app.discount_codes (
-              creator_id, merchant_id, brand_id, code, label, expires_at,
-              discount_percent, discount_amount_minor, scope_kind, scope_id, offer_type
+              creator_id, merchant_id, brand_id, creator_brand_id, code, label, expires_at,
+              discount_percent, discount_amount_minor, scope_kind, scope_id, offer_type,
+              lifecycle_status, verification_status, last_verified_at
             ) values (
-              ${creatorId}, ${catalog.merchantId}, ${catalog.brandId}, null, ${discountLabel},
+              ${creatorId}, ${catalog.merchantId}, ${catalog.brandId}, ${creatorBrandId}, null, ${discountLabel},
               ${discountExpiresAt}, ${discountPercent}, ${discountAmountMinor},
-              'item', ${recommendationId}, 'brand_promotion'
+              'item', ${recommendationId}, 'brand_promotion', 'published',
+              'creator_confirmed', statement_timestamp()
             ) returning id
           `;
       if (!offer) throw new Error('Discount offer could not be saved');
@@ -1059,22 +1079,28 @@ export class RecommendationRepository {
         creator_id,
         merchant_id,
         brand_id,
+        creator_brand_id,
         code,
         label,
         discount_percent,
         discount_amount_minor,
         expires_at,
-        lifecycle_status
+        lifecycle_status,
+        verification_status,
+        last_verified_at
       ) values (
         ${creatorId},
         ${catalog.merchantId},
         ${catalog.brandId},
+        ${creatorBrandId},
         ${discountCode},
         ${discountLabel},
         ${discountPercent},
         ${discountAmountMinor},
         ${discountExpiresAt},
-        'draft'
+        'published',
+        'creator_confirmed',
+        statement_timestamp()
       )
       on conflict (creator_id, merchant_id, code)
         where deleted_at is null and lifecycle_status <> 'archived'
@@ -1083,7 +1109,11 @@ export class RecommendationRepository {
         label = excluded.label,
         discount_percent = excluded.discount_percent,
         discount_amount_minor = excluded.discount_amount_minor,
-        expires_at = excluded.expires_at
+        expires_at = excluded.expires_at,
+        creator_brand_id = excluded.creator_brand_id,
+        lifecycle_status = 'published',
+        verification_status = 'creator_confirmed',
+        last_verified_at = statement_timestamp()
       returning id
     `;
     if (!code) throw new Error('Discount code upsert did not return an identity');
