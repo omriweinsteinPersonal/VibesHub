@@ -31,6 +31,19 @@ keys stay unset until live store products and purchase UX have been approved.
 Never add database credentials, Supabase service-role keys, RevenueCat webhook secrets,
 Apple private keys, or Google service-account credentials to an `EXPO_PUBLIC_` variable.
 
+The API needs the following server-only values before testing deletion for an account
+that uses Sign in with Apple:
+
+- `APPLE_CLIENT_ID=com.swavii.app`
+- `APPLE_TEAM_ID`
+- `APPLE_KEY_ID`
+- `APPLE_PRIVATE_KEY` (the `.p8` contents, stored as a sensitive value)
+
+These four values must be configured together. They let the API exchange a fresh,
+single-use Apple authorization code and revoke the Apple token before deleting the
+Swavii identity. The private key must exist only in the API environment, never in EAS or
+the mobile bundle.
+
 ## Safe rollout sequence
 
 1. Run tests, type checking, linting, Expo Doctor, and a local Expo export.
@@ -77,6 +90,8 @@ Android devices. Do not mark deep links complete based only on simulator navigat
 - [ ] iOS Universal Links open a published creator storefront on a physical device.
 - [ ] Android App Links are verified for the Play signing certificate.
 - [ ] Sign-in, session restoration, sign-out, and account deletion pass on both platforms.
+- [ ] Deleting a Sign in with Apple account asks for fresh Apple authorization and the
+      same Apple account can subsequently sign up again cleanly.
 - [ ] Storefront images, search, social links, discount links, and product links pass on
       both platforms and at large accessibility text sizes.
 - [ ] Offline, timeout, empty, unavailable, and not-found states are understandable.
