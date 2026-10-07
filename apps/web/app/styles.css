@@ -889,6 +889,45 @@ svg.lucide {
   font-size: 0.78rem;
   font-weight: 400;
 }
+.creatorBrandOfferChoice {
+  background: #faf7f3;
+  border: 1px solid #e6ddd2;
+  border-radius: 12px;
+  margin: 8px 0 16px;
+  padding: 10px 12px;
+}
+.creatorBrandOfferChoice .creatorCheckboxField {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin: 0;
+}
+.creatorBrandOfferChoice .creatorCheckboxField > input {
+  accent-color: var(--vh-accent);
+  flex: 0 0 auto;
+  height: 18px;
+  margin: 2px 0 0;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+.creatorBrandOfferChoice .creatorCheckboxField > span {
+  display: grid;
+  gap: 2px;
+  line-height: 18px;
+}
+.creatorBrandOfferChoice .creatorCheckboxField strong {
+  color: var(--vh-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+.creatorBrandOfferChoice .creatorCheckboxField small {
+  color: #786c62;
+  font-size: 0.76rem;
+  line-height: 17px;
+}
 .creatorProductSavePrompt {
   align-items: center;
   background: #faf7f3;

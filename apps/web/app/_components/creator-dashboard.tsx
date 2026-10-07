@@ -585,11 +585,25 @@ export function CreatorDashboard() {
           const detectedCategoryId = categories.find(
             (category) => category.slug === metadata.categorySlug,
           )?.id;
+          const detectedBrand = brands.find(
+            (brand) =>
+              brand.name.toLocaleLowerCase() ===
+              (metadata.brandName ?? current.brandName).trim().toLocaleLowerCase(),
+          );
+          const detectedBrandOffer = discounts.find(
+            (offer) =>
+              offer.brandId === detectedBrand?.id &&
+              offer.scopeKind === 'brand' &&
+              offer.lifecycle === 'published' &&
+              offer.code,
+          );
           const categoryId = detectedCategoryId ?? current.categoryId;
           return normalizedProductUrl(current.productUrl) === requestedUrl
             ? {
                 ...current,
                 brandName: metadata.brandName ?? current.brandName,
+                brandDiscountCodeId:
+                  detectedBrandOffer?.id ?? current.brandDiscountCodeId,
                 categoryId,
                 categoryIds: detectedCategoryId
                   ? [detectedCategoryId]
@@ -635,7 +649,7 @@ export function CreatorDashboard() {
         }
       }
     },
-    [categories],
+    [brands, categories, discounts],
   );
 
   async function selectStoryClip(event: ChangeEvent<HTMLInputElement>) {
@@ -2819,14 +2833,31 @@ function ProductForm({
                 required
                 list="creator-saved-brands"
                 value={editor.brandName}
-                onChange={(event) =>
+                onChange={(event) => {
+                  const nextBrandName = event.target.value;
+                  const nextBrand = brands.find(
+                    (brand) =>
+                      brand.name.toLocaleLowerCase() ===
+                      nextBrandName.trim().toLocaleLowerCase(),
+                  );
+                  const nextBrandOffer = discounts.find(
+                    (offer) =>
+                      offer.brandId === nextBrand?.id &&
+                      offer.scopeKind === 'brand' &&
+                      offer.lifecycle === 'published' &&
+                      offer.code,
+                  );
                   onChange({
                     ...editor,
-                    brandName: event.target.value,
-                    brandDiscountCodeId: '',
+                    brandName: nextBrandName,
+                    brandDiscountCodeId: nextBrandOffer?.id ?? '',
                     collectionIds: [],
-                  })
-                }
+                    discountCode: nextBrandOffer ? '' : editor.discountCode,
+                    discountExpiresAt: nextBrandOffer ? '' : editor.discountExpiresAt,
+                    discountLabel: nextBrandOffer ? '' : editor.discountLabel,
+                    discountValue: nextBrandOffer ? '' : editor.discountValue,
+                  });
+                }}
               />
               <datalist id="creator-saved-brands">
                 {brands.map((brand) => (
@@ -3056,27 +3087,20 @@ function ProductForm({
               </div>
               {brandOffer ? (
                 <div className="creatorBrandOfferChoice creatorFullField">
-                  <div className="creatorActiveOfferSummary" role="status">
-                    <strong>Active brand discount</strong>
-                    <span>
-                      {brandOffer.discountPercent
-                        ? `${brandOffer.discountPercent}% off`
-                        : brandOffer.discountAmountMinor
-                          ? `₪${(brandOffer.discountAmountMinor / 100).toFixed(2)} off`
-                          : 'Discount'}{' '}
-                      · {brandOffer.code}
-                      {brandOffer.expiresAt
-                        ? ` · ends ${new Date(brandOffer.expiresAt).toLocaleDateString()}`
-                        : ''}
-                    </span>
-                  </div>
                   <label className="creatorCheckboxField">
                     <input
                       type="checkbox"
                       checked={editor.brandDiscountCodeId === brandOffer.id}
                       onChange={(event) => {
                         if (event.target.checked) {
-                          update('brandDiscountCodeId', brandOffer.id);
+                          onChange({
+                            ...editor,
+                            brandDiscountCodeId: brandOffer.id,
+                            discountCode: '',
+                            discountExpiresAt: '',
+                            discountLabel: '',
+                            discountValue: '',
+                          });
                         } else {
                           onChange({
                             ...editor,
@@ -3089,8 +3113,21 @@ function ProductForm({
                         }
                       }}
                     />
-                    Use {matchingBrand?.name}&apos;s offer ({brandOffer.code}) — code and
-                    expiry stay in sync
+                    <span>
+                      <strong>Use the same discount as {matchingBrand?.name}</strong>
+                      <small>
+                        ({brandOffer.code}
+                        {brandOffer.discountPercent
+                          ? ` · ${brandOffer.discountPercent}% off`
+                          : brandOffer.discountAmountMinor
+                            ? ` · ₪${(brandOffer.discountAmountMinor / 100).toFixed(2)} off`
+                            : ''}
+                        {brandOffer.expiresAt
+                          ? ` · ends ${new Date(brandOffer.expiresAt).toLocaleDateString()}`
+                          : ''}
+                        )
+                      </small>
+                    </span>
                   </label>
                 </div>
               ) : null}
