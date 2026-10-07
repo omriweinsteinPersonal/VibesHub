@@ -356,7 +356,10 @@ export function CreatorStorefrontView({
   );
   const blocks = useMemo(() => {
     const remainingRows = [...rows];
-    const remainingCodes = codes.filter(({ brandId }) => !brandId);
+    // A label is a focused view of recommendations. Do not leak unrelated
+    // standalone discount blocks into it; brand offers remain visible only
+    // inside a brand card that has at least one matching recommendation.
+    const remainingCodes = activeLabelId ? [] : codes.filter(({ brandId }) => !brandId);
     const result: Array<{
       key: string;
       layer: StorefrontLayer | null;
@@ -389,7 +392,7 @@ export function CreatorStorefrontView({
       }),
     );
     return result;
-  }, [rows, codes, contentOrder]);
+  }, [activeLabelId, rows, codes, contentOrder]);
   const validTargets = new Set([
     ...displayBrands.map(({ id }) => id),
     ...rows.map(({ key }) => key),
@@ -790,9 +793,11 @@ export function CreatorStorefrontView({
               ? displayBrands
                   .filter(
                     (brand) =>
-                      codes.some(
-                        (code) => code.brandId === brand.id && code.scopeKind === 'brand',
-                      ) ||
+                      (!activeLabelId &&
+                        codes.some(
+                          (code) =>
+                            code.brandId === brand.id && code.scopeKind === 'brand',
+                        )) ||
                       filtered.some(
                         (item) => brandKey(item.brandName) === brandKey(brand.name),
                       ),
