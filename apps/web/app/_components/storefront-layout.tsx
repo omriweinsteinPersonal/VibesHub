@@ -223,8 +223,17 @@ export function StorefrontLayout({
   const visibleSlots = slots.filter(
     ({ id }) => !(layout?.hiddenBlocks ?? []).includes(id),
   );
+  // Profile, bio, and social connectors are one fixed identity area. They
+  // must stay together above the reorderable storefront content, even when a
+  // previous layout saved one of their ids in the old blocks order.
+  const fixedSlots = visibleSlots.filter(
+    ({ id, kind }) => id === 'bio' || kind === 'profile' || kind === 'social',
+  );
+  const movableSlots = visibleSlots.filter(
+    ({ id, kind }) => id !== 'bio' && kind !== 'profile' && kind !== 'social',
+  );
   const keys = orderedKeys(
-    visibleSlots.map(({ id }) => id),
+    movableSlots.map(({ id }) => id),
     layout?.blocks,
   );
   async function saveLayout(next: NonNullable<StorefrontTheme['layout']>) {
@@ -257,7 +266,10 @@ export function StorefrontLayout({
       busy.current = false;
     }
   }
-  const ordered = keys.map((id) => visibleSlots.find((slot) => slot.id === id)!);
+  const ordered = [
+    ...fixedSlots,
+    ...keys.map((id) => movableSlots.find((slot) => slot.id === id)!),
+  ];
   // Adjacent platform links form one natural icon row, wherever they are placed.
   const groups: Slot[][] = [];
   ordered.forEach((slot) => {

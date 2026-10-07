@@ -46,8 +46,8 @@ describe('public storefront layout rendering', () => {
         ],
       }),
     );
-    expect(markup.indexOf('MY_BRAND')).toBeLessThan(markup.indexOf('MY_SOCIAL'));
-    expect(markup.indexOf('MY_SOCIAL')).toBeLessThan(markup.indexOf('MY_BIO'));
+    expect(markup.indexOf('MY_BIO')).toBeLessThan(markup.indexOf('MY_SOCIAL'));
+    expect(markup.indexOf('MY_SOCIAL')).toBeLessThan(markup.indexOf('MY_BRAND'));
     expect(markup).not.toContain('Drag the dotted');
     expect(markup).not.toContain('data-sort-key');
   });
