@@ -354,16 +354,16 @@ describe('shared API contracts', () => {
       creatorDiscountCodeInputSchema.parse({ ...fixed, discountPercent: 20 }),
     ).toThrow();
 
-    expect(() =>
+    expect(
       creatorDiscountCodeInputSchema.parse({
         code: 'NOA 10',
         detailsHe: '10% off',
-        expiresAt: '2026-08-01T00:00:00.000Z',
+        expiresAt: '2026-09-02T00:00:00.000Z',
         label: null,
-        merchantUrl: 'http://shop.example.com',
+        merchantUrl: 'https://shop.example.com',
         startsAt: '2026-09-01T00:00:00.000Z',
-      }),
-    ).toThrow();
+      }).code,
+    ).toBe('NOA 10');
   });
 
   it('accepts a linked brand offer and a 200 MB video upload', () => {

@@ -13,7 +13,15 @@ export class CreatorBrandService {
     return this.require(await this.brands.create(userId, input));
   }
   async update(id: string, userId: string, version: number, input: CreatorBrandInput) {
-    return this.require(await this.brands.update(id, userId, version, input));
+    const updated = await this.brands.update(id, userId, version, input);
+    if (!updated)
+      throw problem(
+        412,
+        'PRECONDITION_FAILED',
+        'The brand changed since it was loaded',
+        'Reload the brand and retry with its current version.',
+      );
+    return updated;
   }
   async archive(
     id: string,

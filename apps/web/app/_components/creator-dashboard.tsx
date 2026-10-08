@@ -483,10 +483,6 @@ export function CreatorDashboard() {
 
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (/\s/u.test(brand.code.trim())) {
-      setError('Discount codes cannot contain spaces.');
-      return;
-    }
     if (
       brand.discountPercent &&
       (!Number.isInteger(Number(brand.discountPercent)) ||
@@ -820,10 +816,6 @@ export function CreatorDashboard() {
       setError('Enter a valid price.');
       return;
     }
-    if (!product.brandDiscountCodeId && /\s/u.test(product.discountCode.trim())) {
-      setError('Discount codes cannot contain spaces.');
-      return;
-    }
     if (!product.brandDiscountCodeId && product.discountValue.trim()) {
       const value = Number(product.discountValue);
       if (
@@ -996,10 +988,6 @@ export function CreatorDashboard() {
 
   async function saveDiscount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (/\s/u.test(discount.code.trim())) {
-      setError('Discount codes cannot contain spaces.');
-      return;
-    }
     if (
       discount.discountPercent &&
       (!Number.isInteger(Number(discount.discountPercent)) ||

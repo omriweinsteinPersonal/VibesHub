@@ -392,12 +392,7 @@ export const discountCodeLifecycleSchema = z.enum([
 const discountCodeInputFieldsSchema = z
   .object({
     brandId: idSchema.nullable().default(null),
-    code: z
-      .string()
-      .trim()
-      .max(50)
-      .regex(/^\S*$/, 'Discount codes cannot contain spaces')
-      .nullable(),
+    code: z.string().trim().max(50).nullable(),
     detailsHe: z.string().trim().min(1).max(1_000).nullable(),
     expiresAt: z.iso.datetime().nullable(),
     discountPercent: z.number().int().min(1).max(100).nullable().default(null),

@@ -98,7 +98,7 @@ export class CreatorBrandRepository {
   private async creatorId(sql: DatabaseClient, userId: string) {
     const [creator] = await sql<
       { id: string }[]
-    >`select id from app.creator_profiles where user_id = ${userId} and status = 'approved' and published_at is not null`;
+    >`select id from app.creator_profiles where user_id = ${userId} and status = 'approved'`;
     return creator?.id ?? null;
   }
 

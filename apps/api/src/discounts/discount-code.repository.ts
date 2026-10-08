@@ -290,7 +290,6 @@ export class DiscountCodeRepository {
           from app.creator_profiles
           where user_id = ${userId}
             and status = 'approved'
-            and published_at is not null
           for update
         `
       : await sql<CreatorIdentity[]>`
@@ -298,7 +297,6 @@ export class DiscountCodeRepository {
           from app.creator_profiles
           where user_id = ${userId}
             and status = 'approved'
-            and published_at is not null
         `;
     return creator ?? null;
   }
