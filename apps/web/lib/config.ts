@@ -8,5 +8,9 @@ export function getSupabasePublicConfig(): { publishableKey: string; url: string
 }
 
 export function getApiUrl(): string {
+  // Browser mutations go through the Swavii origin. This avoids cross-origin
+  // PATCH failures on mobile browsers while keeping server rendering pointed
+  // directly at the API.
+  if (typeof window !== 'undefined') return '/api/backend';
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 }
