@@ -270,6 +270,7 @@ export function StorefrontLayout({
     ...fixedSlots,
     ...keys.map((id) => movableSlots.find((slot) => slot.id === id)!),
   ];
+  const firstContentId = movableSlots[0]?.id;
   // Adjacent platform links form one natural icon row, wherever they are placed.
   const groups: Slot[][] = [];
   ordered.forEach((slot) => {
@@ -328,8 +329,14 @@ export function StorefrontLayout({
             group[0]!.kind === 'social'
               ? styles.socials
               : group[0]!.kind === 'profile'
-                ? styles.profile
-                : `referenceStorefrontProducts ${styles.content}`
+                ? `${styles.profile}${
+                    group[0]!.id === 'profile'
+                      ? ` ${styles.hero} referenceStorefrontHero`
+                      : ''
+                  }`
+                : `referenceStorefrontProducts ${styles.content}${
+                    group[0]!.id === firstContentId ? ` ${styles.firstContent}` : ''
+                  }`
           }
         >
           {group.map((slot) =>

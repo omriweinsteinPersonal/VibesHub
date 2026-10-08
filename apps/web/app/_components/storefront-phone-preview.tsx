@@ -12,7 +12,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { apiRequest } from '../../lib/api';
 import { contrastRatio } from '../../lib/storefront-theme';
 
-type ThemeKey = Exclude<keyof StorefrontTheme, 'layout'>;
+type ThemeKey = Exclude<keyof StorefrontTheme, 'layout' | 'profileImageUrl'>;
 type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
@@ -56,6 +56,7 @@ const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
     name: 'Sand',
     theme: {
       profileBackground: '#eee4d6',
+      profileImageUrl: '',
       recommendationsBackground: '#faf7f2',
       productBackground: '#ffffff',
       discountBackground: '#f1e8dc',
@@ -68,6 +69,7 @@ const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
     name: 'Slate',
     theme: {
       profileBackground: '#dde4e7',
+      profileImageUrl: '',
       recommendationsBackground: '#f5f7f7',
       productBackground: '#ffffff',
       discountBackground: '#e8edee',
@@ -320,7 +322,11 @@ export function StorefrontPhonePreview({
                     )}
                     key={name}
                     onClick={() => {
-                      setDraft((current) => ({ ...palette, layout: current.layout }));
+                      setDraft((current) => ({
+                        ...palette,
+                        profileImageUrl: current.profileImageUrl,
+                        layout: current.layout,
+                      }));
                       setNotice('');
                     }}
                     type="button"
@@ -334,6 +340,41 @@ export function StorefrontPhonePreview({
                   </button>
                 ))}
               </div>
+              <section className="storefrontHeroSettings" aria-labelledby="hero-settings-title">
+                <div>
+                  <h3 id="hero-settings-title">Profile hero</h3>
+                  <p>Blend a favorite image into the profile and recommendation colors.</p>
+                </div>
+                <label>
+                  Image URL <span className="fieldOptional">Optional</span>
+                  <input
+                    aria-label="Profile hero image URL"
+                    inputMode="url"
+                    onChange={(event) => {
+                      setDraft((current) => ({
+                        ...current,
+                        profileImageUrl: event.target.value,
+                      }));
+                      setNotice('');
+                    }}
+                    placeholder="https://…"
+                    type="text"
+                    value={draft.profileImageUrl ?? ''}
+                  />
+                </label>
+                {draft.profileImageUrl ? (
+                  <button
+                    className="storefrontHeroClear"
+                    onClick={() => {
+                      setDraft((current) => ({ ...current, profileImageUrl: '' }));
+                      setNotice('');
+                    }}
+                    type="button"
+                  >
+                    Remove image
+                  </button>
+                ) : null}
+              </section>
               <div className="storefrontDesignFields">
                 {groups.map((group) => (
                   <section
@@ -412,6 +453,7 @@ export function StorefrontPhonePreview({
                   onClick={() => {
                     setDraft((current) => ({
                       ...defaultStorefrontTheme,
+                      profileImageUrl: current.profileImageUrl,
                       layout: current.layout,
                     }));
                     setNotice('');

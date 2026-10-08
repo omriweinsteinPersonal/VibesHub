@@ -1,7 +1,7 @@
 .layout {
   padding-bottom: 24px;
   color: var(--sf-text);
-  background: var(--sf-page);
+  background: var(--sf-profile);
 }
 .layout[data-compact-preview='true'] {
   padding-bottom: 0;
@@ -19,6 +19,35 @@
 .profile {
   background: var(--sf-profile);
   padding: 14px 5vw;
+}
+.profile.hero {
+  background-color: var(--sf-profile);
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--sf-profile) 4%, transparent) 18%,
+      var(--sf-profile) 92%
+    ),
+    var(--sf-profile-image, none);
+  background-position: center, center;
+  background-size: cover;
+  min-height: 218px;
+  padding-top: clamp(36px, 8vw, 76px);
+  position: relative;
+}
+.profile.hero::after {
+  background: linear-gradient(180deg, transparent, var(--sf-profile));
+  bottom: 0;
+  content: '';
+  height: 42%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+.profile.hero > :global(*) {
+  position: relative;
+  z-index: 1;
 }
 .profile:first-of-type {
   padding-top: 30px;
@@ -50,11 +79,19 @@
   color: var(--sf-text);
 }
 .content:global(.referenceStorefrontProducts) {
+  background: var(--sf-page);
   box-sizing: border-box;
   margin: 0;
   max-width: none;
   padding: 8px 5vw;
   width: 100%;
+}
+.firstContent:global(.referenceStorefrontProducts) {
+  border-radius: 28px 28px 0 0;
+  margin-top: -18px;
+  padding-top: 28px;
+  position: relative;
+  z-index: 2;
 }
 .content:global(.referenceStorefrontProducts) > header {
   box-sizing: border-box;
@@ -201,6 +238,10 @@
   .profile,
   .socials {
     padding-inline: 18px;
+  }
+  .profile.hero {
+    min-height: 206px;
+    padding-top: 34px;
   }
   .profile :global(.referenceStorefrontInner) {
     column-gap: 14px;

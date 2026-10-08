@@ -13685,6 +13685,64 @@ dt {
   text-align: left;
 }
 
+.storefrontHeroSettings {
+  background: linear-gradient(135deg, #fffaf4, #f5efe7);
+  border: 1px solid #e6ded4;
+  border-radius: 16px;
+  display: grid;
+  gap: 11px;
+  margin-top: 18px;
+  padding: 15px;
+}
+
+.storefrontHeroSettings h3 {
+  color: #2d2924;
+  font-size: 0.92rem;
+  margin: 0 0 3px;
+}
+
+.storefrontHeroSettings p {
+  color: #766d65;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.storefrontHeroSettings label {
+  color: #4a423c;
+  display: grid;
+  font-size: 0.75rem;
+  gap: 6px;
+}
+
+.storefrontHeroSettings input {
+  background: #fff;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #2d2924;
+  font: inherit;
+  min-height: 38px;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.storefrontHeroSettings input:focus-visible {
+  border-color: #b77856;
+  outline: 2px solid color-mix(in srgb, #b77856 28%, transparent);
+  outline-offset: 1px;
+}
+
+.storefrontHeroClear {
+  background: transparent;
+  border: 0;
+  color: #8e543a;
+  cursor: pointer;
+  font-size: 0.74rem;
+  justify-self: start;
+  padding: 0;
+  text-decoration: underline;
+}
+
 .storefrontDesignPanel .storefrontPaletteSwatches {
   margin: 0;
 }

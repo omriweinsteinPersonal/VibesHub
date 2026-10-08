@@ -515,6 +515,7 @@ const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const defaultStorefrontTheme = {
   profileBackground: '#fbf6ec',
+  profileImageUrl: '',
   recommendationsBackground: '#ffffff',
   productBackground: '#ffffff',
   discountBackground: '#f8f6f2',
@@ -526,6 +527,9 @@ export const defaultStorefrontTheme = {
 export const storefrontThemeSchema = z
   .object({
     profileBackground: storefrontColorSchema,
+    // Optional so existing storefront themes remain valid when the Hero image
+    // feature is introduced. The client only renders safe http(s) URLs.
+    profileImageUrl: z.string().trim().max(2_048).optional(),
     recommendationsBackground: storefrontColorSchema,
     productBackground: storefrontColorSchema,
     discountBackground: storefrontColorSchema,

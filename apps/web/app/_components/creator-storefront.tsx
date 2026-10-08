@@ -40,6 +40,16 @@ import { StorefrontViewTracker, TrackedInstagramLink } from './analytics-events'
 import { CreatorConnectorIcon } from './creator-connector-icon';
 import { RecommendationCardView } from './recommendation-card';
 
+function safeProfileImageUrl(value: string | undefined) {
+  if (!value) return '';
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
 export function CreatorStorefrontView({
   codes,
   editable = false,
@@ -77,6 +87,7 @@ export function CreatorStorefrontView({
   const isMobilePreview =
     typeof window !== 'undefined' &&
     new URLSearchParams(window.location.search).has('mobilePreview');
+  const profileImageUrl = safeProfileImageUrl(previewTheme.profileImageUrl);
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -606,6 +617,9 @@ export function CreatorStorefrontView({
         style={
           {
             '--sf-profile': previewTheme.profileBackground,
+            '--sf-profile-image': profileImageUrl
+              ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
+              : 'none',
             '--sf-page': previewTheme.recommendationsBackground,
             '--sf-product': previewTheme.productBackground,
             '--sf-discount': previewTheme.discountBackground,
