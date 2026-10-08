@@ -313,9 +313,11 @@ export function CreatorDashboard() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const productFetchRequest = useRef(0);
+  const loadRequest = useRef(0);
   const silentLoadRef = useRef(false);
 
   const load = useCallback(async () => {
+    const requestId = ++loadRequest.current;
     setLoading(true);
     try {
       const [categoryResult, profileResult, recommendationResult, configResult] =
@@ -411,7 +413,7 @@ export function CreatorDashboard() {
       // A mutation can succeed even when the follow-up dashboard refresh is
       // interrupted (especially on mobile Safari). Do not turn a successful
       // save into a misleading "Load failed" error in that case.
-      if (!silentLoadRef.current) {
+      if (requestId === loadRequest.current && !silentLoadRef.current) {
         setError(messageFor(cause));
       }
     } finally {
@@ -630,6 +632,7 @@ export function CreatorDashboard() {
       }
       closeComposer();
       await refreshAfterSave();
+      setError('');
       setNotice(
         editingBrand
           ? 'Brand updated.'
