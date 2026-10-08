@@ -4,6 +4,9 @@
 
 ## Cross-platform impact
 
+> Golden rule: a user-facing change is complete only after mobile web, Android, and iOS
+> have each been implemented or explicitly evaluated with a documented reason.
+
 - [ ] I evaluated this change for responsive mobile web.
 - [ ] I evaluated this change for the native iOS app.
 - [ ] I evaluated this change for the native Android app.

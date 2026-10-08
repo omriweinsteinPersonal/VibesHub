@@ -5,6 +5,11 @@ add framework-specific requirements, but they do not replace these product rules
 
 ## Mobile web and native parity
 
+**Golden rule:** every user-facing feature and change must account for responsive
+mobile web, Android, and iOS before it is considered complete. A change may use
+platform-specific implementation or UX, but none of the three surfaces may be skipped
+silently.
+
 Every user-facing feature, behavior change, bug fix, and design change must be evaluated
 for both of Swavii's user-facing mobile surfaces:
 
