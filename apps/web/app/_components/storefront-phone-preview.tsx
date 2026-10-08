@@ -4,15 +4,12 @@ import {
   defaultStorefrontTheme,
   storefrontThemeConfigurationSchema,
   type StorefrontTheme,
-  type StorefrontTitle,
   type StorefrontThemeConfiguration,
-  type CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
 import { ChevronDown, ChevronUp, Eye, Pencil, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
-import { StorefrontContentEditor } from './storefront-content-editor';
 import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = Exclude<keyof StorefrontTheme, 'layout'>;
@@ -95,7 +92,6 @@ function desktopSnapshot() {
 
 export function StorefrontPhonePreview({
   children,
-  contentTargets,
   creatorId,
   editable = false,
   previewUrl,
@@ -114,14 +110,6 @@ export function StorefrontPhonePreview({
   // Creators need the same editor on a phone. The preview becomes a full-width
   // device there, while public storefront visitors still see the regular page.
   const showPhone = desktopPreview || editable;
-  const [tab, setTab] = useState<'design' | 'content'>('content');
-  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-  const [previewBrandOrder, setPreviewBrandOrder] = useState<string[] | null>(null);
-  const [previewTitles, setPreviewTitles] = useState<StorefrontTitle[] | null>(null);
-  const [previewBio, setPreviewBio] = useState<string | null>(null);
-  const [previewSocialLinks, setPreviewSocialLinks] = useState<
-    CreatorProfileSocialLink[] | null
-  >(null);
   const [canEdit, setCanEdit] = useState(editable);
   const frame = useRef<HTMLIFrameElement>(null);
   const [configuration, setConfiguration] = useState<StorefrontThemeConfiguration | null>(
@@ -130,7 +118,6 @@ export function StorefrontPhonePreview({
   const [draft, setDraft] = useState<StorefrontTheme>(theme);
   const [selected, setSelected] = useState<ThemeSection>('profile');
   const [saving, setSaving] = useState(false);
-  const [savingSearch, setSavingSearch] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
@@ -178,28 +165,12 @@ export function StorefrontPhonePreview({
         type: 'swavii:theme-preview',
         creatorId,
         theme: draft,
-        titles: previewTitles,
-        brandOrder: previewBrandOrder,
-        bio: previewBio,
-        socialLinks: previewSocialLinks,
-        selectedBlock,
-        editingContent: tab === 'content',
+        editingContent: false,
         previewMode,
       },
       window.location.origin,
     );
-  }, [
-    creatorId,
-    draft,
-    previewTitles,
-    previewBrandOrder,
-    previewBio,
-    previewSocialLinks,
-    previewMode,
-    selectedBlock,
-    tab,
-    showPhone,
-  ]);
+  }, [creatorId, draft, previewMode, showPhone]);
 
   useEffect(() => {
     if (!canEdit || !showPhone) return;
@@ -229,9 +200,6 @@ export function StorefrontPhonePreview({
         data.creatorId === creatorId &&
         data.blockId
       ) {
-        setSelectedBlock(data.blockId);
-        setTab('content');
-        setMobileEditorOpen(true);
         return;
       }
       if (
@@ -269,42 +237,6 @@ export function StorefrontPhonePreview({
       setError(cause instanceof Error ? cause.message : 'Could not save the design.');
     } finally {
       setSaving(false);
-    }
-  }
-
-  const searchVisible = !(draft.layout?.hiddenBlocks ?? []).includes('search');
-  async function setSearchVisible(visible: boolean) {
-    if (!configuration || savingSearch) return;
-    const hiddenBlocks = new Set(configuration.theme.layout?.hiddenBlocks ?? []);
-    if (visible) hiddenBlocks.delete('search');
-    else hiddenBlocks.add('search');
-    const nextTheme: StorefrontTheme = {
-      ...configuration.theme,
-      layout: {
-        blocks: configuration.theme.layout?.blocks ?? [],
-        labels: configuration.theme.layout?.labels ?? [],
-        hiddenBlocks: [...hiddenBlocks],
-      },
-    };
-    setSavingSearch(true);
-    setError('');
-    setNotice('');
-    try {
-      const value = await apiRequest<StorefrontThemeConfiguration>(
-        '/creator/studio/storefront-theme',
-        {
-          method: 'PUT',
-          headers: { 'if-match': `"${configuration.version}"` },
-          body: JSON.stringify(nextTheme),
-        },
-      );
-      setConfiguration(value);
-      setDraft(value.theme);
-      setNotice(visible ? 'Search is visible on your storefront.' : 'Search is hidden.');
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not update search.');
-    } finally {
-      setSavingSearch(false);
     }
   }
 
@@ -360,7 +292,7 @@ export function StorefrontPhonePreview({
           >
             <span>
               <SlidersHorizontal aria-hidden="true" size={18} />
-              {mobileEditorOpen ? 'Back to storefront' : 'Design & content'}
+              {mobileEditorOpen ? 'Back to storefront' : 'Design'}
             </span>
             {mobileEditorOpen ? (
               <ChevronDown aria-hidden="true" size={18} />
@@ -371,57 +303,9 @@ export function StorefrontPhonePreview({
           <div className="storefrontDesignPanelBody">
             <div className="storefrontDesignPanelHeading">
               <h2>Edit your page</h2>
-              <p>Choose what to change. See it update alongside.</p>
+              <p>Shape your storefront with colors, layout, and style.</p>
             </div>
-            <div className="storefrontDesignTabs" role="group" aria-label="Page editor">
-              <button
-                type="button"
-                aria-pressed={tab === 'content'}
-                onClick={() => setTab('content')}
-              >
-                Content
-              </button>
-              <button
-                type="button"
-                aria-pressed={tab === 'design'}
-                onClick={() => setTab('design')}
-              >
-                Design
-              </button>
-            </div>
-            <div hidden={tab !== 'content'}>
-              <section className="storefrontSearchControl" aria-label="Store search">
-                <div>
-                  <strong>Store search</strong>
-                  <p>
-                    Let visitors search your recommendations from any part of the page.
-                  </p>
-                </div>
-                <label>
-                  <input
-                    aria-label="Show store search"
-                    checked={searchVisible}
-                    disabled={!configuration || savingSearch}
-                    onChange={(event) => void setSearchVisible(event.target.checked)}
-                    type="checkbox"
-                  />
-                  <span>{searchVisible ? 'Shown' : 'Hidden'}</span>
-                </label>
-              </section>
-              <StorefrontContentEditor
-                creatorId={creatorId}
-                targets={contentTargets}
-                selectedId={selectedBlock}
-                onSelect={setSelectedBlock}
-                onPreview={(next) => {
-                  setPreviewTitles(next.titles);
-                  setPreviewBrandOrder(next.brandOrder);
-                  setPreviewBio(next.bio ?? null);
-                  setPreviewSocialLinks(next.socialLinks ?? null);
-                }}
-              />
-            </div>
-            <div hidden={tab !== 'design'}>
+            <div>
               <div
                 className="storefrontPaletteList"
                 role="group"
@@ -563,12 +447,7 @@ export function StorefrontPhonePreview({
                   type: 'swavii:theme-preview',
                   creatorId,
                   theme: draft,
-                  titles: previewTitles,
-                  brandOrder: previewBrandOrder,
-                  bio: previewBio,
-                  socialLinks: previewSocialLinks,
-                  selectedBlock,
-                  editingContent: tab === 'content',
+                  editingContent: false,
                   previewMode,
                 },
                 window.location.origin,
