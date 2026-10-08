@@ -483,6 +483,15 @@ export function CreatorDashboard() {
 
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const normalizedWebsiteUrl = brand.websiteUrl.trim();
+    const brandWebsiteChanged =
+      !editingBrand || normalizedWebsiteUrl !== editingBrand.websiteUrl.trim();
+    if (brandWebsiteChanged && !normalizedProductUrl(normalizedWebsiteUrl)) {
+      setError(
+        'Enter a full HTTPS brand website URL, for example https://www.example.com.',
+      );
+      return;
+    }
     if (
       brand.discountPercent &&
       (!Number.isInteger(Number(brand.discountPercent)) ||
@@ -515,34 +524,41 @@ export function CreatorDashboard() {
     try {
       const updateBrand = (version: number) =>
         apiRequest<CreatorBrand>(`/creator/brands/${editingBrand!.id}`, {
-          body: JSON.stringify({ name: brand.name, websiteUrl: brand.websiteUrl }),
+          body: JSON.stringify({ name: brand.name, websiteUrl: normalizedWebsiteUrl }),
           headers: { 'if-match': `"${version}"` },
           method: 'PATCH',
         });
-      let savedBrand: CreatorBrand;
-      if (editingBrand) {
-        try {
-          savedBrand = await updateBrand(editingBrand.version);
-        } catch (cause) {
-          if (!(cause instanceof Error) || !cause.message.includes('Reload the brand'))
-            throw cause;
-          const currentBrands = await apiRequest<CreatorBrand[]>('/creator/brands');
-          const current = currentBrands.find(({ id }) => id === editingBrand.id);
-          if (!current) throw cause;
-          savedBrand = await updateBrand(current.version);
-        }
-      } else {
-        savedBrand = await apiRequest<CreatorBrand>('/creator/brands', {
-          body: JSON.stringify({ name: brand.name, websiteUrl: brand.websiteUrl }),
-          idempotent: true,
-          method: 'POST',
-        });
-      }
       const existingOffer = editingBrand
         ? discounts.find(
             (offer) => offer.brandId === editingBrand.id && offer.scopeKind === 'brand',
           )
         : null;
+      let savedBrand: CreatorBrand;
+      if (editingBrand) {
+        if (!brandWebsiteChanged && brand.name.trim() === editingBrand.name.trim()) {
+          // Editing only the offer must not re-submit the brand URL. This keeps
+          // legacy records with an old/malformed URL editable while the offer
+          // itself continues using its already validated merchant URL.
+          savedBrand = editingBrand;
+        } else {
+          try {
+            savedBrand = await updateBrand(editingBrand.version);
+          } catch (cause) {
+            if (!(cause instanceof Error) || !cause.message.includes('Reload the brand'))
+              throw cause;
+            const currentBrands = await apiRequest<CreatorBrand[]>('/creator/brands');
+            const current = currentBrands.find(({ id }) => id === editingBrand.id);
+            if (!current) throw cause;
+            savedBrand = await updateBrand(current.version);
+          }
+        }
+      } else {
+        savedBrand = await apiRequest<CreatorBrand>('/creator/brands', {
+          body: JSON.stringify({ name: brand.name, websiteUrl: normalizedWebsiteUrl }),
+          idempotent: true,
+          method: 'POST',
+        });
+      }
       const hasOffer = Boolean(
         brand.code.trim() || brand.discountPercent || brand.discountAmount,
       );
@@ -561,7 +577,7 @@ export function CreatorDashboard() {
             : brand.discountAmount
               ? `₪${brand.discountAmount} off`
               : null,
-          merchantUrl: savedBrand.websiteUrl,
+          merchantUrl: existingOffer?.merchantUrl ?? savedBrand.websiteUrl,
           offerType: 'creator_code',
           priority: 0,
           recurrenceRule: 'none',
@@ -1941,7 +1957,8 @@ export function CreatorDashboard() {
                           Brand website
                           <input
                             required
-                            type="url"
+                            inputMode="url"
+                            type="text"
                             placeholder="https://www.adidas.com"
                             value={brand.websiteUrl}
                             onBlur={() => {
