@@ -340,10 +340,15 @@ export function StorefrontPhonePreview({
                   </button>
                 ))}
               </div>
-              <section className="storefrontHeroSettings" aria-labelledby="hero-settings-title">
+              <section
+                className="storefrontHeroSettings"
+                aria-labelledby="hero-settings-title"
+              >
                 <div>
                   <h3 id="hero-settings-title">Profile hero</h3>
-                  <p>Blend a favorite image into the profile and recommendation colors.</p>
+                  <p>
+                    Blend a favorite image into the profile and recommendation colors.
+                  </p>
                 </div>
                 <label>
                   Image URL <span className="fieldOptional">Optional</span>
