@@ -523,6 +523,8 @@ export function CreatorDashboard() {
     }
     setSaving(true);
     setError('');
+    const wasEditingBrand = Boolean(editingBrand);
+    let mutationSucceeded = false;
     try {
       const updateBrand = (version: number) =>
         apiRequest<CreatorBrand>(`/creator/brands/${editingBrand!.id}`, {
@@ -545,6 +547,7 @@ export function CreatorDashboard() {
         } else {
           try {
             savedBrand = await updateBrand(editingBrand.version);
+            mutationSucceeded = true;
           } catch (cause) {
             if (!(cause instanceof Error) || !cause.message.includes('Reload the brand'))
               throw cause;
@@ -552,6 +555,7 @@ export function CreatorDashboard() {
             const current = currentBrands.find(({ id }) => id === editingBrand.id);
             if (!current) throw cause;
             savedBrand = await updateBrand(current.version);
+            mutationSucceeded = true;
           }
         }
       } else {
@@ -560,6 +564,7 @@ export function CreatorDashboard() {
           idempotent: true,
           method: 'POST',
         });
+        mutationSucceeded = true;
       }
       const hasOffer = Boolean(
         brand.code.trim() || brand.discountPercent || brand.discountAmount,
@@ -600,6 +605,7 @@ export function CreatorDashboard() {
             offerBody,
             { headers: { 'if-match': `"${latest.version}"` }, method: 'PATCH' },
           );
+          mutationSucceeded = true;
           if (updated.lifecycle !== 'published') {
             await apiRequest(`/creator/discount-codes/${updated.id}/confirm`, {
               headers: { 'if-match': `"${updated.version}"` },
@@ -613,6 +619,7 @@ export function CreatorDashboard() {
             offerBody,
             { idempotent: true, method: 'POST' },
           );
+          mutationSucceeded = true;
           await apiRequest(`/creator/discount-codes/${created.id}/confirm`, {
             headers: { 'if-match': `"${created.version}"` },
             idempotent: true,
@@ -629,6 +636,7 @@ export function CreatorDashboard() {
           idempotent: true,
           method: 'POST',
         });
+        mutationSucceeded = true;
       }
       closeComposer();
       await refreshAfterSave();
@@ -639,6 +647,12 @@ export function CreatorDashboard() {
           : 'Brand added. You can now add items and collections to it.',
       );
     } catch (cause) {
+      if (mutationSucceeded) {
+        closeComposer();
+        setError('');
+        setNotice(wasEditingBrand ? 'Brand updated.' : 'Brand added.');
+        return;
+      }
       setError(messageFor(cause));
     } finally {
       setSaving(false);
