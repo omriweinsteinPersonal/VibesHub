@@ -1865,11 +1865,6 @@ export function CreatorDashboard() {
                       editing={Boolean(editingProduct)}
                       fetching={fetching}
                       fetchWarnings={fetchWarnings}
-                      photoError={
-                        error === 'Add a product photo to save this recommendation.' &&
-                        !product.imageAssetId &&
-                        !product.imageUrl
-                      }
                       onAddStoryLink={addStoryLink}
                       onCategoryCreated={(category) =>
                         setCategories((current) => [...current, category])
@@ -3058,7 +3053,6 @@ function ProductForm({
   editing,
   fetching,
   fetchWarnings,
-  photoError,
   onAddStoryLink,
   onCategoryCreated,
   onChange,
@@ -3082,7 +3076,6 @@ function ProductForm({
   editing: boolean;
   fetching: boolean;
   fetchWarnings: string[];
-  photoError: boolean;
   onAddStoryLink: () => void;
   onCategoryCreated: (category: CategoryCard) => void;
   onChange: (value: ProductEditor) => void;
