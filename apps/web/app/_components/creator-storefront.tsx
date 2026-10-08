@@ -74,6 +74,9 @@ export function CreatorStorefrontView({
   const [order, setOrder] = useState<StorefrontLayer[]>([]);
   const [orderError, setOrderError] = useState('');
   const [previewMode, setPreviewMode] = useState(true);
+  const isMobilePreview =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('mobilePreview');
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -558,9 +561,7 @@ export function CreatorStorefrontView({
     <>
       <div
         className="creatorStorefrontCanvas"
-        data-mobile-preview={new URLSearchParams(window.location.search).has(
-          'mobilePreview',
-        )}
+        data-mobile-preview={isMobilePreview}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
@@ -617,9 +618,7 @@ export function CreatorStorefrontView({
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
         <StorefrontLayout
-          compactPreview={new URLSearchParams(window.location.search).has(
-            'mobilePreview',
-          )}
+          compactPreview={isMobilePreview}
           creatorId={storefront.id}
           theme={previewTheme}
           editable={
