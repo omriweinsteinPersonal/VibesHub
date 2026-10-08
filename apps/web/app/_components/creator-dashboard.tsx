@@ -313,8 +313,9 @@ export function CreatorDashboard() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const productFetchRequest = useRef(0);
+  const silentLoadRef = useRef(false);
 
-  const load = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [categoryResult, profileResult, recommendationResult, configResult] =
@@ -410,13 +411,22 @@ export function CreatorDashboard() {
       // A mutation can succeed even when the follow-up dashboard refresh is
       // interrupted (especially on mobile Safari). Do not turn a successful
       // save into a misleading "Load failed" error in that case.
-      if (!silent) {
+      if (!silentLoadRef.current) {
         setError(messageFor(cause));
       }
     } finally {
       setLoading(false);
     }
   }, [setCreatorProfile]);
+
+  const refreshAfterSave = useCallback(async () => {
+    silentLoadRef.current = true;
+    try {
+      await load();
+    } finally {
+      silentLoadRef.current = false;
+    }
+  }, [load]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -605,7 +615,7 @@ export function CreatorDashboard() {
         });
       }
       closeComposer();
-      await load({ silent: true });
+      await refreshAfterSave();
       setNotice(
         editingBrand
           ? 'Brand updated.'
@@ -971,7 +981,7 @@ export function CreatorDashboard() {
         return;
       }
       closeComposer();
-      await load({ silent: true });
+      await refreshAfterSave();
       setNotice(
         editingProduct
           ? 'Recommendation updated on your storefront.'
@@ -1095,7 +1105,7 @@ export function CreatorDashboard() {
         setNotice('Brand discount saved as a draft. Turn Live on when it is ready.');
       }
       closeComposer();
-      await load({ silent: true });
+      await refreshAfterSave();
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
