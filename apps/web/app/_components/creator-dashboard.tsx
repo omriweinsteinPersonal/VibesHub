@@ -314,7 +314,7 @@ export function CreatorDashboard() {
   const [notice, setNotice] = useState('');
   const productFetchRequest = useRef(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     setLoading(true);
     try {
       const [categoryResult, profileResult, recommendationResult, configResult] =
@@ -407,7 +407,12 @@ export function CreatorDashboard() {
         );
       }
     } catch (cause) {
-      setError(messageFor(cause));
+      // A mutation can succeed even when the follow-up dashboard refresh is
+      // interrupted (especially on mobile Safari). Do not turn a successful
+      // save into a misleading "Load failed" error in that case.
+      if (!silent) {
+        setError(messageFor(cause));
+      }
     } finally {
       setLoading(false);
     }
@@ -600,7 +605,7 @@ export function CreatorDashboard() {
         });
       }
       closeComposer();
-      await load();
+      await load({ silent: true });
       setNotice(
         editingBrand
           ? 'Brand updated.'
@@ -966,7 +971,7 @@ export function CreatorDashboard() {
         return;
       }
       closeComposer();
-      await load();
+      await load({ silent: true });
       setNotice(
         editingProduct
           ? 'Recommendation updated on your storefront.'
@@ -1090,7 +1095,7 @@ export function CreatorDashboard() {
         setNotice('Brand discount saved as a draft. Turn Live on when it is ready.');
       }
       closeComposer();
-      await load();
+      await load({ silent: true });
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -2260,7 +2265,7 @@ export function CreatorDashboard() {
                                   method: 'DELETE',
                                 },
                               )
-                                .then(load)
+                                .then(() => load())
                                 .catch((cause: unknown) => setError(messageFor(cause)));
                             }}
                             type="button"
