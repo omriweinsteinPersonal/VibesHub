@@ -73,6 +73,14 @@ export class DiscountCodeService {
     try {
       const updated = await this.codes.replaceOwned(id, userId, expectedVersion, input);
       if (!updated) throw this.preconditionFailed();
+      // Editing an already-live offer should not make its storefront card
+      // disappear while the client performs the follow-up confirmation call.
+      // Re-confirm it on the server as part of the same user action.
+      if (current.lifecycle === 'published') {
+        const confirmed = await this.codes.confirmOwned(id, userId, updated.version);
+        if (!confirmed) throw this.preconditionFailed();
+        return confirmed;
+      }
       return updated;
     } catch (error) {
       this.translateError(error);

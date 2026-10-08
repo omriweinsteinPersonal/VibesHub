@@ -598,11 +598,13 @@ export function CreatorDashboard() {
             offerBody,
             { headers: { 'if-match': `"${latest.version}"` }, method: 'PATCH' },
           );
-          await apiRequest(`/creator/discount-codes/${updated.id}/confirm`, {
-            headers: { 'if-match': `"${updated.version}"` },
-            idempotent: true,
-            method: 'POST',
-          });
+          if (updated.lifecycle !== 'published') {
+            await apiRequest(`/creator/discount-codes/${updated.id}/confirm`, {
+              headers: { 'if-match': `"${updated.version}"` },
+              idempotent: true,
+              method: 'POST',
+            });
+          }
         } else {
           const created = await saveOffer<CreatorDiscountCode>(
             '/creator/discount-codes',

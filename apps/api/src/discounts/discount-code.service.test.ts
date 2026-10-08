@@ -72,6 +72,41 @@ describe('DiscountCodeService', () => {
     ).rejects.toMatchObject({ response: { code: 'PRECONDITION_FAILED' } });
   });
 
+  it('keeps an already-published offer live when it is edited', async () => {
+    const current: CreatorDiscountCode = {
+      ...discountCode,
+      lastVerifiedAt: '2026-08-07T10:05:00.000Z',
+      lifecycle: 'published',
+      verificationStatus: 'creator_confirmed',
+      version: 4,
+    };
+    const updated: CreatorDiscountCode = {
+      ...current,
+      code: 'UPDATED10',
+      lifecycle: 'draft',
+      verificationStatus: 'unverified',
+      version: 5,
+    };
+    const confirmed: CreatorDiscountCode = {
+      ...updated,
+      lastVerifiedAt: '2026-08-08T12:00:00.000Z',
+      lifecycle: 'published',
+      verificationStatus: 'creator_confirmed',
+      version: 6,
+    };
+    const repository = {
+      confirmOwned: vi.fn().mockResolvedValue(confirmed),
+      findOwned: vi.fn().mockResolvedValue(current),
+      replaceOwned: vi.fn().mockResolvedValue(updated),
+    };
+    const service = new DiscountCodeService(repository as never);
+
+    await expect(
+      service.update(discountCode.id, 'user-id', 4, { code: 'UPDATED10' }),
+    ).resolves.toEqual(confirmed);
+    expect(repository.confirmOwned).toHaveBeenCalledWith(discountCode.id, 'user-id', 5);
+  });
+
   it('allows only published codes to be hidden', async () => {
     const repository = {
       findOwned: vi.fn().mockResolvedValue(discountCode),
