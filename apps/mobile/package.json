@@ -9,12 +9,13 @@
     "clean": "rm -rf .expo dist",
     "dev": "expo start",
     "dev:client": "expo start --dev-client",
-    "eas-build-post-install": "pnpm --filter @vibeshub/contracts build && pnpm --filter @vibeshub/design-tokens build",
+    "eas-build-post-install": "pnpm --filter @vibeshub/contracts build && pnpm --filter @vibeshub/design-tokens build && pnpm validate:build-env",
     "ios": "expo run:ios",
     "lint": "eslint . --max-warnings=0",
     "start": "expo start",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
+    "validate:build-env": "node scripts/validate-build-env.mjs",
     "web": "expo start --web"
   },
   "dependencies": {

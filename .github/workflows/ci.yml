@@ -49,6 +49,14 @@ jobs:
       - name: Validate native release configuration
         run: pnpm mobile:release:check
 
+      - name: Validate production mobile environment guard
+        env:
+          EAS_BUILD_PROFILE: production
+          EXPO_PUBLIC_API_URL: https://api.swavii.com
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          EXPO_PUBLIC_SUPABASE_URL: https://example.supabase.co
+        run: pnpm --filter @vibeshub/mobile validate:build-env
+
       - name: Check Expo native project health
         run: pnpm dlx expo-doctor@latest apps/mobile
 

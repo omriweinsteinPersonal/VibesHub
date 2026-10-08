@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
 const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).expo;
+const mobilePackage = JSON.parse(await readFile('apps/mobile/package.json', 'utf8'));
 const loginSource = await readFile('apps/mobile/app/login.tsx', 'utf8');
 const accountSource = await readFile('apps/mobile/app/account.tsx', 'utf8');
 const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
@@ -112,6 +113,10 @@ requireValue(
 requireValue(
   rootLayoutSource.includes('SafeAreaProvider'),
   'The native root must retain the safe-area provider.',
+);
+requireValue(
+  mobilePackage.scripts?.['eas-build-post-install']?.includes('validate:build-env'),
+  'EAS builds must validate their public environment before bundling.',
 );
 
 if (errors.length > 0) {
