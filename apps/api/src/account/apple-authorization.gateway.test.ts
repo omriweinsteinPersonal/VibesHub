@@ -45,4 +45,27 @@ describe('AppleAuthorizationGateway', () => {
     expect(revokeRequest.body.get('token')).toBe('refresh-token');
     expect(revokeRequest.body.get('token_type_hint')).toBe('refresh_token');
   });
+
+  it('surfaces the Apple response status when the code exchange fails', async () => {
+    const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+    vi.stubEnv('APPLE_CLIENT_ID', 'com.swavii.app');
+    vi.stubEnv('APPLE_KEY_ID', 'KEY123');
+    vi.stubEnv(
+      'APPLE_PRIVATE_KEY',
+      privateKey.export({ format: 'pem', type: 'pkcs8' }).toString(),
+    );
+    vi.stubEnv('APPLE_TEAM_ID', 'TEAM123');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        json: vi.fn().mockResolvedValue({ error: 'invalid_grant' }),
+        ok: false,
+        status: 400,
+      }),
+    );
+
+    await expect(
+      new AppleAuthorizationGateway().revokeAuthorizationCode('expired-code'),
+    ).rejects.toThrow('Apple authorization exchange failed (400)');
+  });
 });

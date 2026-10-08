@@ -17,6 +17,12 @@ interface AppleAuthorizationConfig {
   teamId: string;
 }
 
+interface AppleHttpResponse {
+  json(): Promise<unknown>;
+  ok: boolean;
+  status: number;
+}
+
 @Injectable()
 export class AppleAuthorizationGateway {
   private readonly config: AppleAuthorizationConfig | null;
@@ -43,7 +49,7 @@ export class AppleAuthorizationGateway {
     }
 
     const clientSecret = createClientSecret(this.config);
-    const tokenResponse = await fetch('https://appleid.apple.com/auth/token', {
+    const tokenResponse = (await fetch('https://appleid.apple.com/auth/token', {
       body: new URLSearchParams({
         client_id: this.config.clientId,
         client_secret: clientSecret,
@@ -52,7 +58,7 @@ export class AppleAuthorizationGateway {
       }),
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       method: 'POST',
-    });
+    })) as AppleHttpResponse;
     const tokenBody: unknown = await tokenResponse.json().catch(() => null);
     if (!tokenResponse.ok) {
       throw new Error(`Apple authorization exchange failed (${tokenResponse.status})`);
@@ -61,7 +67,7 @@ export class AppleAuthorizationGateway {
     const token = tokens.refresh_token ?? tokens.access_token;
     if (!token) throw new Error('Apple did not return a revocable token');
 
-    const revokeResponse = await fetch('https://appleid.apple.com/auth/revoke', {
+    const revokeResponse = (await fetch('https://appleid.apple.com/auth/revoke', {
       body: new URLSearchParams({
         client_id: this.config.clientId,
         client_secret: clientSecret,
@@ -70,7 +76,7 @@ export class AppleAuthorizationGateway {
       }),
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       method: 'POST',
-    });
+    })) as AppleHttpResponse;
     if (!revokeResponse.ok) {
       throw new Error(`Apple authorization revocation failed (${revokeResponse.status})`);
     }
