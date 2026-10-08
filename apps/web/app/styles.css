@@ -1216,6 +1216,119 @@ svg.lucide {
   background: linear-gradient(135deg, #f7f1e8, #eee5d9);
   border: 1px dashed var(--vh-border);
 }
+.creatorMediaManageList {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+.creatorMediaManageCard {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--vh-border);
+  border-radius: 16px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 96px minmax(0, 1fr) auto auto auto;
+  min-height: 96px;
+  overflow: hidden;
+  padding: 12px 16px 12px 12px;
+  position: relative;
+}
+.creatorMediaManageCard > img {
+  height: 72px;
+  object-fit: cover;
+  position: relative !important;
+  width: 96px;
+}
+.creatorMediaManageCard h3 {
+  font-size: 1rem;
+  margin: 4px 0 0;
+}
+.creatorMediaManageCard small {
+  color: var(--vh-muted);
+  text-transform: capitalize;
+}
+.creatorMediaManageCard > button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--vh-muted);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 8px;
+}
+.creatorMediaPreview {
+  border-radius: 14px;
+  height: 160px;
+  overflow: hidden;
+  position: relative;
+  width: min(100%, 320px);
+}
+.creatorMediaPreview img {
+  object-fit: cover;
+}
+.featuredMediaBlock {
+  background: var(--sf-product, #fff);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.featuredMediaEmbed {
+  aspect-ratio: 16 / 9;
+  background: #f5f0e9;
+}
+.featuredMediaEmbed iframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
+}
+.featuredMediaLink {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+.featuredMediaCover {
+  aspect-ratio: 16 / 9;
+  background: #f5f0e9;
+  overflow: hidden;
+  position: relative;
+}
+.featuredMediaCover img {
+  object-fit: cover;
+}
+.featuredMediaPlay {
+  align-items: center;
+  background: var(--vh-accent);
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  height: 48px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+}
+.featuredMediaLink > span:last-child {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px 16px;
+}
+.featuredMediaLink small {
+  color: var(--vh-muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+.featuredMediaLink strong {
+  font-size: 1rem;
+}
+.featuredMediaLink em {
+  color: var(--vh-accent-strong);
+  font-size: 0.76rem;
+  font-style: normal;
+}
 .creatorManageCopy h3 {
   font-size: 1.65rem;
   margin: 7px 0 12px;

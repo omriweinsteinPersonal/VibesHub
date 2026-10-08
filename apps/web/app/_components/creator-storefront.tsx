@@ -14,6 +14,7 @@ import type {
   CreatorDiscountCode,
   CreatorRecommendation,
   CreatorProfileSocialLink,
+  FeaturedMedia,
   PublicDiscountCode,
   RecommendationCard,
 } from '@vibeshub/contracts';
@@ -261,6 +262,13 @@ export function CreatorStorefrontView({
       ),
     [hiddenBrandIds, hiddenRecommendationIds, recommendations, storefront.brands],
   );
+  const visibleFeaturedMedia = useMemo(
+    () =>
+      (configuration?.featuredMedia ?? storefront.featuredMedia ?? []).filter(
+        ({ visible }) => visible,
+      ),
+    [configuration?.featuredMedia, storefront.featuredMedia],
+  );
   const orderedStorefront = useMemo(
     () => ({ ...storefront, contentOrder, curatedSections: visibleCuratedSections }),
     [storefront, contentOrder, visibleCuratedSections],
@@ -365,9 +373,14 @@ export function CreatorStorefrontView({
       layer: StorefrontLayer | null;
       row?: (typeof rows)[number];
       code?: PublicDiscountCode;
+      media?: FeaturedMedia;
     }> = [];
     for (const layer of contentOrder) {
-      if (layer.kind === 'discount') {
+      if (layer.kind === 'media') {
+        if (activeLabelId) continue;
+        const media = visibleFeaturedMedia.find(({ id }) => id === layer.id);
+        if (media) result.push({ key: `media:${media.id}`, layer, media });
+      } else if (layer.kind === 'discount') {
         const index = remainingCodes.findIndex(({ id }) => id === layer.id);
         if (index >= 0) {
           const [code] = remainingCodes.splice(index, 1);
@@ -392,10 +405,11 @@ export function CreatorStorefrontView({
       }),
     );
     return result;
-  }, [activeLabelId, rows, codes, contentOrder]);
+  }, [activeLabelId, rows, codes, contentOrder, visibleFeaturedMedia]);
   const validTargets = new Set([
     ...displayBrands.map(({ id }) => id),
     ...rows.map(({ key }) => key),
+    ...visibleFeaturedMedia.map(({ id }) => id),
   ]);
   function renderTitles(beforeId: string | null) {
     return previewTitles
@@ -882,7 +896,7 @@ export function CreatorStorefrontView({
             !visibleCuratedSections.some(({ kind }) => kind === 'page')
               ? null
               : !showingCompactLabelGrid
-                ? blocks.map(({ key, row, code }) => {
+                ? blocks.map(({ key, row, code, media }) => {
                     const productContent = row ? (
                       <StorefrontRow
                         creatorId={storefront.id}
@@ -898,13 +912,20 @@ export function CreatorStorefrontView({
                       />
                     ) : code ? (
                       <DiscountBlock code={code} />
+                    ) : media ? (
+                      <FeaturedMediaBlock media={media} />
                     ) : null;
                     return (
                       <Fragment key={key}>
                         {renderTitles(row?.key ?? code?.id ?? key)}
                         <StorefrontSlot
                           id={`content:${row?.key ?? code?.id ?? key}`}
-                          label={row?.title ?? code?.merchantName ?? 'Recommendations'}
+                          label={
+                            row?.title ??
+                            code?.merchantName ??
+                            media?.title ??
+                            'Recommendations'
+                          }
                         >
                           {productContent}
                         </StorefrontSlot>
@@ -964,6 +985,95 @@ function StandaloneRecommendationCard({
       </div>
     </Link>
   );
+}
+
+function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
+  const embedUrl = featuredMediaEmbedUrl(media);
+  return (
+    <article className="featuredMediaBlock">
+      {media.thumbnailUrl && !embedUrl ? (
+        <div className="featuredMediaCover">
+          <Image
+            alt=""
+            fill
+            sizes="(max-width: 700px) 100vw, 640px"
+            src={media.thumbnailUrl}
+            unoptimized
+          />
+        </div>
+      ) : null}
+      {media.displayMode === 'embed' && embedUrl ? (
+        <div className="featuredMediaEmbed">
+          <iframe
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            src={embedUrl}
+            title={media.title}
+          />
+        </div>
+      ) : (
+        <a
+          className="featuredMediaLink"
+          href={media.url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {media.thumbnailUrl ? (
+            <div className="featuredMediaCover">
+              <Image
+                alt=""
+                fill
+                sizes="(max-width: 700px) 100vw, 640px"
+                src={media.thumbnailUrl}
+                unoptimized
+              />
+              <span className="featuredMediaPlay">▶</span>
+            </div>
+          ) : null}
+          <span>
+            <small>{media.provider.replace('_', ' ')}</small>
+            <strong>{media.title}</strong>
+            <em>
+              Open on {media.provider === 'apple_music' ? 'Apple Music' : media.provider}
+            </em>
+          </span>
+        </a>
+      )}
+    </article>
+  );
+}
+
+function featuredMediaEmbedUrl(media: FeaturedMedia): string | null {
+  try {
+    const url = new URL(media.url);
+    if (media.provider === 'youtube') {
+      const id =
+        url.hostname.replace(/^www\./, '') === 'youtu.be'
+          ? url.pathname.slice(1).split('/')[0]
+          : (url.searchParams.get('v') ??
+            url.pathname.match(/\/(?:shorts|embed)\/([^/]+)/)?.[1]);
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : null;
+    }
+    if (media.provider === 'instagram' && /^\/(?:p|reel)\//u.test(url.pathname)) {
+      return `https://www.instagram.com${url.pathname.replace(/\/$/, '')}/embed/`;
+    }
+    if (
+      media.provider === 'spotify' &&
+      /^(?:open\.spotify\.com|spotify\.link)$/u.test(url.hostname.replace(/^www\./, ''))
+    ) {
+      return url.hostname === 'spotify.link'
+        ? null
+        : url.href.replace('open.spotify.com/', 'open.spotify.com/embed/');
+    }
+    if (media.provider === 'apple_music' && url.hostname === 'music.apple.com') {
+      return url.href.replace('music.apple.com/', 'embed.music.apple.com/');
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function SingleBrandProductCard({

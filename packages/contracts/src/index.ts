@@ -259,17 +259,18 @@ const creatorRecommendationInputFieldsSchema = z
   })
   .strict();
 
-export const creatorRecommendationInputSchema = creatorRecommendationInputFieldsSchema.refine(
-  (value) =>
-    Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) <= 1,
-  {
-    message: 'Choose at most one recommendation image source',
-    path: ['imageAssetId'],
-  },
-).refine((value) => !value.discountPercent || !value.discountAmountMinor, {
-  message: 'Choose either percent or fixed amount',
-  path: ['discountAmountMinor'],
-});
+export const creatorRecommendationInputSchema = creatorRecommendationInputFieldsSchema
+  .refine(
+    (value) => Number(Boolean(value.imageAssetId)) + Number(Boolean(value.imageUrl)) <= 1,
+    {
+      message: 'Choose at most one recommendation image source',
+      path: ['imageAssetId'],
+    },
+  )
+  .refine((value) => !value.discountPercent || !value.discountAmountMinor, {
+    message: 'Choose either percent or fixed amount',
+    path: ['discountAmountMinor'],
+  });
 
 export const creatorRecommendationPatchSchema = creatorRecommendationInputFieldsSchema
   .partial()
@@ -614,6 +615,27 @@ export const storefrontTitlesSchema = z
   );
 export type StorefrontTitle = z.infer<typeof storefrontTitleSchema>;
 
+export const featuredMediaSchema = z
+  .object({
+    id: idSchema,
+    provider: z.enum(['youtube', 'instagram', 'spotify', 'apple_music']),
+    url: z.url({ protocol: /^https$/ }).max(2_048),
+    title: z.string().trim().min(1).max(160),
+    thumbnailUrl: z
+      .url({ protocol: /^https$/ })
+      .max(2_048)
+      .nullable()
+      .default(null),
+    displayMode: z.enum(['embed', 'link']).default('embed'),
+    visible: z.boolean().default(true),
+  })
+  .strict();
+export const featuredMediaListSchema = z
+  .array(featuredMediaSchema)
+  .max(24)
+  .refine((items) => new Set(items.map(({ id }) => id)).size === items.length);
+export type FeaturedMedia = z.infer<typeof featuredMediaSchema>;
+
 export const creatorStorefrontSchema = z
   .object({
     avatarUrl: publicAssetUrlSchema.nullable(),
@@ -666,6 +688,7 @@ export const creatorStorefrontSchema = z
       )
       .max(24)
       .default([]),
+    featuredMedia: featuredMediaListSchema.default([]),
     contentOrder: z
       .array(
         z
@@ -676,6 +699,7 @@ export const creatorStorefrontSchema = z
               'collection',
               'section',
               'category',
+              'media',
             ]),
             id: idSchema,
           })
@@ -1039,6 +1063,7 @@ export const creatorStorefrontConfigurationSchema = z
   .object({
     sections: z.array(storefrontSectionSchema).max(24),
     curatedSections: z.array(curatedSectionSchema).max(24).default([]),
+    featuredMedia: featuredMediaListSchema.default([]),
     contentOrder: z
       .array(
         z
@@ -1049,6 +1074,7 @@ export const creatorStorefrontConfigurationSchema = z
               'collection',
               'section',
               'category',
+              'media',
             ]),
             id: idSchema,
           })
@@ -1097,6 +1123,7 @@ export const creatorStorefrontConfigurationInputSchema = z
               'collection',
               'section',
               'category',
+              'media',
             ]),
             id: idSchema,
           })
@@ -1122,6 +1149,7 @@ export const creatorStorefrontConfigurationInputSchema = z
         (sections) => new Set(sections.map(({ id }) => id)).size === sections.length,
         'Each custom section can be selected once',
       ),
+    featuredMedia: featuredMediaListSchema.default([]),
     titles: storefrontTitlesSchema.optional(),
     brandOrder: z
       .array(idSchema)

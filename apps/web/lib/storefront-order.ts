@@ -41,6 +41,7 @@ export function storefrontEditOrder(
   }
 
   configuration.contentOrder.forEach(add);
+  configuration.featuredMedia.forEach(({ id }) => add({ id, kind: 'media' }));
   configuration.curatedSections.forEach(({ id, kind }) => {
     if (kind !== 'page') add({ id, kind });
   });

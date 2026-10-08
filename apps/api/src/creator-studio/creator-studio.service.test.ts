@@ -28,6 +28,7 @@ describe('CreatorStudioService', () => {
         categoryIds: [],
         curatedSections: [],
         contentOrder: [],
+        featuredMedia: [],
         labels: [],
       }),
     ).rejects.toMatchObject({ response: { code: 'PRECONDITION_FAILED' } });
@@ -45,6 +46,7 @@ describe('CreatorStudioService', () => {
         categoryIds: [],
         curatedSections: [],
         contentOrder: [],
+        featuredMedia: [],
         labels: [],
       }),
     ).rejects.toMatchObject({ response: { code: 'VALIDATION_FAILED' } });

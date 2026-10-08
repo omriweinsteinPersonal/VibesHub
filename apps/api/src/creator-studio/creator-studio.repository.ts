@@ -25,6 +25,7 @@ interface CreatorIdentityRow {
 interface StorefrontSectionRow {
   contentOrder: CreatorStorefrontConfiguration['contentOrder'];
   labels: CreatorStorefrontConfiguration['labels'];
+  featuredMedia: CreatorStorefrontConfiguration['featuredMedia'];
   titles: CreatorStorefrontConfiguration['titles'];
   brandOrder: string[];
   hiddenBrandIds: string[];
@@ -258,6 +259,9 @@ export class CreatorStudioRepository {
       const orderedDiscounts = input.contentOrder
         .filter(({ kind }) => kind === 'discount')
         .map(({ id }) => id);
+      const orderedMedia = input.contentOrder
+        .filter(({ kind }) => kind === 'media')
+        .map(({ id }) => id);
       const orderedSections = input.contentOrder.filter(
         ({ kind }) => kind === 'collection' || kind === 'section',
       );
@@ -286,6 +290,10 @@ export class CreatorStudioRepository {
               (section) => section.id === id && section.kind === kind,
             ),
         )
+      )
+        return { kind: 'invalid_recommendations' };
+      if (
+        orderedMedia.some((id) => !input.featuredMedia.some((media) => media.id === id))
       )
         return { kind: 'invalid_recommendations' };
       const [orderOwnership] = await sql<
@@ -376,6 +384,7 @@ export class CreatorStudioRepository {
             content_order = ${sql.json(input.contentOrder)},
             navigation_labels = ${sql.json(input.labels)},
             titles = coalesce(${input.titles === undefined ? null : sql.json(input.titles)}, titles),
+            featured_media = ${sql.json(input.featuredMedia)},
             brand_order = coalesce(${input.brandOrder === undefined ? null : sql.json(input.brandOrder)}, brand_order),
             hidden_brand_ids = ${sql.json(input.hiddenBrandIds ?? [])},
             hidden_collection_ids = ${sql.json(input.hiddenCollectionIds ?? [])},
@@ -499,6 +508,7 @@ export class CreatorStudioRepository {
         , preference.content_order as "contentOrder"
         , preference.navigation_labels as labels
         , preference.titles as titles
+        , preference.featured_media as "featuredMedia"
         , preference.brand_order as "brandOrder"
         , preference.hidden_brand_ids as "hiddenBrandIds"
         , preference.hidden_collection_ids as "hiddenCollectionIds"
@@ -531,6 +541,7 @@ export class CreatorStudioRepository {
     `;
     return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
+      featuredMedia: Array.isArray(rows[0]?.featuredMedia) ? rows[0].featuredMedia : [],
       curatedSections: curatedRows,
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],

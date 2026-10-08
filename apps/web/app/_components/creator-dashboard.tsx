@@ -9,6 +9,7 @@ import type {
   CreatorRecommendation,
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
+  FeaturedMedia,
   StoryClipInput,
 } from '@vibeshub/contracts';
 import Image from 'next/image';
@@ -24,6 +25,7 @@ import {
   GripVertical,
   LayoutGrid,
   Link2,
+  PlayCircle,
   Pencil,
   Plus,
   Sparkles,
@@ -62,6 +64,7 @@ type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
+type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
 type CollectionManageEntry = {
   kind: 'collection';
   section: CuratedSection;
@@ -281,6 +284,16 @@ export function CreatorDashboard() {
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [curatedSections, setCuratedSections] = useState<CuratedSection[]>([]);
   const [contentOrder, setContentOrder] = useState<ContentLayer[]>([]);
+  const [featuredMedia, setFeaturedMedia] = useState<FeaturedMedia[]>([]);
+  const [mediaDraft, setMediaDraft] = useState<FeaturedMediaDraft>({
+    provider: 'youtube',
+    url: '',
+    title: '',
+    thumbnailUrl: null,
+    displayMode: 'embed',
+  });
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
   const [storefrontLabels, setStorefrontLabels] = useState<StorefrontLabel[]>([]);
   const [hiddenBrandIds, setHiddenBrandIds] = useState<string[]>([]);
   const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
@@ -288,7 +301,7 @@ export function CreatorDashboard() {
   const [expandedBrandId, setExpandedBrandId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
   const [dashboardView, setDashboardView] = useState<
-    'recommendations' | 'labels' | 'connectors'
+    'recommendations' | 'labels' | 'connectors' | 'media'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -330,6 +343,7 @@ export function CreatorDashboard() {
       setBrands(loadedBrands);
       const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
       setConfiguration({ ...config, contentOrder: loadedOrder });
+      setFeaturedMedia(config.featuredMedia ?? []);
       setStorefrontLabels(config.labels ?? []);
       setHiddenBrandIds(config.hiddenBrandIds ?? []);
       setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
@@ -346,9 +360,11 @@ export function CreatorDashboard() {
                 ? discountPage.data.some(
                     (item) => item.id === id && item.lifecycle !== 'archived',
                   )
-                : loadedRecommendations.some(
-                    (item) => item.id === id && item.lifecycle !== 'archived',
-                  ),
+                : kind === 'media'
+                  ? (config.featuredMedia ?? []).some((item) => item.id === id)
+                  : loadedRecommendations.some(
+                      (item) => item.id === id && item.lifecycle !== 'archived',
+                    ),
         ),
       );
       setSelectedSections(config.sections.map(({ category }) => category.id));
@@ -1189,6 +1205,7 @@ export function CreatorDashboard() {
     nextHiddenBrands = hiddenBrandIds,
     nextHiddenCollections = hiddenCollectionIds,
     nextHiddenRecommendations = hiddenRecommendationIds,
+    nextFeaturedMedia = featuredMedia,
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
@@ -1236,6 +1253,7 @@ export function CreatorDashboard() {
           }),
         ),
         contentOrder: normalizedOrder,
+        featuredMedia: nextFeaturedMedia,
         labels: nextLabels,
         hiddenBrandIds: nextHiddenBrands,
         hiddenCollectionIds: nextHiddenCollections,
@@ -1271,6 +1289,7 @@ export function CreatorDashboard() {
       setHiddenBrandIds(updated.hiddenBrandIds ?? []);
       setHiddenCollectionIds(updated.hiddenCollectionIds ?? []);
       setHiddenRecommendationIds(updated.hiddenRecommendationIds ?? []);
+      setFeaturedMedia(updated.featuredMedia ?? []);
       setNotice('Storefront sections saved.');
       return true;
     } catch (cause) {
@@ -1294,6 +1313,112 @@ export function CreatorDashboard() {
       }
     }
     return saveSections(selectedSections, nextCurated, nextOrder);
+  }
+
+  function startMediaEditor(item?: FeaturedMedia) {
+    setMediaEditorOpen(true);
+    setEditingMediaId(item?.id ?? null);
+    setMediaDraft(
+      item
+        ? {
+            provider: item.provider,
+            url: item.url,
+            title: item.title,
+            thumbnailUrl: item.thumbnailUrl,
+            displayMode: item.displayMode,
+          }
+        : {
+            provider: 'youtube',
+            url: '',
+            title: '',
+            thumbnailUrl: null,
+            displayMode: 'embed',
+          },
+    );
+    setError('');
+  }
+
+  async function saveFeaturedMedia(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const detected = detectFeaturedMedia(mediaDraft.url);
+    if (!detected) {
+      setError('Paste a valid YouTube, Instagram, Spotify or Apple Music link.');
+      return;
+    }
+    const item: FeaturedMedia = {
+      ...mediaDraft,
+      provider: detected.provider,
+      thumbnailUrl: mediaDraft.thumbnailUrl || detected.thumbnailUrl,
+      id: editingMediaId ?? randomUuid(),
+      title: mediaDraft.title.trim() || detected.title,
+      url: mediaDraft.url.trim(),
+      visible: editingMediaId
+        ? (featuredMedia.find(({ id }) => id === editingMediaId)?.visible ?? true)
+        : true,
+    };
+    const nextMedia = editingMediaId
+      ? featuredMedia.map((current) => (current.id === item.id ? item : current))
+      : [...featuredMedia, item];
+    const nextOrder = contentOrder.some(
+      ({ kind, id }) => kind === 'media' && id === item.id,
+    )
+      ? contentOrder
+      : [...contentOrder, { kind: 'media' as const, id: item.id }];
+    if (
+      await saveSections(
+        selectedSections,
+        curatedSections,
+        nextOrder,
+        storefrontLabels,
+        hiddenBrandIds,
+        hiddenCollectionIds,
+        hiddenRecommendationIds,
+        nextMedia,
+      )
+    ) {
+      setMediaDraft({
+        provider: 'youtube',
+        url: '',
+        title: '',
+        thumbnailUrl: null,
+        displayMode: 'embed',
+      });
+      setEditingMediaId(null);
+      setMediaEditorOpen(false);
+    }
+  }
+
+  async function removeFeaturedMedia(id: string) {
+    const nextMedia = featuredMedia.filter((item) => item.id !== id);
+    const nextOrder = contentOrder.filter(
+      (layer) => layer.kind !== 'media' || layer.id !== id,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      nextOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
+  }
+
+  async function toggleFeaturedMedia(id: string) {
+    const nextMedia = featuredMedia.map((item) =>
+      item.id === id ? { ...item, visible: !item.visible } : item,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      contentOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
   }
 
   function toggleVisibility(
@@ -1493,6 +1618,15 @@ export function CreatorDashboard() {
             <span className="creatorDashboardNavMobile">Recommendations</span>
           </button>
           <button
+            aria-current={dashboardView === 'media' ? 'page' : undefined}
+            onClick={() => setDashboardView('media')}
+            type="button"
+          >
+            <PlayCircle aria-hidden="true" size={17} />
+            <span className="creatorDashboardNavDesktop">Featured content</span>
+            <span className="creatorDashboardNavMobile">Featured content</span>
+          </button>
+          <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
             onClick={() => setDashboardView('connectors')}
             type="button"
@@ -1503,7 +1637,159 @@ export function CreatorDashboard() {
           </button>
         </nav>
         <div className="creatorDashboardPanel">
-          {dashboardView === 'recommendations' ? (
+          {dashboardView === 'media' ? (
+            <section className="creatorRecommendationSection">
+              <div className="creatorSectionHeading">
+                <div>
+                  <h2>Featured content</h2>
+                  <p>Add videos, posts and music from your social platforms.</p>
+                </div>
+                <button
+                  className="button primary"
+                  onClick={() => startMediaEditor()}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" size={16} />
+                  <span>Add media</span>
+                </button>
+              </div>
+              {mediaEditorOpen ? (
+                <form
+                  className="creatorComposer creatorComposerBody creatorFormGrid"
+                  onSubmit={(event) => void saveFeaturedMedia(event)}
+                >
+                  <label>
+                    Media link
+                    <input
+                      required
+                      type="url"
+                      value={mediaDraft.url}
+                      onChange={(event) => {
+                        const url = event.target.value;
+                        const detected = detectFeaturedMedia(url);
+                        setMediaDraft((current) => ({
+                          ...current,
+                          url,
+                          provider: detected?.provider ?? current.provider,
+                          thumbnailUrl: detected?.thumbnailUrl ?? current.thumbnailUrl,
+                          title: current.title || detected?.title || '',
+                        }));
+                      }}
+                      placeholder="https://www.youtube.com/watch?v=…"
+                    />
+                    <small>
+                      Paste a YouTube, Instagram, Spotify or Apple Music link.
+                    </small>
+                  </label>
+                  <label>
+                    Title
+                    <input
+                      required
+                      maxLength={160}
+                      value={mediaDraft.title}
+                      onChange={(event) =>
+                        setMediaDraft((current) => ({
+                          ...current,
+                          title: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Display
+                    <select
+                      value={mediaDraft.displayMode}
+                      onChange={(event) =>
+                        setMediaDraft((current) => ({
+                          ...current,
+                          displayMode: event.target.value as FeaturedMedia['displayMode'],
+                        }))
+                      }
+                    >
+                      <option value="embed">Embedded player</option>
+                      <option value="link">Link card</option>
+                    </select>
+                  </label>
+                  {mediaDraft.thumbnailUrl ? (
+                    <div className="creatorMediaPreview">
+                      <Image
+                        alt=""
+                        fill
+                        sizes="320px"
+                        src={mediaDraft.thumbnailUrl}
+                        unoptimized
+                      />
+                    </div>
+                  ) : null}
+                  <div className="creatorFormActions creatorFullField">
+                    <button className="button primary" disabled={saving} type="submit">
+                      {saving ? 'Saving…' : editingMediaId ? 'Save media' : 'Add media'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingMediaId(null);
+                        setMediaEditorOpen(false);
+                        setMediaDraft({
+                          provider: 'youtube',
+                          url: '',
+                          title: '',
+                          thumbnailUrl: null,
+                          displayMode: 'embed',
+                        });
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+              <div className="creatorMediaManageList">
+                {featuredMedia.map((item) => (
+                  <article className="creatorMediaManageCard" key={item.id}>
+                    {item.thumbnailUrl ? (
+                      <Image
+                        alt=""
+                        fill
+                        sizes="120px"
+                        src={item.thumbnailUrl}
+                        unoptimized
+                      />
+                    ) : null}
+                    <div>
+                      <small>{item.provider.replace('_', ' ')}</small>
+                      <h3>{item.title}</h3>
+                    </div>
+                    <label className="creatorLiveToggle">
+                      <input
+                        checked={item.visible}
+                        onChange={() => void toggleFeaturedMedia(item.id)}
+                        type="checkbox"
+                      />
+                      <span /> {item.visible ? 'On' : 'Off'}
+                    </label>
+                    <button
+                      aria-label={`Edit ${item.title}`}
+                      onClick={() => startMediaEditor(item)}
+                      type="button"
+                    >
+                      <Pencil aria-hidden="true" size={16} />
+                    </button>
+                    <button
+                      aria-label={`Remove ${item.title}`}
+                      onClick={() => void removeFeaturedMedia(item.id)}
+                      type="button"
+                    >
+                      <Trash2 aria-hidden="true" size={16} />
+                    </button>
+                  </article>
+                ))}
+                {!featuredMedia.length ? (
+                  <p className="creatorEmptyState">No featured content yet.</p>
+                ) : null}
+              </div>
+            </section>
+          ) : dashboardView === 'recommendations' ? (
             <section className="creatorRecommendationSection">
               <div className="creatorSectionHeading">
                 <div>
@@ -4250,6 +4536,46 @@ const manualRecommendationUrlPrefix = 'https://swavii.com/manual-recommendation/
 
 function recommendationProductUrl(value: string) {
   return normalizedProductUrl(value) || `${manualRecommendationUrlPrefix}${randomUuid()}`;
+}
+
+function detectFeaturedMedia(value: string): {
+  provider: FeaturedMedia['provider'];
+  thumbnailUrl: string | null;
+  title: string;
+} | null {
+  try {
+    const url = new URL(value.trim());
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    if (host === 'youtube.com' || host === 'youtu.be') {
+      const videoId =
+        host === 'youtu.be'
+          ? url.pathname.slice(1).split('/')[0]
+          : (url.searchParams.get('v') ??
+            url.pathname.match(/\/(?:shorts|embed)\/([^/]+)/)?.[1]);
+      if (!videoId) return null;
+      return {
+        provider: 'youtube',
+        thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        title: 'YouTube video',
+      };
+    }
+    if (host === 'instagram.com' && /^\/(?:p|reel)\//u.test(url.pathname)) {
+      return { provider: 'instagram', thumbnailUrl: null, title: 'Instagram post' };
+    }
+    if (host === 'open.spotify.com' || host === 'spotify.link') {
+      return { provider: 'spotify', thumbnailUrl: null, title: 'Spotify content' };
+    }
+    if (host === 'music.apple.com') {
+      return {
+        provider: 'apple_music',
+        thumbnailUrl: null,
+        title: 'Apple Music content',
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function isManualRecommendationUrl(value: string) {

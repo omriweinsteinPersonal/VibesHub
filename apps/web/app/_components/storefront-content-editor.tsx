@@ -253,14 +253,7 @@ export function StorefrontContentEditor({
           role="group"
           aria-label="Add content block"
         >
-          {(
-            [
-              ['text', 'Text or link'],
-              ['photo-gallery', 'Photo gallery'],
-              ['video', 'Video'],
-              ['instagram', 'Instagram post'],
-            ] as const
-          ).map(([kind, label]) => (
+          {([['text', 'Text or link']] as const).map(([kind, label]) => (
             <button
               className="button secondary"
               type="button"
@@ -274,6 +267,9 @@ export function StorefrontContentEditor({
               <Plus aria-hidden="true" size={16} /> {label}
             </button>
           ))}
+          <small className="storefrontEditorHint">
+            Videos, posts and music are managed from Dashboard → Featured content.
+          </small>
         </div>
       ) : null}
       {targets.some(({ kind }) => kind === 'bio' || kind === 'social') ? (
