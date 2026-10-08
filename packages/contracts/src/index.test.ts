@@ -201,7 +201,7 @@ describe('shared API contracts', () => {
         productName: 'My sleep secret',
         productUrl: 'https://shop.example.com/sleep',
         reviewHe: 'Link card',
-  }).contentKind,
+      }).contentKind,
     ).toBe('link');
   });
 
