@@ -122,6 +122,8 @@ export function StorefrontPhonePreview({
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(true);
+  const editorVisible = desktopPreview || !previewMode;
+  const effectivePreviewMode = desktopPreview ? false : previewMode;
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -166,11 +168,11 @@ export function StorefrontPhonePreview({
         creatorId,
         theme: draft,
         editingContent: false,
-        previewMode,
+        previewMode: effectivePreviewMode,
       },
       window.location.origin,
     );
-  }, [creatorId, draft, previewMode, showPhone]);
+  }, [creatorId, draft, effectivePreviewMode, showPhone]);
 
   useEffect(() => {
     if (!canEdit || !showPhone) return;
@@ -242,9 +244,9 @@ export function StorefrontPhonePreview({
 
   return (
     <div
-      className={`storefrontDesignWorkspace${canEdit && !previewMode ? ' hasEditor' : ''}`}
+      className={`storefrontDesignWorkspace${canEdit && editorVisible ? ' hasEditor' : ''}`}
     >
-      {canEdit ? (
+      {canEdit && !desktopPreview ? (
         <>
           <div className="storefrontWorkspaceIntro">
             <div className="storefrontPreviewToolbar">
@@ -278,11 +280,11 @@ export function StorefrontPhonePreview({
           </div>
         </>
       ) : null}
-      {canEdit && !previewMode ? (
+      {canEdit && editorVisible ? (
         <aside
           aria-label="Storefront design"
           className="storefrontDesignPanel"
-          data-mobile-open={mobileEditorOpen}
+          data-mobile-open={desktopPreview || mobileEditorOpen}
         >
           <button
             aria-expanded={mobileEditorOpen}
@@ -448,7 +450,7 @@ export function StorefrontPhonePreview({
                   creatorId,
                   theme: draft,
                   editingContent: false,
-                  previewMode,
+                  previewMode: effectivePreviewMode,
                 },
                 window.location.origin,
               )

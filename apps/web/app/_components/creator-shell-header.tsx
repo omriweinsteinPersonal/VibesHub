@@ -11,7 +11,8 @@ import { useCreatorNavigation } from './creator-navigation-provider';
 
 export function CreatorShellHeader({
   showBottomBar = true,
-}: { showBottomBar?: boolean } = {}) {
+  homeLogo = false,
+}: { showBottomBar?: boolean; homeLogo?: boolean } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const {
@@ -51,7 +52,7 @@ export function CreatorShellHeader({
     <>
       <header className="creatorShellHeader">
         <div className="creatorShellHeaderInner">
-          <Brand href="/creator-home" />
+          <Brand href="/creator-home" homeLogo={homeLogo} />
           <nav aria-label="Creator workspace">
             {links
               .filter(({ label }) => label !== 'Account')

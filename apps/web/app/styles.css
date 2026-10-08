@@ -13507,8 +13507,28 @@ dt {
 }
 
 .storefrontWorkspaceHeader .creatorShellHeader {
-  background: #c97853;
+  background: #cd7853;
   border-bottom: 0;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader .logoWordmarkHome {
+  display: block;
+  flex: 0 0 117px;
+  height: 43px;
+  overflow: hidden;
+  position: relative;
+  width: 117px;
+}
+
+.storefrontWorkspaceHeader .creatorShellHeader .logoWordmarkHome img {
+  display: block;
+  height: auto;
+  left: 50%;
+  max-width: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 154px;
 }
 
 .storefrontWorkspaceHeader .creatorShellHeader .logoWordmark,
@@ -13595,7 +13615,7 @@ dt {
 }
 
 .storefrontDesignWorkspace.hasEditor {
-  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+  grid-template-columns: minmax(380px, 420px) minmax(0, 1fr);
 }
 
 .storefrontDesignWorkspace .storefrontDesignPanel {
