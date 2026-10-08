@@ -1004,6 +1004,13 @@ export function CreatorDashboard() {
 
   async function saveDiscount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const normalizedMerchantUrl = discount.merchantUrl.trim();
+    const merchantUrlChanged =
+      !editingDiscount || normalizedMerchantUrl !== editingDiscount.merchantUrl.trim();
+    if (merchantUrlChanged && !normalizedProductUrl(normalizedMerchantUrl)) {
+      setError('Enter a full HTTPS merchant URL, for example https://www.example.com.');
+      return;
+    }
     if (
       discount.discountPercent &&
       (!Number.isInteger(Number(discount.discountPercent)) ||
@@ -1038,7 +1045,7 @@ export function CreatorDashboard() {
       ),
       expiresAt: toDateTimeIso(discount.expiresAt),
       label: discount.label.trim() || null,
-      merchantUrl: discount.merchantUrl,
+      merchantUrl: normalizedMerchantUrl,
       offerType: discount.offerType,
       priority: Number(discount.priority) || 0,
       recurrenceRule: discount.recurrenceRule,
@@ -3809,7 +3816,8 @@ function DiscountForm({
           Brand link
           <input
             required
-            type="url"
+            inputMode="url"
+            type="text"
             value={editor.merchantUrl}
             onChange={(event) => update('merchantUrl', event.target.value)}
             placeholder="https://www.terminalx.com"
