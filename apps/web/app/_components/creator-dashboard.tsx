@@ -317,8 +317,8 @@ export function CreatorDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [categoryPage, loadedProfile, loadedRecommendations, config] =
-        await Promise.all([
+      const [categoryResult, profileResult, recommendationResult, configResult] =
+        await Promise.allSettled([
           apiCollectionRequest<CategoryCard>('/creator/categories'),
           apiRequest<CreatorProfileSettings>('/creator/profile'),
           loadCreatorRecommendations(),
@@ -326,6 +326,21 @@ export function CreatorDashboard() {
             '/creator/studio/storefront-sections',
           ),
         ]);
+      if (
+        categoryResult.status !== 'fulfilled' ||
+        profileResult.status !== 'fulfilled' ||
+        recommendationResult.status !== 'fulfilled'
+      ) {
+        const failed = [categoryResult, profileResult, recommendationResult].find(
+          (result) => result.status === 'rejected',
+        );
+        throw failed?.status === 'rejected'
+          ? failed.reason
+          : new Error('Could not load creator recommendations.');
+      }
+      const categoryPage = categoryResult.value;
+      const loadedProfile = profileResult.value;
+      const loadedRecommendations = recommendationResult.value;
       const [discountResult, brandResult] = await Promise.allSettled([
         apiCollectionRequest<CreatorDiscountCode>('/creator/discount-codes?limit=48'),
         apiRequest<CreatorBrand[]>('/creator/brands'),
@@ -341,44 +356,51 @@ export function CreatorDashboard() {
       setRecommendations(loadedRecommendations);
       setDiscounts(discountPage.data);
       setBrands(loadedBrands);
-      const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
-      setConfiguration({ ...config, contentOrder: loadedOrder });
-      setFeaturedMedia(config.featuredMedia ?? []);
-      setStorefrontLabels(config.labels ?? []);
-      setHiddenBrandIds(config.hiddenBrandIds ?? []);
-      setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
-      setHiddenRecommendationIds(config.hiddenRecommendationIds ?? []);
-      setContentOrder(
-        loadedOrder.filter(({ kind, id }) =>
-          kind === 'collection' || kind === 'section'
-            ? config.curatedSections.some(
-                (section) => section.id === id && section.kind === kind,
-              )
-            : kind === 'category'
-              ? config.sections.some(({ category }) => category.id === id)
-              : kind === 'discount'
-                ? discountPage.data.some(
-                    (item) => item.id === id && item.lifecycle !== 'archived',
-                  )
-                : kind === 'media'
-                  ? (config.featuredMedia ?? []).some((item) => item.id === id)
-                  : loadedRecommendations.some(
+      if (configResult.status === 'fulfilled') {
+        const config = configResult.value;
+        const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
+        setConfiguration({ ...config, contentOrder: loadedOrder });
+        setFeaturedMedia(config.featuredMedia ?? []);
+        setStorefrontLabels(config.labels ?? []);
+        setHiddenBrandIds(config.hiddenBrandIds ?? []);
+        setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
+        setHiddenRecommendationIds(config.hiddenRecommendationIds ?? []);
+        setContentOrder(
+          loadedOrder.filter(({ kind, id }) =>
+            kind === 'collection' || kind === 'section'
+              ? config.curatedSections.some(
+                  (section) => section.id === id && section.kind === kind,
+                )
+              : kind === 'category'
+                ? config.sections.some(({ category }) => category.id === id)
+                : kind === 'discount'
+                  ? discountPage.data.some(
                       (item) => item.id === id && item.lifecycle !== 'archived',
-                    ),
-        ),
-      );
-      setSelectedSections(config.sections.map(({ category }) => category.id));
-      const activeIds = new Set(
-        loadedRecommendations
-          .filter(({ lifecycle }) => lifecycle !== 'archived')
-          .map(({ id }) => id),
-      );
-      setCuratedSections(
-        config.curatedSections.map((section) => ({
-          ...section,
-          recommendationIds: section.recommendationIds.filter((id) => activeIds.has(id)),
-        })),
-      );
+                    )
+                  : kind === 'media'
+                    ? (config.featuredMedia ?? []).some((item) => item.id === id)
+                    : loadedRecommendations.some(
+                        (item) => item.id === id && item.lifecycle !== 'archived',
+                      ),
+          ),
+        );
+        setSelectedSections(config.sections.map(({ category }) => category.id));
+        const activeIds = new Set(
+          loadedRecommendations
+            .filter(({ lifecycle }) => lifecycle !== 'archived')
+            .map(({ id }) => id),
+        );
+        setCuratedSections(
+          config.curatedSections.map((section) => ({
+            ...section,
+            recommendationIds: section.recommendationIds.filter((id) =>
+              activeIds.has(id),
+            ),
+          })),
+        );
+      } else {
+        setNotice('Recommendations loaded. Storefront layout could not be refreshed.');
+      }
       if (discountResult.status === 'rejected' || brandResult.status === 'rejected') {
         setNotice(
           'Some optional brand data could not be refreshed. You can continue editing.',
@@ -480,17 +502,31 @@ export function CreatorDashboard() {
     setSaving(true);
     setError('');
     try {
-      const savedBrand = await apiRequest<CreatorBrand>(
-        editingBrand ? `/creator/brands/${editingBrand.id}` : '/creator/brands',
-        {
+      const updateBrand = (version: number) =>
+        apiRequest<CreatorBrand>(`/creator/brands/${editingBrand!.id}`, {
           body: JSON.stringify({ name: brand.name, websiteUrl: brand.websiteUrl }),
-          ...(editingBrand
-            ? { headers: { 'if-match': `"${editingBrand.version}"` } }
-            : {}),
-          idempotent: !editingBrand,
-          method: editingBrand ? 'PATCH' : 'POST',
-        },
-      );
+          headers: { 'if-match': `"${version}"` },
+          method: 'PATCH',
+        });
+      let savedBrand: CreatorBrand;
+      if (editingBrand) {
+        try {
+          savedBrand = await updateBrand(editingBrand.version);
+        } catch (cause) {
+          if (!(cause instanceof Error) || !cause.message.includes('Reload the brand'))
+            throw cause;
+          const currentBrands = await apiRequest<CreatorBrand[]>('/creator/brands');
+          const current = currentBrands.find(({ id }) => id === editingBrand.id);
+          if (!current) throw cause;
+          savedBrand = await updateBrand(current.version);
+        }
+      } else {
+        savedBrand = await apiRequest<CreatorBrand>('/creator/brands', {
+          body: JSON.stringify({ name: brand.name, websiteUrl: brand.websiteUrl }),
+          idempotent: true,
+          method: 'POST',
+        });
+      }
       const existingOffer = editingBrand
         ? discounts.find(
             (offer) => offer.brandId === editingBrand.id && offer.scopeKind === 'brand',
