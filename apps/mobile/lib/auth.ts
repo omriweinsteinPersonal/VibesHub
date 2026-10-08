@@ -2,6 +2,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 
+import { createAppleAuthNonce } from './apple-auth-nonce';
 import { parseAuthCallback } from './auth-callback';
 import { getSupabaseClient } from './supabase';
 
@@ -59,7 +60,9 @@ export async function signInWithGoogle(): Promise<'cancelled' | 'signed-in'> {
 
 export async function signInWithApple(): Promise<'cancelled' | 'signed-in'> {
   try {
+    const nonce = await createAppleAuthNonce();
     const credential = await AppleAuthentication.signInAsync({
+      nonce: nonce.hashed,
       requestedScopes: [
         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
         AppleAuthentication.AppleAuthenticationScope.EMAIL,
@@ -71,6 +74,7 @@ export async function signInWithApple(): Promise<'cancelled' | 'signed-in'> {
 
     const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithIdToken({
+      nonce: nonce.raw,
       provider: 'apple',
       token: credential.identityToken,
     });
