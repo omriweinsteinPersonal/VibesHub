@@ -17,6 +17,11 @@
       "config": {
         "usesNonExemptEncryption": false
       },
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        }
+      },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
           {
@@ -45,6 +50,12 @@
         "backgroundColor": "#C77850",
         "foregroundImage": "./assets/icon.png"
       },
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",

@@ -42,6 +42,10 @@ requireValue(
   'The export-compliance encryption declaration is missing.',
 );
 requireValue(
+  appConfig.ios?.infoPlist?.NSAppTransportSecurity?.NSAllowsArbitraryLoads === false,
+  'iOS App Transport Security must not allow arbitrary network loads.',
+);
+requireValue(
   appConfig.ios?.privacyManifests?.NSPrivacyTracking === false,
   'The iOS privacy manifest tracking declaration is missing.',
 );
@@ -77,6 +81,18 @@ for (const host of ['swavii.com']) {
   requireValue(
     verifiedHosts.has(host),
     `Required verified Android host is missing: ${host}.`,
+  );
+}
+
+for (const permission of [
+  'android.permission.READ_EXTERNAL_STORAGE',
+  'android.permission.SYSTEM_ALERT_WINDOW',
+  'android.permission.VIBRATE',
+  'android.permission.WRITE_EXTERNAL_STORAGE',
+]) {
+  requireValue(
+    appConfig.android?.blockedPermissions?.includes(permission),
+    `Unused Android permission must remain blocked: ${permission}.`,
   );
 }
 
