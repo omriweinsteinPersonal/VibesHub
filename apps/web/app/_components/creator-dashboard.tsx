@@ -2070,7 +2070,7 @@ export function CreatorDashboard() {
                         <label>
                           Expires <span className="fieldOptional">Optional</span>
                           <input
-                            type="datetime-local"
+                            type="date"
                             value={brand.expiresAt}
                             onChange={(event) =>
                               setBrand({ ...brand, expiresAt: event.target.value })
@@ -2279,7 +2279,7 @@ export function CreatorDashboard() {
                                 discountAmount: offer?.discountAmountMinor
                                   ? String(offer.discountAmountMinor / 100)
                                   : '',
-                                expiresAt: toLocalDateTime(offer?.expiresAt ?? null),
+                                expiresAt: toLocalDate(offer?.expiresAt ?? null),
                                 name: managedBrand.name,
                                 websiteUrl: managedBrand.websiteUrl,
                               });
