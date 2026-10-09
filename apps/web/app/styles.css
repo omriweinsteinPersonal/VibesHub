@@ -7950,11 +7950,15 @@ dt {
   }
 }
 .referenceBrandBlock {
-  background: var(--sf-discount, #f8f6f2);
-  border: 1px solid #e2d5c8;
-  border-radius: 18px;
-  margin-top: 14px;
-  padding: 16px;
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, var(--sf-text, #30251f) 14%, transparent);
+  border-radius: 0;
+  margin-top: 26px;
+  padding: 0 0 26px;
+}
+.referenceBrandBlock:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 .referenceBrandBlock > header {
   align-items: center;
@@ -7963,7 +7967,7 @@ dt {
 }
 .referenceBrandBlock > header h3 {
   font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 1.35rem;
+  font-size: 1.08rem;
   font-weight: 400;
   margin: 2px 0 0;
 }
@@ -8028,6 +8032,20 @@ dt {
 .referenceBrandBlock > header p {
   color: #75685f;
   margin: 5px 0 0;
+}
+.referenceBrandOffer {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+.referenceBrandOffer > span {
+  color: #75685f;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+.referenceBrandOffer > strong {
+  font-size: 0.66rem;
+  padding: 4px 7px;
 }
 .referenceBrandOfferExpiry {
   display: grid;
@@ -11792,9 +11810,15 @@ dt {
 }
 
 .creatorStorefrontCanvas .referenceBrandBlock {
-  border-radius: 15px;
-  margin-top: 10px;
-  padding: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sf-text, #30251f) 14%, transparent);
+  border-radius: 0;
+  margin-top: 26px;
+  padding: 0 0 26px;
+}
+
+.creatorStorefrontCanvas .referenceBrandBlock:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
 .creatorStorefrontCanvas .referenceBrandBlock > header {
@@ -11817,7 +11841,7 @@ dt {
 
 .referenceBrandOffer > span {
   color: #69584e;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   line-height: 1;
 }
 
@@ -11827,10 +11851,10 @@ dt {
   border-radius: 6px;
   color: #17120f;
   font-family: var(--font-vh-body), sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   letter-spacing: 0.06em;
   line-height: 1;
-  padding: 6px 9px;
+  padding: 4px 7px;
 }
 .referenceBrandOfferBody {
   position: relative;
