@@ -580,8 +580,9 @@ export function CreatorDashboard() {
           brand.detailsHe.trim() !== (existingOffer.details?.value ?? '') ||
           (brand.discountPercent ? Number(brand.discountPercent) : null) !==
             existingOffer.discountPercent ||
-          (brand.discountAmount ? Math.round(Number(brand.discountAmount) * 100) : null) !==
-            existingOffer.discountAmountMinor ||
+          (brand.discountAmount
+            ? Math.round(Number(brand.discountAmount) * 100)
+            : null) !== existingOffer.discountAmountMinor ||
           brand.expiresAt !== toLocalDate(existingOffer.expiresAt)
         : false;
       let savedBrand: CreatorBrand;
@@ -706,7 +707,10 @@ export function CreatorDashboard() {
             storefrontLabels,
             visibleBrandIds,
           );
-          if (!sectionsSaved) throw new Error('The brand offer was saved, but its storefront position could not be updated.');
+          if (!sectionsSaved)
+            throw new Error(
+              'The brand offer was saved, but its storefront position could not be updated.',
+            );
         }
       } else if (!hasOffer && existingOffer && offerFieldsChanged) {
         await apiRequest(`/creator/discount-codes/${existingOffer.id}/archive`, {
@@ -717,8 +721,18 @@ export function CreatorDashboard() {
         mutationSucceeded = true;
       }
       if (wasHidden && !(hasOffer && !existingOffer)) {
-        if (!(await saveSections(selectedSections, curatedSections, contentOrder, storefrontLabels, visibleBrandIds))) {
-          throw new Error('The brand was saved, but it could not be made visible in the storefront.');
+        if (
+          !(await saveSections(
+            selectedSections,
+            curatedSections,
+            contentOrder,
+            storefrontLabels,
+            visibleBrandIds,
+          ))
+        ) {
+          throw new Error(
+            'The brand was saved, but it could not be made visible in the storefront.',
+          );
         }
       }
       closeComposer();
@@ -732,7 +746,9 @@ export function CreatorDashboard() {
     } catch (cause) {
       if (mutationSucceeded) {
         setError(messageFor(cause));
-        setNotice('Some brand changes were saved, but the update is incomplete. Please retry.');
+        setNotice(
+          'Some brand changes were saved, but the update is incomplete. Please retry.',
+        );
         await refreshAfterSave();
         return;
       }

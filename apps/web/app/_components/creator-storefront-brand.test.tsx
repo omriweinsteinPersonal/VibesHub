@@ -16,15 +16,17 @@ function renderBrand(logoUrl: string | null) {
     id: '11111111-1111-4111-8111-111111111111',
     primaryCategory: { name: 'Fashion', slug: 'fashion' },
     recommendationCount: 0,
-    brands: [{
-      brandId,
-      collectionCount: 0,
-      id: brandId,
-      itemCount: 0,
-      name: 'Brand without products',
-      websiteUrl: 'https://brand.example',
-      logoUrl,
-    }],
+    brands: [
+      {
+        brandId,
+        collectionCount: 0,
+        id: brandId,
+        itemCount: 0,
+        name: 'Brand without products',
+        websiteUrl: 'https://brand.example',
+        logoUrl,
+      },
+    ],
     socialLinks: [],
     verificationStatus: 'unverified',
   });
