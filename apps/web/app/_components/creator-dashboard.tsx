@@ -518,7 +518,9 @@ export function CreatorDashboard() {
     const brandWebsiteChanged =
       !editingBrand || normalizedWebsiteUrl !== editingBrand.websiteUrl.trim();
     const brandLogoChanged =
-      !editingBrand || brand.logoUrl.trim() !== (editingBrand.logoUrl ?? '').trim();
+      !editingBrand ||
+      brand.logoUrl.trim() !== (editingBrand.logoUrl ?? '').trim() ||
+      (brand.logoAssetId || null) !== (editingBrand.logoAssetId ?? null);
     if (brandWebsiteChanged && !normalizedProductUrl(normalizedWebsiteUrl)) {
       setError(
         'Enter a full HTTPS brand website URL, for example https://www.example.com.',
@@ -573,6 +575,15 @@ export function CreatorDashboard() {
             (offer) => offer.brandId === editingBrand.id && offer.scopeKind === 'brand',
           )
         : null;
+      const offerFieldsChanged = existingOffer
+        ? brand.code.trim() !== (existingOffer.code ?? '') ||
+          brand.detailsHe.trim() !== (existingOffer.details?.value ?? '') ||
+          (brand.discountPercent ? Number(brand.discountPercent) : null) !==
+            existingOffer.discountPercent ||
+          (brand.discountAmount ? Math.round(Number(brand.discountAmount) * 100) : null) !==
+            existingOffer.discountAmountMinor ||
+          brand.expiresAt !== toLocalDate(existingOffer.expiresAt)
+        : false;
       let savedBrand: CreatorBrand;
       if (editingBrand) {
         if (
@@ -611,10 +622,28 @@ export function CreatorDashboard() {
         });
         mutationSucceeded = true;
       }
+      // Upload completion only confirms the media object. The brand response
+      // must confirm that the chosen image is attached before reporting success.
+      if (
+        brandLogoChanged &&
+        (savedBrand.logoAssetId ?? null) !== (brand.logoAssetId || null)
+      ) {
+        throw new Error('The brand image was not saved. Please try again.');
+      }
+      if (
+        brandLogoChanged &&
+        brand.logoUrl.trim() &&
+        savedBrand.logoUrl !== brand.logoUrl.trim()
+      ) {
+        throw new Error('The brand image was not saved. Please try again.');
+      }
+      setEditingBrand(savedBrand);
       const hasOffer = Boolean(
         brand.code.trim() || brand.discountPercent || brand.discountAmount,
       );
-      if (hasOffer) {
+      const visibleBrandIds = hiddenBrandIds.filter((id) => id !== savedBrand.id);
+      const wasHidden = visibleBrandIds.length !== hiddenBrandIds.length;
+      if (hasOffer && (!existingOffer || offerFieldsChanged)) {
         const offerBody: DiscountOfferPayload = {
           brandId: savedBrand.id,
           code: brand.code.trim() || null,
@@ -670,12 +699,16 @@ export function CreatorDashboard() {
             idempotent: true,
             method: 'POST',
           });
-          await saveSections(selectedSections, curatedSections, [
-            ...contentOrder,
-            { kind: 'discount', id: created.id },
-          ]);
+          const sectionsSaved = await saveSections(
+            selectedSections,
+            curatedSections,
+            [...contentOrder, { kind: 'discount', id: created.id }],
+            storefrontLabels,
+            visibleBrandIds,
+          );
+          if (!sectionsSaved) throw new Error('The brand offer was saved, but its storefront position could not be updated.');
         }
-      } else if (existingOffer) {
+      } else if (!hasOffer && existingOffer && offerFieldsChanged) {
         await apiRequest(`/creator/discount-codes/${existingOffer.id}/archive`, {
           headers: { 'if-match': `"${existingOffer.version}"` },
           idempotent: true,
@@ -683,19 +716,24 @@ export function CreatorDashboard() {
         });
         mutationSucceeded = true;
       }
+      if (wasHidden && !(hasOffer && !existingOffer)) {
+        if (!(await saveSections(selectedSections, curatedSections, contentOrder, storefrontLabels, visibleBrandIds))) {
+          throw new Error('The brand was saved, but it could not be made visible in the storefront.');
+        }
+      }
       closeComposer();
       await refreshAfterSave();
       setError('');
       setNotice(
-        editingBrand
+        wasEditingBrand
           ? 'Brand updated.'
           : 'Brand added. You can now add items and collections to it.',
       );
     } catch (cause) {
       if (mutationSucceeded) {
-        closeComposer();
-        setError('');
-        setNotice(wasEditingBrand ? 'Brand updated.' : 'Brand added.');
+        setError(messageFor(cause));
+        setNotice('Some brand changes were saved, but the update is incomplete. Please retry.');
+        await refreshAfterSave();
         return;
       }
       setError(messageFor(cause));
@@ -2083,8 +2121,6 @@ export function CreatorDashboard() {
                                 ...current,
                                 name:
                                   current.name || brandNameFromUrl(current.websiteUrl),
-                                logoUrl:
-                                  current.logoUrl || brandLogoFromUrl(current.websiteUrl),
                               }));
                             }}
                             onChange={(event) =>
@@ -2432,7 +2468,7 @@ export function CreatorDashboard() {
                                 expiresAt: toLocalDate(offer?.expiresAt ?? null),
                                 name: managedBrand.name,
                                 websiteUrl: managedBrand.websiteUrl,
-                                logoAssetId: '',
+                                logoAssetId: managedBrand.logoAssetId ?? '',
                                 logoUrl: managedBrand.logoUrl ?? '',
                               });
                               setComposer('brand');

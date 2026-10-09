@@ -824,16 +824,12 @@ export function CreatorStorefrontView({
             ) : null}
             {!showingCompactLabelGrid
               ? displayBrands
-                  .filter(
-                    (brand) =>
-                      (!activeLabelId &&
-                        codes.some(
-                          (code) =>
-                            code.brandId === brand.id && code.scopeKind === 'brand',
-                        )) ||
-                      filtered.some(
-                        (item) => brandKey(item.brandName) === brandKey(brand.name),
-                      ),
+                  .filter((brand) =>
+                    activeLabelId
+                      ? filtered.some(
+                          (item) => brandKey(item.brandName) === brandKey(brand.name),
+                        )
+                      : true,
                   )
                   .sort((a, b) => {
                     const ai = previewBrandOrder.indexOf(a.id),
@@ -1205,7 +1201,7 @@ function BrandBlock({
     );
   }
   const isBrandOnly = collections.length === 0 && standaloneItems.length === 0;
-  const brandLogoUrl = brand.logoUrl || brandLogoFromUrl(brand.websiteUrl);
+  const brandLogoUrl = brand.logoUrl;
   return (
     <section
       className="referenceBrandBlock"
@@ -1314,15 +1310,6 @@ function BrandBlock({
       ) : null}
     </section>
   );
-}
-
-function brandLogoFromUrl(value: string) {
-  try {
-    const parsed = new URL(value.trim());
-    return parsed.protocol === 'https:' ? `${parsed.origin}/favicon.ico` : '';
-  } catch {
-    return '';
-  }
 }
 
 function formatOfferDate(value: string): string {

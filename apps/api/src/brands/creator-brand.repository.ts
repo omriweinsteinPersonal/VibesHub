@@ -29,22 +29,13 @@ export class CreatorBrandRepository {
         returning id
       `;
       if (!brand) throw new Error('Brand upsert did not return an identity');
-      const supportsLogo = await this.hasLogoColumns(sql);
-      const [created] = supportsLogo
-        ? await sql<{ id: string }[]>`
-            insert into app.creator_brands (creator_id, brand_id, display_name, website_url, logo_media_asset_id, logo_url, position)
-            values (${creatorId}, ${brand.id}, ${input.name}, ${input.websiteUrl}, ${input.logoAssetId}, ${input.logoUrl},
-              (select coalesce(max(position), -1) + 1 from app.creator_brands where creator_id = ${creatorId}))
-            on conflict (creator_id, brand_id) do update set display_name = excluded.display_name, website_url = excluded.website_url, logo_media_asset_id = excluded.logo_media_asset_id, logo_url = excluded.logo_url, lifecycle = 'active', version = app.creator_brands.version + 1
-            returning id
-          `
-        : await sql<{ id: string }[]>`
-            insert into app.creator_brands (creator_id, brand_id, display_name, website_url, position)
-            values (${creatorId}, ${brand.id}, ${input.name}, ${input.websiteUrl},
-              (select coalesce(max(position), -1) + 1 from app.creator_brands where creator_id = ${creatorId}))
-            on conflict (creator_id, brand_id) do update set display_name = excluded.display_name, website_url = excluded.website_url, lifecycle = 'active', version = app.creator_brands.version + 1
-            returning id
-          `;
+      const [created] = await sql<{ id: string }[]>`
+        insert into app.creator_brands (creator_id, brand_id, display_name, website_url, logo_media_asset_id, logo_url, position)
+        values (${creatorId}, ${brand.id}, ${input.name}, ${input.websiteUrl}, ${input.logoAssetId}, ${input.logoUrl},
+          (select coalesce(max(position), -1) + 1 from app.creator_brands where creator_id = ${creatorId}))
+        on conflict (creator_id, brand_id) do update set display_name = excluded.display_name, website_url = excluded.website_url, logo_media_asset_id = excluded.logo_media_asset_id, logo_url = excluded.logo_url, lifecycle = 'active', version = app.creator_brands.version + 1
+        returning id
+      `;
       return created
         ? ((await this.rows(sql, creatorId)).find(({ id }) => id === created.id) ?? null)
         : null;
@@ -59,20 +50,12 @@ export class CreatorBrandRepository {
   ): Promise<CreatorBrand | null> {
     const creatorId = await this.creatorId(this.database.sql, userId);
     if (!creatorId) return null;
-    const supportsLogo = await this.hasLogoColumns(this.database.sql);
-    const [updated] = supportsLogo
-      ? await this.database.sql<{ id: string }[]>`
-          update app.creator_brands creator_brand set display_name = ${input.name}, website_url = ${input.websiteUrl}, logo_media_asset_id = ${input.logoAssetId}, logo_url = ${input.logoUrl}, version = version + 1
-          where creator_brand.id = ${id} and creator_brand.creator_id = ${creatorId}
-            and creator_brand.version = ${expectedVersion} and creator_brand.lifecycle = 'active'
-          returning creator_brand.id
-        `
-      : await this.database.sql<{ id: string }[]>`
-          update app.creator_brands creator_brand set display_name = ${input.name}, website_url = ${input.websiteUrl}, version = version + 1
-          where creator_brand.id = ${id} and creator_brand.creator_id = ${creatorId}
-            and creator_brand.version = ${expectedVersion} and creator_brand.lifecycle = 'active'
-          returning creator_brand.id
-        `;
+    const [updated] = await this.database.sql<{ id: string }[]>`
+      update app.creator_brands creator_brand set display_name = ${input.name}, website_url = ${input.websiteUrl}, logo_media_asset_id = ${input.logoAssetId}, logo_url = ${input.logoUrl}, version = version + 1
+      where creator_brand.id = ${id} and creator_brand.creator_id = ${creatorId}
+        and creator_brand.version = ${expectedVersion} and creator_brand.lifecycle = 'active'
+      returning creator_brand.id
+    `;
     if (!updated) return null;
     return (
       (await this.rows(this.database.sql, creatorId)).find((brand) => brand.id === id) ??
@@ -119,32 +102,15 @@ export class CreatorBrandRepository {
     return creator?.id ?? null;
   }
 
-  private async hasLogoColumns(sql: DatabaseClient): Promise<boolean> {
-    const [result] = await sql<{ available: boolean }[]>`
-      select count(*) = 2 as available
-      from information_schema.columns
-      where table_schema = 'app'
-        and table_name = 'creator_brands'
-        and column_name in ('logo_media_asset_id', 'logo_url')
-    `;
-    return result?.available ?? false;
-  }
-
   private rows(sql: DatabaseClient, creatorId: string) {
     return sql<CreatorBrand[]>`
       select creator_brand.id, creator_brand.brand_id as "brandId", coalesce(creator_brand.display_name, brand.name) as name,
-        creator_brand.website_url as "websiteUrl", coalesce(
-          to_jsonb(creator_brand)->>'logo_url',
-          (
-            select media.public_url
-            from app.media_assets media
-            where media.id = nullif(to_jsonb(creator_brand)->>'logo_media_asset_id', '')::uuid
-              and media.status = 'ready'
-          )
-        ) as "logoUrl", creator_brand.version,
+        creator_brand.website_url as "websiteUrl", creator_brand.logo_media_asset_id as "logoAssetId",
+        coalesce(logo_media.public_url, creator_brand.logo_url) as "logoUrl", creator_brand.version,
         (select count(*)::integer from app.recommendations recommendation join app.products product on product.id = recommendation.product_id where recommendation.creator_id = ${creatorId} and product.brand_id = brand.id and recommendation.lifecycle <> 'archived' and recommendation.deleted_at is null) as "itemCount",
         (select count(*)::integer from app.creator_curated_sections section where section.creator_id = ${creatorId} and section.brand_id = brand.id and section.kind = 'collection') as "collectionCount"
       from app.creator_brands creator_brand join app.brands brand on brand.id = creator_brand.brand_id
+      left join app.media_assets logo_media on logo_media.id = creator_brand.logo_media_asset_id and logo_media.status = 'ready'
       where creator_brand.creator_id = ${creatorId} and creator_brand.lifecycle = 'active'
       order by creator_brand.position, creator_brand.id
     `;
