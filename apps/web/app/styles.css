@@ -11975,6 +11975,12 @@ dt {
   padding: 12px 12px 10px;
 }
 
+.creatorStorefrontCanvas
+  .referenceBrandBlockWrapper
+  > .referenceBrandBlock[data-brand-only='true'] {
+  border: 1px solid #e2d5c8;
+}
+
 .referenceBrandBlockWrapper {
   display: block;
   min-height: min-content;
