@@ -978,14 +978,21 @@ function StandaloneRecommendationCard({
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           {value ? <span>{value}</span> : null}
         </div>
-        {discount?.expiresAt || discount?.code ? (
-          <div className="referenceStandaloneRecommendationOffer">
-            {discount.expiresAt ? (
-              <span>🗓️ {formatOfferDate(discount.expiresAt)}</span>
-            ) : null}
-            {discount.code ? <strong>{discount.code}</strong> : null}
-          </div>
-        ) : null}
+        <div className="referenceStandaloneRecommendationOffer">
+          <span
+            className={`referenceDiscountExpiry${discount?.expiresAt ? '' : ' is-empty'}`}
+          >
+            <span>Discount expires</span>
+            <strong>
+              {discount?.expiresAt ? formatOfferDate(discount.expiresAt) : '\u00a0'}
+            </strong>
+          </span>
+          {discount?.code ? (
+            <strong>{discount.code}</strong>
+          ) : (
+            <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+          )}
+        </div>
         <h3>{item.productName}</h3>
       </div>
       <div className="referenceStandaloneRecommendationImage">
@@ -1113,8 +1120,19 @@ function SingleBrandProductCard({
           {offerValue(offer) ? <strong>{offerValue(offer)}</strong> : null}
         </div>
         <div className="referenceBrandSingleProductOffer">
-          {offer.expiresAt ? <span>🗓️ {formatOfferDate(offer.expiresAt)}</span> : null}
-          {offer.code ? <strong>{offer.code}</strong> : null}
+          <span
+            className={`referenceDiscountExpiry${offer.expiresAt ? '' : ' is-empty'}`}
+          >
+            <span>Discount expires</span>
+            <strong>
+              {offer.expiresAt ? formatOfferDate(offer.expiresAt) : '\u00a0'}
+            </strong>
+          </span>
+          {offer.code ? (
+            <strong>{offer.code}</strong>
+          ) : (
+            <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+          )}
         </div>
         <h3>{item.productName}</h3>
         {offer.details ? <p>{offer.details.value}</p> : null}
@@ -1206,11 +1224,9 @@ function BrandBlock({
             <p dir={offer.details.direction}>{offer.details.value}</p>
           ) : null}
           {offer.expiresAt ? (
-            <small>
-              Offer ends{' '}
-              {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
-                new Date(offer.expiresAt),
-              )}
+            <small className="referenceBrandOfferExpiry">
+              <span>Discount expires</span>
+              <strong>{formatOfferDate(offer.expiresAt)}</strong>
             </small>
           ) : null}
           {storyClips.length ? (

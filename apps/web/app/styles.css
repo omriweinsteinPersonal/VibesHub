@@ -7769,17 +7769,14 @@ dt {
   overflow-wrap: anywhere;
 }
 .referenceStandaloneRecommendationOffer {
-  align-items: center;
+  align-items: start;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  justify-content: flex-end;
+  justify-content: space-between;
+  min-height: 34px;
 }
-.referenceStandaloneRecommendationOffer span {
-  color: #75685f;
-  font-size: 0.76rem;
-}
-.referenceStandaloneRecommendationOffer strong {
+.referenceStandaloneRecommendationOffer > strong {
   background: #fff;
   border: 1px solid #d9c8b9;
   border-radius: 999px;
@@ -7846,10 +7843,10 @@ dt {
   white-space: nowrap;
 }
 .referenceBrandSingleProductOffer {
-  color: #75685f;
-  font-size: 0.72rem;
+  align-items: start;
+  min-height: 34px;
 }
-.referenceBrandSingleProductOffer strong {
+.referenceBrandSingleProductOffer > strong {
   background: #fff;
   border: 1px dashed #c9b6a7;
   border-radius: 7px;
@@ -7857,6 +7854,35 @@ dt {
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   padding: 5px 8px;
+}
+.referenceDiscountExpiry {
+  display: grid;
+  gap: 2px;
+  min-height: 32px;
+  text-align: start;
+}
+.referenceDiscountExpiry > span {
+  color: #75685f;
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.referenceDiscountExpiry > strong {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: #75685f;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  padding: 0;
+}
+.referenceDiscountExpiry.is-empty {
+  visibility: hidden;
+}
+.referenceDiscountCodePlaceholder {
+  min-width: 62px;
 }
 .referenceBrandSingleProductCopy h3 {
   align-self: center;
@@ -8002,6 +8028,19 @@ dt {
 .referenceBrandBlock > header p {
   color: #75685f;
   margin: 5px 0 0;
+}
+.referenceBrandOfferExpiry {
+  display: grid;
+  gap: 2px;
+  min-height: 30px;
+}
+.referenceBrandOfferExpiry span {
+  font-size: 0.6rem;
+  line-height: 1.15;
+}
+.referenceBrandOfferExpiry strong {
+  font-size: 0.72rem;
+  font-weight: 400;
 }
 .referenceBrandShelf {
   display: grid;
@@ -9220,8 +9259,25 @@ dt {
 }
 .compactProductDiscount small {
   color: #75685f;
+  display: grid;
   font-size: 0.62rem;
+  gap: 2px;
   width: 100%;
+}
+.compactProductDiscount small span {
+  font-size: 0.58rem;
+  line-height: 1.15;
+}
+.compactProductDiscount small strong {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 0.62rem;
+  font-weight: 400;
+  padding: 0;
+}
+.compactProductDiscount small.is-empty {
+  visibility: hidden;
 }
 
 .compactProductCard .storeCardAction .saveProductButton.iconOnly {

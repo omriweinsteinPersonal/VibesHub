@@ -167,14 +167,18 @@ export function RecommendationCardView({
             {recommendation.discount.label ? (
               <span>{recommendation.discount.label}</span>
             ) : null}
-            {recommendation.discount.expiresAt ? (
-              <small>
-                Ends{' '}
-                {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(
-                  new Date(recommendation.discount.expiresAt),
-                )}
-              </small>
-            ) : null}
+            <small className={recommendation.discount.expiresAt ? '' : 'is-empty'}>
+              <span>Discount expires</span>
+              <strong>
+                {recommendation.discount.expiresAt
+                  ? new Intl.DateTimeFormat('en-GB', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    }).format(new Date(recommendation.discount.expiresAt))
+                  : '\u00a0'}
+              </strong>
+            </small>
           </div>
         ) : null}
       </div>
