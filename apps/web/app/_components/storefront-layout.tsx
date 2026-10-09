@@ -4,6 +4,7 @@ import {
   Children,
   Fragment,
   isValidElement,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -236,36 +237,39 @@ export function StorefrontLayout({
     movableSlots.map(({ id }) => id),
     layout?.blocks,
   );
-  async function saveLayout(next: NonNullable<StorefrontTheme['layout']>) {
-    if (busy.current) return;
-    busy.current = true;
-    setPending(next);
-    setSaving(true);
-    setError('');
-    setMessage('Saving layout…');
-    try {
-      // Read the current version so edits in the color/content panel aren't overwritten.
-      const saved = await persistLayout(next);
-      onTheme({ ...theme, layout: saved.theme.layout });
-      if (window.parent !== window)
-        window.parent.postMessage(
-          { type: 'swavii:layout-saved', creatorId, configuration: saved },
-          window.location.origin,
+  const saveLayout = useCallback(
+    async (next: NonNullable<StorefrontTheme['layout']>) => {
+      if (busy.current) return;
+      busy.current = true;
+      setPending(next);
+      setSaving(true);
+      setError('');
+      setMessage('Saving layout…');
+      try {
+        // Read the current version so edits in the color/content panel aren't overwritten.
+        const saved = await persistLayout(next);
+        onTheme({ ...theme, layout: saved.theme.layout });
+        if (window.parent !== window)
+          window.parent.postMessage(
+            { type: 'swavii:layout-saved', creatorId, configuration: saved },
+            window.location.origin,
+          );
+        setMessage('Position saved.');
+      } catch (cause) {
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : 'Could not save this position. Try again.',
         );
-      setMessage('Position saved.');
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : 'Could not save this position. Try again.',
-      );
-      setMessage('');
-    } finally {
-      setPending(null);
-      setSaving(false);
-      busy.current = false;
-    }
-  }
+        setMessage('');
+      } finally {
+        setPending(null);
+        setSaving(false);
+        busy.current = false;
+      }
+    },
+    [creatorId, onTheme, persistLayout, theme],
+  );
   useEffect(() => {
     if (!editable || window.parent === window) return;
     const receive = (event: MessageEvent) => {
