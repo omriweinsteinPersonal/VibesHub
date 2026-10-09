@@ -841,6 +841,7 @@ export function CreatorStorefrontView({
                       {renderTitles(brand.id)}
                       <StorefrontSlot id={`brand:${brand.id}`} label={brand.name}>
                         <div
+                          className="referenceBrandBlockWrapper"
                           data-editor-block={brand.id}
                           data-selected={selectedBlock === brand.id}
                         >

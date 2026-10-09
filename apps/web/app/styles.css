@@ -11827,6 +11827,19 @@ dt {
   padding-bottom: 0;
 }
 
+/* Brand blocks are wrapped by editable slots in the full storefront, so
+   :last-child on the block itself would hide every divider. Apply the line
+   between sibling brands instead. */
+.referenceBrandBlockWrapper:not(:last-child) > .referenceBrandBlock,
+.referenceCompactLabelGroups > .referenceBrandBlock:not(:last-child) {
+  border-bottom: 1px solid var(--sf-divider, #e6ddd4);
+}
+
+.referenceBrandBlockWrapper:last-child > .referenceBrandBlock,
+.referenceCompactLabelGroups > .referenceBrandBlock:last-child {
+  border-bottom: 0;
+}
+
 .creatorStorefrontCanvas .referenceBrandBlock > header {
   align-items: flex-start;
   gap: 14px;
