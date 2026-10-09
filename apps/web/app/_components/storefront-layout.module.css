@@ -33,9 +33,9 @@
   background-position: center, center;
   background-size: cover;
   border-bottom: 0;
-  min-height: 330px;
+  min-height: 292px;
   padding-bottom: 18px;
-  padding-top: clamp(132px, 22vw, 188px);
+  padding-top: clamp(106px, 18vw, 156px);
   position: relative;
 }
 .profile.hero::after {
@@ -62,7 +62,7 @@
   align-items: end;
   grid-template-areas: 'identity';
   grid-template-columns: minmax(0, 1fr);
-  min-height: 148px;
+  min-height: 112px;
   justify-items: center;
   text-align: center;
 }
@@ -74,6 +74,9 @@
 }
 .profile:first-of-type {
   padding-top: 30px;
+}
+.profile.hero + .profile {
+  padding-top: 0;
 }
 .profile :global(.referenceStorefrontInner) {
   grid-template-areas: 'avatar identity';
@@ -281,9 +284,9 @@
     padding-inline: 18px;
   }
   .profile.hero {
-    min-height: 310px;
-    padding-bottom: 12px;
-    padding-top: 132px;
+    min-height: 268px;
+    padding-bottom: 10px;
+    padding-top: 108px;
   }
   .profile :global(.referenceStorefrontInner) {
     column-gap: 14px;

@@ -243,6 +243,18 @@ export function StorefrontPhonePreview({
 
   if (!showPhone) return <>{children}</>;
   const changed = JSON.stringify(draft) !== JSON.stringify(configuration?.theme ?? theme);
+  const searchVisible = !(draft.layout?.hiddenBlocks ?? []).includes('search');
+  function setSearchVisible(visible: boolean) {
+    frame.current?.contentWindow?.postMessage(
+      {
+        type: 'swavii:toggle-layout-block',
+        blockId: 'search',
+        creatorId,
+        hidden: !visible,
+      },
+      window.location.origin,
+    );
+  }
   async function saveBio() {
     if (bioDraft === null || !bioProfileVersion || bioSaving) return;
     setBioSaving(true);
@@ -383,6 +395,24 @@ export function StorefrontPhonePreview({
                 )}
               </section>
             ) : null}
+            <section
+              aria-labelledby="search-visibility-title"
+              className="storefrontSearchVisibility"
+            >
+              <div>
+                <h3 id="search-visibility-title">Store search</h3>
+                <p>Let visitors search recommendations from any part of your page.</p>
+              </div>
+              <label>
+                <span>{searchVisible ? 'Shown' : 'Hidden'}</span>
+                <input
+                  aria-label="Show store search"
+                  checked={searchVisible}
+                  onChange={(event) => setSearchVisible(event.target.checked)}
+                  type="checkbox"
+                />
+              </label>
+            </section>
             <div>
               <div
                 className="storefrontPaletteList"

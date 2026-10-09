@@ -266,6 +266,35 @@ export function StorefrontLayout({
       busy.current = false;
     }
   }
+  useEffect(() => {
+    if (!editable || window.parent === window) return;
+    const receive = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== window.parent)
+        return;
+      const data = event.data as {
+        blockId?: string;
+        creatorId?: string;
+        hidden?: boolean;
+        type?: string;
+      };
+      if (
+        data.type !== 'swavii:toggle-layout-block' ||
+        data.creatorId !== creatorId ||
+        !data.blockId
+      )
+        return;
+      const hiddenBlocks = new Set(layout?.hiddenBlocks ?? []);
+      if (data.hidden) hiddenBlocks.add(data.blockId);
+      else hiddenBlocks.delete(data.blockId);
+      void saveLayout({
+        blocks: keys,
+        labels: layout?.labels ?? [],
+        hiddenBlocks: Array.from(hiddenBlocks),
+      });
+    };
+    window.addEventListener('message', receive);
+    return () => window.removeEventListener('message', receive);
+  }, [creatorId, editable, keys, layout]);
   const ordered = [
     ...fixedSlots,
     ...keys.map((id) => movableSlots.find((slot) => slot.id === id)!),

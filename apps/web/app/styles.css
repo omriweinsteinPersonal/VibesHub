@@ -13792,6 +13792,48 @@ dt {
   justify-self: start;
 }
 
+.storefrontSearchVisibility {
+  align-items: center;
+  background: #f6f3ed;
+  border: 1px solid #e5ded4;
+  border-radius: 16px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding: 14px 15px;
+}
+
+.storefrontSearchVisibility h3 {
+  color: #2d2924;
+  font-size: 0.92rem;
+  margin: 0 0 3px;
+}
+
+.storefrontSearchVisibility p {
+  color: #766d65;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 30ch;
+}
+
+.storefrontSearchVisibility label {
+  align-items: center;
+  color: #2d2924;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.76rem;
+  font-weight: 650;
+  gap: 8px;
+}
+
+.storefrontSearchVisibility input {
+  accent-color: #8e543a;
+  block-size: 20px;
+  inline-size: 20px;
+}
+
 .storefrontDesignPanel .storefrontPaletteSwatches {
   margin: 0;
 }
@@ -13934,7 +13976,7 @@ dt {
 
 .creatorStorefrontCanvas .referenceStorefrontHero .referenceStorefrontInner {
   align-items: end;
-  min-height: 220px;
+  min-height: 112px;
 }
 
 .creatorStorefrontCanvas .referenceStorefrontHero .referenceStorefrontName h1 {
