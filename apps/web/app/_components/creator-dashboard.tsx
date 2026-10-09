@@ -517,6 +517,8 @@ export function CreatorDashboard() {
     const normalizedWebsiteUrl = brand.websiteUrl.trim();
     const brandWebsiteChanged =
       !editingBrand || normalizedWebsiteUrl !== editingBrand.websiteUrl.trim();
+    const brandLogoChanged =
+      !editingBrand || brand.logoUrl.trim() !== (editingBrand.logoUrl ?? '').trim();
     if (brandWebsiteChanged && !normalizedProductUrl(normalizedWebsiteUrl)) {
       setError(
         'Enter a full HTTPS brand website URL, for example https://www.example.com.',
@@ -573,7 +575,11 @@ export function CreatorDashboard() {
         : null;
       let savedBrand: CreatorBrand;
       if (editingBrand) {
-        if (!brandWebsiteChanged && brand.name.trim() === editingBrand.name.trim()) {
+        if (
+          !brandWebsiteChanged &&
+          !brandLogoChanged &&
+          brand.name.trim() === editingBrand.name.trim()
+        ) {
           // Editing only the offer must not re-submit the brand URL. This keeps
           // legacy records with an old/malformed URL editable while the offer
           // itself continues using its already validated merchant URL.
@@ -840,7 +846,7 @@ export function CreatorDashboard() {
     } finally {
       if (brandFetchRequest.current === requestId) setFetching(false);
     }
-  }, [brand.logoAssetId, brand.logoUrl, brand.name, brand.websiteUrl]);
+  }, [brand.websiteUrl]);
 
   async function selectStoryClip(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
