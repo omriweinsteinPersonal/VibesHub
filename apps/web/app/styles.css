@@ -11844,16 +11844,15 @@ dt {
    familiar Aptos-style UI copy for a more polished, readable creator page. */
 .referenceStorefrontName h1 {
   font-family:
-    "Arial Rounded MT Bold", "Aptos Display", var(--font-vh-body),
-    ui-sans-serif, sans-serif;
+    'Arial Rounded MT Bold', 'Aptos Display', var(--font-vh-body), ui-sans-serif,
+    sans-serif;
   font-weight: 700;
   letter-spacing: -0.055em;
 }
 
 .referenceStorefrontBio,
 .referenceStorefrontLabels button {
-  font-family:
-    Aptos, "Aptos Body", var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
 }
 
 /* Product recommendation photos should own the entire image pane. Do not
