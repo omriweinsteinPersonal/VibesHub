@@ -11855,6 +11855,10 @@ dt {
   font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
 }
 
+.referenceStorefrontBio {
+  margin-top: 10px;
+}
+
 /* Product recommendation photos should own the entire image pane. Do not
    paint a secondary background or letterbox a source image inside it. */
 :is(.referenceStandaloneRecommendationImage, .referenceBrandSingleProductImage) {
