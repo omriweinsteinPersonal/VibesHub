@@ -1,7 +1,7 @@
 .layout {
   padding-bottom: 24px;
   color: var(--sf-text);
-  background: var(--sf-profile);
+  background: var(--sf-page);
 }
 .layout[data-compact-preview='true'] {
   padding-bottom: 0;
@@ -17,42 +17,32 @@
   margin: 0;
 }
 .profile {
-  background: var(--sf-profile);
+  background: var(--sf-page);
   padding: 14px 5vw;
 }
 .profile.hero {
-  background-color: var(--sf-profile);
+  background-color: var(--sf-page);
   background-image:
     linear-gradient(
       180deg,
-      transparent 42%,
-      color-mix(in srgb, var(--sf-profile) 10%, transparent) 70%,
-      var(--sf-profile) 100%
+      transparent 62%,
+      color-mix(in srgb, var(--sf-page) 72%, transparent) 86%,
+      var(--sf-page) 100%
     ),
     var(--sf-profile-image, none);
   background-position: center, center;
   background-size: cover;
   border-bottom: 0;
-  min-height: 292px;
-  padding-bottom: 18px;
-  padding-top: clamp(106px, 18vw, 156px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 280px;
+  padding-bottom: 0;
+  padding-top: 0;
   position: relative;
 }
 .profile.hero::after {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    color-mix(in srgb, var(--sf-profile) 38%, transparent) 72%,
-    var(--sf-profile) 100%
-  );
-  bottom: 0;
-  content: '';
-  height: 24%;
-  left: 0;
-  opacity: 0.72;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
+  display: none;
 }
 .profile.hero > :global(*) {
   position: relative;
@@ -62,7 +52,7 @@
   align-items: end;
   grid-template-areas: 'identity';
   grid-template-columns: minmax(0, 1fr);
-  min-height: 112px;
+  min-height: 92px;
   justify-items: center;
   text-align: center;
 }
@@ -70,6 +60,7 @@
   display: none;
 }
 .profile.hero :global(.referenceStorefrontName) {
+  align-self: end;
   grid-area: identity;
 }
 .profile:first-of-type {
@@ -92,7 +83,7 @@
   gap: 8px;
   justify-content: center;
   padding: 12px 5vw 22px;
-  background: var(--sf-profile);
+  background: var(--sf-page);
   border-top: 0;
 }
 .socials :global(.referenceConnectorLink) {
@@ -284,9 +275,7 @@
     padding-inline: 18px;
   }
   .profile.hero {
-    min-height: 268px;
-    padding-bottom: 10px;
-    padding-top: 108px;
+    min-height: 248px;
   }
   .profile :global(.referenceStorefrontInner) {
     column-gap: 14px;

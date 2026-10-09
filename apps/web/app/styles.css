@@ -13960,13 +13960,13 @@ dt {
 
 /* The profile hero is one continuous visual surface: photo, identity and socials. */
 .creatorStorefrontCanvas .referenceStorefrontHero {
-  background-color: var(--sf-profile);
+  background-color: var(--sf-page);
   background-image:
     linear-gradient(
       180deg,
-      transparent 42%,
-      color-mix(in srgb, var(--sf-profile) 10%, transparent) 70%,
-      var(--sf-profile) 100%
+      transparent 62%,
+      color-mix(in srgb, var(--sf-page) 72%, transparent) 86%,
+      var(--sf-page) 100%
     ),
     var(--sf-profile-image, none);
   background-position: center, center;
@@ -13976,11 +13976,11 @@ dt {
 
 .creatorStorefrontCanvas .referenceStorefrontHero .referenceStorefrontInner {
   align-items: end;
-  min-height: 112px;
+  min-height: 92px;
 }
 
 .creatorStorefrontCanvas .referenceStorefrontHero .referenceStorefrontName h1 {
-  text-shadow: 0 1px 16px color-mix(in srgb, var(--sf-profile) 80%, transparent);
+  text-shadow: none;
 }
 
 @media (max-width: 900px) {
