@@ -25,8 +25,9 @@
   background-image:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--sf-profile) 4%, transparent) 18%,
-      var(--sf-profile) 92%
+      transparent 42%,
+      color-mix(in srgb, var(--sf-profile) 10%, transparent) 70%,
+      var(--sf-profile) 100%
     ),
     var(--sf-profile-image, none);
   background-position: center, center;
@@ -37,11 +38,17 @@
   position: relative;
 }
 .profile.hero::after {
-  background: linear-gradient(180deg, transparent, var(--sf-profile));
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--sf-profile) 38%, transparent) 72%,
+    var(--sf-profile) 100%
+  );
   bottom: 0;
   content: '';
-  height: 42%;
+  height: 24%;
   left: 0;
+  opacity: 0.72;
   pointer-events: none;
   position: absolute;
   right: 0;
@@ -85,12 +92,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid #c5b8af;
-  border-radius: 50%;
-  background: var(--sf-product);
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   color: var(--sf-text);
+  padding: 4px;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+.socials :global(.referenceConnectorLink:hover),
+.socials :global(.referenceConnectorLink:focus-visible) {
+  background: color-mix(in srgb, var(--sf-text) 8%, transparent);
+  color: var(--sf-accent);
+  transform: translateY(-1px);
 }
 .content:global(.referenceStorefrontProducts) {
   background: var(--sf-page);
@@ -101,9 +119,14 @@
   width: 100%;
 }
 .firstContent:global(.referenceStorefrontProducts) {
-  border-radius: 28px 28px 0 0;
-  margin-top: -18px;
-  padding-top: 28px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sf-page) 0%, transparent) 0,
+    color-mix(in srgb, var(--sf-page) 76%, transparent) 22px,
+    var(--sf-page) 56px
+  );
+  margin-top: -22px;
+  padding-top: 42px;
   position: relative;
   z-index: 2;
 }

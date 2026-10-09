@@ -13873,8 +13873,9 @@ dt {
   background-image:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--sf-profile) 0%, transparent) 22%,
-      var(--sf-profile) 88%
+      transparent 42%,
+      color-mix(in srgb, var(--sf-profile) 10%, transparent) 70%,
+      var(--sf-profile) 100%
     ),
     var(--sf-profile-image, none);
   background-position: center, center;
