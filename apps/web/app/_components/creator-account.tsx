@@ -173,7 +173,7 @@ export function CreatorAccount() {
 
   async function selectImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !profile) return;
     setError('');
     setNotice('');
     try {
@@ -186,8 +186,31 @@ export function CreatorAccount() {
           : current,
       );
       if (previous) await deleteRecommendationImage(previous).catch(() => undefined);
-      setUploadStage('ready');
-      setNotice('Profile photo uploaded. Save changes to publish it.');
+      setSavingProfile(true);
+      setNotice('Saving profile image…');
+      try {
+        const previousAvatarAssetId = profile.avatar?.assetId ?? null;
+        const updated = await apiRequest<CreatorProfileSettings>('/creator/profile', {
+          body: JSON.stringify({ avatarAssetId: asset.id }),
+          headers: { 'if-match': `"${profile.version}"` },
+          method: 'PATCH',
+        });
+        stagedAssetRef.current = null;
+        setProfile(updated);
+        setProfileEditor(toProfileEditor(updated));
+        setCreatorProfile(updated);
+        setUploadStage('ready');
+        setNotice('Profile image is live on your storefront.');
+        if (previousAvatarAssetId && previousAvatarAssetId !== updated.avatar?.assetId) {
+          await deleteRecommendationImage(previousAvatarAssetId).catch(() => undefined);
+        }
+      } catch (cause) {
+        setUploadStage('ready');
+        setError(messageFor(cause));
+        setNotice('Image uploaded. Save changes to publish it.');
+      } finally {
+        setSavingProfile(false);
+      }
     } catch (cause) {
       setUploadStage('idle');
       setError(messageFor(cause));
