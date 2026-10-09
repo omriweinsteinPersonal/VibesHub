@@ -294,7 +294,7 @@ export function StorefrontLayout({
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, [creatorId, editable, keys, layout]);
+  }, [creatorId, editable, keys, layout, saveLayout]);
   const ordered = [
     ...fixedSlots,
     ...keys.map((id) => movableSlots.find((slot) => slot.id === id)!),

@@ -31,6 +31,7 @@ const groups: Array<{
     title: 'Recommendations',
     fields: [
       { key: 'recommendationsBackground', label: 'Page background' },
+      { key: 'dividerColor', label: 'Section dividers' },
       { key: 'textColor', label: 'Text' },
       { key: 'accentColor', label: 'Buttons and accents' },
     ],
@@ -59,6 +60,7 @@ const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
       profileBackground: '#eee4d6',
       profileImageUrl: '',
       recommendationsBackground: '#faf7f2',
+      dividerColor: '#e3d4c7',
       productBackground: '#ffffff',
       discountBackground: '#f1e8dc',
       collectionBackground: '#f5eee5',
@@ -72,6 +74,7 @@ const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
       profileBackground: '#dde4e7',
       profileImageUrl: '',
       recommendationsBackground: '#f5f7f7',
+      dividerColor: '#c4d2d7',
       productBackground: '#ffffff',
       discountBackground: '#e8edee',
       collectionBackground: '#edf1f2',

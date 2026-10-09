@@ -555,6 +555,7 @@ export const defaultStorefrontTheme = {
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
   recommendationsBackground: '#ffffff',
+  dividerColor: '#e6ddd4',
   productBackground: '#ffffff',
   discountBackground: '#f8f6f2',
   collectionBackground: '#fbf9f6',
@@ -569,6 +570,7 @@ export const storefrontThemeSchema = z
     // feature is introduced. The client only renders safe http(s) URLs.
     profileImageUrl: z.string().trim().max(2_048).optional(),
     recommendationsBackground: storefrontColorSchema,
+    dividerColor: storefrontColorSchema.default(defaultStorefrontTheme.dividerColor),
     productBackground: storefrontColorSchema,
     discountBackground: storefrontColorSchema,
     collectionBackground: storefrontColorSchema,

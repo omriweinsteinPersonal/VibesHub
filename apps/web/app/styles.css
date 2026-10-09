@@ -7951,7 +7951,7 @@ dt {
 }
 .referenceBrandBlock {
   background: transparent;
-  border-bottom: 1px solid color-mix(in srgb, var(--sf-text, #30251f) 20%, transparent);
+  border-bottom: 1px solid var(--sf-divider, #e6ddd4);
   border-radius: 0;
   margin-top: 26px;
   padding: 0 0 26px;
@@ -11816,7 +11816,7 @@ dt {
 }
 
 .creatorStorefrontCanvas .referenceBrandBlock {
-  border-bottom: 1px solid color-mix(in srgb, var(--sf-text, #30251f) 20%, transparent);
+  border-bottom: 1px solid var(--sf-divider, #e6ddd4);
   border-radius: 0;
   margin-top: 26px;
   padding: 0 0 26px;

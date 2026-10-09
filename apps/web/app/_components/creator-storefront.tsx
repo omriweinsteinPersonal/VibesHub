@@ -625,6 +625,7 @@ export function CreatorStorefrontView({
               ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
               : 'none',
             '--sf-page': previewTheme.recommendationsBackground,
+            '--sf-divider': previewTheme.dividerColor,
             '--sf-product': previewTheme.productBackground,
             '--sf-discount': previewTheme.discountBackground,
             '--sf-collection': previewTheme.collectionBackground,
