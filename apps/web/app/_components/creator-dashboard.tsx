@@ -317,6 +317,7 @@ export function CreatorDashboard() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const productFetchRequest = useRef(0);
+  const brandFetchRequest = useRef(0);
   const loadRequest = useRef(0);
   const silentLoadRef = useRef(false);
 
@@ -469,6 +470,7 @@ export function CreatorDashboard() {
     setVideoError('');
     setNotice('');
     setFetchWarnings([]);
+    brandFetchRequest.current += 1;
     setComposer(null);
     setEditingProduct(null);
     setEditingDiscount(null);
@@ -793,6 +795,52 @@ export function CreatorDashboard() {
     },
     [brands, categories, discounts],
   );
+
+  const fetchBrandDetails = useCallback(async () => {
+    const requestedUrl = normalizedProductUrl(brand.websiteUrl);
+    if (!requestedUrl) {
+      setError('Enter a full HTTPS brand website URL first.');
+      return;
+    }
+    const requestId = ++brandFetchRequest.current;
+    setFetching(true);
+    setFetchWarnings([]);
+    setError('');
+    try {
+      const metadata = await apiRequest<CreatorProductMetadata>(
+        '/creator/recommendations/fetch-details',
+        {
+          body: JSON.stringify({ url: requestedUrl }),
+          method: 'POST',
+          timeoutMs: 6_000,
+        },
+      );
+      if (brandFetchRequest.current !== requestId) return;
+      setBrand((current) => ({
+        ...current,
+        name: current.name.trim() || metadata.brandName || brandNameFromUrl(requestedUrl),
+        logoUrl: current.logoAssetId
+          ? current.logoUrl
+          : metadata.imageUrl || current.logoUrl || brandLogoFromUrl(requestedUrl),
+      }));
+      setFetchWarnings(
+        [
+          metadata.imageUrl
+            ? null
+            : 'No brand image was found. You can upload one or paste an image URL.',
+        ].filter((value): value is string => Boolean(value)),
+      );
+      setNotice(
+        metadata.imageUrl
+          ? 'Brand name and image fetched. Review the preview, then save the brand.'
+          : 'Brand name fetched. Add an image before saving if needed.',
+      );
+    } catch (cause) {
+      if (brandFetchRequest.current === requestId) setError(messageFor(cause));
+    } finally {
+      if (brandFetchRequest.current === requestId) setFetching(false);
+    }
+  }, [brand.logoAssetId, brand.logoUrl, brand.name, brand.websiteUrl]);
 
   async function selectStoryClip(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -2037,6 +2085,14 @@ export function CreatorDashboard() {
                               setBrand({ ...brand, websiteUrl: event.target.value })
                             }
                           />
+                          <button
+                            className="creatorInlineAction"
+                            disabled={fetching || saving || uploading}
+                            onClick={() => void fetchBrandDetails()}
+                            type="button"
+                          >
+                            {fetching ? 'Fetching…' : 'Fetch name and image'}
+                          </button>
                         </label>
                         <label>
                           Brand name
