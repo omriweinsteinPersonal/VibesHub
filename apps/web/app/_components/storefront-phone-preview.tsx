@@ -3,6 +3,7 @@
 import {
   defaultStorefrontTheme,
   storefrontThemeConfigurationSchema,
+  type CreatorProfileSettings,
   type StorefrontTheme,
   type StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
@@ -124,6 +125,11 @@ export function StorefrontPhonePreview({
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(true);
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [bioDraft, setBioDraft] = useState<string | null>(null);
+  const [bioProfileVersion, setBioProfileVersion] = useState<number | null>(null);
+  const [bioLoading, setBioLoading] = useState(false);
+  const [bioSaving, setBioSaving] = useState(false);
   const editorVisible = desktopPreview || !previewMode;
   const effectivePreviewMode = desktopPreview ? false : previewMode;
 
@@ -169,12 +175,14 @@ export function StorefrontPhonePreview({
         type: 'swavii:theme-preview',
         creatorId,
         theme: draft,
-        editingContent: false,
+        bio: bioDraft ?? undefined,
+        editingContent: selectedBlock === 'bio',
         previewMode: effectivePreviewMode,
+        selectedBlock,
       },
       window.location.origin,
     );
-  }, [creatorId, draft, effectivePreviewMode, showPhone]);
+  }, [bioDraft, creatorId, draft, effectivePreviewMode, selectedBlock, showPhone]);
 
   useEffect(() => {
     if (!canEdit || !showPhone) return;
@@ -204,6 +212,21 @@ export function StorefrontPhonePreview({
         data.creatorId === creatorId &&
         data.blockId
       ) {
+        setSelectedBlock(data.blockId);
+        if (data.blockId === 'bio' && bioDraft === null) {
+          setBioLoading(true);
+          void apiRequest<CreatorProfileSettings>('/creator/profile')
+            .then((profile) => {
+              setBioDraft(profile.bioHe);
+              setBioProfileVersion(profile.version);
+            })
+            .catch((cause: unknown) => {
+              setError(
+                cause instanceof Error ? cause.message : 'Could not load your bio.',
+              );
+            })
+            .finally(() => setBioLoading(false));
+        }
         return;
       }
       if (
@@ -220,6 +243,26 @@ export function StorefrontPhonePreview({
 
   if (!showPhone) return <>{children}</>;
   const changed = JSON.stringify(draft) !== JSON.stringify(configuration?.theme ?? theme);
+  async function saveBio() {
+    if (bioDraft === null || !bioProfileVersion || bioSaving) return;
+    setBioSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const profile = await apiRequest<CreatorProfileSettings>('/creator/profile', {
+        body: JSON.stringify({ bioHe: bioDraft }),
+        headers: { 'if-match': `"${bioProfileVersion}"` },
+        method: 'PATCH',
+      });
+      setBioDraft(profile.bioHe);
+      setBioProfileVersion(profile.version);
+      setNotice('Bio is live on your storefront.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save your bio.');
+    } finally {
+      setBioSaving(false);
+    }
+  }
   async function save() {
     if (!configuration || !changed || saving) return;
     setSaving(true);
@@ -309,6 +352,37 @@ export function StorefrontPhonePreview({
               <h2>Edit your page</h2>
               <p>Shape your storefront with colors, layout, and style.</p>
             </div>
+            {selectedBlock === 'bio' ? (
+              <section className="storefrontBioEditor" aria-labelledby="bio-editor-title">
+                <div>
+                  <h3 id="bio-editor-title">Profile bio</h3>
+                  <p>This text appears below your name in the storefront header.</p>
+                </div>
+                {bioLoading ? (
+                  <p className="storefrontEditorHint">Loading your bio…</p>
+                ) : (
+                  <>
+                    <textarea
+                      aria-label="Profile bio"
+                      dir="auto"
+                      maxLength={1000}
+                      onChange={(event) => setBioDraft(event.target.value)}
+                      placeholder="Write a short introduction…"
+                      rows={4}
+                      value={bioDraft ?? ''}
+                    />
+                    <button
+                      className="button primary"
+                      disabled={bioSaving || bioDraft === null}
+                      onClick={() => void saveBio()}
+                      type="button"
+                    >
+                      {bioSaving ? 'Saving…' : 'Save bio'}
+                    </button>
+                  </>
+                )}
+              </section>
+            ) : null}
             <div>
               <div
                 className="storefrontPaletteList"
@@ -496,8 +570,10 @@ export function StorefrontPhonePreview({
                   type: 'swavii:theme-preview',
                   creatorId,
                   theme: draft,
-                  editingContent: false,
+                  bio: bioDraft ?? undefined,
+                  editingContent: selectedBlock === 'bio',
                   previewMode: effectivePreviewMode,
+                  selectedBlock,
                 },
                 window.location.origin,
               )

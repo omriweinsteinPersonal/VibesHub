@@ -670,9 +670,6 @@ export function CreatorStorefrontView({
                       </span>
                     ) : null}
                   </div>
-                  <p>
-                    {storefront.primaryCategory.name} <span>@{storefront.handle}</span>
-                  </p>
                 </div>
               </div>
             </StorefrontSlot>

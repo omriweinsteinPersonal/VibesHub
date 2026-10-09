@@ -34,7 +34,8 @@
   background-size: cover;
   border-bottom: 0;
   min-height: 330px;
-  padding-top: clamp(52px, 10vw, 96px);
+  padding-bottom: 18px;
+  padding-top: clamp(132px, 22vw, 188px);
   position: relative;
 }
 .profile.hero::after {
@@ -58,8 +59,10 @@
   z-index: 1;
 }
 .profile.hero :global(.referenceStorefrontInner) {
+  align-items: end;
   grid-template-areas: 'identity';
   grid-template-columns: minmax(0, 1fr);
+  min-height: 148px;
   justify-items: center;
   text-align: center;
 }
@@ -84,6 +87,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
   padding: 12px 5vw 22px;
   background: var(--sf-profile);
   border-top: 0;
@@ -278,7 +282,8 @@
   }
   .profile.hero {
     min-height: 310px;
-    padding-top: 44px;
+    padding-bottom: 12px;
+    padding-top: 132px;
   }
   .profile :global(.referenceStorefrontInner) {
     column-gap: 14px;
