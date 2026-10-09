@@ -113,7 +113,7 @@
   box-sizing: border-box;
   margin: 0;
   max-width: none;
-  padding: 8px 5vw;
+  padding: 0 5vw 10px;
   width: 100%;
 }
 .firstContent:global(.referenceStorefrontProducts) {
@@ -123,8 +123,8 @@
     color-mix(in srgb, var(--sf-page) 76%, transparent) 22px,
     var(--sf-page) 56px
   );
-  margin-top: -22px;
-  padding-top: 42px;
+  margin-top: -12px;
+  padding-top: 18px;
   position: relative;
   z-index: 2;
 }

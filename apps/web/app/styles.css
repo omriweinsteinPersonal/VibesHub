@@ -11872,7 +11872,26 @@ dt {
    :last-child. Keep the divider on those slot-level brand sections. */
 .referenceBrandBlockWrapper > .referenceBrandBlock,
 .creatorStorefrontCanvas .referenceBrandBlockWrapper > .referenceBrandBlock {
-  border-bottom: 1px solid var(--sf-divider, #e6ddd4);
+  border-bottom: 0;
+  margin-top: 10px;
+  padding-bottom: 10px;
+}
+
+.referenceCompactLabelGroups > .referenceBrandBlock {
+  border-bottom: 0;
+  margin-top: 10px;
+  padding-bottom: 10px;
+}
+
+.referenceBrandBlockWrapper > .referenceBrandBlock > header h3,
+.referenceCompactLabelGroups > .referenceBrandBlock > header h3 {
+  font-size: 1.28rem;
+  letter-spacing: -0.02em;
+}
+
+.creatorStorefrontCanvas .referenceBrandBlockWrapper > .referenceBrandBlock > header h3,
+.creatorStorefrontCanvas .referenceCompactLabelGroups > .referenceBrandBlock > header h3 {
+  font-size: 1.28rem;
 }
 
 .creatorStorefrontCanvas .referenceBrandBlock > header {
