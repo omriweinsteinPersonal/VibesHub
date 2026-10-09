@@ -50,6 +50,10 @@ function safeProfileImageUrl(value: string | undefined) {
   }
 }
 
+function textDirectionFor(value: string): 'rtl' | 'ltr' {
+  return /^[^A-Za-z\u0590-\u05ff]*[\u0590-\u05ff]/u.test(value) ? 'rtl' : 'ltr';
+}
+
 export function CreatorStorefrontView({
   codes,
   editable = false,
@@ -995,7 +999,7 @@ function StandaloneRecommendationCard({
             <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
           )}
         </div>
-        <h3>{item.productName}</h3>
+        <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
       </div>
       <div className="referenceStandaloneRecommendationImage">
         <Image
@@ -1136,7 +1140,7 @@ function SingleBrandProductCard({
             <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
           )}
         </div>
-        <h3>{item.productName}</h3>
+        <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
         {offer.details ? <p>{offer.details.value}</p> : null}
       </div>
       <div className="referenceBrandSingleProductImage">

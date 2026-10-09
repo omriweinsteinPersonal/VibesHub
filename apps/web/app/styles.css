@@ -11840,6 +11840,33 @@ dt {
   border-bottom: 0;
 }
 
+/* Storefront type direction: a bold geometric identity name paired with
+   familiar Aptos-style UI copy for a more polished, readable creator page. */
+.referenceStorefrontName h1 {
+  font-family:
+    "Arial Rounded MT Bold", "Aptos Display", var(--font-vh-body),
+    ui-sans-serif, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+}
+
+.referenceStorefrontBio,
+.referenceStorefrontLabels button {
+  font-family:
+    Aptos, "Aptos Body", var(--font-vh-body), ui-sans-serif, sans-serif;
+}
+
+/* Product recommendation photos should own the entire image pane. Do not
+   paint a secondary background or letterbox a source image inside it. */
+:is(.referenceStandaloneRecommendationImage, .referenceBrandSingleProductImage) {
+  background: transparent;
+}
+
+:is(.referenceStandaloneRecommendationImage, .referenceBrandSingleProductImage) img {
+  object-fit: cover;
+  padding: 0;
+}
+
 /* In the normal storefront layout each slot gets its own
    .referenceStorefrontProducts wrapper, so every brand block is technically
    :last-child. Keep the divider on those slot-level brand sections. */
