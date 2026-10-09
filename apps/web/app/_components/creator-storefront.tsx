@@ -1204,8 +1204,12 @@ function BrandBlock({
       />
     );
   }
+  const isBrandOnly = collections.length === 0 && standaloneItems.length === 0;
   return (
-    <section className="referenceBrandBlock">
+    <section
+      className="referenceBrandBlock"
+      data-brand-only={isBrandOnly ? 'true' : undefined}
+    >
       <a
         aria-label={`Visit ${brand.name}`}
         className="referenceBrandHitArea"
