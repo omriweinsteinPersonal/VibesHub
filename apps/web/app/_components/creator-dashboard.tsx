@@ -2136,24 +2136,27 @@ export function CreatorDashboard() {
                             }
                           />
                           {brand.logoUrl ? (
-                            <span className="creatorBrandImagePreview">
-                              <Image
-                                alt="Brand image preview"
-                                height={64}
-                                src={brand.logoUrl}
-                                unoptimized
-                                width={64}
-                              />
-                              <button
-                                className="creatorInlineAction"
-                                onClick={() =>
-                                  setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
-                                }
-                                type="button"
-                              >
-                                Remove image
-                              </button>
-                            </span>
+                            <div className="creatorProductPhotoGrid">
+                              <span>
+                                <Image
+                                  alt="Brand image preview"
+                                  fill
+                                  sizes="96px"
+                                  src={brand.logoUrl}
+                                  unoptimized
+                                />
+                                <small>Default</small>
+                                <button
+                                  aria-label="Remove brand image"
+                                  onClick={() =>
+                                    setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
+                                  }
+                                  type="button"
+                                >
+                                  <X aria-hidden="true" size={12} />
+                                </button>
+                              </span>
+                            </div>
                           ) : null}
                           <small>
                             We suggest the brand&apos;s favicon from its website. Replace
