@@ -1205,11 +1205,12 @@ function BrandBlock({
     );
   }
   const isBrandOnly = collections.length === 0 && standaloneItems.length === 0;
+  const brandLogoUrl = brand.logoUrl || brandLogoFromUrl(brand.websiteUrl);
   return (
     <section
       className="referenceBrandBlock"
       data-brand-only={isBrandOnly ? 'true' : undefined}
-      data-has-logo={isBrandOnly && brand.logoUrl ? 'true' : undefined}
+      data-has-logo={isBrandOnly && brandLogoUrl ? 'true' : undefined}
     >
       <a
         aria-label={`Visit ${brand.name}`}
@@ -1229,13 +1230,13 @@ function BrandBlock({
           </div>
         ) : null}
       </header>
-      {isBrandOnly && brand.logoUrl ? (
+      {isBrandOnly && brandLogoUrl ? (
         <div className="referenceBrandOnlyImage">
           <Image
             alt={`${brand.name} logo`}
             fill
             sizes="76px"
-            src={publicAssetUrl(brand.logoUrl)}
+            src={publicAssetUrl(brandLogoUrl)}
             unoptimized
           />
         </div>
@@ -1313,6 +1314,15 @@ function BrandBlock({
       ) : null}
     </section>
   );
+}
+
+function brandLogoFromUrl(value: string) {
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === 'https:' ? `${parsed.origin}/favicon.ico` : '';
+  } catch {
+    return '';
+  }
 }
 
 function formatOfferDate(value: string): string {

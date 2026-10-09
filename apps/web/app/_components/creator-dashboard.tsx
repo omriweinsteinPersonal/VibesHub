@@ -2025,21 +2025,13 @@ export function CreatorDashboard() {
                             placeholder="https://www.adidas.com"
                             value={brand.websiteUrl}
                             onBlur={() => {
-                              if (!brand.name.trim())
-                                setBrand((current) => ({
-                                  ...current,
-                                  name: brandNameFromUrl(current.websiteUrl),
-                                  logoUrl:
-                                    current.logoUrl ||
-                                    (() => {
-                                      try {
-                                        const parsed = new URL(current.websiteUrl);
-                                        return `${parsed.origin}/favicon.ico`;
-                                      } catch {
-                                        return '';
-                                      }
-                                    })(),
-                                }));
+                              setBrand((current) => ({
+                                ...current,
+                                name:
+                                  current.name || brandNameFromUrl(current.websiteUrl),
+                                logoUrl:
+                                  current.logoUrl || brandLogoFromUrl(current.websiteUrl),
+                              }));
                             }}
                             onChange={(event) =>
                               setBrand({ ...brand, websiteUrl: event.target.value })
@@ -2081,6 +2073,26 @@ export function CreatorDashboard() {
                               })
                             }
                           />
+                          {brand.logoUrl ? (
+                            <span className="creatorBrandImagePreview">
+                              <Image
+                                alt="Brand image preview"
+                                height={64}
+                                src={brand.logoUrl}
+                                unoptimized
+                                width={64}
+                              />
+                              <button
+                                className="creatorInlineAction"
+                                onClick={() =>
+                                  setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
+                                }
+                                type="button"
+                              >
+                                Remove image
+                              </button>
+                            </span>
+                          ) : null}
                           <small>
                             We suggest the brand&apos;s favicon from its website. Replace
                             it with an upload or image URL if needed.
@@ -3872,6 +3884,15 @@ function brandNameFromUrl(value: string) {
     const hostname = new URL(value).hostname.replace(/^www\./i, '');
     const name = hostname.split('.')[0]?.replaceAll('-', ' ').trim() ?? '';
     return name.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  } catch {
+    return '';
+  }
+}
+
+function brandLogoFromUrl(value: string) {
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === 'https:' ? `${parsed.origin}/favicon.ico` : '';
   } catch {
     return '';
   }
