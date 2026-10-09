@@ -239,7 +239,7 @@ export function StorefrontPhonePreview({
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, [canEdit, creatorId, showPhone]);
+  }, [bioDraft, canEdit, creatorId, showPhone]);
 
   if (!showPhone) return <>{children}</>;
   const changed = JSON.stringify(draft) !== JSON.stringify(configuration?.theme ?? theme);
