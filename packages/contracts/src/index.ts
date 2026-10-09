@@ -700,6 +700,7 @@ export const creatorStorefrontSchema = z
             itemCount: z.int().nonnegative(),
             name: z.string().trim().min(1).max(120),
             websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+            logoUrl: publicAssetUrlSchema.nullable().default(null),
           })
           .strict(),
       )
@@ -1085,6 +1086,8 @@ export const creatorBrandInputSchema = z
   .object({
     name: z.string().trim().min(1).max(120),
     websiteUrl: z.url({ protocol: /^https$/ }).max(2_048),
+    logoAssetId: idSchema.nullable().default(null),
+    logoUrl: publicAssetUrlSchema.nullable().default(null),
   })
   .strict();
 

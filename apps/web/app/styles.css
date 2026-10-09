@@ -11975,6 +11975,35 @@ dt {
   padding: 12px 12px 10px;
 }
 
+.referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] > header,
+.referenceBrandBlock[data-brand-only='true'][data-has-logo='true']
+  > .referenceBrandOfferBody {
+  grid-column: 1;
+}
+
+.referenceBrandOnlyImage {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  min-height: 64px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.referenceBrandOnlyImage img {
+  object-fit: contain;
+  padding: 8px;
+}
+
 .creatorStorefrontCanvas
   .referenceBrandBlockWrapper
   > .referenceBrandBlock[data-brand-only='true'] {

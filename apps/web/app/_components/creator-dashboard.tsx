@@ -123,6 +123,8 @@ interface BrandEditor {
   expiresAt: string;
   name: string;
   websiteUrl: string;
+  logoAssetId: string;
+  logoUrl: string;
 }
 
 type DiscountOfferPayload = {
@@ -273,6 +275,8 @@ export function CreatorDashboard() {
     expiresAt: '',
     name: '',
     websiteUrl: '',
+    logoAssetId: '',
+    logoUrl: '',
   });
   const [editingBrand, setEditingBrand] = useState<CreatorBrand | null>(null);
   const [editingProduct, setEditingProduct] = useState<CreatorRecommendation | null>(
@@ -480,7 +484,30 @@ export function CreatorDashboard() {
       expiresAt: '',
       name: '',
       websiteUrl: '',
+      logoAssetId: '',
+      logoUrl: '',
     });
+  }
+
+  async function selectBrandLogo(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const asset = await uploadRecommendationImage(file, () => undefined);
+      setBrand((current) => ({
+        ...current,
+        logoAssetId: asset.id,
+        logoUrl: asset.publicUrl,
+      }));
+      setNotice('Brand image uploaded. Save the brand to publish it.');
+    } catch (cause) {
+      setError(messageFor(cause));
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
   }
 
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
@@ -528,7 +555,12 @@ export function CreatorDashboard() {
     try {
       const updateBrand = (version: number) =>
         apiRequest<CreatorBrand>(`/creator/brands/${editingBrand!.id}`, {
-          body: JSON.stringify({ name: brand.name, websiteUrl: normalizedWebsiteUrl }),
+          body: JSON.stringify({
+            name: brand.name,
+            websiteUrl: normalizedWebsiteUrl,
+            logoAssetId: brand.logoAssetId || null,
+            logoUrl: brand.logoAssetId ? null : brand.logoUrl.trim() || null,
+          }),
           headers: { 'if-match': `"${version}"` },
           method: 'PATCH',
         });
@@ -560,7 +592,12 @@ export function CreatorDashboard() {
         }
       } else {
         savedBrand = await apiRequest<CreatorBrand>('/creator/brands', {
-          body: JSON.stringify({ name: brand.name, websiteUrl: normalizedWebsiteUrl }),
+          body: JSON.stringify({
+            name: brand.name,
+            websiteUrl: normalizedWebsiteUrl,
+            logoAssetId: brand.logoAssetId || null,
+            logoUrl: brand.logoAssetId ? null : brand.logoUrl.trim() || null,
+          }),
           idempotent: true,
           method: 'POST',
         });
@@ -1992,6 +2029,16 @@ export function CreatorDashboard() {
                                 setBrand((current) => ({
                                   ...current,
                                   name: brandNameFromUrl(current.websiteUrl),
+                                  logoUrl:
+                                    current.logoUrl ||
+                                    (() => {
+                                      try {
+                                        const parsed = new URL(current.websiteUrl);
+                                        return `${parsed.origin}/favicon.ico`;
+                                      } catch {
+                                        return '';
+                                      }
+                                    })(),
                                 }));
                             }}
                             onChange={(event) =>
@@ -2011,6 +2058,32 @@ export function CreatorDashboard() {
                           />
                           <small>
                             Filled automatically from the website and remains editable.
+                          </small>
+                        </label>
+                        <label className="creatorFullField">
+                          Brand image <span className="fieldOptional">Optional</span>
+                          <input
+                            accept={recommendationImageAccept}
+                            disabled={saving || uploading}
+                            type="file"
+                            onChange={(event) => void selectBrandLogo(event)}
+                          />
+                          <input
+                            inputMode="url"
+                            placeholder="https://brand.com/logo.png"
+                            type="url"
+                            value={brand.logoUrl}
+                            onChange={(event) =>
+                              setBrand({
+                                ...brand,
+                                logoAssetId: '',
+                                logoUrl: event.target.value,
+                              })
+                            }
+                          />
+                          <small>
+                            We suggest the brand&apos;s favicon from its website. Replace
+                            it with an upload or image URL if needed.
                           </small>
                         </label>
                         <label>
@@ -2282,6 +2355,8 @@ export function CreatorDashboard() {
                                 expiresAt: toLocalDate(offer?.expiresAt ?? null),
                                 name: managedBrand.name,
                                 websiteUrl: managedBrand.websiteUrl,
+                                logoAssetId: '',
+                                logoUrl: managedBrand.logoUrl ?? '',
                               });
                               setComposer('brand');
                               window.scrollTo({ behavior: 'smooth', top: 120 });

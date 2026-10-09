@@ -1209,6 +1209,7 @@ function BrandBlock({
     <section
       className="referenceBrandBlock"
       data-brand-only={isBrandOnly ? 'true' : undefined}
+      data-has-logo={isBrandOnly && brand.logoUrl ? 'true' : undefined}
     >
       <a
         aria-label={`Visit ${brand.name}`}
@@ -1228,6 +1229,17 @@ function BrandBlock({
           </div>
         ) : null}
       </header>
+      {isBrandOnly && brand.logoUrl ? (
+        <div className="referenceBrandOnlyImage">
+          <Image
+            alt={`${brand.name} logo`}
+            fill
+            sizes="76px"
+            src={publicAssetUrl(brand.logoUrl)}
+            unoptimized
+          />
+        </div>
+      ) : null}
       {offer && (offer.details || offer.expiresAt || storyClips.length) ? (
         <div className="referenceBrandOfferBody">
           {offer.details ? (
