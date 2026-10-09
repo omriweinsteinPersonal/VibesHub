@@ -11840,6 +11840,14 @@ dt {
   border-bottom: 0;
 }
 
+/* In the normal storefront layout each slot gets its own
+   .referenceStorefrontProducts wrapper, so every brand block is technically
+   :last-child. Keep the divider on those slot-level brand sections. */
+.referenceBrandBlockWrapper > .referenceBrandBlock,
+.creatorStorefrontCanvas .referenceBrandBlockWrapper > .referenceBrandBlock {
+  border-bottom: 1px solid var(--sf-divider, #e6ddd4);
+}
+
 .creatorStorefrontCanvas .referenceBrandBlock > header {
   align-items: flex-start;
   gap: 14px;
