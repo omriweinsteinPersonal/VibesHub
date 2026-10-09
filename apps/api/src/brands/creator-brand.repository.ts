@@ -133,7 +133,15 @@ export class CreatorBrandRepository {
   private rows(sql: DatabaseClient, creatorId: string) {
     return sql<CreatorBrand[]>`
       select creator_brand.id, creator_brand.brand_id as "brandId", coalesce(creator_brand.display_name, brand.name) as name,
-        creator_brand.website_url as "websiteUrl", to_jsonb(creator_brand)->>'logo_url' as "logoUrl", creator_brand.version,
+        creator_brand.website_url as "websiteUrl", coalesce(
+          to_jsonb(creator_brand)->>'logo_url',
+          (
+            select media.public_url
+            from app.media_assets media
+            where media.id = nullif(to_jsonb(creator_brand)->>'logo_media_asset_id', '')::uuid
+              and media.status = 'ready'
+          )
+        ) as "logoUrl", creator_brand.version,
         (select count(*)::integer from app.recommendations recommendation join app.products product on product.id = recommendation.product_id where recommendation.creator_id = ${creatorId} and product.brand_id = brand.id and recommendation.lifecycle <> 'archived' and recommendation.deleted_at is null) as "itemCount",
         (select count(*)::integer from app.creator_curated_sections section where section.creator_id = ${creatorId} and section.brand_id = brand.id and section.kind = 'collection') as "collectionCount"
       from app.creator_brands creator_brand join app.brands brand on brand.id = creator_brand.brand_id

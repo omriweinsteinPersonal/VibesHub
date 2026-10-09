@@ -169,7 +169,15 @@ export class CreatorDirectoryRepository {
               'brandId', brand.id,
               'name', coalesce(creator_brand.display_name, brand.name),
               'websiteUrl', creator_brand.website_url,
-              'logoUrl', to_jsonb(creator_brand)->>'logo_url',
+              'logoUrl', coalesce(
+                to_jsonb(creator_brand)->>'logo_url',
+                (
+                  select media.public_url
+                  from app.media_assets media
+                  where media.id = nullif(to_jsonb(creator_brand)->>'logo_media_asset_id', '')::uuid
+                    and media.status = 'ready'
+                )
+              ),
               'itemCount', (select count(*)::integer from app.recommendations recommendation join app.products product on product.id = recommendation.product_id where recommendation.creator_id = creator.id and product.brand_id = brand.id and recommendation.lifecycle = 'published' and recommendation.deleted_at is null),
               'collectionCount', (select count(*)::integer from app.creator_curated_sections section where section.creator_id = creator.id and section.brand_id = brand.id and section.kind = 'collection')
             ) order by creator_brand.position)
