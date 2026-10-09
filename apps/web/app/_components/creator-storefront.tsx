@@ -87,7 +87,11 @@ export function CreatorStorefrontView({
   const isMobilePreview =
     typeof window !== 'undefined' &&
     new URLSearchParams(window.location.search).has('mobilePreview');
-  const profileImageUrl = safeProfileImageUrl(previewTheme.profileImageUrl);
+  const profileImageUrl =
+    safeProfileImageUrl(previewTheme.profileImageUrl) ||
+    safeProfileImageUrl(
+      storefront.avatarUrl ? publicAssetUrl(storefront.avatarUrl) : undefined,
+    );
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {

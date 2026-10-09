@@ -31,8 +31,9 @@
     var(--sf-profile-image, none);
   background-position: center, center;
   background-size: cover;
-  min-height: 218px;
-  padding-top: clamp(36px, 8vw, 76px);
+  border-bottom: 0;
+  min-height: 330px;
+  padding-top: clamp(52px, 10vw, 96px);
   position: relative;
 }
 .profile.hero::after {
@@ -48,6 +49,18 @@
 .profile.hero > :global(*) {
   position: relative;
   z-index: 1;
+}
+.profile.hero :global(.referenceStorefrontInner) {
+  grid-template-areas: 'identity';
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  text-align: center;
+}
+.profile.hero :global(.referenceStorefrontAvatar) {
+  display: none;
+}
+.profile.hero :global(.referenceStorefrontName) {
+  grid-area: identity;
 }
 .profile:first-of-type {
   padding-top: 30px;
@@ -66,6 +79,7 @@
   gap: 8px;
   padding: 12px 5vw 22px;
   background: var(--sf-profile);
+  border-top: 0;
 }
 .socials :global(.referenceConnectorLink) {
   display: flex;
@@ -240,8 +254,8 @@
     padding-inline: 18px;
   }
   .profile.hero {
-    min-height: 206px;
-    padding-top: 34px;
+    min-height: 310px;
+    padding-top: 44px;
   }
   .profile :global(.referenceStorefrontInner) {
     column-gap: 14px;
