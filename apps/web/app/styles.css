@@ -11743,7 +11743,7 @@ dt {
   background: var(--sf-discount, #f8f6f2);
   border: 1px solid #e2d5c8;
   border-radius: 18px;
-  margin: 8px 0 12px;
+  margin: 0;
   padding: 14px 14px 16px;
 }
 
@@ -11754,6 +11754,26 @@ dt {
 .referenceBrandBlock[data-has-recommendations='true'] .referenceBrandShelf {
   margin-bottom: 0;
   padding-bottom: 10px;
+}
+
+/* Keep the information rows in every single-product brand recommendation in
+   the same two-column positions as the Billabong reference card. */
+.referenceStandaloneRecommendationTopline,
+.referenceBrandSingleProductMeta,
+.referenceStandaloneRecommendationOffer,
+.referenceBrandSingleProductOffer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.referenceStandaloneRecommendationTopline,
+.referenceBrandSingleProductMeta {
+  align-items: baseline;
+}
+
+.referenceStandaloneRecommendationOffer,
+.referenceBrandSingleProductOffer {
+  align-items: start;
 }
 
 .referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] {
