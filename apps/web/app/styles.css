@@ -13957,3 +13957,30 @@ dt {
   border: 1px solid #e2d5c8;
   border-bottom-color: #d5c3b5;
 }
+
+/* The frame should finish shortly after the last product label. Product
+   cards in a brand shelf do not need the two-line title reserve used by the
+   general product grid. */
+.referenceBrandBlock[data-has-recommendations='true'] {
+  padding-bottom: 8px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] .referenceBrandShelf {
+  padding-bottom: 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true']
+  .referenceBrandShelf
+  .compactProductCard
+  .storeProductDetails {
+  min-height: 0;
+  padding-bottom: 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true']
+  .referenceBrandShelf
+  .compactProductCard
+  .storeProductDetails
+  h3 {
+  min-height: 0;
+}
