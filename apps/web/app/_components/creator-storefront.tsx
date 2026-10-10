@@ -1025,6 +1025,9 @@ function StandaloneRecommendationCard({
 
 function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
   const embedUrl = featuredMediaEmbedUrl(media);
+  if (media.provider === 'instagram') {
+    return <InstagramMediaCard media={media} />;
+  }
   return (
     <article className={`featuredMediaBlock${embedUrl ? ' featuredMediaBlockEmbed' : ''}`}>
       {media.thumbnailUrl && !embedUrl ? (
@@ -1077,6 +1080,76 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
           </span>
         </a>
       )}
+    </article>
+  );
+}
+
+function InstagramMediaCard({ media }: { media: FeaturedMedia }) {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const isReel = /\/reel\//u.test(media.url);
+  return (
+    <article className="featuredMediaBlock featuredInstagramMedia">
+      <div className="featuredInstagramMediaPreview">
+        {media.thumbnailUrl ? (
+          <button
+            aria-label={isReel ? 'Enlarge Instagram Reel preview' : 'Enlarge Instagram post preview'}
+            className="featuredInstagramMediaButton"
+            onClick={() => setIsPreviewOpen(true)}
+            type="button"
+          >
+            <Image
+              alt={media.title}
+              fill
+              sizes="(max-width: 700px) 100vw, 640px"
+              src={media.thumbnailUrl}
+              unoptimized
+            />
+            <span className="featuredInstagramMediaPlay" aria-hidden="true">
+              {isReel ? '▶' : '＋'}
+            </span>
+          </button>
+        ) : (
+          <div className="featuredInstagramMediaFallback">
+            <span className="featuredInstagramMediaIcon">◎</span>
+            <strong>{isReel ? 'Instagram Reel' : 'Instagram post'}</strong>
+            <small>Open on Instagram to view the original</small>
+          </div>
+        )}
+      </div>
+      <a
+        className="featuredInstagramMediaExternal"
+        href={media.url}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span>Open on Instagram</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+      {isPreviewOpen && media.thumbnailUrl ? (
+        <div
+          aria-label="Instagram media preview"
+          aria-modal="true"
+          className="featuredInstagramMediaDialog"
+          onClick={() => setIsPreviewOpen(false)}
+          role="dialog"
+        >
+          <button
+            aria-label="Close preview"
+            className="featuredInstagramMediaDialogClose"
+            onClick={() => setIsPreviewOpen(false)}
+            type="button"
+          >
+            ×
+          </button>
+          <Image
+            alt={media.title}
+            fill
+            sizes="100vw"
+            src={media.thumbnailUrl}
+            unoptimized
+          />
+        </div>
+      ) : null}
     </article>
   );
 }
