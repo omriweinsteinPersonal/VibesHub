@@ -927,7 +927,15 @@ export function CreatorStorefrontView({
                         title={row.title}
                       />
                     ) : code ? (
-                      <DiscountBlock code={code} />
+                      <DiscountBlock
+                        brandLogoUrl={
+                          code.brandId
+                            ? (storefront.brands.find(({ id }) => id === code.brandId)
+                                ?.logoUrl ?? null)
+                            : null
+                        }
+                        code={code}
+                      />
                     ) : media ? (
                       <FeaturedMediaBlock media={media} />
                     ) : null;
@@ -1333,14 +1341,22 @@ function discountValue(
   return discount.label;
 }
 
-function DiscountBlock({ code }: { code: PublicDiscountCode }) {
+function DiscountBlock({
+  brandLogoUrl,
+  code,
+}: {
+  brandLogoUrl?: string | null;
+  code: PublicDiscountCode;
+}) {
   const brandName =
     code.merchantHostname
       .replace(/^www\./i, '')
       .split('.')[0]
       ?.replaceAll('-', ' ') || code.merchantName;
   const merchantUrl = code.merchantUrl || `https://${code.merchantHostname}`;
-  const logoUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(code.merchantHostname)}&sz=64`;
+  const logoUrl =
+    brandLogoUrl ||
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(code.merchantHostname)}&sz=64`;
   return (
     <section className="referenceStorefrontCodes referenceDiscountLayer">
       <article>
