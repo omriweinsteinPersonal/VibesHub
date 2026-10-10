@@ -13948,3 +13948,11 @@ dt {
     transition: none;
   }
 }
+
+/* Keep the framed multi-item brand card's lower edge visible after the
+   editable-slot reset rules above. */
+.referenceBrandBlockWrapper > .referenceBrandBlock[data-has-recommendations='true'],
+.referenceCompactLabelGroups > .referenceBrandBlock[data-has-recommendations='true'] {
+  border: 1px solid #e2d5c8;
+  border-bottom-color: #d5c3b5;
+}
