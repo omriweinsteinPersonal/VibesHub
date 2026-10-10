@@ -11744,11 +11744,16 @@ dt {
   border: 1px solid #e2d5c8;
   border-radius: 18px;
   margin: 8px 0 12px;
-  padding: 14px 14px 12px;
+  padding: 14px 14px 16px;
 }
 
 .referenceBrandBlock[data-has-recommendations='true'] > header {
   margin: 0 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] .referenceBrandShelf {
+  margin-bottom: 0;
+  padding-bottom: 10px;
 }
 
 .referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] {
