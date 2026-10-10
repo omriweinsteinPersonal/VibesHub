@@ -1274,6 +1274,11 @@ svg.lucide {
   border-radius: 18px;
   overflow: hidden;
 }
+.featuredMediaBlockEmbed {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
 .featuredMediaEmbed {
   aspect-ratio: 16 / 9;
   background: #f5f0e9;
@@ -1284,6 +1289,18 @@ svg.lucide {
   display: block;
   height: 100%;
   width: 100%;
+}
+.featuredMediaEmbed-spotify {
+  aspect-ratio: auto;
+}
+.featuredMediaEmbed-spotify iframe {
+  height: 152px;
+}
+.featuredMediaEmbed-apple_music {
+  aspect-ratio: auto;
+}
+.featuredMediaEmbed-apple_music iframe {
+  height: 175px;
 }
 .featuredMediaLink {
   color: inherit;

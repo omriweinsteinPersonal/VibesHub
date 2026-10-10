@@ -1026,7 +1026,7 @@ function StandaloneRecommendationCard({
 function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
   const embedUrl = featuredMediaEmbedUrl(media);
   return (
-    <article className="featuredMediaBlock">
+    <article className={`featuredMediaBlock${embedUrl ? ' featuredMediaBlockEmbed' : ''}`}>
       {media.thumbnailUrl && !embedUrl ? (
         <div className="featuredMediaCover">
           <Image
@@ -1039,7 +1039,7 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
         </div>
       ) : null}
       {media.displayMode === 'embed' && embedUrl ? (
-        <div className="featuredMediaEmbed">
+        <div className={`featuredMediaEmbed featuredMediaEmbed-${media.provider}`}>
           <iframe
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
