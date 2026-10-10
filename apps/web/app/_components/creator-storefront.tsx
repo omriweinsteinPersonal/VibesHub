@@ -1029,7 +1029,9 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
     return <InstagramMediaCard media={media} />;
   }
   return (
-    <article className={`featuredMediaBlock${embedUrl ? ' featuredMediaBlockEmbed' : ''}`}>
+    <article
+      className={`featuredMediaBlock${embedUrl ? ' featuredMediaBlockEmbed' : ''}`}
+    >
       {media.thumbnailUrl && !embedUrl ? (
         <div className="featuredMediaCover">
           <Image
@@ -1092,7 +1094,9 @@ function InstagramMediaCard({ media }: { media: FeaturedMedia }) {
       <div className="featuredInstagramMediaPreview">
         {media.thumbnailUrl ? (
           <button
-            aria-label={isReel ? 'Enlarge Instagram Reel preview' : 'Enlarge Instagram post preview'}
+            aria-label={
+              isReel ? 'Enlarge Instagram Reel preview' : 'Enlarge Instagram post preview'
+            }
             className="featuredInstagramMediaButton"
             onClick={() => setIsPreviewOpen(true)}
             type="button"
