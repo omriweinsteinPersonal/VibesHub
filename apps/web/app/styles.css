@@ -1277,7 +1277,8 @@ svg.lucide {
 .featuredMediaBlockEmbed {
   background: transparent;
   border: 0;
-  border-radius: 0;
+  border-radius: 18px;
+  overflow: hidden;
 }
 .featuredMediaEmbed {
   aspect-ratio: 16 / 9;
