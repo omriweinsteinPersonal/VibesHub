@@ -28,7 +28,7 @@ export function resolveRevenueCatApiKey({
   return platformKey;
 }
 
-export function isTestStoreKey(apiKey: string): boolean {
+function isTestStoreKey(apiKey: string): boolean {
   return apiKey.startsWith('test_');
 }
 

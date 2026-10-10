@@ -29,10 +29,10 @@ export const revenueCatWebhookSchema = z
   })
   .passthrough();
 
-export type RevenueCatWebhook = z.infer<typeof revenueCatWebhookSchema>;
+type RevenueCatWebhook = z.infer<typeof revenueCatWebhookSchema>;
 export type RevenueCatWebhookEvent = RevenueCatWebhook['event'];
 
-export interface BillingEntitlementSummary {
+interface BillingEntitlementSummary {
   active: boolean;
   expiresAt: string | null;
   key: string;

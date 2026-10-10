@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-export interface VideoPreviewProvider {
+interface VideoPreviewProvider {
   normalizeExternalPreviewUrl(url: string | null): string | null;
 }
 

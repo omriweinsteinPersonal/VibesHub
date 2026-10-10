@@ -2,7 +2,6 @@ import type { RecommendationImageContentType } from '@vibeshub/contracts';
 
 export const RECOMMENDATION_IMAGE_BUCKET = 'recommendation-images' as const;
 export const RECOMMENDATION_IMAGE_UPLOAD_BUCKET = 'recommendation-image-uploads' as const;
-export const RECOMMENDATION_IMAGE_MAX_BYTES = 5 * 1_024 * 1_024;
 export const SIGNED_UPLOAD_LIFETIME_MS = 2 * 60 * 60 * 1_000;
 
 const extensionByContentType: Record<RecommendationImageContentType, string> = {

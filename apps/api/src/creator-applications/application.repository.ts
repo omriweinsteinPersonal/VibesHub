@@ -51,7 +51,7 @@ interface FeedbackRow {
   publicMessage: string;
 }
 
-export interface ApplicationRepositoryPort {
+interface ApplicationRepositoryPort {
   approve(
     id: string,
     reviewerUserId: string,

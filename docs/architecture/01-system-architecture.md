@@ -106,17 +106,18 @@ apps/
   web/                 Next.js public web, account, creator studio, admin
   mobile/              Expo Router iOS and Android application
   api/                 NestJS/Fastify versioned API
-  worker/              Job handlers and scheduled workloads
+  worker/              Reserved job-service boundary; currently health-only
 
 packages/
   contracts/           OpenAPI schemas, generated clients, shared DTO validation
   domain/              Pure business rules and domain types
-  database/            SQL migrations, query layer, seeds, test factories
   design-tokens/       Color, spacing, typography, radii, motion tokens
   analytics/           Event names, payload schemas, attribution helpers
   auth/                Shared claims and capability definitions
   observability/       Logging, tracing, error-reporting adapters
-  config/              TypeScript, linting, formatting, test configuration
+
+supabase/
+  migrations/          Ordered SQL schema history and deterministic seed data
 
 docs/
   architecture/        Product decisions, ADRs, ERD, API and security documents

@@ -25,9 +25,6 @@ importers:
       '@eslint/js':
         specifier: 9.39.5
         version: 9.39.5
-      '@supabase/supabase-js':
-        specifier: 2.112.2
-        version: 2.112.2
       '@types/node':
         specifier: 26.1.2
         version: 26.1.2
@@ -104,9 +101,6 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
     devDependencies:
-      tsx:
-        specifier: 4.23.9
-        version: 4.23.9
       undici-types:
         specifier: 8.3.0
         version: 8.3.0
@@ -256,9 +250,6 @@ importers:
       '@vibeshub/observability':
         specifier: workspace:*
         version: link:../../packages/observability
-      fastify:
-        specifier: 5.12.5
-        version: 5.12.5
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
@@ -281,15 +272,11 @@ importers:
 
   packages/auth: {}
 
-  packages/config: {}
-
   packages/contracts:
     dependencies:
       zod:
         specifier: 4.4.3
         version: 4.4.3
-
-  packages/database: {}
 
   packages/design-tokens: {}
 

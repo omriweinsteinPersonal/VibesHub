@@ -8,7 +8,7 @@ import { getSupabaseClient } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-export const nativeAuthRedirectUrl = makeRedirectUri({
+const nativeAuthRedirectUrl = makeRedirectUri({
   path: 'auth/callback',
   scheme: 'swavii',
 });

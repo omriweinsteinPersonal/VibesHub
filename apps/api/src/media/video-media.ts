@@ -2,7 +2,6 @@ import type { StoryVideoContentType } from '@vibeshub/contracts';
 
 export const STORY_VIDEO_BUCKET = 'story-videos' as const;
 export const STORY_VIDEO_UPLOAD_BUCKET = 'story-video-uploads' as const;
-export const STORY_VIDEO_MAX_BYTES = 200 * 1_024 * 1_024;
 
 const extensionByContentType: Record<StoryVideoContentType, string> = {
   'video/mp4': 'mp4',
