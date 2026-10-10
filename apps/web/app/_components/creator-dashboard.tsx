@@ -515,6 +515,7 @@ export function CreatorDashboard() {
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedWebsiteUrl = brand.websiteUrl.trim();
+    const normalizedLogoUrl = brand.logoUrl.trim();
     const brandWebsiteChanged =
       !editingBrand || normalizedWebsiteUrl !== editingBrand.websiteUrl.trim();
     const brandLogoChanged =
@@ -525,6 +526,10 @@ export function CreatorDashboard() {
       setError(
         'Enter a full HTTPS brand website URL, for example https://www.example.com.',
       );
+      return;
+    }
+    if (normalizedLogoUrl && !normalizedProductUrl(normalizedLogoUrl)) {
+      setError('Enter a valid HTTPS brand image URL, or clear the optional image field.');
       return;
     }
     if (
@@ -991,6 +996,11 @@ export function CreatorDashboard() {
     setFetching(false);
     setNotice('');
     const isLinkCard = product.contentKind === 'link';
+    const trimmedProductUrl = product.productUrl.trim();
+    if (trimmedProductUrl && !normalizedProductUrl(trimmedProductUrl)) {
+      setError('Enter a valid HTTPS item link, or clear the optional link field.');
+      return;
+    }
     const price = product.priceIls.trim() ? Number(product.priceIls) : 0;
     if (!Number.isFinite(price) || price < 0) {
       setError('Enter a valid price.');
@@ -1072,7 +1082,7 @@ export function CreatorDashboard() {
             ),
         priceAmountMinor: isLinkCard ? 0 : Math.round(price * 100),
         productName: product.productName,
-        productUrl: recommendationProductUrl(product.productUrl),
+        productUrl: recommendationProductUrl(trimmedProductUrl),
         reviewHe: isLinkCard
           ? product.linkHasBackground
             ? 'Link card / backdrop'
@@ -1122,6 +1132,12 @@ export function CreatorDashboard() {
       const collectionsChanged =
         [...product.collectionIds].sort().join(':') !==
         [...currentCollectionIds].sort().join(':');
+      const currentCategoryIds = editingProduct?.categoryIds ?? [];
+      const categoriesChanged =
+        [...product.categoryIds].sort().join(':') !== [...currentCategoryIds].sort().join(':');
+      const nextSelectedSections = categoriesChanged
+        ? [...new Set([...selectedSections, ...product.categoryIds])]
+        : selectedSections;
       const nextSections = collectionsChanged
         ? curatedSections.map((section) => {
             if (section.kind !== 'collection') return section;
@@ -1146,8 +1162,8 @@ export function CreatorDashboard() {
             { kind: 'recommendation' as const, id: savedProduct.id },
           ];
       if (
-        (collectionsChanged || !editingProduct) &&
-        !(await saveSections(selectedSections, nextSections, nextOrder))
+        (collectionsChanged || categoriesChanged || !editingProduct) &&
+        !(await saveSections(nextSelectedSections, nextSections, nextOrder))
       ) {
         setEditingProduct(savedProduct);
         return;
@@ -2177,7 +2193,7 @@ export function CreatorDashboard() {
                           <input
                             inputMode="url"
                             placeholder="https://brand.com/logo.png"
-                            type="url"
+                          type="text"
                             value={brand.logoUrl}
                             onChange={(event) =>
                               setBrand({
@@ -3459,7 +3475,8 @@ function ProductForm({
             <input
               id="creator-product-link"
               required={isLinkCard}
-              type="url"
+              inputMode="url"
+              type="text"
               value={editor.productUrl}
               onChange={(event) => update('productUrl', event.target.value)}
               placeholder="https://www.terminalx.com/..."
