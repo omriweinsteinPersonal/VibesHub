@@ -1361,46 +1361,44 @@ function DiscountBlock({
     `https://www.google.com/s2/favicons?domain=${encodeURIComponent(code.merchantHostname)}&sz=64`;
   return (
     <section className="referenceStorefrontCodes referenceDiscountLayer">
-      <article>
-        <a
-          aria-label={`Visit ${brandName}${code.code ? ` with discount code ${code.code}` : ''}`}
-          className="referenceDiscountHitArea"
-          href={merchantUrl}
-          rel="noopener noreferrer"
-          target="_blank"
-        />
-        <div className="referenceDiscountIdentity">
-          <Image
-            alt=""
-            className="referenceDiscountLogo"
-            height={36}
-            src={logoUrl}
-            unoptimized
-            width={36}
-          />
-          <div>
-            <p>{brandName}</p>
-            <h3>{offerValue(code) || 'Brand offer'}</h3>
+      <a
+        aria-label={`Visit ${brandName}${code.code ? ` with discount code ${code.code}` : ''}`}
+        className="referenceStandaloneRecommendation referenceDiscountRecommendation"
+        href={merchantUrl}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <div className="referenceStandaloneRecommendationContent" dir="auto">
+          <div className="referenceStandaloneRecommendationTopline">
+            <p className="referenceStandaloneRecommendationBrand">{brandName}</p>
+            <span>{offerValue(code) || null}</span>
+          </div>
+          <div className="referenceStandaloneRecommendationOffer">
+            <span
+              className={`referenceDiscountExpiry${code.expiresAt ? '' : ' is-empty'}`}
+            >
+              <span>Discount expires</span>
+              <strong>
+                {code.expiresAt ? formatOfferDate(code.expiresAt) : '\u00a0'}
+              </strong>
+            </span>
+            {code.code ? (
+              <strong>{code.code}</strong>
+            ) : (
+              <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+            )}
           </div>
         </div>
-        {code.code ? (
-          <p className="referenceDiscountCode">
-            <span>Code</span>
-            <strong>{code.code}</strong>
-          </p>
-        ) : (
-          <p className="referenceDiscountCode">
-            <span>Offer</span>
-            <strong>
-              {code.discountPercent
-                ? `${code.discountPercent}%`
-                : code.discountAmountMinor
-                  ? `₪${code.discountAmountMinor / 100}`
-                  : 'Active'}
-            </strong>
-          </p>
-        )}
-      </article>
+        <div className="referenceStandaloneRecommendationImage">
+          <Image
+            alt={`${brandName} logo`}
+            fill
+            sizes="(max-width: 620px) 42vw, 220px"
+            src={logoUrl}
+            unoptimized
+          />
+        </div>
+      </a>
     </section>
   );
 }
