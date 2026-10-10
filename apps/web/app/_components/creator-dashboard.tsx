@@ -997,8 +997,13 @@ export function CreatorDashboard() {
     setNotice('');
     const isLinkCard = product.contentKind === 'link';
     const trimmedProductUrl = product.productUrl.trim();
+    const trimmedImageUrl = product.imageUrl.trim();
     if (trimmedProductUrl && !normalizedProductUrl(trimmedProductUrl)) {
       setError('Enter a valid HTTPS item link, or clear the optional link field.');
+      return;
+    }
+    if (trimmedImageUrl && !normalizedProductUrl(trimmedImageUrl)) {
+      setError('Enter a valid HTTPS image link, or upload an image instead.');
       return;
     }
     const price = product.priceIls.trim() ? Number(product.priceIls) : 0;
@@ -3658,7 +3663,7 @@ function ProductForm({
                 </label>
                 <input
                   aria-label="Primary image link"
-                  type="url"
+                  type="text"
                   value={editor.imageAssetId ? '' : editor.imageUrl}
                   onChange={(event) =>
                     onChange({
@@ -3915,7 +3920,7 @@ function ProductForm({
               <input
                 inputMode="url"
                 placeholder="https://www.instagram.com/stories/..."
-                type="url"
+                type="text"
                 value={editor.instagramStoryUrl}
                 onChange={(event) =>
                   update('instagramStoryUrl', event.target.value.trim())
@@ -3969,7 +3974,7 @@ function ProductForm({
               ) : null}
               <span className="creatorInlineField">
                 <input
-                  type="url"
+                  type="text"
                   value={editor.storyLink}
                   onChange={(event) => update('storyLink', event.target.value)}
                   placeholder="…or paste a video link (https://)"
