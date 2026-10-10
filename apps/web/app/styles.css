@@ -11736,6 +11736,21 @@ dt {
   padding: 12px 12px 10px;
 }
 
+/* Multi-item brand recommendations use the same framed surface as a
+   single-product brand recommendation, while keeping the existing header and
+   horizontal product/collection shelf inside the frame. */
+.referenceBrandBlock[data-has-recommendations='true'] {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  margin: 8px 0 12px;
+  padding: 14px 14px 12px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] > header {
+  margin: 0 2px;
+}
+
 .referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 76px;

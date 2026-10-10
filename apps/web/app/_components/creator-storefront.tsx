@@ -1301,6 +1301,7 @@ function BrandBlock({
   return (
     <section
       className="referenceBrandBlock"
+      data-has-recommendations={collections.length || standaloneItems.length ? 'true' : undefined}
       data-brand-only={isBrandOnly ? 'true' : undefined}
       data-has-logo={isBrandOnly && brandLogoUrl ? 'true' : undefined}
     >
