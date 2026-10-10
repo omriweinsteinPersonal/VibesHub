@@ -1211,6 +1211,9 @@ function BrandBlock({
     );
   }
   const isBrandOnly = collections.length === 0 && standaloneItems.length === 0;
+  if (isBrandOnly && offer) {
+    return <BrandOnlyRecommendationCard brand={brand} offer={offer} />;
+  }
   const brandLogoUrl = brand.logoUrl;
   return (
     <section
@@ -1319,6 +1322,63 @@ function BrandBlock({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function BrandOnlyRecommendationCard({
+  brand,
+  offer,
+}: {
+  brand: CreatorStorefront['brands'][number];
+  offer: PublicDiscountCode;
+}) {
+  const logoUrl =
+    brand.logoUrl ||
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
+      new URL(brand.websiteUrl).hostname,
+    )}&sz=128`;
+  return (
+    <a
+      aria-label={`Visit ${brand.name}${offer.code ? ` with discount code ${offer.code}` : ''}`}
+      className="referenceStandaloneRecommendation referenceBrandRecommendation"
+      href={brand.websiteUrl}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      <div className="referenceStandaloneRecommendationContent" dir="auto">
+        <div className="referenceStandaloneRecommendationTopline">
+          <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+          <span>{offerValue(offer) || null}</span>
+        </div>
+        <div className="referenceStandaloneRecommendationOffer">
+          <span
+            className={`referenceDiscountExpiry${offer.expiresAt ? '' : ' is-empty'}`}
+          >
+            <span>Discount expires</span>
+            <strong>
+              {offer.expiresAt ? formatOfferDate(offer.expiresAt) : '\u00a0'}
+            </strong>
+          </span>
+          {offer.code ? (
+            <strong>{offer.code}</strong>
+          ) : (
+            <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+          )}
+        </div>
+        {offer.details ? (
+          <h3 dir={offer.details.direction}>{offer.details.value}</h3>
+        ) : null}
+      </div>
+      <div className="referenceStandaloneRecommendationImage">
+        <Image
+          alt={`${brand.name} logo`}
+          fill
+          sizes="(max-width: 620px) 42vw, 220px"
+          src={publicAssetUrl(logoUrl)}
+          unoptimized
+        />
+      </div>
+    </a>
   );
 }
 
