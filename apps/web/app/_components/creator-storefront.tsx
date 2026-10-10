@@ -11,6 +11,7 @@ import {
 import type {
   CreatorStorefront,
   CreatorStorefrontConfiguration,
+  CreatorStorefrontConfigurationInput,
   CreatorDiscountCode,
   CreatorRecommendation,
   CreatorProfileSocialLink,
@@ -34,11 +35,12 @@ import { StorefrontLayout, StorefrontRegion, StorefrontSlot } from './storefront
 import { apiCollectionRequest, apiRequest } from '../../lib/api';
 import { connectorLabel } from '../../lib/creator-connectors';
 import { publicAssetUrl } from '../../lib/public-asset-url';
-import type { StorefrontLayer } from '../../lib/storefront-order';
 import { textOnAccent } from '../../lib/storefront-theme';
 import { StorefrontViewTracker, TrackedInstagramLink } from './analytics-events';
 import { CreatorConnectorIcon } from './creator-connector-icon';
 import { RecommendationCardView } from './recommendation-card';
+
+type StorefrontLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 
 function safeProfileImageUrl(value: string | undefined) {
   if (!value) return '';

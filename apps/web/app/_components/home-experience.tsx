@@ -14,7 +14,6 @@ import {
   Link as LinkIcon,
   Play,
   Video,
-  X,
 } from 'lucide-react';
 import styles from '../home.module.css';
 
@@ -597,88 +596,5 @@ export function HomeStudio() {
         </div>
       </div>
     </div>
-  );
-}
-
-const collections = [
-  {
-    title: 'Everyday rotation',
-    subtitle: 'The pieces you reach for, on repeat.',
-    image: assets.shoes,
-    products: fashionProducts,
-  },
-  {
-    title: 'For the kitchen',
-    subtitle: 'Good mornings start with the little things.',
-    image: assets.coffee,
-    products: kitchenProducts,
-  },
-  {
-    title: 'Through the lens',
-    subtitle: 'Objects for a life spent looking closer.',
-    image: assets.camera,
-    products: danielProducts,
-  },
-] as const;
-
-export function ExampleCollections() {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [selected, setSelected] = useState(0);
-  const collection = collections[selected] ?? collections[0];
-  return (
-    <>
-      <div className={styles.collectionExamples}>
-        {collections.map((item, index) => (
-          <button
-            type="button"
-            key={item.title}
-            onClick={() => {
-              setSelected(index);
-              dialog.current?.showModal();
-            }}
-          >
-            <div>
-              <Image
-                src={item.image}
-                alt={item.subtitle}
-                fill
-                sizes="(max-width: 600px) 90vw, 33vw"
-              />
-            </div>
-            <span>
-              {item.title}
-              <ChevronRight size={19} />
-            </span>
-          </button>
-        ))}
-      </div>
-      <dialog
-        ref={dialog}
-        className={styles.collectionDialog}
-        aria-label={`${collection.title}, example collection`}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) dialog.current?.close();
-        }}
-      >
-        <div className={styles.dialogContent}>
-          <button
-            className={styles.close}
-            type="button"
-            onClick={() => dialog.current?.close()}
-            aria-label="Close collection"
-          >
-            <X size={20} />
-          </button>
-          <p className={styles.eyebrow}>Example collection</p>
-          <h2>{collection.title}</h2>
-          <p>{collection.subtitle}</p>
-          <ProductGrid products={collection.products} />
-          <Link className={styles.button} href="/auth?mode=signup">
-            Make a collection of your own
-          </Link>
-          <small>Demo content, not a shop. Products are shown for inspiration.</small>
-        </div>
-      </dialog>
-    </>
   );
 }

@@ -1,4 +1,4 @@
-export const creatorHandlePattern = /^(?=.{2,100}$)(?!.*[/?#%\\\p{Cc}]).+$/u;
+const creatorHandlePattern = /^(?=.{2,100}$)(?!.*[/?#%\\\p{Cc}]).+$/u;
 
 const hebrewTransliteration: Record<string, string> = {
   א: 'a',

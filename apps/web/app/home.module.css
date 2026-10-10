@@ -854,42 +854,6 @@
 .examples {
   padding-bottom: 65px;
 }
-.collectionExamples {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  margin-top: 26px;
-}
-.collectionExamples > button {
-  padding: 0;
-  text-align: left;
-  border: 1px solid #e5e5df;
-  border-radius: 5px;
-  overflow: hidden;
-  background: #fff;
-  color: var(--ink);
-}
-.collectionExamples > button > div {
-  height: 190px;
-  position: relative;
-  overflow: hidden;
-  background: var(--stone);
-}
-.collectionExamples img {
-  object-fit: cover;
-  transition: transform 0.35s;
-}
-.collectionExamples > button:hover img {
-  transform: scale(1.035);
-}
-.collectionExamples > button > span {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  font-family: var(--font-vh-display), serif;
-  font-size: 28px;
-}
 .pricingSection {
   background: #eeece6;
   padding-block: 26px;
@@ -1000,60 +964,6 @@
 }
 .skip:focus {
   top: 12px;
-}
-.collectionDialog {
-  width: min(520px, calc(100% - 32px));
-  max-height: 85dvh;
-  margin: auto;
-  padding: 0;
-  border: 1px solid var(--stone);
-  border-radius: 10px;
-  color: var(--ink);
-  background: var(--paper);
-}
-.collectionDialog::backdrop {
-  background: #17211c99;
-}
-.dialogContent {
-  position: relative;
-  padding: 32px;
-}
-.dialogContent h2 {
-  font-size: 40px;
-  padding-right: 25px;
-}
-.dialogContent > p:not(.eyebrow) {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.dialogContent > .productGrid {
-  margin-block: 24px;
-}
-.dialogContent > .productGrid span {
-  font-size: 13px;
-}
-.dialogContent > .button {
-  width: 100%;
-  white-space: normal;
-}
-.dialogContent > small {
-  display: block;
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 11px;
-}
-.close {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
 }
 @keyframes progress {
   from {
@@ -1284,16 +1194,6 @@
   }
   .analyticsSection {
     padding-block: 55px;
-  }
-  .collectionExamples {
-    gap: 12px;
-  }
-  .collectionExamples > button > div {
-    height: 150px;
-  }
-  .collectionExamples > button > span {
-    font-size: 23px;
-    padding: 12px;
   }
   .footer {
     flex-wrap: wrap;
@@ -1615,18 +1515,6 @@
   .examples {
     padding-bottom: 36px;
   }
-  .collectionExamples {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-top: 22px;
-  }
-  .collectionExamples > button > div {
-    height: 185px;
-  }
-  .collectionExamples > button > span {
-    font-size: 28px;
-    padding: 13px 16px;
-  }
   .pricingSection {
     padding-block: 34px;
   }
@@ -1674,9 +1562,6 @@
   .footer small {
     width: 100%;
     font-size: 10px;
-  }
-  .dialogContent {
-    padding: 26px 20px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
