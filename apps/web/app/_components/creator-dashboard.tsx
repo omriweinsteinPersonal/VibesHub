@@ -1006,6 +1006,20 @@ export function CreatorDashboard() {
       setError('Enter a valid HTTPS image link, or upload an image instead.');
       return;
     }
+    const invalidAdditionalImage = product.additionalImages.find(
+      (image) => !image.imageAssetId && !normalizedProductUrl(image.url),
+    );
+    if (invalidAdditionalImage) {
+      setError('One of the additional image links is invalid. Remove it or replace it.');
+      return;
+    }
+    const invalidStoryClip = product.storyClips.find(
+      (clip) => !clip.mediaAssetId && !normalizedProductUrl(clip.url),
+    );
+    if (invalidStoryClip) {
+      setError('One of the story video links is invalid. Remove it or replace it.');
+      return;
+    }
     const price = product.priceIls.trim() ? Number(product.priceIls) : 0;
     if (!Number.isFinite(price) || price < 0) {
       setError('Enter a valid price.');
