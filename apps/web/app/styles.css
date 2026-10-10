@@ -2693,9 +2693,11 @@ svg.lucide {
 }
 .referenceCollectionFrame .storeProductImage {
   aspect-ratio: 4 / 3;
+  background: transparent;
 }
 .referenceCollectionFrame .storeProductImage img {
-  object-fit: contain;
+  object-fit: cover;
+  padding: 0;
 }
 @media (max-width: 900px) {
   .referenceCollectionFrame {
@@ -7413,6 +7415,14 @@ dt {
   padding: 16px 20px;
   text-align: right;
 }
+.referenceStandaloneRecommendationContent[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+.referenceStandaloneRecommendationContent[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
 .referenceStandaloneRecommendationBrand {
   color: #8f4e2f;
   font-size: 0.68rem;
@@ -7493,6 +7503,14 @@ dt {
   display: grid;
   gap: 8px;
   padding: 18px 22px;
+  text-align: right;
+}
+.referenceBrandSingleProductCopy[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+.referenceBrandSingleProductCopy[dir='rtl'] {
+  direction: rtl;
   text-align: right;
 }
 .referenceBrandSingleProductMeta,
@@ -7577,7 +7595,8 @@ dt {
   position: relative;
 }
 .referenceBrandSingleProductImage img {
-  object-fit: contain;
+  object-fit: cover;
+  padding: 0;
   transition: transform 180ms ease;
 }
 .referenceBrandSingleProduct:hover .referenceBrandSingleProductImage img {

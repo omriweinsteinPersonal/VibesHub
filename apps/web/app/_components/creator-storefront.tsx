@@ -985,7 +985,10 @@ function StandaloneRecommendationCard({
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div className="referenceStandaloneRecommendationContent" dir="auto">
+      <div
+        className="referenceStandaloneRecommendationContent"
+        dir={textDirectionFor(item.productName)}
+      >
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           {value ? <span>{value}</span> : null}
@@ -1126,7 +1129,10 @@ function SingleBrandProductCard({
       className="referenceBrandSingleProduct"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div className="referenceBrandSingleProductCopy" dir="auto">
+      <div
+        className="referenceBrandSingleProductCopy"
+        dir={textDirectionFor(item.productName)}
+      >
         <div className="referenceBrandSingleProductMeta">
           <span>{brand.name}</span>
           {offerValue(offer) ? <strong>{offerValue(offer)}</strong> : null}
