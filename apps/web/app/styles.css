@@ -2743,9 +2743,9 @@ svg.lucide {
   border: 1px solid #dfd6cb;
   border-radius: 18px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 82px;
+  min-height: 92px;
   overflow: hidden;
   padding: 12px clamp(16px, 2vw, 28px);
   position: relative;
@@ -2819,14 +2819,14 @@ svg.lucide {
   min-width: 0;
 }
 .referenceDiscountLogo {
-  background: #fff;
-  border: 1px solid #e8ded5;
-  border-radius: 10px;
-  flex: 0 0 48px;
-  height: 48px;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  flex: 0 0 64px;
+  height: 64px;
   object-fit: contain;
-  padding: 4px;
-  width: 48px;
+  padding: 0;
+  width: 64px;
 }
 .referenceDiscountIdentity > div {
   min-width: 0;
@@ -3113,8 +3113,13 @@ svg.lucide {
 @media (max-width: 560px) {
   .referenceStorefrontCodes.referenceDiscountLayer article {
     border-radius: 16px;
-    min-height: 80px;
+    min-height: 88px;
     padding: 12px 14px;
+  }
+  .referenceDiscountLogo {
+    flex-basis: 60px;
+    height: 60px;
+    width: 60px;
   }
   .referenceDiscountIdentity h3 {
     overflow: hidden;
