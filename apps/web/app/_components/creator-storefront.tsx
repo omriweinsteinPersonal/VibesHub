@@ -297,9 +297,7 @@ export function CreatorStorefrontView({
     () =>
       new Set(
         visibleCuratedSections.flatMap((section) =>
-          section.contentItems
-            .filter(({ kind }) => kind === 'media')
-            .map(({ id }) => id),
+          section.contentItems.filter(({ kind }) => kind === 'media').map(({ id }) => id),
         ),
       ),
     [visibleCuratedSections],
@@ -1318,7 +1316,9 @@ function BrandBlock({
   return (
     <section
       className="referenceBrandBlock"
-      data-has-recommendations={collections.length || standaloneItems.length ? 'true' : undefined}
+      data-has-recommendations={
+        collections.length || standaloneItems.length ? 'true' : undefined
+      }
       data-brand-only={isBrandOnly ? 'true' : undefined}
       data-has-logo={isBrandOnly && brandLogoUrl ? 'true' : undefined}
     >
@@ -1624,7 +1624,7 @@ function StorefrontRow({
           </div>
         ) : null}
       </header>
-        {recommendations.length || featuredMedia.length ? (
+      {recommendations.length || featuredMedia.length ? (
         <div className="referenceStorefrontScroller" ref={row}>
           {recommendations.map((recommendation) => (
             <RecommendationCardView
@@ -1634,9 +1634,9 @@ function StorefrontRow({
               showPrice={false}
             />
           ))}
-            {featuredMedia.map((media) => (
-              <FeaturedMediaBlock key={media.id} media={media} />
-            ))}
+          {featuredMedia.map((media) => (
+            <FeaturedMediaBlock key={media.id} media={media} />
+          ))}
         </div>
       ) : null}
       {pages.length ? (
@@ -1730,11 +1730,7 @@ export function groupRecommendations(
               id,
               kind: 'recommendation' as const,
             }));
-        const items = sectionContentRecommendations(
-          section,
-          storefront,
-          recommendations,
-        );
+        const items = sectionContentRecommendations(section, storefront, recommendations);
         const media = contentItems
           .filter(({ kind }) => kind === 'media')
           .flatMap(

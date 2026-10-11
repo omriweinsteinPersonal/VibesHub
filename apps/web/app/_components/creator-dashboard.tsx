@@ -61,13 +61,7 @@ import { DelayedLoading } from './delayed-loading';
 import styles from './creator-dashboard.module.css';
 
 type Composer =
-  | null
-  | 'choose'
-  | 'product'
-  | 'discount'
-  | 'brand'
-  | 'collection'
-  | 'section';
+  null | 'choose' | 'product' | 'discount' | 'brand' | 'collection' | 'section';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
@@ -409,10 +403,12 @@ export function CreatorDashboard() {
         setCuratedSections(
           config.curatedSections.map((section) => ({
             ...section,
-            contentItems: section.contentItems ?? section.recommendationIds.map((id) => ({
-              id,
-              kind: 'recommendation' as const,
-            })),
+            contentItems:
+              section.contentItems ??
+              section.recommendationIds.map((id) => ({
+                id,
+                kind: 'recommendation' as const,
+              })),
             recommendationIds: section.recommendationIds.filter((id) =>
               activeIds.has(id),
             ),
@@ -1155,7 +1151,8 @@ export function CreatorDashboard() {
         [...currentCollectionIds].sort().join(':');
       const currentCategoryIds = editingProduct?.categoryIds ?? [];
       const categoriesChanged =
-        [...product.categoryIds].sort().join(':') !== [...currentCategoryIds].sort().join(':');
+        [...product.categoryIds].sort().join(':') !==
+        [...currentCategoryIds].sort().join(':');
       const nextSelectedSections = categoriesChanged
         ? [...new Set([...selectedSections, ...product.categoryIds])]
         : selectedSections;
@@ -2070,377 +2067,372 @@ export function CreatorDashboard() {
               </div>
 
               <div className="creatorComposer" id="creator-composer">
-                  {composer === null || composer === 'choose' ? (
-                    <div className="creatorComposerBody">
-                      <div className="creatorComposerIntro">
-                        <h3>Add recommendation</h3>
-                        <p>Choose what you want to share with your audience.</p>
-                      </div>
-                      <div className="creatorTypeGrid">
-                        <button onClick={() => setComposer('brand')} type="button">
-                          <span aria-hidden="true">
-                            <Sparkles size={16} />
-                          </span>
-                          <strong>Brand</strong>
-                          <small>Create a brand card. A discount code is optional.</small>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setProduct(emptyProduct);
-                            setComposer('product');
+                {composer === null || composer === 'choose' ? (
+                  <div className="creatorComposerBody">
+                    <div className="creatorComposerIntro">
+                      <h3>Add recommendation</h3>
+                      <p>Choose what you want to share with your audience.</p>
+                    </div>
+                    <div className="creatorTypeGrid">
+                      <button onClick={() => setComposer('brand')} type="button">
+                        <span aria-hidden="true">
+                          <Sparkles size={16} />
+                        </span>
+                        <strong>Brand</strong>
+                        <small>Create a brand card. A discount code is optional.</small>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProduct(emptyProduct);
+                          setComposer('product');
+                        }}
+                        type="button"
+                      >
+                        <span aria-hidden="true">
+                          <Tag size={16} />
+                        </span>
+                        <strong>Item</strong>
+                        <small>
+                          Recommend one specific product with its price, details and story
+                          clips.
+                        </small>
+                      </button>
+                      <button onClick={() => setComposer('collection')} type="button">
+                        <span aria-hidden="true">
+                          <LayoutGrid size={16} />
+                        </span>
+                        <strong>Collection</strong>
+                        <small>
+                          Group your favorite products in one named storefront row.
+                        </small>
+                      </button>
+                      <button onClick={() => setComposer('section')} type="button">
+                        <span aria-hidden="true">
+                          <LayoutGrid size={16} />
+                        </span>
+                        <strong>Section</strong>
+                        <small>
+                          Create a home page section and fill it with existing content.
+                        </small>
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {composer === 'product' ? (
+                  <ProductForm
+                    brands={brands}
+                    discounts={discounts}
+                    categories={categories}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    recommendations={activeRecommendations}
+                    editor={product}
+                    editing={Boolean(editingProduct)}
+                    fetching={fetching}
+                    fetchWarnings={fetchWarnings}
+                    onAddStoryLink={addStoryLink}
+                    onCategoryCreated={(category) =>
+                      setCategories((current) => [...current, category])
+                    }
+                    onChange={setProduct}
+                    onChangeType={() => {
+                      setProduct(emptyProduct);
+                      setComposer('choose');
+                    }}
+                    onClose={closeComposer}
+                    onFetch={fetchProductDetails}
+                    onImages={selectProductImages}
+                    onValidationError={() => setNotice('')}
+                    onSave={saveProduct}
+                    onStory={selectStoryClip}
+                    videoStage={videoStage}
+                    videoError={videoError}
+                    saving={saving || uploading}
+                  />
+                ) : null}
+                {composer === 'brand' ? (
+                  <>
+                    <ComposerHeader
+                      title={editingBrand ? 'Edit brand' : 'Add brand'}
+                      onClose={closeComposer}
+                    >
+                      Add the brand once. Its discount details are optional and can be
+                      edited later.
+                    </ComposerHeader>
+                    <form
+                      className="creatorComposerBody creatorFormGrid"
+                      onSubmit={(event) => void saveBrand(event)}
+                    >
+                      <label>
+                        Brand website
+                        <input
+                          required
+                          inputMode="url"
+                          type="text"
+                          placeholder="https://www.adidas.com"
+                          value={brand.websiteUrl}
+                          onBlur={() => {
+                            setBrand((current) => ({
+                              ...current,
+                              name: current.name || brandNameFromUrl(current.websiteUrl),
+                            }));
                           }}
+                          onChange={(event) =>
+                            setBrand({ ...brand, websiteUrl: event.target.value })
+                          }
+                        />
+                        <button
+                          className="creatorInlineAction"
+                          disabled={fetching || saving || uploading}
+                          onClick={() => void fetchBrandDetails()}
                           type="button"
                         >
-                          <span aria-hidden="true">
-                            <Tag size={16} />
-                          </span>
-                          <strong>Item</strong>
-                          <small>
-                            Recommend one specific product with its price, details and
-                            story clips.
-                          </small>
+                          {fetching ? 'Fetching…' : 'Fetch name and image'}
                         </button>
-                        <button onClick={() => setComposer('collection')} type="button">
-                          <span aria-hidden="true">
-                            <LayoutGrid size={16} />
-                          </span>
-                          <strong>Collection</strong>
-                          <small>
-                            Group your favorite products in one named storefront row.
-                          </small>
-                        </button>
-                        <button onClick={() => setComposer('section')} type="button">
-                          <span aria-hidden="true">
-                            <LayoutGrid size={16} />
-                          </span>
-                          <strong>Section</strong>
-                          <small>
-                            Create a home page section and fill it with existing content.
-                          </small>
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                  {composer === 'product' ? (
-                    <ProductForm
-                      brands={brands}
-                      discounts={discounts}
-                      categories={categories}
-                      collections={curatedSections.filter(
-                        ({ kind }) => kind === 'collection',
-                      )}
-                      recommendations={activeRecommendations}
-                      editor={product}
-                      editing={Boolean(editingProduct)}
-                      fetching={fetching}
-                      fetchWarnings={fetchWarnings}
-                      onAddStoryLink={addStoryLink}
-                      onCategoryCreated={(category) =>
-                        setCategories((current) => [...current, category])
-                      }
-                      onChange={setProduct}
-                      onChangeType={() => {
-                        setProduct(emptyProduct);
-                        setComposer('choose');
-                      }}
-                      onClose={closeComposer}
-                      onFetch={fetchProductDetails}
-                      onImages={selectProductImages}
-                      onValidationError={() => setNotice('')}
-                      onSave={saveProduct}
-                      onStory={selectStoryClip}
-                      videoStage={videoStage}
-                      videoError={videoError}
-                      saving={saving || uploading}
-                    />
-                  ) : null}
-                  {composer === 'brand' ? (
-                    <>
-                      <ComposerHeader
-                        title={editingBrand ? 'Edit brand' : 'Add brand'}
-                        onClose={closeComposer}
-                      >
-                        Add the brand once. Its discount details are optional and can be
-                        edited later.
-                      </ComposerHeader>
-                      <form
-                        className="creatorComposerBody creatorFormGrid"
-                        onSubmit={(event) => void saveBrand(event)}
-                      >
-                        <label>
-                          Brand website
-                          <input
-                            required
-                            inputMode="url"
-                            type="text"
-                            placeholder="https://www.adidas.com"
-                            value={brand.websiteUrl}
-                            onBlur={() => {
-                              setBrand((current) => ({
-                                ...current,
-                                name:
-                                  current.name || brandNameFromUrl(current.websiteUrl),
-                              }));
-                            }}
-                            onChange={(event) =>
-                              setBrand({ ...brand, websiteUrl: event.target.value })
-                            }
-                          />
-                          <button
-                            className="creatorInlineAction"
-                            disabled={fetching || saving || uploading}
-                            onClick={() => void fetchBrandDetails()}
-                            type="button"
-                          >
-                            {fetching ? 'Fetching…' : 'Fetch name and image'}
-                          </button>
-                        </label>
-                        <label>
-                          Brand name
-                          <input
-                            required
-                            maxLength={120}
-                            value={brand.name}
-                            onChange={(event) =>
-                              setBrand({ ...brand, name: event.target.value })
-                            }
-                          />
-                          <small>
-                            Filled automatically from the website and remains editable.
-                          </small>
-                        </label>
-                        <label className="creatorFullField">
-                          Brand image <span className="fieldOptional">Optional</span>
-                          <input
-                            accept={recommendationImageAccept}
-                            disabled={saving || uploading}
-                            type="file"
-                            onChange={(event) => void selectBrandLogo(event)}
-                          />
-                          <input
-                            inputMode="url"
-                            placeholder="https://brand.com/logo.png"
-                          type="text"
-                            value={brand.logoUrl}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                logoAssetId: '',
-                                logoUrl: event.target.value,
-                              })
-                            }
-                          />
-                          {brand.logoUrl ? (
-                            <div className="creatorProductPhotoGrid">
-                              <span>
-                                <Image
-                                  alt="Brand image preview"
-                                  fill
-                                  sizes="96px"
-                                  src={brand.logoUrl}
-                                  unoptimized
-                                />
-                                <small>Default</small>
-                                <button
-                                  aria-label="Remove brand image"
-                                  onClick={() =>
-                                    setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
-                                  }
-                                  type="button"
-                                >
-                                  <X aria-hidden="true" size={12} />
-                                </button>
-                              </span>
-                            </div>
-                          ) : null}
-                          <small>
-                            We suggest the brand&apos;s favicon from its website. Replace
-                            it with an upload or image URL if needed.
-                          </small>
-                        </label>
-                        <label>
-                          Code <span className="fieldOptional">Optional</span>
-                          <input
-                            maxLength={50}
-                            value={brand.code}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                code: event.target.value,
-                              })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Discount type <span className="fieldOptional">Optional</span>
-                          <select
-                            value={brand.discountType}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                discountType: event.target
-                                  .value as BrandEditor['discountType'],
-                                discountPercent: '',
-                                discountAmount: '',
-                              })
-                            }
-                          >
-                            <option value="percent">Percent off</option>
-                            <option value="amount">Fixed ₪ amount off</option>
-                          </select>
-                        </label>
-                        <label>
-                          {brand.discountType === 'amount'
-                            ? 'Amount off (₪)'
-                            : 'Percent off'}
-                          <input
-                            min="1"
-                            max={brand.discountType === 'amount' ? undefined : '100'}
-                            type="number"
-                            value={
-                              brand.discountType === 'amount'
-                                ? brand.discountAmount
-                                : brand.discountPercent
-                            }
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                [brand.discountType === 'amount'
-                                  ? 'discountAmount'
-                                  : 'discountPercent']: event.target.value,
-                              })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Expires <span className="fieldOptional">Optional</span>
-                          <input
-                            type="date"
-                            value={brand.expiresAt}
-                            onChange={(event) =>
-                              setBrand({ ...brand, expiresAt: event.target.value })
-                            }
-                          />
-                        </label>
-                        <label className="creatorFullField">
-                          Details <span className="fieldOptional">Optional</span>
-                          <textarea
-                            dir="auto"
-                            rows={3}
-                            value={brand.detailsHe}
-                            onChange={(event) =>
-                              setBrand({ ...brand, detailsHe: event.target.value })
-                            }
-                          />
-                        </label>
-                        <div className="creatorFullField">
-                          <button
-                            className="button primary"
-                            disabled={saving}
-                            type="submit"
-                          >
-                            {saving
-                              ? 'Saving…'
-                              : editingBrand
-                                ? 'Save brand'
-                                : 'Add brand'}
-                          </button>
-                        </div>
-                      </form>
-                    </>
-                  ) : null}
-                  {composer === 'discount' ? (
-                    <DiscountForm
-                      brands={brands}
-                      collections={curatedSections.filter(
-                        ({ kind }) => kind === 'collection',
-                      )}
-                      editor={discount}
-                      editing={Boolean(editingDiscount)}
-                      onChange={setDiscount}
-                      onClose={closeComposer}
-                      onSave={saveDiscount}
-                      recommendations={activeRecommendations}
-                      saving={saving}
-                    />
-                  ) : null}
-                  {composer === 'collection' ? (
-                    <>
-                      <ComposerHeader title="New collection" onClose={closeComposer}>
-                        Curate products into one storefront row.
-                      </ComposerHeader>
-                      <div className="creatorComposerBody">
-                        <CuratedSectionForm
-                          brands={brands}
-                          kind="collection"
-                          recommendations={activeRecommendations}
-                          onAddNewItem={async (section, brandName) => {
-                            const saved = await saveSections(
-                              selectedSections,
-                              [...curatedSections, section],
-                              [...contentOrder, { kind: 'collection', id: section.id }],
-                            );
-                            if (!saved) return false;
-                            setProduct({
-                              ...emptyProduct,
-                              brandName,
-                              collectionIds: [section.id],
-                              categoryId: '',
-                              categoryIds: [],
-                            });
-                            setComposer('product');
-                            return true;
-                          }}
-                          onCreateBrand={async (input) => {
-                            const created = await apiRequest<CreatorBrand>(
-                              '/creator/brands',
-                              {
-                                body: JSON.stringify(input),
-                                idempotent: true,
-                                method: 'POST',
-                              },
-                            );
-                            setBrands((current) => [
-                              ...current.filter(({ id }) => id !== created.id),
-                              created,
-                            ]);
-                            return created;
-                          }}
-                          onCancel={closeComposer}
-                          onSave={(section) =>
-                            saveSections(
-                              selectedSections,
-                              [...curatedSections, section],
-                              [...contentOrder, { kind: 'collection', id: section.id }],
-                            )
+                      </label>
+                      <label>
+                        Brand name
+                        <input
+                          required
+                          maxLength={120}
+                          value={brand.name}
+                          onChange={(event) =>
+                            setBrand({ ...brand, name: event.target.value })
                           }
-                          saving={saving}
                         />
+                        <small>
+                          Filled automatically from the website and remains editable.
+                        </small>
+                      </label>
+                      <label className="creatorFullField">
+                        Brand image <span className="fieldOptional">Optional</span>
+                        <input
+                          accept={recommendationImageAccept}
+                          disabled={saving || uploading}
+                          type="file"
+                          onChange={(event) => void selectBrandLogo(event)}
+                        />
+                        <input
+                          inputMode="url"
+                          placeholder="https://brand.com/logo.png"
+                          type="text"
+                          value={brand.logoUrl}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              logoAssetId: '',
+                              logoUrl: event.target.value,
+                            })
+                          }
+                        />
+                        {brand.logoUrl ? (
+                          <div className="creatorProductPhotoGrid">
+                            <span>
+                              <Image
+                                alt="Brand image preview"
+                                fill
+                                sizes="96px"
+                                src={brand.logoUrl}
+                                unoptimized
+                              />
+                              <small>Default</small>
+                              <button
+                                aria-label="Remove brand image"
+                                onClick={() =>
+                                  setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
+                                }
+                                type="button"
+                              >
+                                <X aria-hidden="true" size={12} />
+                              </button>
+                            </span>
+                          </div>
+                        ) : null}
+                        <small>
+                          We suggest the brand&apos;s favicon from its website. Replace it
+                          with an upload or image URL if needed.
+                        </small>
+                      </label>
+                      <label>
+                        Code <span className="fieldOptional">Optional</span>
+                        <input
+                          maxLength={50}
+                          value={brand.code}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              code: event.target.value,
+                            })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Discount type <span className="fieldOptional">Optional</span>
+                        <select
+                          value={brand.discountType}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              discountType: event.target
+                                .value as BrandEditor['discountType'],
+                              discountPercent: '',
+                              discountAmount: '',
+                            })
+                          }
+                        >
+                          <option value="percent">Percent off</option>
+                          <option value="amount">Fixed ₪ amount off</option>
+                        </select>
+                      </label>
+                      <label>
+                        {brand.discountType === 'amount'
+                          ? 'Amount off (₪)'
+                          : 'Percent off'}
+                        <input
+                          min="1"
+                          max={brand.discountType === 'amount' ? undefined : '100'}
+                          type="number"
+                          value={
+                            brand.discountType === 'amount'
+                              ? brand.discountAmount
+                              : brand.discountPercent
+                          }
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              [brand.discountType === 'amount'
+                                ? 'discountAmount'
+                                : 'discountPercent']: event.target.value,
+                            })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Expires <span className="fieldOptional">Optional</span>
+                        <input
+                          type="date"
+                          value={brand.expiresAt}
+                          onChange={(event) =>
+                            setBrand({ ...brand, expiresAt: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label className="creatorFullField">
+                        Details <span className="fieldOptional">Optional</span>
+                        <textarea
+                          dir="auto"
+                          rows={3}
+                          value={brand.detailsHe}
+                          onChange={(event) =>
+                            setBrand({ ...brand, detailsHe: event.target.value })
+                          }
+                        />
+                      </label>
+                      <div className="creatorFullField">
+                        <button
+                          className="button primary"
+                          disabled={saving}
+                          type="submit"
+                        >
+                          {saving ? 'Saving…' : editingBrand ? 'Save brand' : 'Add brand'}
+                        </button>
                       </div>
-                    </>
-                  ) : null}
-                  {composer === 'section' ? (
-                    <CuratedSectionForm
-                      brands={brands}
-                      collections={curatedSections.filter(
-                        ({ kind }) => kind === 'collection',
-                      )}
-                      featuredMedia={featuredMedia}
-                      kind="section"
-                      onCancel={closeComposer}
-                      onSave={async (section) => {
-                        const saved = await saveSections(
-                          selectedSections,
-                          [...curatedSections, section],
-                          [...contentOrder, { kind: 'section', id: section.id }],
-                        );
-                        if (saved) setEditingSectionId(section.id);
-                        return saved;
-                      }}
-                      recommendations={activeRecommendations}
-                      saving={saving}
-                    />
-                  ) : null}
+                    </form>
+                  </>
+                ) : null}
+                {composer === 'discount' ? (
+                  <DiscountForm
+                    brands={brands}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    editor={discount}
+                    editing={Boolean(editingDiscount)}
+                    onChange={setDiscount}
+                    onClose={closeComposer}
+                    onSave={saveDiscount}
+                    recommendations={activeRecommendations}
+                    saving={saving}
+                  />
+                ) : null}
+                {composer === 'collection' ? (
+                  <>
+                    <ComposerHeader title="New collection" onClose={closeComposer}>
+                      Curate products into one storefront row.
+                    </ComposerHeader>
+                    <div className="creatorComposerBody">
+                      <CuratedSectionForm
+                        brands={brands}
+                        kind="collection"
+                        recommendations={activeRecommendations}
+                        onAddNewItem={async (section, brandName) => {
+                          const saved = await saveSections(
+                            selectedSections,
+                            [...curatedSections, section],
+                            [...contentOrder, { kind: 'collection', id: section.id }],
+                          );
+                          if (!saved) return false;
+                          setProduct({
+                            ...emptyProduct,
+                            brandName,
+                            collectionIds: [section.id],
+                            categoryId: '',
+                            categoryIds: [],
+                          });
+                          setComposer('product');
+                          return true;
+                        }}
+                        onCreateBrand={async (input) => {
+                          const created = await apiRequest<CreatorBrand>(
+                            '/creator/brands',
+                            {
+                              body: JSON.stringify(input),
+                              idempotent: true,
+                              method: 'POST',
+                            },
+                          );
+                          setBrands((current) => [
+                            ...current.filter(({ id }) => id !== created.id),
+                            created,
+                          ]);
+                          return created;
+                        }}
+                        onCancel={closeComposer}
+                        onSave={(section) =>
+                          saveSections(
+                            selectedSections,
+                            [...curatedSections, section],
+                            [...contentOrder, { kind: 'collection', id: section.id }],
+                          )
+                        }
+                        saving={saving}
+                      />
+                    </div>
+                  </>
+                ) : null}
+                {composer === 'section' ? (
+                  <CuratedSectionForm
+                    brands={brands}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    featuredMedia={featuredMedia}
+                    kind="section"
+                    onCancel={closeComposer}
+                    onSave={async (section) => {
+                      const saved = await saveSections(
+                        selectedSections,
+                        [...curatedSections, section],
+                        [...contentOrder, { kind: 'section', id: section.id }],
+                      );
+                      if (saved) setEditingSectionId(section.id);
+                      return saved;
+                    }}
+                    recommendations={activeRecommendations}
+                    saving={saving}
+                  />
+                ) : null}
               </div>
 
               <div aria-label="Recommendation totals" className={styles.counts}>
@@ -2563,7 +2555,9 @@ export function CreatorDashboard() {
                                 )
                               }
                               visible={!hiddenRecommendationIds.includes(item.id)}
-                              onArchive={() => void recommendationCommand(item, 'archive')}
+                              onArchive={() =>
+                                void recommendationCommand(item, 'archive')
+                              }
                               onEdit={() => editProduct(item)}
                             />
                           ))}
@@ -4599,12 +4593,10 @@ function CuratedSectionForm({
       return groups;
     }, new Map<string, { name: string; items: CreatorRecommendation[] }>()),
   );
-  function toggleSectionContent(
-    item: {
-      id: string;
-      kind: 'recommendation' | 'media' | 'brand' | 'collection';
-    },
-  ) {
+  function toggleSectionContent(item: {
+    id: string;
+    kind: 'recommendation' | 'media' | 'brand' | 'collection';
+  }) {
     setSelectionError('');
     setContentItems((current) =>
       current.some(({ id, kind }) => id === item.id && kind === item.kind)
@@ -4843,7 +4835,9 @@ function CuratedSectionForm({
                           contentKind === 'brand' && id === brand.id,
                       )}
                       type="checkbox"
-                      onChange={() => toggleSectionContent({ id: brand.id, kind: 'brand' })}
+                      onChange={() =>
+                        toggleSectionContent({ id: brand.id, kind: 'brand' })
+                      }
                     />
                     <span>{brand.name}</span>
                   </label>
@@ -4879,51 +4873,61 @@ function CuratedSectionForm({
           </fieldset>
         </>
       ) : null}
-      {kind !== 'section' || Boolean(initial) ? <fieldset>
-        <legend>{kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}</legend>
-        {recommendations.length ? (
-          <div className="creatorCuratedChoices">
-            {recommendationGroups.map(([id, group]) => (
-              <section className="creatorCuratedBrandGroup" key={id}>
-                {!brandId ? <h3>{group.name}</h3> : null}
-                {group.items.map((item) => (
-                  <label key={item.id}>
-                    <input
-                      checked={recommendationIds.includes(item.id)}
-                      type="checkbox"
-                      disabled={
-                        recommendationIds.length >= 20 &&
-                        !recommendationIds.includes(item.id)
-                      }
-                      onChange={(event) => {
-                        setSelectionError('');
-                        setRecommendationIds((current) =>
-                          event.target.checked
-                            ? [...current, item.id]
-                            : current.filter((id) => id !== item.id),
-                        );
-                        if (kind === 'section')
-                          toggleSectionContent({ id: item.id, kind: 'recommendation' });
-                      }}
-                    />
-                    <span className="creatorCuratedProductThumb">
-                      {item.imageUrl ? (
-                        <Image alt="" fill sizes="44px" src={item.imageUrl} unoptimized />
-                      ) : null}
-                    </span>
-                    <span>
-                      {item.productName}
-                      {!brandId ? <small>{item.brandName}</small> : null}
-                    </span>
-                  </label>
-                ))}
-              </section>
-            ))}
-          </div>
-        ) : (
-          <p>Add a product recommendation first.</p>
-        )}
-      </fieldset> : null}
+      {kind !== 'section' || Boolean(initial) ? (
+        <fieldset>
+          <legend>
+            {kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}
+          </legend>
+          {recommendations.length ? (
+            <div className="creatorCuratedChoices">
+              {recommendationGroups.map(([id, group]) => (
+                <section className="creatorCuratedBrandGroup" key={id}>
+                  {!brandId ? <h3>{group.name}</h3> : null}
+                  {group.items.map((item) => (
+                    <label key={item.id}>
+                      <input
+                        checked={recommendationIds.includes(item.id)}
+                        type="checkbox"
+                        disabled={
+                          recommendationIds.length >= 20 &&
+                          !recommendationIds.includes(item.id)
+                        }
+                        onChange={(event) => {
+                          setSelectionError('');
+                          setRecommendationIds((current) =>
+                            event.target.checked
+                              ? [...current, item.id]
+                              : current.filter((id) => id !== item.id),
+                          );
+                          if (kind === 'section')
+                            toggleSectionContent({ id: item.id, kind: 'recommendation' });
+                        }}
+                      />
+                      <span className="creatorCuratedProductThumb">
+                        {item.imageUrl ? (
+                          <Image
+                            alt=""
+                            fill
+                            sizes="44px"
+                            src={item.imageUrl}
+                            unoptimized
+                          />
+                        ) : null}
+                      </span>
+                      <span>
+                        {item.productName}
+                        {!brandId ? <small>{item.brandName}</small> : null}
+                      </span>
+                    </label>
+                  ))}
+                </section>
+              ))}
+            </div>
+          ) : (
+            <p>Add a product recommendation first.</p>
+          )}
+        </fieldset>
+      ) : null}
       {kind === 'section' && initial ? (
         <fieldset>
           <legend>Featured Content</legend>
@@ -4948,7 +4952,13 @@ function CuratedSectionForm({
                   />
                   <span className="creatorCuratedProductThumb">
                     {media.thumbnailUrl ? (
-                      <Image alt="" fill sizes="44px" src={media.thumbnailUrl} unoptimized />
+                      <Image
+                        alt=""
+                        fill
+                        sizes="44px"
+                        src={media.thumbnailUrl}
+                        unoptimized
+                      />
                     ) : null}
                   </span>
                   <span>
@@ -5079,8 +5089,10 @@ function CuratedSectionForm({
             {contentItems.map((content, index) => {
               const label =
                 content.kind === 'media'
-                  ? featuredMedia.find(({ id }) => id === content.id)?.title ?? 'Featured content'
-                  : recommendations.find(({ id }) => id === content.id)?.productName ?? 'Recommendation';
+                  ? (featuredMedia.find(({ id }) => id === content.id)?.title ??
+                    'Featured content')
+                  : (recommendations.find(({ id }) => id === content.id)?.productName ??
+                    'Recommendation');
               return (
                 <li key={`${content.kind}:${content.id}`}>
                   <span>{label}</span>

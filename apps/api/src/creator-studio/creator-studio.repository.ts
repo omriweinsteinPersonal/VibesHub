@@ -383,9 +383,7 @@ export class CreatorStudioRepository {
           return { kind: 'invalid_recommendations' };
         }
       }
-      if (
-        mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))
-      ) {
+      if (mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))) {
         return { kind: 'invalid_recommendations' };
       }
       if (selectedBrandIds.length) {
@@ -622,14 +620,21 @@ export class CreatorStudioRepository {
     return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       featuredMedia: Array.isArray(rows[0]?.featuredMedia) ? rows[0].featuredMedia : [],
-      curatedSections: curatedRows.map(({ contentItemsJson, displayStyleJson, ...section }) => ({
-        ...section,
-        contentItems: Array.isArray(contentItemsJson)
-          ? contentItemsJson
-          : section.recommendationIds.map((id) => ({ id, kind: 'recommendation' as const })),
-        displayStyle:
-          displayStyleJson === 'vertical' ? ('vertical' as const) : ('horizontal' as const),
-      })),
+      curatedSections: curatedRows.map(
+        ({ contentItemsJson, displayStyleJson, ...section }) => ({
+          ...section,
+          contentItems: Array.isArray(contentItemsJson)
+            ? contentItemsJson
+            : section.recommendationIds.map((id) => ({
+                id,
+                kind: 'recommendation' as const,
+              })),
+          displayStyle:
+            displayStyleJson === 'vertical'
+              ? ('vertical' as const)
+              : ('horizontal' as const),
+        }),
+      ),
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
       brandOrder: rows[0]?.brandOrder ?? [],
