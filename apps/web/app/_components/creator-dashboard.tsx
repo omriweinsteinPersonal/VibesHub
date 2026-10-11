@@ -1982,6 +1982,24 @@ export function CreatorDashboard() {
                           thumbnailUrl: detected?.thumbnailUrl ?? current.thumbnailUrl,
                           title: current.title || detected?.title || '',
                         }));
+                        if (detected) {
+                          void enrichMediaDraft(url, detected).then((metadata) => {
+                            if (!metadata) return;
+                            setMediaDraft((current) =>
+                              current.url.trim() === url.trim()
+                                ? {
+                                    ...current,
+                                    thumbnailUrl:
+                                      current.thumbnailUrl || metadata.thumbnailUrl,
+                                    title:
+                                      current.title === detected.title || !current.title
+                                        ? metadata.title
+                                        : current.title,
+                                  }
+                                : current,
+                            );
+                          });
+                        }
                       }}
                       placeholder="https://www.youtube.com/watch?v=…"
                     />
@@ -5281,6 +5299,65 @@ function detectFeaturedMedia(value: string): {
     }
     return null;
   } catch {
+    return null;
+  }
+}
+
+async function enrichMediaDraft(
+  url: string,
+  detected: { provider: FeaturedMedia['provider']; thumbnailUrl: string | null; title: string },
+): Promise<{ title: string; thumbnailUrl: string | null } | null> {
+  // Metadata services provide the real cover art and a useful short label for
+  // music/video links. The manually entered title remains the source of truth.
+  try {
+    let title = detected.title;
+    let thumbnailUrl = detected.thumbnailUrl;
+    const encodedUrl = encodeURIComponent(url.trim());
+    if (detected.provider === 'youtube') {
+      const response = await fetch(
+        `https://www.youtube.com/oembed?url=${encodedUrl}&format=json`,
+      );
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+        author_name?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'spotify') {
+      const response = await fetch(`https://open.spotify.com/oembed?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'apple_music') {
+      const response = await fetch(`https://itunes.apple.com/lookup?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        results?: Array<{
+          artistName?: string;
+          trackName?: string;
+          collectionName?: string;
+          artworkUrl100?: string;
+        }>;
+      };
+      const result = metadata.results?.[0];
+      if (result) {
+        title = [result.artistName, result.trackName || result.collectionName]
+          .filter(Boolean)
+          .join(' — ') || title;
+        thumbnailUrl = result.artworkUrl100?.replace('100x100', '600x600') || thumbnailUrl;
+      }
+    } else {
+      return null;
+    }
+    return { title, thumbnailUrl };
+  } catch {
+    // Metadata is an enhancement; saving the original link should still work.
     return null;
   }
 }
