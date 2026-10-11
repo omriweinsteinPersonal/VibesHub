@@ -1469,15 +1469,42 @@ export function CreatorDashboard() {
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
+    const activeRecommendationIdSet = new Set(activeRecommendations.map(({ id }) => id));
+    const activeBrandIdSet = new Set(brands.map(({ id }) => id));
+    const activeCollectionIdSet = new Set(
+      collectionSections.filter(({ kind }) => kind === 'collection').map(({ id }) => id),
+    );
+    const activeMediaIdSet = new Set(nextFeaturedMedia.map(({ id }) => id));
+    const activeDiscountIdSet = new Set(
+      discounts.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id),
+    );
+    const sanitizedSections = collectionSections.map((section) => ({
+      ...section,
+      recommendationIds: section.recommendationIds.filter((id) =>
+        activeRecommendationIdSet.has(id),
+      ),
+      contentItems: section.contentItems.filter((item) => {
+        if (item.kind === 'recommendation') return activeRecommendationIdSet.has(item.id);
+        if (item.kind === 'brand') return activeBrandIdSet.has(item.id);
+        if (item.kind === 'collection') return activeCollectionIdSet.has(item.id);
+        return activeMediaIdSet.has(item.id);
+      }),
+    }));
     setSaving(true);
     setError('');
     try {
       const groupedIds = new Set(
-        collectionSections.flatMap(({ recommendationIds }) => recommendationIds),
+        sanitizedSections.flatMap(({ recommendationIds }) => recommendationIds),
       );
       const normalizedOrder = nextOrder.filter(
         ({ kind, id }) =>
           (kind !== 'recommendation' || !groupedIds.has(id)) &&
+          (kind !== 'recommendation' || activeRecommendationIdSet.has(id)) &&
+          (kind !== 'discount' || activeDiscountIdSet.has(id)) &&
+          (kind !== 'media' || activeMediaIdSet.has(id)) &&
+          (kind !== 'collection' || activeCollectionIdSet.has(id)) &&
+          (kind !== 'section' ||
+            sanitizedSections.some((section) => section.id === id)) &&
           (kind !== 'category' || nextCategories.includes(id)),
       );
       for (const id of nextCategories) {
@@ -1489,7 +1516,7 @@ export function CreatorDashboard() {
       }
       const input = {
         categoryIds: nextCategories,
-        curatedSections: collectionSections.map(
+        curatedSections: sanitizedSections.map(
           ({
             id,
             kind,
@@ -1518,7 +1545,16 @@ export function CreatorDashboard() {
         ),
         contentOrder: normalizedOrder,
         featuredMedia: nextFeaturedMedia,
-        labels: nextLabels,
+        labels: nextLabels.map((label) => ({
+          ...label,
+          recommendationIds: label.recommendationIds.filter((id) =>
+            activeRecommendationIdSet.has(id),
+          ),
+          collectionIds: label.collectionIds.filter((id) =>
+            activeCollectionIdSet.has(id),
+          ),
+          brandIds: label.brandIds.filter((id) => activeBrandIdSet.has(id)),
+        })),
         hiddenBrandIds: nextHiddenBrands,
         hiddenCollectionIds: nextHiddenCollections,
         hiddenRecommendationIds: nextHiddenRecommendations,
