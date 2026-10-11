@@ -290,7 +290,9 @@ describe('shared API contracts', () => {
       {
         ...section,
         brandId: null,
+        contentItems: [],
         description: '',
+        displayStyle: 'horizontal',
         imageUrl: null,
         parentCollectionId: null,
         showItemsIndividually: false,
