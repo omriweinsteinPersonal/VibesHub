@@ -251,11 +251,15 @@ export class CreatorStudioRepository {
           and recommendation.deleted_at is null
       `;
       const ownedRecommendationIds = new Set(ownedRecommendations.map(({ id }) => id));
+      const contentOrderKeys = new Set<string>();
       input = {
         ...input,
-        contentOrder: input.contentOrder.filter(
-          ({ kind, id }) => kind !== 'recommendation' || ownedRecommendationIds.has(id),
-        ),
+        contentOrder: input.contentOrder.filter(({ kind, id }) => {
+          const key = `${kind}:${id}`;
+          if (contentOrderKeys.has(key)) return false;
+          contentOrderKeys.add(key);
+          return kind !== 'recommendation' || ownedRecommendationIds.has(id);
+        }),
         curatedSections: input.curatedSections.map((section) => ({
           ...section,
           recommendationIds: section.recommendationIds.filter((id) =>

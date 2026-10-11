@@ -1496,8 +1496,9 @@ export function CreatorDashboard() {
       const groupedIds = new Set(
         sanitizedSections.flatMap(({ recommendationIds }) => recommendationIds),
       );
-      const normalizedOrder = nextOrder.filter(
-        ({ kind, id }) =>
+      const orderKeys = new Set<string>();
+      const normalizedOrder = nextOrder.filter(({ kind, id }) => {
+        const isValid =
           (kind !== 'recommendation' || !groupedIds.has(id)) &&
           (kind !== 'recommendation' || activeRecommendationIdSet.has(id)) &&
           (kind !== 'discount' || activeDiscountIdSet.has(id)) &&
@@ -1505,8 +1506,12 @@ export function CreatorDashboard() {
           (kind !== 'collection' || activeCollectionIdSet.has(id)) &&
           (kind !== 'section' ||
             sanitizedSections.some((section) => section.id === id)) &&
-          (kind !== 'category' || nextCategories.includes(id)),
-      );
+          (kind !== 'category' || nextCategories.includes(id));
+        const key = `${kind}:${id}`;
+        if (!isValid || orderKeys.has(key)) return false;
+        orderKeys.add(key);
+        return true;
+      });
       for (const id of nextCategories) {
         if (
           !normalizedOrder.some((layer) => layer.kind === 'category' && layer.id === id)
