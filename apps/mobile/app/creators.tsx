@@ -141,7 +141,7 @@ export default function CreatorsScreen() {
                 <View style={styles.creatorCopy}>
                   <Text style={styles.creatorName}>{creator.displayName}</Text>
                   <Text style={styles.creatorMeta}>
-                    @{creator.handle} · {creator.primaryCategory.name}
+                    @{creator.handle} · {creator.primaryCategory?.name ?? 'Creator'}
                   </Text>
                   <Text numberOfLines={2} style={styles.creatorBio}>
                     {creator.bio.value ||
