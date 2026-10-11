@@ -243,6 +243,36 @@ export class CreatorStudioRepository {
       if (preference.version !== expectedVersion) {
         return { actualVersion: preference.version, kind: 'version_conflict' };
       }
+      const ownedRecommendations = await sql<{ id: string }[]>`
+        select recommendation.id
+        from app.recommendations recommendation
+        where recommendation.creator_id = ${identity.id}
+          and recommendation.lifecycle <> 'archived'
+          and recommendation.deleted_at is null
+      `;
+      const ownedRecommendationIds = new Set(ownedRecommendations.map(({ id }) => id));
+      input = {
+        ...input,
+        contentOrder: input.contentOrder.filter(
+          ({ kind, id }) => kind !== 'recommendation' || ownedRecommendationIds.has(id),
+        ),
+        curatedSections: input.curatedSections.map((section) => ({
+          ...section,
+          recommendationIds: section.recommendationIds.filter((id) =>
+            ownedRecommendationIds.has(id),
+          ),
+          contentItems: section.contentItems.filter(
+            (item) =>
+              item.kind !== 'recommendation' || ownedRecommendationIds.has(item.id),
+          ),
+        })),
+        labels: input.labels.map((label) => ({
+          ...label,
+          recommendationIds: label.recommendationIds.filter((id) =>
+            ownedRecommendationIds.has(id),
+          ),
+        })),
+      };
       const [categoryCount] = await sql<{ count: number }[]>`
         select count(*)::integer as count
         from app.categories
