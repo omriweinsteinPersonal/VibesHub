@@ -622,13 +622,13 @@ export class CreatorStudioRepository {
     return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       featuredMedia: Array.isArray(rows[0]?.featuredMedia) ? rows[0].featuredMedia : [],
-      curatedSections: curatedRows.map((section) => ({
+      curatedSections: curatedRows.map(({ contentItemsJson, displayStyleJson, ...section }) => ({
         ...section,
-        contentItems: Array.isArray(section.contentItemsJson)
-          ? section.contentItemsJson
+        contentItems: Array.isArray(contentItemsJson)
+          ? contentItemsJson
           : section.recommendationIds.map((id) => ({ id, kind: 'recommendation' as const })),
         displayStyle:
-          section.displayStyleJson === 'vertical' ? ('vertical' as const) : ('horizontal' as const),
+          displayStyleJson === 'vertical' ? ('vertical' as const) : ('horizontal' as const),
       })),
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
