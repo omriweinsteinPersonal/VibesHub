@@ -2446,13 +2446,15 @@ export function CreatorDashboard() {
                       featuredMedia={featuredMedia}
                       kind="section"
                       onCancel={closeComposer}
-                      onSave={(section) =>
-                        saveSections(
+                      onSave={async (section) => {
+                        const saved = await saveSections(
                           selectedSections,
                           [...curatedSections, section],
                           [...contentOrder, { kind: 'section', id: section.id }],
-                        )
-                      }
+                        );
+                        if (saved) setEditingSectionId(section.id);
+                        return saved;
+                      }}
                       recommendations={activeRecommendations}
                       saving={saving}
                     />
@@ -4846,7 +4848,7 @@ function CuratedSectionForm({
           </label>
         </>
       ) : null}
-      {kind === 'section' ? (
+      {kind === 'section' && initial ? (
         <>
           <fieldset>
             <legend>Brands</legend>
@@ -4896,7 +4898,7 @@ function CuratedSectionForm({
           </fieldset>
         </>
       ) : null}
-      <fieldset>
+      {kind !== 'section' || Boolean(initial) ? <fieldset>
         <legend>{kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}</legend>
         {recommendations.length ? (
           <div className="creatorCuratedChoices">
@@ -4940,8 +4942,8 @@ function CuratedSectionForm({
         ) : (
           <p>Add a product recommendation first.</p>
         )}
-      </fieldset>
-      {kind === 'section' ? (
+      </fieldset> : null}
+      {kind === 'section' && initial ? (
         <fieldset>
           <legend>Featured Content</legend>
           {featuredMedia.length ? (
@@ -5089,7 +5091,7 @@ function CuratedSectionForm({
           </ol>
         </div>
       ) : null}
-      {kind === 'section' && contentItems.length ? (
+      {kind === 'section' && initial && contentItems.length ? (
         <div className="creatorCuratedOrder">
           <p>Content order in this section</p>
           <ol>
