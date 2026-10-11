@@ -14007,3 +14007,61 @@ dt {
 .creatorSectionManageCard {
   border-color: #d8c8b9;
 }
+
+/* Keep the four creation choices visible together on the compact dashboard. */
+.creatorTypeGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.creatorTypeGrid button {
+  min-width: 0;
+  padding: 16px;
+}
+
+.creatorTypeGrid strong {
+  font-size: 1.12rem;
+}
+
+.creatorTypeGrid small {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.creatorComposer > .creatorCuratedForm {
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+.creatorCuratedForm > label input,
+.creatorCuratedForm > label select {
+  box-sizing: border-box;
+}
+
+@media (max-width: 620px) {
+  .creatorTypeGrid {
+    gap: 6px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 12px 8px;
+  }
+
+  .creatorTypeGrid button {
+    border-radius: 10px;
+    min-height: 132px;
+    padding: 10px 6px;
+  }
+
+  .creatorTypeGrid span {
+    height: 28px;
+    width: 28px;
+  }
+
+  .creatorTypeGrid strong {
+    font-size: 0.95rem;
+    margin: 9px 0 4px;
+  }
+
+  .creatorTypeGrid small {
+    font-size: 0.62rem;
+    line-height: 1.2;
+  }
+}

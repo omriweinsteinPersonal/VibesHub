@@ -40,11 +40,8 @@ interface StorefrontSectionRow {
 
 interface CuratedSectionRow {
   brandId: string | null;
-  contentItems: Array<{
-    id: string;
-    kind: 'recommendation' | 'media' | 'brand' | 'collection';
-  }>;
-  displayStyle: 'horizontal' | 'vertical';
+  contentItemsJson: unknown;
+  displayStyleJson: string | null;
   id: string;
   kind: 'section' | 'collection' | 'page';
   title: string;
@@ -425,13 +422,29 @@ export class CreatorStudioRepository {
         `;
       }
       await sql`delete from app.creator_curated_sections where creator_id = ${identity.id}`;
+      const [generalSectionColumns] = await sql<{ available: boolean }[]>`
+        select count(*) = 2 as available
+        from information_schema.columns
+        where table_schema = 'app'
+          and table_name = 'creator_curated_sections'
+          and column_name = any(${['display_style', 'content_items']}::text[])
+      `;
       for (const [position, section] of input.curatedSections.entries()) {
-        await sql`
-          insert into app.creator_curated_sections
-            (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, display_style, content_items, position)
-          values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
-            ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${section.displayStyle}, ${sql.json(section.contentItems)}, ${position})
-        `;
+        if (generalSectionColumns?.available) {
+          await sql`
+            insert into app.creator_curated_sections
+              (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, display_style, content_items, position)
+            values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
+              ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${section.displayStyle}, ${sql.json(section.contentItems)}, ${position})
+          `;
+        } else {
+          await sql`
+            insert into app.creator_curated_sections
+              (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, position)
+            values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
+              ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${position})
+          `;
+        }
         for (const [
           itemPosition,
           recommendationId,
@@ -590,8 +603,8 @@ export class CreatorStudioRepository {
         section.id,
         section.kind,
         section.brand_id as "brandId",
-        section.content_items as "contentItems",
-        section.display_style as "displayStyle",
+        to_jsonb(section)->'content_items' as "contentItemsJson",
+        to_jsonb(section)->>'display_style' as "displayStyleJson",
         section.title,
         section.description,
         section.image_url as "imageUrl",
@@ -609,7 +622,14 @@ export class CreatorStudioRepository {
     return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       featuredMedia: Array.isArray(rows[0]?.featuredMedia) ? rows[0].featuredMedia : [],
-      curatedSections: curatedRows,
+      curatedSections: curatedRows.map((section) => ({
+        ...section,
+        contentItems: Array.isArray(section.contentItemsJson)
+          ? section.contentItemsJson
+          : section.recommendationIds.map((id) => ({ id, kind: 'recommendation' as const })),
+        displayStyle:
+          section.displayStyleJson === 'vertical' ? ('vertical' as const) : ('horizontal' as const),
+      })),
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
       brandOrder: rows[0]?.brandOrder ?? [],

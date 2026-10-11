@@ -465,16 +465,6 @@ export function CreatorDashboard() {
     return () => window.cancelAnimationFrame(frame);
   }, [composer]);
 
-  function showComposer(next: Exclude<Composer, null>) {
-    setComposer(next);
-    setEditingProduct(null);
-    setEditingDiscount(null);
-    setEditingBrand(null);
-    setError('');
-    setVideoError('');
-    setNotice('');
-  }
-
   function closeComposer() {
     productFetchRequest.current += 1;
     setFetching(false);
@@ -2077,23 +2067,15 @@ export function CreatorDashboard() {
                     organized.
                   </p>
                 </div>
-                <button
-                  className="button primary"
-                  onClick={() => showComposer('choose')}
-                  type="button"
-                >
-                  <Plus aria-hidden="true" size={16} />
-                  <span>Add recommendation</span>
-                </button>
               </div>
 
-              {composer ? (
-                <div className="creatorComposer" id="creator-composer">
-                  {composer === 'choose' ? (
-                    <>
-                      <ComposerHeader title="Add recommendation" onClose={closeComposer}>
-                        Choose what you want to share with your audience.
-                      </ComposerHeader>
+              <div className="creatorComposer" id="creator-composer">
+                  {composer === null || composer === 'choose' ? (
+                    <div className="creatorComposerBody">
+                      <div className="creatorComposerIntro">
+                        <h3>Add recommendation</h3>
+                        <p>Choose what you want to share with your audience.</p>
+                      </div>
                       <div className="creatorTypeGrid">
                         <button onClick={() => setComposer('brand')} type="button">
                           <span aria-hidden="true">
@@ -2137,7 +2119,7 @@ export function CreatorDashboard() {
                           </small>
                         </button>
                       </div>
-                    </>
+                    </div>
                   ) : null}
                   {composer === 'product' ? (
                     <ProductForm
@@ -2459,8 +2441,7 @@ export function CreatorDashboard() {
                       saving={saving}
                     />
                   ) : null}
-                </div>
-              ) : null}
+              </div>
 
               <div aria-label="Recommendation totals" className={styles.counts}>
                 <span>
