@@ -251,6 +251,37 @@ export class CreatorStudioRepository {
           and recommendation.deleted_at is null
       `;
       const ownedRecommendationIds = new Set(ownedRecommendations.map(({ id }) => id));
+      const [ownedDiscounts, ownedBrands] = await Promise.all([
+        sql<{ id: string }[]>`
+          select discount.id
+          from app.discount_codes discount
+          where discount.creator_id = ${identity.id}
+            and discount.lifecycle_status <> 'archived'
+            and discount.deleted_at is null
+        `,
+        sql<{ id: string }[]>`
+          select brand.id
+          from app.creator_brands brand
+          where brand.creator_id = ${identity.id}
+            and brand.lifecycle = 'active'
+        `,
+      ]);
+      const ownedDiscountIds = new Set(ownedDiscounts.map(({ id }) => id));
+      const ownedBrandIds = new Set(ownedBrands.map(({ id }) => id));
+      const featuredMediaIds = new Set(input.featuredMedia.map(({ id }) => id));
+      const validCollectionIds = new Set(
+        input.curatedSections
+          .filter(
+            (section) =>
+              section.kind === 'collection' &&
+              section.brandId !== null &&
+              ownedBrandIds.has(section.brandId),
+          )
+          .map(({ id }) => id),
+      );
+      const validSections = input.curatedSections.filter(
+        (section) => section.kind !== 'collection' || validCollectionIds.has(section.id),
+      );
       const contentOrderKeys = new Set<string>();
       input = {
         ...input,
@@ -258,23 +289,37 @@ export class CreatorStudioRepository {
           const key = `${kind}:${id}`;
           if (contentOrderKeys.has(key)) return false;
           contentOrderKeys.add(key);
-          return kind !== 'recommendation' || ownedRecommendationIds.has(id);
+          if (kind === 'recommendation') return ownedRecommendationIds.has(id);
+          if (kind === 'discount') return ownedDiscountIds.has(id);
+          if (kind === 'media') return featuredMediaIds.has(id);
+          if (kind === 'collection') return validCollectionIds.has(id);
+          if (kind === 'section') {
+            return validSections.some(
+              (section) => section.id === id && section.kind === 'section',
+            );
+          }
+          return true;
         }),
-        curatedSections: input.curatedSections.map((section) => ({
+        curatedSections: validSections.map((section) => ({
           ...section,
           recommendationIds: section.recommendationIds.filter((id) =>
             ownedRecommendationIds.has(id),
           ),
-          contentItems: section.contentItems.filter(
-            (item) =>
-              item.kind !== 'recommendation' || ownedRecommendationIds.has(item.id),
-          ),
+          contentItems: section.contentItems.filter((item) => {
+            if (item.kind === 'recommendation')
+              return ownedRecommendationIds.has(item.id);
+            if (item.kind === 'media') return featuredMediaIds.has(item.id);
+            if (item.kind === 'brand') return ownedBrandIds.has(item.id);
+            return validCollectionIds.has(item.id);
+          }),
         })),
         labels: input.labels.map((label) => ({
           ...label,
           recommendationIds: label.recommendationIds.filter((id) =>
             ownedRecommendationIds.has(id),
           ),
+          collectionIds: label.collectionIds.filter((id) => validCollectionIds.has(id)),
+          brandIds: label.brandIds.filter((id) => ownedBrandIds.has(id)),
         })),
       };
       const [categoryCount] = await sql<{ count: number }[]>`
