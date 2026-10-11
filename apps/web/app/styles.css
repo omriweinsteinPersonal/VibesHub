@@ -13987,11 +13987,18 @@ dt {
 
 /* Keep brand and product copy aligned with the storefront label typography. */
 .referenceBrandBlock > header h3,
-.referenceCompactLabelGroups > .referenceBrandBlock > header h3 {
+.referenceCompactLabelGroups > .referenceBrandBlock > header h3,
+.referenceStandaloneRecommendationContent h3 {
   font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
   font-size: 1.36rem;
   font-weight: 700;
   letter-spacing: -0.025em;
+}
+
+.referenceStandaloneRecommendationContent h3 {
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.28;
 }
 
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
