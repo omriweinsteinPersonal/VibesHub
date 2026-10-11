@@ -13,7 +13,10 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { apiRequest } from '../../lib/api';
 import { contrastRatio } from '../../lib/storefront-theme';
 
-type ThemeKey = Exclude<keyof StorefrontTheme, 'layout' | 'profileImageUrl' | 'templateId'>;
+type ThemeKey = Exclude<
+  keyof StorefrontTheme,
+  'layout' | 'profileImageUrl' | 'templateId'
+>;
 type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
@@ -448,9 +451,15 @@ export function StorefrontPhonePreview({
               >
                 <div>
                   <h3 id="template-picker-title">Templates</h3>
-                  <p>Choose a visual frame without changing how your recommendations work.</p>
+                  <p>
+                    Choose a visual frame without changing how your recommendations work.
+                  </p>
                 </div>
-                <div className="storefrontTemplateList" role="group" aria-label="Templates">
+                <div
+                  className="storefrontTemplateList"
+                  role="group"
+                  aria-label="Templates"
+                >
                   <button
                     aria-pressed={(draft.templateId ?? 'classic') === 'classic'}
                     className="storefrontTemplateOption classicTemplateOption"
@@ -460,7 +469,10 @@ export function StorefrontPhonePreview({
                     }}
                     type="button"
                   >
-                    <span aria-hidden="true" className="storefrontTemplatePreview classicTemplatePreview" />
+                    <span
+                      aria-hidden="true"
+                      className="storefrontTemplatePreview classicTemplatePreview"
+                    />
                     <span>
                       <strong>Classic</strong>
                       <small>Keep the current storefront look.</small>
@@ -504,7 +516,7 @@ export function StorefrontPhonePreview({
                     aria-pressed={Object.keys(defaultStorefrontTheme)
                       .filter((key) => key !== 'templateId')
                       .every(
-                      (key) => draft[key as ThemeKey] === palette[key as ThemeKey],
+                        (key) => draft[key as ThemeKey] === palette[key as ThemeKey],
                       )}
                     key={name}
                     onClick={() => {

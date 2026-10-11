@@ -1652,12 +1652,16 @@ export function CreatorDashboard() {
       setError('Paste a valid YouTube, Instagram, Spotify or Apple Music link.');
       return;
     }
+    const enriched = await enrichMediaDraft(mediaDraft.url, detected);
+    const resolvedTitle = enriched?.title || mediaDraft.title.trim() || detected.title;
+    const resolvedThumbnailUrl =
+      mediaDraft.thumbnailUrl || enriched?.thumbnailUrl || detected.thumbnailUrl;
     const item: FeaturedMedia = {
       ...mediaDraft,
       provider: detected.provider,
-      thumbnailUrl: mediaDraft.thumbnailUrl || detected.thumbnailUrl,
+      thumbnailUrl: resolvedThumbnailUrl,
       id: editingMediaId ?? randomUuid(),
-      title: mediaDraft.title.trim() || detected.title,
+      title: resolvedTitle,
       url: mediaDraft.url.trim(),
       visible: editingMediaId
         ? (featuredMedia.find(({ id }) => id === editingMediaId)?.visible ?? true)
@@ -5305,7 +5309,11 @@ function detectFeaturedMedia(value: string): {
 
 async function enrichMediaDraft(
   url: string,
-  detected: { provider: FeaturedMedia['provider']; thumbnailUrl: string | null; title: string },
+  detected: {
+    provider: FeaturedMedia['provider'];
+    thumbnailUrl: string | null;
+    title: string;
+  },
 ): Promise<{ title: string; thumbnailUrl: string | null } | null> {
   // Metadata services provide the real cover art and a useful short label for
   // music/video links. The manually entered title remains the source of truth.
@@ -5347,10 +5355,12 @@ async function enrichMediaDraft(
       };
       const result = metadata.results?.[0];
       if (result) {
-        title = [result.artistName, result.trackName || result.collectionName]
-          .filter(Boolean)
-          .join(' — ') || title;
-        thumbnailUrl = result.artworkUrl100?.replace('100x100', '600x600') || thumbnailUrl;
+        title =
+          [result.artistName, result.trackName || result.collectionName]
+            .filter(Boolean)
+            .join(' — ') || title;
+        thumbnailUrl =
+          result.artworkUrl100?.replace('100x100', '600x600') || thumbnailUrl;
       }
     } else {
       return null;
