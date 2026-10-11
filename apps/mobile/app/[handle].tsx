@@ -6,7 +6,7 @@ import type {
 } from '@vibeshub/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -69,9 +69,11 @@ export default function PublicStorefrontScreen() {
   const [creatorHidden, setCreatorHidden] = useState(false);
   const [reportBusy, setReportBusy] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const loadSequence = useRef(0);
 
   const loadStorefront = useCallback(
     async (refresh = false) => {
+      const sequence = ++loadSequence.current;
       if (!handle) {
         setError('This storefront link is incomplete.');
         setLoading(false);
@@ -87,19 +89,18 @@ export default function PublicStorefrontScreen() {
           getStorefrontDiscountCodes(handle),
           getHiddenCreatorIds(),
         ]);
+        if (sequence !== loadSequence.current) return;
         setData({ codes, recommendations, storefront });
         setCreatorHidden(hiddenCreatorIds.has(storefront.id));
       } catch (cause) {
+        if (sequence !== loadSequence.current) return;
         if (cause instanceof ApiError && cause.status === 404) {
           setError('This creator storefront could not be found.');
         } else {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : 'This storefront could not be loaded.',
-          );
+          setError('This storefront could not be loaded. Please try again.');
         }
       } finally {
+        if (sequence !== loadSequence.current) return;
         setLoading(false);
         setRefreshing(false);
       }
@@ -108,39 +109,11 @@ export default function PublicStorefrontScreen() {
   );
 
   useEffect(() => {
-    if (!handle) return;
-    let active = true;
-    void Promise.all([
-      getPublicStorefront(handle),
-      getStorefrontRecommendations(handle),
-      getStorefrontDiscountCodes(handle),
-      getHiddenCreatorIds(),
-    ])
-      .then(([storefront, recommendations, codes, hiddenCreatorIds]) => {
-        if (active) {
-          setData({ codes, recommendations, storefront });
-          setCreatorHidden(hiddenCreatorIds.has(storefront.id));
-        }
-      })
-      .catch((cause: unknown) => {
-        if (!active) return;
-        if (cause instanceof ApiError && cause.status === 404) {
-          setError('This creator storefront could not be found.');
-        } else {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : 'This storefront could not be loaded.',
-          );
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    void loadStorefront();
     return () => {
-      active = false;
+      loadSequence.current += 1;
     };
-  }, [handle]);
+  }, [loadStorefront]);
 
   const filteredRecommendations = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();

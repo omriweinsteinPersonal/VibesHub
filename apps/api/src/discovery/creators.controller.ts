@@ -16,6 +16,10 @@ import {
   parseCreatorDirectoryQuery,
 } from './creator-directory.js';
 import { CreatorDirectoryRepository } from './creator-directory.repository.js';
+import {
+  storefrontIncludesBrandLogos,
+  storefrontResponse,
+} from './storefront-response.js';
 
 @Controller('creators')
 @Public()
@@ -75,12 +79,16 @@ export class CreatorsController {
   @Get(':handle')
   async getStorefront(
     @Param('handle') rawHandle: string,
+    @Query() rawQuery: unknown,
     @Req() request: FastifyRequest,
   ) {
     const handle = creatorCardSchema.shape.handle.parse(rawHandle);
     const storefront = await this.creators.findPublishedByHandle(handle);
     if (!storefront) throw this.notFound();
-    return singleResponse(storefront, request.id);
+    return singleResponse(
+      storefrontResponse(storefront, storefrontIncludesBrandLogos(rawQuery)),
+      request.id,
+    );
   }
 
   private notFound() {

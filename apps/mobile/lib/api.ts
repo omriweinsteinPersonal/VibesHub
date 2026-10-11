@@ -87,7 +87,11 @@ export async function getCreators(): Promise<CreatorCard[]> {
 
 export async function getPublicStorefront(handle: string): Promise<CreatorStorefront> {
   const data = await publicRequest(`/v1/creators/${encodeURIComponent(handle)}`);
-  return creatorStorefrontSchema.parse(data);
+  const parsed = creatorStorefrontSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ApiError('This storefront could not be loaded. Please try again.', 502);
+  }
+  return parsed.data;
 }
 
 export async function getStorefrontRecommendations(
