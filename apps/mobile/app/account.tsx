@@ -20,7 +20,6 @@ import { getSupabaseClient } from '../lib/supabase';
 
 const webLinks = {
   privacy: 'https://swavii.com/privacy',
-  studio: 'https://swavii.com/creator-home',
   support: 'https://swavii.com/support',
   terms: 'https://swavii.com/terms',
 };
@@ -137,8 +136,8 @@ export default function AccountScreen() {
             creator studio.
           </Text>
           <Pressable
-            accessibilityRole="link"
-            onPress={() => void openExternalUrl(webLinks.studio)}
+            accessibilityRole="button"
+            onPress={() => router.push('/studio')}
             style={styles.primaryButton}
           >
             <Text style={styles.primaryButtonText}>Open creator studio</Text>

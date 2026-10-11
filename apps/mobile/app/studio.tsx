@@ -1,0 +1,1087 @@
+import type {
+  CreatorBrand,
+  CreatorProfileSocialLink,
+  CreatorRecommendation,
+  CreatorStorefrontConfiguration,
+  FeaturedMedia,
+} from '@vibeshub/contracts';
+import { colors, radii, spacing } from '@vibeshub/design-tokens';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ApiError } from '../lib/api';
+import {
+  getCreatorStudioBundle,
+  newStudioId,
+  saveCreatorBrand,
+  saveStorefrontConfiguration,
+  transitionCreatorRecommendation,
+  updateCreatorProfile,
+  type CreatorStudioBundle,
+} from '../lib/creator-api';
+
+type StudioView = 'overview' | 'recommendations' | 'storefront' | 'analytics' | 'profile';
+
+const views: { key: StudioView; label: string }[] = [
+  { key: 'overview', label: 'Home' },
+  { key: 'recommendations', label: 'Content' },
+  { key: 'storefront', label: 'Storefront' },
+  { key: 'analytics', label: 'Analytics' },
+  { key: 'profile', label: 'Profile' },
+];
+
+export default function CreatorStudioScreen() {
+  const router = useRouter();
+  const [view, setView] = useState<StudioView>('overview');
+  const [bundle, setBundle] = useState<CreatorStudioBundle | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const load = useCallback(
+    async (refresh = false) => {
+      if (refresh) setRefreshing(true);
+      else setLoading(true);
+      setError('');
+      try {
+        setBundle(await getCreatorStudioBundle());
+      } catch (cause) {
+        if (cause instanceof ApiError && cause.status === 401) {
+          router.replace('/login');
+          return;
+        }
+        setError(messageFor(cause));
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    const timer = globalThis.setTimeout(() => void load(), 0);
+    return () => globalThis.clearTimeout(timer);
+  }, [load]);
+
+  if (loading && !bundle) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <StatusBar style="dark" />
+        <ActivityIndicator color={colors.accent} size="large" />
+        <Text style={styles.loadingCopy}>Opening your studio…</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!bundle) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <StatusBar style="dark" />
+        <Text style={styles.errorTitle}>Studio unavailable</Text>
+        <Text style={styles.errorCopy}>{error || 'Please try again.'}</Text>
+        <Pressable onPress={() => void load()} style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>Try again</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" />
+      <View style={styles.header}>
+        <Pressable accessibilityRole="button" onPress={() => router.back()}>
+          <Text style={styles.back}>← Account</Text>
+        </Pressable>
+        <Text style={styles.wordmark}>swavii</Text>
+        <Pressable
+          accessibilityLabel="View public storefront"
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: '/[handle]',
+              params: { handle: bundle.summary.handle },
+            })
+          }
+        >
+          <Text style={styles.viewPage}>View page</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabs}
+        style={styles.tabScroller}
+      >
+        {views.map((item) => (
+          <Pressable
+            accessibilityRole="tab"
+            accessibilityState={{ selected: view === item.key }}
+            key={item.key}
+            onPress={() => {
+              setView(item.key);
+              setError('');
+              setNotice('');
+            }}
+            style={[styles.tab, view === item.key && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, view === item.key && styles.tabTextActive]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            tintColor={colors.accent}
+            onRefresh={() => void load(true)}
+          />
+        }
+      >
+        {error ? <Message kind="error" text={error} /> : null}
+        {notice ? <Message kind="success" text={notice} /> : null}
+        {view === 'overview' ? (
+          <Overview bundle={bundle} navigate={setView} />
+        ) : view === 'recommendations' ? (
+          <Recommendations
+            brands={bundle.brands}
+            recommendations={bundle.recommendations}
+            onBundle={setBundle}
+            onError={setError}
+            onNotice={setNotice}
+          />
+        ) : view === 'storefront' ? (
+          <StorefrontEditor
+            bundle={bundle}
+            onBundle={setBundle}
+            onError={setError}
+            onNotice={setNotice}
+          />
+        ) : view === 'analytics' ? (
+          <Analytics bundle={bundle} />
+        ) : (
+          <ProfileEditor
+            bundle={bundle}
+            onBundle={setBundle}
+            onError={setError}
+            onNotice={setNotice}
+          />
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function Overview({
+  bundle,
+  navigate,
+}: {
+  bundle: CreatorStudioBundle;
+  navigate: (view: StudioView) => void;
+}) {
+  const metrics = [
+    ['Recommendations', bundle.summary.counts.recommendations],
+    ['Collections', bundle.summary.counts.collections],
+    ['Discounts', bundle.summary.counts.brandDiscounts],
+    ['Story clips', bundle.summary.counts.storyClips],
+  ] as const;
+  return (
+    <>
+      <Text style={styles.eyebrow}>CREATOR STUDIO</Text>
+      <Text style={styles.title}>
+        Your studio, {firstName(bundle.summary.displayName)}.
+      </Text>
+      <Text style={styles.lede}>
+        Manage the page your audience sees—without leaving the app.
+      </Text>
+      <View style={styles.metricGrid}>
+        {metrics.map(([label, value]) => (
+          <View key={label} style={styles.metricCard}>
+            <Text style={styles.metricValue}>{value}</Text>
+            <Text style={styles.metricLabel}>{label}</Text>
+          </View>
+        ))}
+      </View>
+      <Text style={styles.sectionTitle}>Keep your page fresh</Text>
+      {(
+        [
+          ['recommendations', 'Recommendations', 'Add brands and manage what is live.'],
+          ['storefront', 'Storefront', 'Organize labels and featured media.'],
+          ['analytics', 'Analytics', 'See what your audience explores.'],
+          ['profile', 'Profile & links', 'Update your bio and social links.'],
+        ] as [StudioView, string, string][]
+      ).map(([key, title, copy]) => (
+        <Pressable key={key} onPress={() => navigate(key)} style={styles.actionCard}>
+          <View style={styles.actionCopy}>
+            <Text style={styles.actionTitle}>{title}</Text>
+            <Text style={styles.actionDescription}>{copy}</Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
+      ))}
+    </>
+  );
+}
+
+function Recommendations({
+  brands,
+  recommendations,
+  onBundle,
+  onError,
+  onNotice,
+}: {
+  brands: CreatorBrand[];
+  recommendations: CreatorRecommendation[];
+  onBundle: React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>;
+  onError: (message: string) => void;
+  onNotice: (message: string) => void;
+}) {
+  const [editingBrand, setEditingBrand] = useState<CreatorBrand | null | undefined>();
+  const [brandName, setBrandName] = useState('');
+  const [brandUrl, setBrandUrl] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  function openBrand(brand?: CreatorBrand) {
+    setEditingBrand(brand ?? null);
+    setBrandName(brand?.name ?? '');
+    setBrandUrl(brand?.websiteUrl ?? '');
+  }
+
+  async function persistBrand() {
+    if (!brandName.trim() || !brandUrl.trim()) {
+      onError('Add both a brand name and website.');
+      return;
+    }
+    setBusyId(editingBrand?.id ?? 'new-brand');
+    onError('');
+    try {
+      const saved = await saveCreatorBrand(
+        {
+          logoAssetId: editingBrand?.logoAssetId ?? null,
+          logoUrl: editingBrand?.logoUrl ?? null,
+          name: brandName.trim(),
+          websiteUrl: normalizeUrl(brandUrl),
+        },
+        editingBrand ?? undefined,
+      );
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              brands: editingBrand
+                ? current.brands.map((item) => (item.id === saved.id ? saved : item))
+                : [...current.brands, saved],
+            }
+          : current,
+      );
+      setEditingBrand(undefined);
+      onNotice(editingBrand ? 'Brand updated.' : 'Brand added.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function transition(item: CreatorRecommendation) {
+    const command =
+      item.lifecycle === 'published'
+        ? 'unpublish'
+        : item.lifecycle === 'archived'
+          ? 'restore'
+          : 'publish';
+    setBusyId(item.id);
+    onError('');
+    try {
+      const updated = await transitionCreatorRecommendation(item, command);
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              recommendations: current.recommendations.map((value) =>
+                value.id === updated.id ? updated : value,
+              ),
+            }
+          : current,
+      );
+      onNotice(
+        command === 'publish' ? 'Recommendation is live.' : 'Recommendation updated.',
+      );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <>
+      <Text style={styles.eyebrow}>YOUR CONTENT</Text>
+      <View style={styles.headingRow}>
+        <View style={styles.headingCopy}>
+          <Text style={styles.title}>Recommendations</Text>
+          <Text style={styles.lede}>
+            Manage your brands and what appears on your page.
+          </Text>
+        </View>
+        <Pressable onPress={() => openBrand()} style={styles.compactButton}>
+          <Text style={styles.compactButtonText}>+ Brand</Text>
+        </Pressable>
+      </View>
+
+      {editingBrand !== undefined ? (
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>
+            {editingBrand ? 'Edit brand' : 'Add brand'}
+          </Text>
+          <Field label="Brand name" onChangeText={setBrandName} value={brandName} />
+          <Field
+            autoCapitalize="none"
+            keyboardType="url"
+            label="Brand website"
+            onChangeText={setBrandUrl}
+            value={brandUrl}
+          />
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId)}
+              onPress={() => void persistBrand()}
+              style={styles.primarySmall}
+            >
+              {busyId ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save brand</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setEditingBrand(undefined)}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+      <Text style={styles.sectionTitle}>Brands</Text>
+      {brands.map((brand) => (
+        <Pressable
+          key={brand.id}
+          onPress={() => openBrand(brand)}
+          style={styles.listCard}
+        >
+          <View style={styles.listCopy}>
+            <Text style={styles.cardTitle}>{brand.name}</Text>
+            <Text style={styles.cardMeta}>
+              {brand.collectionCount} collections · {brand.itemCount} items
+            </Text>
+          </View>
+          <Text style={styles.editLabel}>Edit</Text>
+        </Pressable>
+      ))}
+
+      <Text style={styles.sectionTitle}>Items</Text>
+      {recommendations.length ? (
+        recommendations.map((item) => (
+          <View key={item.id} style={styles.listCard}>
+            <View style={styles.listCopy}>
+              <Text style={styles.cardEyebrow}>{item.brandName}</Text>
+              <Text numberOfLines={2} style={styles.cardTitle}>
+                {item.productName}
+              </Text>
+              <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
+            </View>
+            <Pressable
+              disabled={busyId === item.id}
+              onPress={() => void transition(item)}
+              style={styles.statusButton}
+            >
+              {busyId === item.id ? (
+                <ActivityIndicator color={colors.accent} />
+              ) : (
+                <Text style={styles.statusButtonText}>
+                  {item.lifecycle === 'published'
+                    ? 'Hide'
+                    : item.lifecycle === 'archived'
+                      ? 'Restore'
+                      : 'Publish'}
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        ))
+      ) : (
+        <Empty text="No recommendations yet." />
+      )}
+    </>
+  );
+}
+
+function StorefrontEditor({
+  bundle,
+  onBundle,
+  onError,
+  onNotice,
+}: {
+  bundle: CreatorStudioBundle;
+  onBundle: React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>;
+  onError: (message: string) => void;
+  onNotice: (message: string) => void;
+}) {
+  const [configuration, setConfiguration] = useState(bundle.configuration);
+  const [labelTitle, setLabelTitle] = useState('');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaTitle, setMediaTitle] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const save = useCallback(
+    async (next: CreatorStorefrontConfiguration) => {
+      setSaving(true);
+      onError('');
+      try {
+        const saved = await saveStorefrontConfiguration(next, configurationInput(next));
+        setConfiguration(saved);
+        onBundle((current) => (current ? { ...current, configuration: saved } : current));
+        onNotice('Your storefront organization is live.');
+      } catch (cause) {
+        onError(messageFor(cause));
+      } finally {
+        setSaving(false);
+      }
+    },
+    [onBundle, onError, onNotice],
+  );
+
+  function addLabel() {
+    const title = labelTitle.trim();
+    if (!title) return;
+    const next = {
+      ...configuration,
+      labels: [
+        ...configuration.labels,
+        {
+          brandIds: [],
+          categorySlug: null,
+          collectionIds: [],
+          id: newStudioId(),
+          layout: 'grid' as const,
+          recommendationIds: [],
+          title,
+        },
+      ],
+    };
+    setLabelTitle('');
+    setConfiguration(next);
+    void save(next);
+  }
+
+  function addMedia() {
+    if (!mediaTitle.trim() || !mediaUrl.trim()) return;
+    const media: FeaturedMedia = {
+      displayMode: 'embed',
+      id: newStudioId(),
+      provider: mediaProvider(mediaUrl),
+      thumbnailUrl: null,
+      title: mediaTitle.trim(),
+      url: normalizeUrl(mediaUrl),
+      visible: true,
+    };
+    const next = {
+      ...configuration,
+      contentOrder: [
+        ...configuration.contentOrder,
+        { id: media.id, kind: 'media' as const },
+      ],
+      featuredMedia: [...configuration.featuredMedia, media],
+    };
+    setMediaTitle('');
+    setMediaUrl('');
+    setConfiguration(next);
+    void save(next);
+  }
+
+  function removeLabel(id: string) {
+    Alert.alert('Remove this label?', 'It will disappear from your public storefront.', [
+      { style: 'cancel', text: 'Cancel' },
+      {
+        onPress: () => {
+          const next = {
+            ...configuration,
+            labels: configuration.labels.filter((item) => item.id !== id),
+          };
+          setConfiguration(next);
+          void save(next);
+        },
+        style: 'destructive',
+        text: 'Remove',
+      },
+    ]);
+  }
+
+  function removeMedia(id: string) {
+    Alert.alert(
+      'Remove this featured item?',
+      'It will disappear from your public storefront.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => {
+            const next = {
+              ...configuration,
+              contentOrder: configuration.contentOrder.filter(
+                (item) => !(item.kind === 'media' && item.id === id),
+              ),
+              featuredMedia: configuration.featuredMedia.filter((item) => item.id !== id),
+            };
+            setConfiguration(next);
+            void save(next);
+          },
+          style: 'destructive',
+          text: 'Remove',
+        },
+      ],
+    );
+  }
+
+  return (
+    <>
+      <Text style={styles.eyebrow}>YOUR STOREFRONT</Text>
+      <Text style={styles.title}>Organize your page</Text>
+      <Text style={styles.lede}>
+        Add quick filters and feature videos, posts or music.
+      </Text>
+
+      <View style={styles.editorCard}>
+        <Text style={styles.cardTitle}>Add label</Text>
+        <Text style={styles.cardMeta}>Create a filter such as “My favorites”.</Text>
+        <Field label="Label name" onChangeText={setLabelTitle} value={labelTitle} />
+        <Pressable
+          disabled={saving || !labelTitle.trim()}
+          onPress={addLabel}
+          style={styles.primarySmall}
+        >
+          <Text style={styles.primaryButtonText}>Add label</Text>
+        </Pressable>
+      </View>
+      {configuration.labels.map((label) => (
+        <View key={label.id} style={styles.listCard}>
+          <View style={styles.listCopy}>
+            <Text style={styles.cardTitle}>{label.title}</Text>
+            <Text style={styles.cardMeta}>
+              {label.recommendationIds.length} items · {label.collectionIds.length}{' '}
+              collections
+            </Text>
+          </View>
+          <Pressable onPress={() => removeLabel(label.id)}>
+            <Text style={styles.removeText}>Remove</Text>
+          </Pressable>
+        </View>
+      ))}
+
+      <View style={styles.editorCard}>
+        <Text style={styles.cardTitle}>Add featured content</Text>
+        <Text style={styles.cardMeta}>YouTube, Instagram, Spotify or Apple Music.</Text>
+        <Field
+          autoCapitalize="none"
+          keyboardType="url"
+          label="Media link"
+          onChangeText={setMediaUrl}
+          value={mediaUrl}
+        />
+        <Field label="Title" onChangeText={setMediaTitle} value={mediaTitle} />
+        <Pressable
+          disabled={saving || !mediaTitle.trim() || !mediaUrl.trim()}
+          onPress={addMedia}
+          style={styles.primarySmall}
+        >
+          <Text style={styles.primaryButtonText}>Add featured content</Text>
+        </Pressable>
+      </View>
+      {configuration.featuredMedia.map((item) => (
+        <View key={item.id} style={styles.listCard}>
+          <View style={styles.listCopy}>
+            <Text style={styles.cardEyebrow}>{item.provider.replace('_', ' ')}</Text>
+            <Text style={styles.cardTitle}>{item.title}</Text>
+          </View>
+          <Pressable onPress={() => removeMedia(item.id)}>
+            <Text style={styles.removeText}>Remove</Text>
+          </Pressable>
+        </View>
+      ))}
+      {saving ? <ActivityIndicator color={colors.accent} style={styles.saving} /> : null}
+    </>
+  );
+}
+
+function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
+  const metrics = [
+    ['Page views', bundle.analytics.summary.storefrontViews],
+    ['Unique visitors', bundle.analytics.summary.uniqueVisitors],
+    ['Product clicks', bundle.analytics.summary.shopClicks],
+    ['Instagram taps', bundle.analytics.summary.instagramTaps],
+  ] as const;
+  const top = useMemo(
+    () =>
+      [...bundle.analytics.recommendations]
+        .sort((a, b) => b.shopClicks - a.shopClicks || b.views - a.views)
+        .slice(0, 5),
+    [bundle.analytics.recommendations],
+  );
+  return (
+    <>
+      <Text style={styles.eyebrow}>LAST {bundle.analytics.range.days} DAYS</Text>
+      <Text style={styles.title}>See what resonates</Text>
+      <Text style={styles.lede}>A clear view of what people explore on your page.</Text>
+      <View style={styles.metricGrid}>
+        {metrics.map(([label, value]) => (
+          <View key={label} style={styles.metricCard}>
+            <Text style={styles.metricValue}>{value.toLocaleString()}</Text>
+            <Text style={styles.metricLabel}>{label}</Text>
+          </View>
+        ))}
+      </View>
+      <Text style={styles.sectionTitle}>Most explored</Text>
+      {top.length ? (
+        top.map((item, index) => (
+          <View key={item.id} style={styles.listCard}>
+            <Text style={styles.rank}>{index + 1}</Text>
+            <View style={styles.listCopy}>
+              <Text numberOfLines={2} style={styles.cardTitle}>
+                {item.productName}
+              </Text>
+              <Text style={styles.cardMeta}>{item.brandName}</Text>
+            </View>
+            <View>
+              <Text style={styles.clickValue}>{item.shopClicks}</Text>
+              <Text style={styles.clickLabel}>clicks</Text>
+            </View>
+          </View>
+        ))
+      ) : (
+        <Empty text="Your activity will appear here as people visit your page." />
+      )}
+    </>
+  );
+}
+
+function ProfileEditor({
+  bundle,
+  onBundle,
+  onError,
+  onNotice,
+}: {
+  bundle: CreatorStudioBundle;
+  onBundle: React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>;
+  onError: (message: string) => void;
+  onNotice: (message: string) => void;
+}) {
+  const [displayName, setDisplayName] = useState(bundle.profile.displayName);
+  const [bio, setBio] = useState(bundle.profile.bioHe);
+  const [instagram, setInstagram] = useState(
+    linkFor(bundle.profile.socialLinks, 'instagram'),
+  );
+  const [website, setWebsite] = useState(linkFor(bundle.profile.socialLinks, 'website'));
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    if (!displayName.trim()) {
+      onError('Add your display name.');
+      return;
+    }
+    setSaving(true);
+    onError('');
+    try {
+      const otherLinks = bundle.profile.socialLinks.filter(
+        ({ platform }) => platform !== 'instagram' && platform !== 'website',
+      );
+      const socialLinks: CreatorProfileSocialLink[] = [...otherLinks];
+      if (instagram.trim()) {
+        socialLinks.push({ platform: 'instagram', url: normalizeUrl(instagram) });
+      }
+      if (website.trim()) {
+        socialLinks.push({ platform: 'website', url: normalizeUrl(website) });
+      }
+      const profile = await updateCreatorProfile(bundle.profile, {
+        bioHe: bio,
+        displayName: displayName.trim(),
+        socialLinks,
+      });
+      onBundle((current) => (current ? { ...current, profile } : current));
+      onNotice('Your profile and links are live.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <Text style={styles.eyebrow}>PUBLIC PROFILE</Text>
+      <Text style={styles.title}>Profile & links</Text>
+      <Text style={styles.lede}>These details appear at the top of your storefront.</Text>
+      <View style={styles.editorCard}>
+        <Field label="Display name" onChangeText={setDisplayName} value={displayName} />
+        <Field label="Bio" multiline onChangeText={setBio} value={bio} />
+        <Field
+          autoCapitalize="none"
+          keyboardType="url"
+          label="Instagram"
+          onChangeText={setInstagram}
+          value={instagram}
+        />
+        <Field
+          autoCapitalize="none"
+          keyboardType="url"
+          label="Website"
+          onChangeText={setWebsite}
+          value={website}
+        />
+        <View style={styles.readOnlyRow}>
+          <Text style={styles.fieldLabel}>Storefront address</Text>
+          <Text style={styles.readOnlyValue}>swavii.com/{bundle.profile.handle}</Text>
+        </View>
+        <Pressable
+          disabled={saving}
+          onPress={() => void save()}
+          style={styles.primaryButton}
+        >
+          {saving ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Save profile</Text>
+          )}
+        </Pressable>
+      </View>
+    </>
+  );
+}
+
+function Field({
+  label,
+  multiline,
+  ...props
+}: React.ComponentProps<typeof TextInput> & { label: string }) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <TextInput
+        {...props}
+        multiline={multiline}
+        placeholderTextColor={colors.muted}
+        style={[styles.input, multiline && styles.textarea]}
+      />
+    </View>
+  );
+}
+
+function Message({ kind, text }: { kind: 'error' | 'success'; text: string }) {
+  return (
+    <View
+      style={[
+        styles.message,
+        kind === 'error' ? styles.errorMessage : styles.successMessage,
+      ]}
+    >
+      <Text
+        style={kind === 'error' ? styles.errorMessageText : styles.successMessageText}
+      >
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return (
+    <View style={styles.empty}>
+      <Text style={styles.emptyText}>{text}</Text>
+    </View>
+  );
+}
+
+function configurationInput(configuration: CreatorStorefrontConfiguration) {
+  return {
+    ...(configuration.brandOrder ? { brandOrder: configuration.brandOrder } : {}),
+    categoryIds: configuration.sections.map(({ category }) => category.id),
+    contentOrder: configuration.contentOrder,
+    curatedSections: configuration.curatedSections,
+    featuredMedia: configuration.featuredMedia,
+    hiddenBrandIds: configuration.hiddenBrandIds,
+    hiddenCollectionIds: configuration.hiddenCollectionIds,
+    hiddenRecommendationIds: configuration.hiddenRecommendationIds,
+    labels: configuration.labels,
+    ...(configuration.titles ? { titles: configuration.titles } : {}),
+  };
+}
+
+function linkFor(
+  links: CreatorProfileSocialLink[],
+  platform: CreatorProfileSocialLink['platform'],
+) {
+  return links.find((link) => link.platform === platform)?.url ?? '';
+}
+
+function normalizeUrl(value: string): string {
+  const trimmed = value.trim();
+  return /^https:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed.replace(/^\/+/, '')}`;
+}
+
+function mediaProvider(value: string): FeaturedMedia['provider'] {
+  const hostname = (() => {
+    try {
+      return new URL(normalizeUrl(value)).hostname.toLowerCase();
+    } catch {
+      return '';
+    }
+  })();
+  if (hostname.includes('instagram')) return 'instagram';
+  if (hostname.includes('spotify')) return 'spotify';
+  if (hostname.includes('music.apple')) return 'apple_music';
+  return 'youtube';
+}
+
+function lifecycleLabel(value: CreatorRecommendation['lifecycle']): string {
+  return value === 'published'
+    ? 'Live on your storefront'
+    : value === 'archived'
+      ? 'Archived'
+      : 'Hidden from your storefront';
+}
+
+function firstName(value: string): string {
+  return value.trim().split(/\s+/)[0] || value;
+}
+
+function messageFor(cause: unknown): string {
+  return cause instanceof Error
+    ? cause.message
+    : 'Something went wrong. Please try again.';
+}
+
+const styles = StyleSheet.create({
+  safeArea: { backgroundColor: colors.background, flex: 1 },
+  centered: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  loadingCopy: { color: colors.muted, marginTop: spacing.md },
+  errorTitle: { color: colors.ink, fontFamily: 'Georgia', fontSize: 32 },
+  errorCopy: {
+    color: colors.muted,
+    lineHeight: 22,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 58,
+    paddingHorizontal: spacing.lg,
+  },
+  back: { color: colors.muted, fontSize: 14, fontWeight: '600' },
+  wordmark: { color: colors.ink, fontFamily: 'Georgia', fontSize: 25 },
+  viewPage: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  tabScroller: { flexGrow: 0 },
+  tabs: { gap: 6, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  tab: { borderRadius: 999, paddingHorizontal: 15, paddingVertical: 10 },
+  tabActive: { backgroundColor: colors.ink },
+  tabText: { color: colors.muted, fontSize: 14, fontWeight: '600' },
+  tabTextActive: { color: colors.white },
+  content: { padding: spacing.lg, paddingBottom: 80 },
+  eyebrow: { color: colors.accent, fontSize: 11, letterSpacing: 2 },
+  title: {
+    color: colors.ink,
+    fontFamily: 'Georgia',
+    fontSize: 38,
+    letterSpacing: -1,
+    lineHeight: 43,
+    marginTop: spacing.sm,
+  },
+  lede: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: spacing.sm },
+  headingRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
+  headingCopy: { flex: 1 },
+  compactButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radii.control,
+    marginTop: spacing.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  compactButtonText: { color: colors.white, fontWeight: '700' },
+  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: spacing.xl },
+  metricCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    minHeight: 108,
+    padding: spacing.md,
+    width: '48%',
+  },
+  metricValue: { color: colors.ink, fontFamily: 'Georgia', fontSize: 34 },
+  metricLabel: { color: colors.muted, fontSize: 13, marginTop: 4 },
+  sectionTitle: {
+    color: colors.ink,
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
+  },
+  actionCard: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 10,
+    padding: spacing.md,
+  },
+  actionCopy: { flex: 1 },
+  actionTitle: { color: colors.ink, fontSize: 17, fontWeight: '700' },
+  actionDescription: { color: colors.muted, lineHeight: 20, marginTop: 3 },
+  chevron: { color: colors.accent, fontSize: 28, marginLeft: spacing.md },
+  editorCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    marginTop: spacing.xl,
+    padding: spacing.lg,
+  },
+  listCard: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: 10,
+    minHeight: 78,
+    padding: spacing.md,
+  },
+  listCopy: { flex: 1 },
+  cardEyebrow: {
+    color: colors.accent,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  cardTitle: { color: colors.ink, fontSize: 16, fontWeight: '700' },
+  cardMeta: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 4 },
+  editLabel: { color: colors.accent, fontWeight: '700' },
+  removeText: { color: '#9b2c24', fontSize: 13, fontWeight: '700' },
+  statusButton: {
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    minWidth: 70,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  statusButtonText: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  field: { marginTop: spacing.md },
+  fieldLabel: { color: colors.ink, fontSize: 13, fontWeight: '700', marginBottom: 7 },
+  input: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    color: colors.ink,
+    fontSize: 16,
+    minHeight: 50,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  textarea: { minHeight: 110, textAlignVertical: 'top' },
+  readOnlyRow: { marginTop: spacing.lg },
+  readOnlyValue: { color: colors.muted, fontSize: 15 },
+  primaryButton: {
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    backgroundColor: colors.accent,
+    borderRadius: radii.control,
+    marginTop: spacing.lg,
+    minHeight: 50,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
+  },
+  primarySmall: {
+    alignItems: 'center',
+    backgroundColor: colors.accent,
+    borderRadius: radii.control,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+  },
+  primaryButtonText: { color: colors.white, fontSize: 15, fontWeight: '700' },
+  secondarySmall: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+  },
+  secondaryButtonText: { color: colors.ink, fontSize: 15, fontWeight: '700' },
+  buttonRow: { flexDirection: 'row', gap: 10, marginTop: spacing.lg },
+  message: { borderRadius: radii.control, marginBottom: spacing.md, padding: 12 },
+  errorMessage: { backgroundColor: '#fff0ed' },
+  successMessage: { backgroundColor: '#edf7ef' },
+  errorMessageText: { color: '#8a3028' },
+  successMessageText: { color: '#28613a' },
+  empty: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    padding: spacing.xl,
+  },
+  emptyText: { color: colors.muted, lineHeight: 21, textAlign: 'center' },
+  saving: { marginTop: spacing.md },
+  rank: { color: colors.accent, fontFamily: 'Georgia', fontSize: 24, width: 24 },
+  clickValue: { color: colors.ink, fontSize: 18, fontWeight: '700', textAlign: 'right' },
+  clickLabel: { color: colors.muted, fontSize: 11 },
+});

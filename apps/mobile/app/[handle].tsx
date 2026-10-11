@@ -109,8 +109,9 @@ export default function PublicStorefrontScreen() {
   );
 
   useEffect(() => {
-    void loadStorefront();
+    const timer = globalThis.setTimeout(() => void loadStorefront(), 0);
     return () => {
+      globalThis.clearTimeout(timer);
       loadSequence.current += 1;
     };
   }, [loadStorefront]);
