@@ -4821,7 +4821,7 @@ function CuratedSectionForm({
           </label>
         </>
       ) : null}
-      {kind === 'section' && initial ? (
+      {kind === 'section' ? (
         <>
           <fieldset>
             <legend>Brands</legend>
@@ -4873,7 +4873,7 @@ function CuratedSectionForm({
           </fieldset>
         </>
       ) : null}
-      {kind !== 'section' || Boolean(initial) ? (
+      <>
         <fieldset>
           <legend>
             {kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}
@@ -4927,8 +4927,8 @@ function CuratedSectionForm({
             <p>Add a product recommendation first.</p>
           )}
         </fieldset>
-      ) : null}
-      {kind === 'section' && initial ? (
+      </>
+      {kind === 'section' ? (
         <fieldset>
           <legend>Featured Content</legend>
           {featuredMedia.length ? (
@@ -5082,7 +5082,7 @@ function CuratedSectionForm({
           </ol>
         </div>
       ) : null}
-      {kind === 'section' && initial && contentItems.length ? (
+      {kind === 'section' && contentItems.length ? (
         <div className="creatorCuratedOrder">
           <p>Content order in this section</p>
           <ol>
