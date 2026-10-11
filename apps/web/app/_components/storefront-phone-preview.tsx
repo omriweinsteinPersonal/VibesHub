@@ -55,6 +55,20 @@ const groups: Array<{
 const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
   { name: 'Editorial', theme: defaultStorefrontTheme },
   {
+    name: 'Cobalt Bloom',
+    theme: {
+      profileBackground: '#e8e6ff',
+      profileImageUrl: '',
+      recommendationsBackground: '#fff9f4',
+      dividerColor: '#d9d2ee',
+      productBackground: '#ffffff',
+      discountBackground: '#ffe3d6',
+      collectionBackground: '#f0efff',
+      accentColor: '#5b55d6',
+      textColor: '#201c3b',
+    },
+  },
+  {
     name: 'Sand',
     theme: {
       profileBackground: '#eee4d6',
