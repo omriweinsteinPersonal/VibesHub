@@ -14046,7 +14046,8 @@ dt {
 /* Keep brand and product copy aligned with the storefront label typography. */
 .referenceBrandBlock > header h3,
 .referenceCompactLabelGroups > .referenceBrandBlock > header h3,
-.referenceStandaloneRecommendationContent h3 {
+.referenceStandaloneRecommendationContent h3,
+.referenceStandaloneRecommendationBrand {
   font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
   font-size: 1.36rem;
   font-weight: 700;
@@ -14057,6 +14058,12 @@ dt {
   font-size: clamp(1.05rem, 3.5vw, 1.35rem);
   font-weight: 400;
   line-height: 1.28;
+}
+
+.referenceStandaloneRecommendationBrand {
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
 }
 
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
