@@ -584,12 +584,10 @@ function formatDiscountDate(value: string): string {
 
 function socialLabel(platform: CreatorStorefront['socialLinks'][number]['platform']) {
   const labels = {
-    apple_music: '♪',
     facebook: 'f',
     instagram: 'IG',
     linkedin: 'in',
     pinterest: 'P',
-    spotify: 'S',
     spotify: 'S',
     apple_music: '',
     tiktok: 'TT',
