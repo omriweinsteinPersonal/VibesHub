@@ -9167,6 +9167,174 @@ dt {
 .creatorStorefrontCanvas[data-mobile-preview='true'] {
   min-height: 100vh;
 }
+.creatorStorefrontCanvas[data-template='editorial-frame'] {
+  background: #17204a;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  border: 1px solid #3047d6;
+  border-bottom: 0;
+  border-top: 0;
+  bottom: 18px;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: 18px;
+  width: clamp(16px, 5vw, 84px);
+  z-index: -1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before {
+  border-radius: 48px 0 0 48px;
+  box-shadow: inset 8px 0 0 #f26858, 0 0 0 10px rgb(48 71 214 / 8%);
+  left: 2vw;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  border-radius: 0 48px 48px 0;
+  box-shadow: inset -8px 0 0 #d8f052, 0 0 0 10px rgb(48 71 214 / 8%);
+  right: 2vw;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  overflow: hidden;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero::before,
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero::after {
+  border-radius: 999px;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero::before {
+  background: #3047d6;
+  height: 180px;
+  left: max(18px, calc(50% - 780px));
+  opacity: 0.92;
+  top: 22px;
+  width: 180px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero::after {
+  background: #f26858;
+  height: 92px;
+  right: max(28px, calc(50% - 760px));
+  top: 34px;
+  width: 92px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontInner,
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontActions,
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontBio {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontAvatar {
+  border-color: #fff9f1;
+  box-shadow: 0 0 0 8px rgb(255 249 241 / 72%), 0 12px 28px rgb(23 26 45 / 18%);
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels::before {
+  background: #3047d6;
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: -1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels button {
+  color: #fff9f1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels button[aria-pressed='true'] {
+  background: #d8f052;
+  color: #171a2d;
+}
+.storefrontTemplatePicker {
+  border-bottom: 1px solid #eadfd5;
+  margin: 0 0 18px;
+  padding: 0 0 18px;
+}
+.storefrontTemplatePicker h3 {
+  margin: 0;
+}
+.storefrontTemplatePicker p,
+.storefrontTemplateOption small {
+  color: #756a62;
+  display: block;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+.storefrontTemplateList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.storefrontTemplateOption {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5dacf;
+  border-radius: 14px;
+  color: #30251f;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  padding: 10px;
+  text-align: left;
+}
+.storefrontTemplateOption[aria-pressed='true'] {
+  border-color: #3047d6;
+  box-shadow: 0 0 0 2px rgb(48 71 214 / 13%);
+}
+.storefrontTemplateOption strong {
+  display: block;
+}
+.storefrontTemplatePreview {
+  border-radius: 9px;
+  display: block;
+  height: 58px;
+  overflow: hidden;
+  position: relative;
+}
+.classicTemplatePreview {
+  background: linear-gradient(#fbf6ec 0 34%, #fff 34% 100%);
+  border: 1px solid #e6ddd4;
+}
+.classicTemplatePreview::after {
+  background: #b77856;
+  border-radius: 999px;
+  content: '';
+  height: 6px;
+  left: 10px;
+  position: absolute;
+  right: 10px;
+  top: 13px;
+}
+.editorialTemplatePreview {
+  background: #17204a;
+  border: 1px solid #3047d6;
+}
+.editorialTemplatePreview::before {
+  background: #3047d6;
+  border-radius: 0 0 20px 0;
+  content: '';
+  height: 35px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.editorialTemplatePreview::after {
+  background: #d8f052;
+  border-radius: 999px;
+  content: '';
+  height: 8px;
+  left: 8px;
+  position: absolute;
+  right: 8px;
+  top: 41px;
+}
 .creatorStorefrontCanvas .referenceStorefrontHero {
   background: var(--sf-profile);
 }

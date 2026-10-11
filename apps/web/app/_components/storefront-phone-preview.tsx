@@ -13,7 +13,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { apiRequest } from '../../lib/api';
 import { contrastRatio } from '../../lib/storefront-theme';
 
-type ThemeKey = Exclude<keyof StorefrontTheme, 'layout' | 'profileImageUrl'>;
+type ThemeKey = Exclude<keyof StorefrontTheme, 'layout' | 'profileImageUrl' | 'templateId'>;
 type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
@@ -52,22 +52,33 @@ const groups: Array<{
     fields: [{ key: 'collectionBackground', label: 'Frame background' }],
   },
 ];
-const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
-  { name: 'Editorial', theme: defaultStorefrontTheme },
+const templateThemes: Array<{
+  id: 'editorial-frame';
+  name: string;
+  description: string;
+  theme: StorefrontTheme;
+}> = [
   {
-    name: 'Cobalt Bloom',
+    id: 'editorial-frame',
+    name: 'Editorial Frame',
+    description: 'A distinctive header and outer frame around your existing cards.',
     theme: {
-      profileBackground: '#e8e6ff',
+      templateId: 'editorial-frame',
+      profileBackground: '#fff9f1',
       profileImageUrl: '',
-      recommendationsBackground: '#fff9f4',
-      dividerColor: '#d9d2ee',
+      recommendationsBackground: '#fff9f1',
+      dividerColor: '#d9d4ce',
       productBackground: '#ffffff',
-      discountBackground: '#ffe3d6',
-      collectionBackground: '#f0efff',
-      accentColor: '#5b55d6',
-      textColor: '#201c3b',
+      discountBackground: '#fff1eb',
+      collectionBackground: '#eeeafe',
+      accentColor: '#3047d6',
+      textColor: '#171a2d',
     },
   },
+];
+
+const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
+  { name: 'Editorial', theme: defaultStorefrontTheme },
   {
     name: 'Sand',
     theme: {
@@ -431,6 +442,58 @@ export function StorefrontPhonePreview({
               </label>
             </section>
             <div>
+              <section
+                aria-labelledby="template-picker-title"
+                className="storefrontTemplatePicker"
+              >
+                <div>
+                  <h3 id="template-picker-title">Templates</h3>
+                  <p>Choose a visual frame without changing how your recommendations work.</p>
+                </div>
+                <div className="storefrontTemplateList" role="group" aria-label="Templates">
+                  <button
+                    aria-pressed={(draft.templateId ?? 'classic') === 'classic'}
+                    className="storefrontTemplateOption classicTemplateOption"
+                    onClick={() => {
+                      setDraft((current) => ({ ...current, templateId: 'classic' }));
+                      setNotice('');
+                    }}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="storefrontTemplatePreview classicTemplatePreview" />
+                    <span>
+                      <strong>Classic</strong>
+                      <small>Keep the current storefront look.</small>
+                    </span>
+                  </button>
+                  {templateThemes.map((template) => (
+                    <button
+                      aria-pressed={(draft.templateId ?? 'classic') === template.id}
+                      className="storefrontTemplateOption editorialTemplateOption"
+                      key={template.id}
+                      onClick={() => {
+                        setDraft((current) => ({
+                          ...current,
+                          ...template.theme,
+                          profileImageUrl: current.profileImageUrl,
+                          layout: current.layout,
+                        }));
+                        setNotice('');
+                      }}
+                      type="button"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="storefrontTemplatePreview editorialTemplatePreview"
+                      />
+                      <span>
+                        <strong>{template.name}</strong>
+                        <small>{template.description}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
               <div
                 className="storefrontPaletteList"
                 role="group"
@@ -438,13 +501,16 @@ export function StorefrontPhonePreview({
               >
                 {palettes.map(({ name, theme: palette }) => (
                   <button
-                    aria-pressed={Object.keys(defaultStorefrontTheme).every(
+                    aria-pressed={Object.keys(defaultStorefrontTheme)
+                      .filter((key) => key !== 'templateId')
+                      .every(
                       (key) => draft[key as ThemeKey] === palette[key as ThemeKey],
-                    )}
+                      )}
                     key={name}
                     onClick={() => {
                       setDraft((current) => ({
                         ...palette,
+                        templateId: current.templateId,
                         profileImageUrl: current.profileImageUrl,
                         layout: current.layout,
                       }));
@@ -579,6 +645,7 @@ export function StorefrontPhonePreview({
                   onClick={() => {
                     setDraft((current) => ({
                       ...defaultStorefrontTheme,
+                      templateId: current.templateId,
                       profileImageUrl: current.profileImageUrl,
                       layout: current.layout,
                     }));

@@ -85,7 +85,7 @@ export const creatorCardSchema = z
       .max(100)
       .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }).nullable(),
     recommendationCount: z.int().nonnegative(),
     verificationStatus: z.enum(['unverified', 'verified']),
   })
@@ -552,6 +552,7 @@ export const creatorRecommendationSchema = recommendationCardSchema
 const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const defaultStorefrontTheme = {
+  templateId: 'classic',
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
   recommendationsBackground: '#ffffff',
@@ -565,6 +566,9 @@ export const defaultStorefrontTheme = {
 
 export const storefrontThemeSchema = z
   .object({
+    // Optional for existing storefront themes. Missing values render as the
+    // original Classic shell until a creator explicitly selects a template.
+    templateId: z.enum(['classic', 'editorial-frame']).optional(),
     profileBackground: storefrontColorSchema,
     // Optional so existing storefront themes remain valid when the Hero image
     // feature is introduced. The client only renders safe http(s) URLs.
@@ -688,7 +692,7 @@ export const creatorStorefrontSchema = z
       .max(100)
       .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }).nullable(),
     recommendationCount: z.int().nonnegative(),
     brands: z
       .array(
@@ -797,6 +801,8 @@ export const creatorStorefrontSchema = z
             'youtube',
             'facebook',
             'pinterest',
+          'spotify',
+          'apple_music',
             'website',
           ]),
           url: z.url({ protocol: /^https$/ }).max(2_048),
@@ -967,6 +973,8 @@ export const socialPlatformSchema = z.enum([
   'youtube',
   'facebook',
   'pinterest',
+  'spotify',
+  'apple_music',
   'website',
 ]);
 
@@ -1001,7 +1009,7 @@ export const creatorApplicationInputSchema = z
       .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/)
       .nullable()
       .optional(),
-    socialLinks: z.array(creatorApplicationSocialLinkSchema).max(8).optional(),
+    socialLinks: z.array(creatorApplicationSocialLinkSchema).max(10).optional(),
   })
   .strict();
 
@@ -1038,8 +1046,10 @@ export const creatorProfileSettingsSchema = z
     displayName: z.string().trim().min(1).max(100),
     handle: creatorCardSchema.shape.handle,
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ id: true, name: true, slug: true }),
-    socialLinks: z.array(creatorProfileSocialLinkSchema).max(8),
+    primaryCategory: categoryCardSchema
+      .pick({ id: true, name: true, slug: true })
+      .nullable(),
+    socialLinks: z.array(creatorProfileSocialLinkSchema).max(10),
     version: z.int().positive(),
   })
   .strict();
@@ -1060,7 +1070,7 @@ export const creatorProfilePatchSchema = z
     primaryCategoryId: idSchema.optional(),
     socialLinks: z
       .array(creatorProfileSocialLinkSchema)
-      .max(8)
+      .max(10)
       .refine(
         (links) => new Set(links.map(({ platform }) => platform)).size === links.length,
         'Use each social platform at most once',

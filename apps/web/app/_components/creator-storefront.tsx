@@ -596,6 +596,7 @@ export function CreatorStorefrontView({
       <div
         className="creatorStorefrontCanvas"
         data-mobile-preview={isMobilePreview}
+        data-template={previewTheme.templateId ?? 'classic'}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
