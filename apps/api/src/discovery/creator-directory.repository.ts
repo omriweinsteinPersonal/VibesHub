@@ -186,6 +186,8 @@ export class CreatorDirectoryRepository {
                 'id', section.id,
                 'kind', section.kind,
                 'brandId', section.brand_id,
+                'contentItems', section.content_items,
+                'displayStyle', section.display_style,
                 'title', section.title,
                 'description', section.description,
                 'imageUrl', section.image_url,

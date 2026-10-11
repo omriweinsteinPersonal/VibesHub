@@ -40,6 +40,11 @@ interface StorefrontSectionRow {
 
 interface CuratedSectionRow {
   brandId: string | null;
+  contentItems: Array<{
+    id: string;
+    kind: 'recommendation' | 'media' | 'brand' | 'collection';
+  }>;
+  displayStyle: 'horizontal' | 'vertical';
   id: string;
   kind: 'section' | 'collection' | 'page';
   title: string;
@@ -310,7 +315,41 @@ export class CreatorStudioRepository {
         return { kind: 'invalid_recommendations' };
       const recommendationIds = [
         ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'recommendation')
+              .map(({ id }) => id),
+          ),
+        ),
         ...new Set(input.labels.flatMap((label) => label.recommendationIds)),
+      ];
+      const mediaIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'media')
+              .map(({ id }) => id),
+          ),
+        ),
+      ];
+      const selectedBrandIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'brand')
+              .map(({ id }) => id),
+          ),
+        ),
+      ];
+      const selectedCollectionIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'collection')
+              .map(({ id }) => id),
+          ),
+        ),
       ];
       const collectionIds = new Set(input.labels.flatMap((label) => label.collectionIds));
       if (
@@ -347,6 +386,32 @@ export class CreatorStudioRepository {
           return { kind: 'invalid_recommendations' };
         }
       }
+      if (
+        mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))
+      ) {
+        return { kind: 'invalid_recommendations' };
+      }
+      if (selectedBrandIds.length) {
+        const [ownedBrands] = await sql<{ count: number }[]>`
+          select count(*)::integer as count
+          from app.creator_brands
+          where creator_id = ${identity.id}
+            and id = any(${selectedBrandIds}::uuid[])
+            and lifecycle = 'active'
+        `;
+        if (ownedBrands?.count !== selectedBrandIds.length)
+          return { kind: 'invalid_recommendations' };
+      }
+      if (
+        selectedCollectionIds.some(
+          (id) =>
+            !input.curatedSections.some(
+              (section) => section.id === id && section.kind === 'collection',
+            ),
+        )
+      ) {
+        return { kind: 'invalid_recommendations' };
+      }
       for (const section of input.curatedSections) {
         if (section.kind === 'collection' && !section.brandId)
           return { kind: 'invalid_recommendations' };
@@ -363,9 +428,9 @@ export class CreatorStudioRepository {
       for (const [position, section] of input.curatedSections.entries()) {
         await sql`
           insert into app.creator_curated_sections
-            (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, position)
+            (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, display_style, content_items, position)
           values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
-            ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${position})
+            ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${section.displayStyle}, ${sql.json(section.contentItems)}, ${position})
         `;
         for (const [
           itemPosition,
@@ -525,6 +590,8 @@ export class CreatorStudioRepository {
         section.id,
         section.kind,
         section.brand_id as "brandId",
+        section.content_items as "contentItems",
+        section.display_style as "displayStyle",
         section.title,
         section.description,
         section.image_url as "imageUrl",

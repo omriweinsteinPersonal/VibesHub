@@ -293,6 +293,21 @@ export function CreatorStorefrontView({
       ),
     [configuration?.featuredMedia, storefront.featuredMedia],
   );
+  const sectionMediaIds = useMemo(
+    () =>
+      new Set(
+        visibleCuratedSections.flatMap((section) =>
+          section.contentItems
+            .filter(({ kind }) => kind === 'media')
+            .map(({ id }) => id),
+        ),
+      ),
+    [visibleCuratedSections],
+  );
+  const standaloneFeaturedMedia = useMemo(
+    () => visibleFeaturedMedia.filter(({ id }) => !sectionMediaIds.has(id)),
+    [sectionMediaIds, visibleFeaturedMedia],
+  );
   const orderedStorefront = useMemo(
     () => ({ ...storefront, contentOrder, curatedSections: visibleCuratedSections }),
     [storefront, contentOrder, visibleCuratedSections],
@@ -402,7 +417,7 @@ export function CreatorStorefrontView({
     for (const layer of contentOrder) {
       if (layer.kind === 'media') {
         if (activeLabelId) continue;
-        const media = visibleFeaturedMedia.find(({ id }) => id === layer.id);
+        const media = standaloneFeaturedMedia.find(({ id }) => id === layer.id);
         if (media) result.push({ key: `media:${media.id}`, layer, media });
       } else if (layer.kind === 'discount') {
         const index = remainingCodes.findIndex(({ id }) => id === layer.id);
@@ -429,7 +444,7 @@ export function CreatorStorefrontView({
       }),
     );
     return result;
-  }, [activeLabelId, rows, codes, contentOrder, visibleFeaturedMedia]);
+  }, [activeLabelId, rows, codes, contentOrder, standaloneFeaturedMedia]);
   const validTargets = new Set([
     ...displayBrands.map(({ id }) => id),
     ...rows.map(({ key }) => key),
@@ -925,6 +940,8 @@ export function CreatorStorefrontView({
                             section.parentCollectionId === row.key,
                         )}
                         recommendations={row.items}
+                        featuredMedia={row.media ?? []}
+                        displayStyle={row.displayStyle ?? 'horizontal'}
                         storefrontHandle={storefront.handle}
                         title={row.title}
                       />
@@ -1555,6 +1572,8 @@ function offerValue(offer: PublicDiscountCode): string | null {
 
 function StorefrontRow({
   creatorId,
+  displayStyle,
+  featuredMedia = [],
   framed,
   pages,
   recommendations,
@@ -1562,6 +1581,8 @@ function StorefrontRow({
   title,
 }: {
   creatorId: string;
+  displayStyle?: 'horizontal' | 'vertical';
+  featuredMedia?: FeaturedMedia[];
   framed?: boolean | undefined;
   pages: CreatorStorefront['curatedSections'];
   recommendations: RecommendationCard[];
@@ -1577,14 +1598,14 @@ function StorefrontRow({
   }
   return (
     <section
-      className={`referenceStorefrontRow${framed ? ' referenceCollectionFrame' : ''}`}
+      className={`referenceStorefrontRow${framed ? ' referenceCollectionFrame' : ''}${displayStyle === 'vertical' ? ' referenceStorefrontRowVertical' : ''}`}
     >
       <header>
         <div>
           <h3>{title}</h3>
           <p>
-            {recommendations.length
-              ? `${recommendations.length} ${recommendations.length === 1 ? 'item' : 'items'}`
+            {recommendations.length + featuredMedia.length
+              ? `${recommendations.length + featuredMedia.length} ${recommendations.length + featuredMedia.length === 1 ? 'item' : 'items'}`
               : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
           </p>
         </div>
@@ -1603,7 +1624,7 @@ function StorefrontRow({
           </div>
         ) : null}
       </header>
-      {recommendations.length ? (
+        {recommendations.length || featuredMedia.length ? (
         <div className="referenceStorefrontScroller" ref={row}>
           {recommendations.map((recommendation) => (
             <RecommendationCardView
@@ -1613,6 +1634,9 @@ function StorefrontRow({
               showPrice={false}
             />
           ))}
+            {featuredMedia.map((media) => (
+              <FeaturedMediaBlock key={media.id} media={media} />
+            ))}
         </div>
       ) : null}
       {pages.length ? (
@@ -1633,6 +1657,37 @@ function StorefrontRow({
   );
 }
 
+function sectionContentRecommendations(
+  section: CreatorStorefront['curatedSections'][number],
+  storefront: CreatorStorefront,
+  recommendations: RecommendationCard[],
+) {
+  const contentItems = section.contentItems?.length
+    ? section.contentItems
+    : section.recommendationIds.map((id) => ({
+        id,
+        kind: 'recommendation' as const,
+      }));
+  const selectedIds = new Set<string>();
+  for (const content of contentItems) {
+    if (content.kind === 'recommendation') selectedIds.add(content.id);
+    if (content.kind === 'collection') {
+      const collection = storefront.curatedSections.find(
+        ({ id, kind }) => id === content.id && kind === 'collection',
+      );
+      collection?.recommendationIds.forEach((id) => selectedIds.add(id));
+    }
+    if (content.kind === 'brand') {
+      const brand = storefront.brands.find(({ id }) => id === content.id);
+      if (brand)
+        recommendations
+          .filter((item) => brandKey(item.brandName) === brandKey(brand.name))
+          .forEach(({ id }) => selectedIds.add(id));
+    }
+  }
+  return recommendations.filter(({ id }) => selectedIds.has(id));
+}
+
 export function groupRecommendations(
   storefront: CreatorStorefront,
   recommendations: RecommendationCard[],
@@ -1648,7 +1703,11 @@ export function groupRecommendations(
     const curatedProductIds = new Set(
       curatedSections
         .filter(({ kind }) => kind !== 'page')
-        .flatMap(({ recommendationIds }) => recommendationIds),
+        .flatMap((section) =>
+          sectionContentRecommendations(section, storefront, recommendations).map(
+            ({ id }) => id,
+          ),
+        ),
     );
     const used = new Set<string>();
     const rows: Array<{
@@ -1656,19 +1715,36 @@ export function groupRecommendations(
       key: string;
       title: string;
       framed?: boolean;
+      media?: FeaturedMedia[];
+      displayStyle?: 'horizontal' | 'vertical';
     }> = [];
     for (const layer of contentOrder) {
       if (layer.kind === 'collection' || layer.kind === 'section') {
         const section = curatedSections.find(
           ({ id, kind }) => id === layer.id && kind === layer.kind,
         );
-        const items =
-          section?.recommendationIds.flatMap(
-            (id) => recommendations.find((item) => item.id === id) ?? [],
-          ) ?? [];
+        if (!section) continue;
+        const contentItems = section?.contentItems?.length
+          ? section.contentItems
+          : (section?.recommendationIds ?? []).map((id) => ({
+              id,
+              kind: 'recommendation' as const,
+            }));
+        const items = sectionContentRecommendations(
+          section,
+          storefront,
+          recommendations,
+        );
+        const media = contentItems
+          .filter(({ kind }) => kind === 'media')
+          .flatMap(
+            ({ id }) =>
+              (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+          );
         items.forEach(({ id }) => used.add(id));
         if (
           items.length ||
+          media.length ||
           curatedSections.some(
             (page) => page.kind === 'page' && page.parentCollectionId === layer.id,
           )
@@ -1678,6 +1754,8 @@ export function groupRecommendations(
             key: layer.id,
             title: section?.title ?? 'Collection',
             framed: layer.kind === 'collection',
+            media,
+            displayStyle: section?.displayStyle ?? 'horizontal',
           });
       } else if (layer.kind === 'recommendation') {
         const item = recommendations.find(
@@ -1705,12 +1783,23 @@ export function groupRecommendations(
     for (const section of curatedSections.filter(({ kind }) => kind !== 'page')) {
       if (contentOrder.some(({ kind, id }) => kind === section.kind && id === section.id))
         continue;
-      const items = section.recommendationIds.flatMap(
-        (id) => recommendations.find((item) => item.id === id) ?? [],
-      );
+      const contentItems = section.contentItems?.length
+        ? section.contentItems
+        : section.recommendationIds.map((id) => ({
+            id,
+            kind: 'recommendation' as const,
+          }));
+      const items = sectionContentRecommendations(section, storefront, recommendations);
+      const media = contentItems
+        .filter(({ kind }) => kind === 'media')
+        .flatMap(
+          ({ id }) =>
+            (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+        );
       items.forEach(({ id }) => used.add(id));
       if (
         items.length ||
+        media.length ||
         curatedSections.some(
           (page) => page.kind === 'page' && page.parentCollectionId === section.id,
         )
@@ -1720,6 +1809,8 @@ export function groupRecommendations(
           key: section.id,
           title: section.title,
           framed: section.kind === 'collection',
+          media,
+          displayStyle: section.displayStyle,
         });
     }
     for (const category of sections) {
@@ -1749,14 +1840,27 @@ export function groupRecommendations(
     key: string;
     title: string;
     framed?: boolean;
+    media?: FeaturedMedia[];
+    displayStyle?: 'horizontal' | 'vertical';
   }> = curatedSections
     .filter(({ kind }) => kind !== 'page')
     .flatMap((section) => {
-      const items = section.recommendationIds.flatMap(
-        (id) => recommendations.find((item) => item.id === id) ?? [],
-      );
+      const contentItems = section.contentItems?.length
+        ? section.contentItems
+        : section.recommendationIds.map((id) => ({
+            id,
+            kind: 'recommendation' as const,
+          }));
+      const items = sectionContentRecommendations(section, storefront, recommendations);
+      const media = contentItems
+        .filter(({ kind }) => kind === 'media')
+        .flatMap(
+          ({ id }) =>
+            (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+        );
       if (
         !items.length &&
+        !media.length &&
         !curatedSections.some(
           (page) => page.kind === 'page' && page.parentCollectionId === section.id,
         )
@@ -1769,6 +1873,8 @@ export function groupRecommendations(
           key: section.id,
           title: section.title,
           framed: section.kind === 'collection',
+          media,
+          displayStyle: section.displayStyle,
         },
       ];
     });

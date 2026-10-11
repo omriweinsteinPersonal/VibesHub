@@ -717,6 +717,18 @@ export const creatorStorefrontSchema = z
             id: idSchema,
             kind: z.enum(['section', 'collection', 'page']),
             brandId: idSchema.nullable().default(null),
+            contentItems: z
+              .array(
+                z
+                  .object({
+                    id: idSchema,
+                    kind: z.enum(['recommendation', 'media', 'brand', 'collection']),
+                  })
+                  .strict(),
+              )
+              .max(40)
+              .default([]),
+            displayStyle: z.enum(['horizontal', 'vertical']).default('horizontal'),
             title: z.string().trim().min(1).max(80),
             description: z.string().trim().max(240).default(''),
             imageUrl: publicAssetUrlSchema.nullable().default(null),
@@ -1071,6 +1083,18 @@ export const storefrontSectionSchema = z
 export const curatedSectionSchema = z
   .object({
     brandId: idSchema.nullable().default(null),
+    contentItems: z
+      .array(
+        z
+          .object({
+            id: idSchema,
+            kind: z.enum(['recommendation', 'media', 'brand', 'collection']),
+          })
+          .strict(),
+      )
+      .max(40)
+      .default([]),
+    displayStyle: z.enum(['horizontal', 'vertical']).default('horizontal'),
     id: idSchema,
     kind: z.enum(['section', 'collection', 'page']),
     title: z.string().trim().min(1).max(80),

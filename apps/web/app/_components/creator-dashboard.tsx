@@ -60,7 +60,14 @@ import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
 import styles from './creator-dashboard.module.css';
 
-type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
+type Composer =
+  | null
+  | 'choose'
+  | 'product'
+  | 'discount'
+  | 'brand'
+  | 'collection'
+  | 'section';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
@@ -304,6 +311,7 @@ export function CreatorDashboard() {
   const [hiddenRecommendationIds, setHiddenRecommendationIds] = useState<string[]>([]);
   const [expandedBrandId, setExpandedBrandId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [dashboardView, setDashboardView] = useState<
     'recommendations' | 'labels' | 'connectors' | 'media'
   >('recommendations');
@@ -401,6 +409,10 @@ export function CreatorDashboard() {
         setCuratedSections(
           config.curatedSections.map((section) => ({
             ...section,
+            contentItems: section.contentItems ?? section.recommendationIds.map((id) => ({
+              id,
+              kind: 'recommendation' as const,
+            })),
             recommendationIds: section.recommendationIds.filter((id) =>
               activeIds.has(id),
             ),
@@ -1495,6 +1507,8 @@ export function CreatorDashboard() {
             id,
             kind,
             brandId,
+            contentItems,
+            displayStyle,
             recommendationIds,
             title,
             description,
@@ -1505,6 +1519,8 @@ export function CreatorDashboard() {
             id,
             kind,
             brandId,
+            contentItems,
+            displayStyle,
             recommendationIds,
             title,
             description,
@@ -1716,6 +1732,7 @@ export function CreatorDashboard() {
       !brandId && lifecycle !== 'archived' && !placedDiscountIds.has(id),
   );
   const collections = curatedSections.filter(({ kind }) => kind === 'collection');
+  const standaloneSections = curatedSections.filter(({ kind }) => kind === 'section');
   const collectedProductIds = new Set(
     collections.flatMap(({ recommendationIds }) => recommendationIds),
   );
@@ -2110,6 +2127,15 @@ export function CreatorDashboard() {
                             Group your favorite products in one named storefront row.
                           </small>
                         </button>
+                        <button onClick={() => setComposer('section')} type="button">
+                          <span aria-hidden="true">
+                            <LayoutGrid size={16} />
+                          </span>
+                          <strong>Section</strong>
+                          <small>
+                            Create a home page section and fill it with existing content.
+                          </small>
+                        </button>
                       </div>
                     </>
                   ) : null}
@@ -2411,6 +2437,26 @@ export function CreatorDashboard() {
                       </div>
                     </>
                   ) : null}
+                  {composer === 'section' ? (
+                    <CuratedSectionForm
+                      brands={brands}
+                      collections={curatedSections.filter(
+                        ({ kind }) => kind === 'collection',
+                      )}
+                      featuredMedia={featuredMedia}
+                      kind="section"
+                      onCancel={closeComposer}
+                      onSave={(section) =>
+                        saveSections(
+                          selectedSections,
+                          [...curatedSections, section],
+                          [...contentOrder, { kind: 'section', id: section.id }],
+                        )
+                      }
+                      recommendations={activeRecommendations}
+                      saving={saving}
+                    />
+                  ) : null}
                 </div>
               ) : null}
 
@@ -2428,6 +2474,131 @@ export function CreatorDashboard() {
 
               {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
               <div className="creatorManageList">
+                {standaloneSections.map((section) => {
+                  const sectionItems = section.recommendationIds.flatMap(
+                    (id) => activeRecommendations.find((item) => item.id === id) ?? [],
+                  );
+                  const sectionMedia = section.contentItems.filter(
+                    ({ kind }) => kind === 'media',
+                  );
+                  return (
+                    <section
+                      aria-label={`${section.title} section`}
+                      className="creatorManageCollection creatorSectionManageCard"
+                      key={section.id}
+                    >
+                      <header className="creatorManageCollectionHeader">
+                        <div>
+                          <span className="eyebrow">SECTION</span>
+                          <h3>{section.title}</h3>
+                          <p>
+                            {sectionItems.length + sectionMedia.length}{' '}
+                            {sectionItems.length + sectionMedia.length === 1
+                              ? 'content item'
+                              : 'content items'}
+                            {' · '}
+                            {section.displayStyle === 'horizontal'
+                              ? 'Horizontal scroll'
+                              : 'Vertical list'}
+                          </p>
+                        </div>
+                        <div className="creatorManageCollectionActions">
+                          <label className="creatorLiveToggle">
+                            <input
+                              checked={!hiddenCollectionIds.includes(section.id)}
+                              onChange={(event) =>
+                                void toggleVisibility(
+                                  'collection',
+                                  section.id,
+                                  event.target.checked,
+                                )
+                              }
+                              type="checkbox"
+                            />
+                            <span />
+                            {hiddenCollectionIds.includes(section.id) ? 'Off' : 'On'}
+                          </label>
+                          <button
+                            aria-label={`Edit ${section.title}`}
+                            disabled={saving}
+                            onClick={() => setEditingSectionId(section.id)}
+                            type="button"
+                          >
+                            <Pencil aria-hidden="true" size={16} />
+                          </button>
+                          <button
+                            aria-label={`Delete ${section.title}`}
+                            disabled={saving}
+                            onClick={() => {
+                              if (!window.confirm(`Delete the ${section.title} section?`))
+                                return;
+                              void saveCuratedSections(
+                                curatedSections.filter(({ id }) => id !== section.id),
+                              ).then((saved) => {
+                                if (saved) setEditingSectionId(null);
+                              });
+                            }}
+                            type="button"
+                          >
+                            <Trash2 aria-hidden="true" size={16} />
+                          </button>
+                        </div>
+                      </header>
+                      {editingSectionId === section.id ? (
+                        <div className="creatorManageCollectionEditor">
+                          <CuratedSectionForm
+                            brands={brands}
+                            collections={curatedSections.filter(
+                              ({ kind }) => kind === 'collection',
+                            )}
+                            featuredMedia={featuredMedia}
+                            initial={section}
+                            kind="section"
+                            onCancel={() => setEditingSectionId(null)}
+                            onSave={(updated) =>
+                              saveCuratedSections(
+                                curatedSections.map((current) =>
+                                  current.id === section.id ? updated : current,
+                                ),
+                              )
+                            }
+                            recommendations={activeRecommendations}
+                            saving={saving}
+                          />
+                        </div>
+                      ) : sectionItems.length || sectionMedia.length ? (
+                        <div className="creatorManageCollectionItems">
+                          {sectionItems.map((item) => (
+                            <RecommendationManageCard
+                              item={item}
+                              key={item.id}
+                              onToggle={() =>
+                                toggleVisibility(
+                                  'recommendation',
+                                  item.id,
+                                  !hiddenRecommendationIds.includes(item.id),
+                                )
+                              }
+                              visible={!hiddenRecommendationIds.includes(item.id)}
+                              onArchive={() => void recommendationCommand(item, 'archive')}
+                              onEdit={() => editProduct(item)}
+                            />
+                          ))}
+                          {sectionMedia.length ? (
+                            <p className="creatorManageCollectionEmpty">
+                              {sectionMedia.length} Featured Content item
+                              {sectionMedia.length === 1 ? '' : 's'} included.
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="creatorManageCollectionEmpty">
+                          No content yet. Edit this section to add existing content.
+                        </p>
+                      )}
+                    </section>
+                  );
+                })}
                 {brandGroups.map(
                   ({
                     brand: managedBrand,
@@ -4374,6 +4545,7 @@ function DiscountManageCard({
 function CuratedSectionForm({
   brands = [],
   collections = [],
+  featuredMedia = [],
   initial,
   kind,
   onCancel,
@@ -4385,6 +4557,7 @@ function CuratedSectionForm({
 }: {
   brands?: CreatorBrand[];
   collections?: CuratedSection[];
+  featuredMedia?: FeaturedMedia[];
   initial?: CuratedSection;
   kind: CuratedSection['kind'];
   onCancel: () => void;
@@ -4410,6 +4583,17 @@ function CuratedSectionForm({
   const [recommendationIds, setRecommendationIds] = useState<string[]>(
     initial?.recommendationIds ?? [],
   );
+  const [displayStyle, setDisplayStyle] = useState<CuratedSection['displayStyle']>(
+    initial?.displayStyle ?? 'horizontal',
+  );
+  const [contentItems, setContentItems] = useState<CuratedSection['contentItems']>(
+    initial?.contentItems?.length
+      ? initial.contentItems
+      : (initial?.recommendationIds ?? []).map((id) => ({
+          id,
+          kind: 'recommendation' as const,
+        })),
+  );
   const [showItemsIndividually, setShowItemsIndividually] = useState(
     initial?.showItemsIndividually ?? false,
   );
@@ -4432,18 +4616,41 @@ function CuratedSectionForm({
       return groups;
     }, new Map<string, { name: string; items: CreatorRecommendation[] }>()),
   );
+  function toggleSectionContent(
+    item: {
+      id: string;
+      kind: 'recommendation' | 'media' | 'brand' | 'collection';
+    },
+  ) {
+    setSelectionError('');
+    setContentItems((current) =>
+      current.some(({ id, kind }) => id === item.id && kind === item.kind)
+        ? current.filter(({ id, kind }) => id !== item.id || kind !== item.kind)
+        : current.length >= 40
+          ? current
+          : [...current, item],
+    );
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!recommendationIds.length) {
+    if (kind !== 'section' && !recommendationIds.length) {
       setSelectionError('Choose at least one product.');
       return;
     }
+    const nextContentItems =
+      kind === 'section'
+        ? contentItems
+        : recommendationIds.map((id) => ({ id, kind: 'recommendation' as const }));
     const saved = await onSave({
       id: sectionId,
       kind,
       brandId: brandId || null,
-      recommendationIds,
+      contentItems: nextContentItems,
+      displayStyle,
+      recommendationIds: nextContentItems
+        .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+        .map(({ id }) => id),
       showItemsIndividually,
       title: title.trim(),
       description: kind === 'page' ? description.trim() : (initial?.description ?? ''),
@@ -4478,6 +4685,20 @@ function CuratedSectionForm({
           value={title}
         />
       </label>
+      {kind === 'section' ? (
+        <label>
+          Display style
+          <select
+            value={displayStyle}
+            onChange={(event) =>
+              setDisplayStyle(event.target.value as CuratedSection['displayStyle'])
+            }
+          >
+            <option value="horizontal">Horizontal scroll</option>
+            <option value="vertical">Vertical list</option>
+          </select>
+        </label>
+      ) : null}
       {kind === 'collection' ? (
         <label>
           Brand
@@ -4625,8 +4846,58 @@ function CuratedSectionForm({
           </label>
         </>
       ) : null}
+      {kind === 'section' ? (
+        <>
+          <fieldset>
+            <legend>Brands</legend>
+            {brands.length ? (
+              <div className="creatorCuratedChoices">
+                {brands.map((brand) => (
+                  <label key={brand.id}>
+                    <input
+                      checked={contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'brand' && id === brand.id,
+                      )}
+                      type="checkbox"
+                      onChange={() => toggleSectionContent({ id: brand.id, kind: 'brand' })}
+                    />
+                    <span>{brand.name}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p>No brands yet.</p>
+            )}
+          </fieldset>
+          <fieldset>
+            <legend>Collections</legend>
+            {collections.length ? (
+              <div className="creatorCuratedChoices">
+                {collections.map((collection) => (
+                  <label key={collection.id}>
+                    <input
+                      checked={contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'collection' && id === collection.id,
+                      )}
+                      type="checkbox"
+                      onChange={() =>
+                        toggleSectionContent({ id: collection.id, kind: 'collection' })
+                      }
+                    />
+                    <span>{collection.title}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p>No collections yet.</p>
+            )}
+          </fieldset>
+        </>
+      ) : null}
       <fieldset>
-        <legend>Products in this {kind}</legend>
+        <legend>{kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}</legend>
         {recommendations.length ? (
           <div className="creatorCuratedChoices">
             {recommendationGroups.map(([id, group]) => (
@@ -4648,6 +4919,8 @@ function CuratedSectionForm({
                             ? [...current, item.id]
                             : current.filter((id) => id !== item.id),
                         );
+                        if (kind === 'section')
+                          toggleSectionContent({ id: item.id, kind: 'recommendation' });
                       }}
                     />
                     <span className="creatorCuratedProductThumb">
@@ -4668,6 +4941,45 @@ function CuratedSectionForm({
           <p>Add a product recommendation first.</p>
         )}
       </fieldset>
+      {kind === 'section' ? (
+        <fieldset>
+          <legend>Featured Content</legend>
+          {featuredMedia.length ? (
+            <div className="creatorCuratedChoices">
+              {featuredMedia.map((media) => (
+                <label key={media.id}>
+                  <input
+                    checked={contentItems.some(
+                      ({ id, kind: contentKind }) =>
+                        contentKind === 'media' && id === media.id,
+                    )}
+                    disabled={
+                      contentItems.length >= 40 &&
+                      !contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'media' && id === media.id,
+                      )
+                    }
+                    type="checkbox"
+                    onChange={() => toggleSectionContent({ id: media.id, kind: 'media' })}
+                  />
+                  <span className="creatorCuratedProductThumb">
+                    {media.thumbnailUrl ? (
+                      <Image alt="" fill sizes="44px" src={media.thumbnailUrl} unoptimized />
+                    ) : null}
+                  </span>
+                  <span>
+                    {media.title}
+                    <small>{media.provider.replace('_', ' ')}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p>No featured content yet. Add it from Featured content first.</p>
+          )}
+        </fieldset>
+      ) : null}
       {kind === 'collection' ? (
         <label className="creatorCheckboxField">
           <input
@@ -4691,6 +5003,11 @@ function CuratedSectionForm({
                 id: sectionId,
                 kind: 'collection',
                 brandId,
+                contentItems: recommendationIds.map((id) => ({
+                  id,
+                  kind: 'recommendation' as const,
+                })),
+                displayStyle: 'horizontal' as const,
                 recommendationIds,
                 title: title.trim(),
                 description: '',
@@ -4772,6 +5089,40 @@ function CuratedSectionForm({
           </ol>
         </div>
       ) : null}
+      {kind === 'section' && contentItems.length ? (
+        <div className="creatorCuratedOrder">
+          <p>Content order in this section</p>
+          <ol>
+            {contentItems.map((content, index) => {
+              const label =
+                content.kind === 'media'
+                  ? featuredMedia.find(({ id }) => id === content.id)?.title ?? 'Featured content'
+                  : recommendations.find(({ id }) => id === content.id)?.productName ?? 'Recommendation';
+              return (
+                <li key={`${content.kind}:${content.id}`}>
+                  <span>{label}</span>
+                  <button
+                    aria-label={`Move ${label} up`}
+                    disabled={index === 0 || saving}
+                    onClick={() => setContentItems(move(contentItems, index, index - 1))}
+                    type="button"
+                  >
+                    <ArrowUp size={15} />
+                  </button>
+                  <button
+                    aria-label={`Move ${label} down`}
+                    disabled={index === contentItems.length - 1 || saving}
+                    onClick={() => setContentItems(move(contentItems, index, index + 1))}
+                    type="button"
+                  >
+                    <ArrowDown size={15} />
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      ) : null}
       {selectionError ? (
         <p className="formError" role="alert">
           {selectionError}
@@ -4780,7 +5131,7 @@ function CuratedSectionForm({
       <div className="creatorCuratedActions">
         <button
           className="button primary"
-          disabled={saving || !recommendations.length}
+          disabled={saving || (kind !== 'section' && !recommendations.length)}
           type="submit"
         >
           {saving ? 'Saving...' : initial ? 'Save changes' : `Create ${kind}`}

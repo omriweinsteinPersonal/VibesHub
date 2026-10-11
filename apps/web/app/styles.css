@@ -13984,3 +13984,26 @@ dt {
   h3 {
   min-height: 0;
 }
+
+/* General storefront sections can use the same content library as the rest of
+   the page. Keep their two display modes explicit and let featured media share
+   the row without forcing a full-width block inside a carousel. */
+.referenceStorefrontRowVertical .referenceStorefrontScroller {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: visible;
+}
+
+.referenceStorefrontScroller > .featuredMediaBlock {
+  flex: 0 0 min(100%, 360px);
+  width: min(100%, 360px);
+  scroll-snap-align: start;
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock {
+  width: 100%;
+}
+
+.creatorSectionManageCard {
+  border-color: #d8c8b9;
+}
