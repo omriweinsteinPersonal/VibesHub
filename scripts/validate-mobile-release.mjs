@@ -4,6 +4,7 @@ const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).exp
 const mobilePackage = JSON.parse(await readFile('apps/mobile/package.json', 'utf8'));
 const loginSource = await readFile('apps/mobile/app/login.tsx', 'utf8');
 const accountSource = await readFile('apps/mobile/app/account.tsx', 'utf8');
+const studioSource = await readFile('apps/mobile/app/studio.tsx', 'utf8');
 const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
 const rootLayoutSource = await readFile('apps/mobile/app/_layout.tsx', 'utf8');
 const storefrontSource = await readFile('apps/mobile/app/[handle].tsx', 'utf8');
@@ -102,10 +103,27 @@ for (const path of ['/privacy', '/terms']) {
     `${path} must be linked before login.`,
   );
 }
-for (const path of ['/privacy', '/terms', '/support', '/creator-home']) {
+for (const path of ['/privacy', '/terms', '/support']) {
   requireValue(
     accountSource.includes(`https://swavii.com${path}`),
     `${path} must be linked from Account.`,
+  );
+}
+requireValue(
+  accountSource.includes("router.push('/studio')") &&
+    !accountSource.includes('https://swavii.com/creator-home'),
+  'Creator Studio must open as a native route, not an external website.',
+);
+for (const capability of [
+  'getCreatorStudioBundle',
+  'saveCreatorBrand',
+  'saveStorefrontConfiguration',
+  'transitionCreatorRecommendation',
+  'updateCreatorProfile',
+]) {
+  requireValue(
+    studioSource.includes(capability),
+    `The native Creator Studio must retain ${capability}.`,
   );
 }
 requireValue(
