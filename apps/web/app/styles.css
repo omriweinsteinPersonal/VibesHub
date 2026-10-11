@@ -14039,15 +14039,15 @@ dt {
 
 @media (max-width: 620px) {
   .creatorTypeGrid {
-    gap: 6px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding: 12px 8px;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
   }
 
   .creatorTypeGrid button {
     border-radius: 10px;
-    min-height: 132px;
-    padding: 10px 6px;
+    min-height: 148px;
+    padding: 14px 12px;
   }
 
   .creatorTypeGrid span {
@@ -14056,12 +14056,20 @@ dt {
   }
 
   .creatorTypeGrid strong {
-    font-size: 0.95rem;
-    margin: 9px 0 4px;
+    font-size: 1rem;
+    line-height: 1.1;
+    margin: 10px 0 5px;
   }
 
   .creatorTypeGrid small {
-    font-size: 0.62rem;
-    line-height: 1.2;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 360px) {
+  .creatorTypeGrid {
+    grid-template-columns: 1fr;
   }
 }

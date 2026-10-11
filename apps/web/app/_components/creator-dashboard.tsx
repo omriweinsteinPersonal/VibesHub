@@ -24,11 +24,13 @@ import {
   ExternalLink,
   GripVertical,
   LayoutGrid,
+  Layers3,
   Link2,
   PlayCircle,
   Pencil,
   Plus,
   Sparkles,
+  Store,
   Tag,
   Trash2,
   Upload,
@@ -2117,10 +2119,10 @@ export function CreatorDashboard() {
                     <div className="creatorTypeGrid">
                       <button onClick={() => setComposer('brand')} type="button">
                         <span aria-hidden="true">
-                          <Sparkles size={16} />
+                          <Store size={16} />
                         </span>
                         <strong>Brand</strong>
-                        <small>Create a brand card. A discount code is optional.</small>
+                        <small>Create a brand card.</small>
                       </button>
                       <button
                         onClick={() => {
@@ -2130,31 +2132,24 @@ export function CreatorDashboard() {
                         type="button"
                       >
                         <span aria-hidden="true">
-                          <Tag size={16} />
+                          <Link2 size={16} />
                         </span>
                         <strong>Item</strong>
-                        <small>
-                          Recommend one specific product with its price, details and story
-                          clips.
-                        </small>
+                        <small>Recommend one item with a link.</small>
                       </button>
                       <button onClick={() => setComposer('collection')} type="button">
                         <span aria-hidden="true">
                           <LayoutGrid size={16} />
                         </span>
                         <strong>Collection</strong>
-                        <small>
-                          Group your favorite products in one named storefront row.
-                        </small>
+                        <small>Create a collection of items from one brand.</small>
                       </button>
                       <button onClick={() => setComposer('section')} type="button">
                         <span aria-hidden="true">
-                          <LayoutGrid size={16} />
+                          <Layers3 size={16} />
                         </span>
                         <strong>Section</strong>
-                        <small>
-                          Create a home page section and fill it with existing content.
-                        </small>
+                        <small>Mix products from different brands in one section.</small>
                       </button>
                     </div>
                   </div>
