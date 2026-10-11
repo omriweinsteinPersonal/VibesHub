@@ -9266,6 +9266,119 @@ dt {
   background: #d8f052;
   color: #171a2d;
 }
+/* Editorial Frame decor stays in the page chrome; it never becomes part of a
+   recommendation card or changes the platform's card geometry. */
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  background:
+    radial-gradient(circle at 50% 8%, #d8f052 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 92%, #f26858 0 2px, transparent 3px),
+    repeating-linear-gradient(
+      to bottom,
+      #3047d6 0 28px,
+      transparent 28px 40px,
+      #3047d6 40px 42px,
+      transparent 42px 74px
+    );
+  border: 0;
+  border-radius: 999px;
+  bottom: 10px;
+  box-shadow: none;
+  height: auto;
+  left: 8px;
+  right: auto;
+  top: 10px;
+  width: 3px;
+  z-index: 2;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  left: auto;
+  right: 8px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  background-color: #fff9f1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::before {
+  background: #3047d6;
+  border: 2px solid rgb(216 240 82 / 72%);
+  height: 116px;
+  left: 18px;
+  opacity: 0.5;
+  top: 16px;
+  width: 116px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::after {
+  background: #f26858;
+  border: 2px solid #fff9f1;
+  height: 70px;
+  opacity: 0.78;
+  right: 22px;
+  top: 22px;
+  width: 70px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero > * {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontInner {
+  grid-template-areas: 'avatar identity';
+  grid-template-columns: 124px minmax(0, 1fr);
+  justify-items: start;
+  min-height: 172px;
+  padding: 28px 5vw 26px;
+  text-align: start;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontAvatar {
+  border-color: #fff9f1;
+  display: grid;
+  height: 112px;
+  position: relative;
+  width: 112px;
+  z-index: 2;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontName {
+  align-self: center;
+  max-width: 100%;
+  min-width: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontName
+  h1 {
+  color: #171a2d;
+  font-size: clamp(2rem, 7vw, 3.7rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+@media (max-width: 700px) {
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontInner {
+    grid-template-columns: 96px minmax(0, 1fr);
+    min-height: 148px;
+    padding-inline: 28px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontAvatar {
+    height: 86px;
+    width: 86px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontName
+    h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+}
 .storefrontTemplatePicker {
   border-bottom: 1px solid #eadfd5;
   margin: 0 0 18px;
