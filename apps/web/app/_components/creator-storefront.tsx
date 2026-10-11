@@ -647,8 +647,16 @@ export function CreatorStorefrontView({
             '--sf-page': previewTheme.recommendationsBackground,
             '--sf-divider': previewTheme.dividerColor,
             '--sf-product': previewTheme.productBackground,
-            '--sf-discount': previewTheme.discountBackground,
-            '--sf-collection': previewTheme.collectionBackground,
+            '--sf-discount':
+              previewTheme.templateId === 'editorial-frame' &&
+              previewTheme.discountBackground === '#fff1eb'
+                ? '#ffffff'
+                : previewTheme.discountBackground,
+            '--sf-collection':
+              previewTheme.templateId === 'editorial-frame' &&
+              previewTheme.collectionBackground === '#eeeafe'
+                ? '#ffffff'
+                : previewTheme.collectionBackground,
             '--sf-accent': previewTheme.accentColor,
             '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
             '--sf-text': previewTheme.textColor,

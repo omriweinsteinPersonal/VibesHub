@@ -14460,3 +14460,76 @@ dt {
     grid-template-columns: 1fr;
   }
 }
+
+/* The optional Editorial Frame owns only the page chrome. Recommendation
+   components keep their normal layout and can be added in any order. */
+.creatorStorefrontCanvas[data-template='editorial-frame'] {
+  background:
+    radial-gradient(circle at 5% 5%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 96% 31%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 3% 67%, #ff705d 0 4px, transparent 5px), #141d48;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 16px clamp(8px, 2.4vw, 42px) 22px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  background:
+    radial-gradient(circle at 50% 4%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 50% 38%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 50% 76%, #d8f052 0 3px, transparent 4px),
+    repeating-linear-gradient(to bottom, #3655f5 0 110px, transparent 110px 130px);
+  border: 0;
+  border-radius: 0;
+  bottom: 12px;
+  box-shadow: none;
+  left: max(3px, calc(50% - 344px));
+  opacity: 0.9;
+  right: auto;
+  top: 12px;
+  width: 2px;
+  z-index: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  left: auto;
+  right: max(3px, calc(50% - 344px));
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  background-color: #fffaf2;
+  background-image: none;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels {
+  background: #fffaf2;
+  border-bottom: 1px solid #d4d8ec;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 4px 2px 9px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels::before {
+  display: none;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button {
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  color: #111a3e;
+  font-family: Aptos, Arial, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 400;
+  padding-inline: 8px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: transparent;
+  border-bottom-color: #3655f5;
+  color: #3047d6;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .creatorStorefrontCanvas[data-template='editorial-frame'] {
+    padding: 9px 8px 16px;
+  }
+}
