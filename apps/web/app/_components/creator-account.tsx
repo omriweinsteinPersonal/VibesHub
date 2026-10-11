@@ -1,7 +1,6 @@
 'use client';
 
 import type {
-  CategoryCard,
   CreatorMediaKit,
   CreatorMediaKitInput,
   CreatorProfileSettings,
@@ -12,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Camera, Check, Copy, ExternalLink, Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
-import { ApiError, apiRequest, publicApiCollectionRequest } from '../../lib/api';
+import { ApiError, apiRequest } from '../../lib/api';
 import { isCreatorHandle } from '../../lib/creator-handle';
 import {
   creatorImageAccept,
@@ -45,7 +44,6 @@ interface ProfileEditor {
   displayName: string;
   handle: string;
   instagramUrl: string;
-  primaryCategoryId: string;
 }
 
 interface MediaKitEditor {
@@ -87,7 +85,6 @@ export function CreatorAccount() {
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
   const [mediaKit, setMediaKit] = useState<CreatorMediaKit | null>(null);
   const [mediaEditor, setMediaEditor] = useState<MediaKitEditor | null>(null);
-  const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -99,13 +96,11 @@ export function CreatorAccount() {
   useEffect(() => {
     let active = true;
     void (async () => {
-      const [accountResult, profileResult, mediaKitResult, categoriesResult] =
-        await Promise.allSettled([
-          apiRequest<AccountSummary>('/me'),
-          apiRequest<CreatorProfileSettings>('/creator/profile'),
-          apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
-          publicApiCollectionRequest<CategoryCard>('/categories'),
-        ] as const);
+      const [accountResult, profileResult, mediaKitResult] = await Promise.allSettled([
+        apiRequest<AccountSummary>('/me'),
+        apiRequest<CreatorProfileSettings>('/creator/profile'),
+        apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
+      ] as const);
 
       if (!active) return;
       if (accountResult.status === 'rejected') throw accountResult.reason;
@@ -119,26 +114,20 @@ export function CreatorAccount() {
         return;
       }
 
-      const rejected = [profileResult, mediaKitResult, categoriesResult].find(
+      const rejected = [profileResult, mediaKitResult].find(
         (result) => result.status === 'rejected',
       );
       if (rejected?.status === 'rejected') throw rejected.reason;
 
-      if (
-        profileResult.status === 'fulfilled' &&
-        mediaKitResult.status === 'fulfilled' &&
-        categoriesResult.status === 'fulfilled'
-      ) {
+      if (profileResult.status === 'fulfilled' && mediaKitResult.status === 'fulfilled') {
         const loadedProfile = profileResult.value;
         const loadedMediaKit = mediaKitResult.value;
-        const categoryPage = categoriesResult.value;
         if (!active) return;
         setEmail(account.email ?? '');
         setProfile(loadedProfile);
         setProfileEditor(toProfileEditor(loadedProfile));
         setMediaKit(loadedMediaKit);
         setMediaEditor(toMediaKitEditor(loadedMediaKit));
-        setCategories(categoryPage.data);
         setUploadStage(loadedProfile.avatar ? 'ready' : 'idle');
       }
     })().catch((cause: unknown) => {
@@ -251,7 +240,6 @@ export function CreatorAccount() {
           bioHe: profileEditor.bioHe,
           displayName: profileEditor.displayName,
           handle: profileEditor.handle.trim(),
-          primaryCategoryId: profileEditor.primaryCategoryId,
           socialLinks: instagramUrl
             ? [...otherLinks, { platform: 'instagram', url: instagramUrl }]
             : otherLinks,
@@ -373,7 +361,7 @@ export function CreatorAccount() {
               <strong>{profileEditor.displayName || 'Your name'}</strong>
               <span>
                 swavii.com/{profile.handle} <span aria-hidden="true">·</span>{' '}
-                {profile.primaryCategory.name}
+                {profile.primaryCategory?.name ?? 'Creator'}
               </span>
             </div>
             <span className={styles.liveBadge}>Page is live</span>
@@ -453,22 +441,6 @@ export function CreatorAccount() {
                       >
                         {accountHandleMessage(handleStatus, profileEditor.handle)}
                       </small>
-                    </label>
-                    <label className={`${styles.field} ${styles.fullField}`}>
-                      Main category
-                      <select
-                        required
-                        value={profileEditor.primaryCategoryId}
-                        onChange={(event) =>
-                          updateProfile('primaryCategoryId', event.target.value)
-                        }
-                      >
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
                     </label>
                     <label className={`${styles.field} ${styles.fullField}`}>
                       Bio
@@ -747,11 +719,7 @@ export function CreatorAccount() {
                       url={profileEditor.avatarUrl}
                     />
                     <strong>{profileEditor.displayName || 'Your name'}</strong>
-                    <small>
-                      {categories.find(
-                        (category) => category.id === profileEditor.primaryCategoryId,
-                      )?.name ?? profile.primaryCategory.name}
-                    </small>
+                    <small>{profile.primaryCategory?.name ?? 'Creator'}</small>
                   </div>
                   <div className={styles.previewBody}>
                     <p>{profileEditor.bioHe || 'Your bio will appear here.'}</p>
@@ -898,7 +866,6 @@ function toProfileEditor(profile: CreatorProfileSettings): ProfileEditor {
     handle: profile.handle,
     instagramUrl:
       profile.socialLinks.find(({ platform }) => platform === 'instagram')?.url ?? '',
-    primaryCategoryId: profile.primaryCategory.id,
   };
 }
 
