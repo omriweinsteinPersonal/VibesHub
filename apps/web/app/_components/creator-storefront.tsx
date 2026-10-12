@@ -285,12 +285,10 @@ export function CreatorStorefrontView({
       recommendations.filter(
         (item) =>
           !hiddenRecommendationIds.has(item.id) &&
-          ![...hiddenBrandIds].some((brandId) =>
-            storefront.brands.find(
-              (brand) =>
-                brand.id === brandId && brandKey(brand.name) === brandKey(item.brandName),
-            ),
-          ),
+          ![...hiddenBrandIds].some((brandId) => {
+            const brand = storefront.brands.find(({ id }) => id === brandId);
+            return brand ? brandMatchesRecommendation(brand, item) : false;
+          }),
       ),
     [hiddenBrandIds, hiddenRecommendationIds, recommendations, storefront.brands],
   );
@@ -323,19 +321,19 @@ export function CreatorStorefrontView({
     [configuration?.labels, storefront.labels],
   );
   const displayBrands = useMemo(() => {
-    const byName = new Map<string, CreatorStorefront['brands'][number]>();
+    const byBrand = new Map<string, CreatorStorefront['brands'][number]>();
     for (const brand of storefront.brands) {
-      const key = brandKey(brand.name);
-      const current = byName.get(key);
+      const key = brand.brandId;
+      const current = byBrand.get(key);
       const hasOffer = codes.some(
         (code) => code.brandId === brand.id && code.scopeKind === 'brand',
       );
       const currentHasOffer = current
         ? codes.some((code) => code.brandId === current.id && code.scopeKind === 'brand')
         : false;
-      if (!current || (hasOffer && !currentHasOffer)) byName.set(key, brand);
+      if (!current || (hasOffer && !currentHasOffer)) byBrand.set(key, brand);
     }
-    return [...byName.values()].filter((brand) => !hiddenBrandIds.has(brand.id));
+    return [...byBrand.values()].filter((brand) => !hiddenBrandIds.has(brand.id));
   }, [codes, hiddenBrandIds, storefront.brands]);
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
@@ -350,10 +348,8 @@ export function CreatorStorefrontView({
         )
         .filter(Boolean) ?? [],
     );
-    const cardBrandNames = new Set(
-      displayBrands
-        .filter((brand) => (label?.brandIds ?? []).includes(brand.id))
-        .map((brand) => brandKey(brand.name)),
+    const cardBrands = displayBrands.filter((brand) =>
+      (label?.brandIds ?? []).includes(brand.id),
     );
     return visibleRecommendations.filter((item) => {
       const matchesLabel =
@@ -362,7 +358,7 @@ export function CreatorStorefrontView({
           ? item.category.slug === label.categorySlug
           : label.recommendationIds.includes(item.id) ||
             collectionRecommendationIds.has(item.id) ||
-            cardBrandNames.has(brandKey(item.brandName)));
+            cardBrands.some((brand) => brandMatchesRecommendation(brand, item)));
       const matchesSearch =
         !term ||
         [item.productName, item.brandName, item.review.value, item.category.name].some(
@@ -379,10 +375,12 @@ export function CreatorStorefrontView({
     visibleCuratedSections,
   ]);
   const rows = useMemo(() => {
-    const brandNames = new Set(displayBrands.map(({ name }) => brandKey(name)));
+    const cardBrands = displayBrands;
     return groupRecommendations(
       orderedStorefront,
-      filtered.filter(({ brandName }) => !brandNames.has(brandKey(brandName))),
+      filtered.filter(
+        (item) => !cardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
+      ),
     );
   }, [displayBrands, filtered, orderedStorefront]);
   const activeLabel = labels.find(({ id }) => id === activeLabelId) ?? null;
@@ -399,10 +397,10 @@ export function CreatorStorefrontView({
     ) {
       return [];
     }
-    const cardBrandNames = new Set(
-      selectedCardBrands.map((brand) => brandKey(brand.name)),
+    return filtered.filter(
+      (item) =>
+        !selectedCardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
     );
-    return filtered.filter((item) => !cardBrandNames.has(brandKey(item.brandName)));
   }, [activeLabel, filtered, selectedCardBrands]);
   const showingCompactLabelGrid = Boolean(
     activeLabel && !activeLabel.categorySlug && (activeLabel.layout ?? 'grid') === 'grid',
@@ -828,7 +826,7 @@ export function CreatorStorefrontView({
                       editorial={editorialFrame}
                       handle={storefront.handle}
                       items={filtered.filter(
-                        (item) => brandKey(item.brandName) === brandKey(brand.name),
+                        (item) => brandMatchesRecommendation(brand, item),
                       )}
                       key={brand.id}
                       offer={
@@ -860,7 +858,7 @@ export function CreatorStorefrontView({
                   .filter((brand) =>
                     activeLabelId
                       ? filtered.some(
-                          (item) => brandKey(item.brandName) === brandKey(brand.name),
+                          (item) => brandMatchesRecommendation(brand, item),
                         )
                       : true,
                   )
@@ -890,7 +888,7 @@ export function CreatorStorefrontView({
                             editorial={editorialFrame}
                             handle={storefront.handle}
                             items={filtered.filter(
-                              (item) => brandKey(item.brandName) === brandKey(brand.name),
+                              (item) => brandMatchesRecommendation(brand, item),
                             )}
                             offer={
                               codes.find(
@@ -1901,7 +1899,7 @@ function sectionContentRecommendations(
       const brand = storefront.brands.find(({ id }) => id === content.id);
       if (brand)
         recommendations
-          .filter((item) => brandKey(item.brandName) === brandKey(brand.name))
+          .filter((item) => brandMatchesRecommendation(brand, item))
           .forEach(({ id }) => selectedIds.add(id));
     }
   }
@@ -2124,6 +2122,14 @@ function brandKey(value: string): string {
     .replace(/[’'`´]/gu, '')
     .replace(/[^\p{L}\p{N}]/gu, '')
     .toLocaleLowerCase('he-IL');
+}
+
+function brandMatchesRecommendation(
+  brand: { brandId: string; name: string },
+  recommendation: { brandId?: string | null; brandName: string },
+): boolean {
+  if (recommendation.brandId) return brand.brandId === recommendation.brandId;
+  return brandKey(brand.name) === brandKey(recommendation.brandName);
 }
 
 async function loadCreatorInventory<T>(path: string): Promise<T[]> {
