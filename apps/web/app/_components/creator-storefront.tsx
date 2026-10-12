@@ -21,7 +21,14 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BadgeCheck, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  Music2,
+  Play,
+  Search,
+} from 'lucide-react';
 import {
   Fragment,
   useEffect,
@@ -84,6 +91,7 @@ export function CreatorStorefrontView({
   const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
     storefront.theme ?? defaultStorefrontTheme,
   );
+  const editorialFrame = previewTheme.templateId === 'editorial-frame';
   const [canEdit, setCanEdit] = useState(editable);
   const [configuration, setConfiguration] =
     useState<CreatorStorefrontConfiguration | null>(null);
@@ -817,6 +825,7 @@ export function CreatorStorefrontView({
                       )}
                       creatorId={storefront.id}
                       discountCodes={codes}
+                      editorial={editorialFrame}
                       handle={storefront.handle}
                       items={filtered.filter(
                         (item) => brandKey(item.brandName) === brandKey(brand.name),
@@ -878,6 +887,7 @@ export function CreatorStorefrontView({
                             )}
                             creatorId={storefront.id}
                             discountCodes={codes}
+                            editorial={editorialFrame}
                             handle={storefront.handle}
                             items={filtered.filter(
                               (item) => brandKey(item.brandName) === brandKey(brand.name),
@@ -940,6 +950,7 @@ export function CreatorStorefrontView({
                     const productContent = row ? (
                       <StorefrontRow
                         creatorId={storefront.id}
+                        editorial={editorialFrame}
                         framed={row.framed}
                         pages={visibleCuratedSections.filter(
                           (section) =>
@@ -963,7 +974,7 @@ export function CreatorStorefrontView({
                         code={code}
                       />
                     ) : media ? (
-                      <FeaturedMediaBlock media={media} />
+                      <FeaturedMediaBlock editorial={editorialFrame} media={media} />
                     ) : null;
                     return (
                       <Fragment key={key}>
@@ -1047,7 +1058,14 @@ function StandaloneRecommendationCard({
   );
 }
 
-function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
+function FeaturedMediaBlock({
+  editorial = false,
+  media,
+}: {
+  editorial?: boolean;
+  media: FeaturedMedia;
+}) {
+  if (editorial) return <EditorialMediaCard media={media} />;
   const embedUrl = featuredMediaEmbedUrl(media);
   if (media.provider === 'instagram') {
     return <InstagramMediaCard media={media} />;
@@ -1106,6 +1124,85 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
           </span>
         </a>
       )}
+    </article>
+  );
+}
+
+function EditorialMediaCard({ media }: { media: FeaturedMedia }) {
+  const [expanded, setExpanded] = useState(false);
+  const embedUrl = featuredMediaEmbedUrl(media);
+  const canEmbed = media.displayMode === 'embed' && Boolean(embedUrl);
+  const providerName =
+    media.provider === 'apple_music'
+      ? 'Apple Music'
+      : media.provider === 'youtube'
+        ? 'YouTube'
+        : media.provider === 'spotify'
+          ? 'Spotify'
+          : 'Instagram';
+  const summary = (
+    <>
+      <span className="editorialMediaArtwork">
+        {media.thumbnailUrl ? (
+          <Image alt="" fill sizes="96px" src={media.thumbnailUrl} unoptimized />
+        ) : (
+          <span className="editorialMediaArtworkFallback" aria-hidden="true">
+            {media.provider === 'spotify' || media.provider === 'apple_music' ? (
+              <Music2 size={26} />
+            ) : (
+              <Play size={26} />
+            )}
+          </span>
+        )}
+        <span className="editorialMediaPlay" aria-hidden="true">
+          <Play size={13} fill="currentColor" />
+        </span>
+      </span>
+      <span className="editorialMediaCopy" dir="auto">
+        <small>{providerName}</small>
+        <strong>{media.title}</strong>
+      </span>
+      <ChevronRight aria-hidden="true" className="editorialMediaArrow" size={20} />
+    </>
+  );
+  return (
+    <article className="editorialMediaCard" data-provider={media.provider}>
+      {canEmbed ? (
+        <button
+          aria-expanded={expanded}
+          aria-label={`${expanded ? 'Hide' : 'Play'} ${media.title}`}
+          className="editorialMediaSummary"
+          onClick={() => setExpanded((current) => !current)}
+          type="button"
+        >
+          {summary}
+        </button>
+      ) : (
+        <a
+          aria-label={`Open ${media.title} on ${providerName}`}
+          className="editorialMediaSummary"
+          href={media.url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {summary}
+        </a>
+      )}
+      {canEmbed && expanded && embedUrl ? (
+        <div className="editorialMediaPlayer">
+          <iframe
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            src={embedUrl}
+            title={media.title}
+          />
+          <a href={media.url} rel="noopener noreferrer" target="_blank">
+            Open on {providerName} ↗
+          </a>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -1274,6 +1371,7 @@ function BrandBlock({
   collections,
   creatorId,
   discountCodes,
+  editorial = false,
   handle,
   items,
   offer,
@@ -1282,6 +1380,7 @@ function BrandBlock({
   collections: CreatorStorefront['curatedSections'];
   creatorId: string;
   discountCodes: PublicDiscountCode[];
+  editorial?: boolean;
   handle: string;
   items: RecommendationCard[];
   offer: PublicDiscountCode | null;
@@ -1295,6 +1394,115 @@ function BrandBlock({
       .flatMap(({ recommendationIds }) => recommendationIds),
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
+  if (editorial) {
+    return (
+      <section
+        className="editorialBrandCard"
+        data-brand-only={collections.length + standaloneItems.length === 0}
+      >
+        <header>
+          <a
+            aria-label={`Visit ${brand.name}`}
+            className="editorialBrandHeaderLink"
+            href={brand.websiteUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span className="editorialBrandMark">
+              {brand.logoUrl ? (
+                <Image
+                  alt=""
+                  fill
+                  sizes="72px"
+                  src={publicAssetUrl(brand.logoUrl)}
+                  unoptimized
+                />
+              ) : (
+                <span aria-hidden="true">{brand.name.slice(0, 1).toUpperCase()}</span>
+              )}
+            </span>
+            <span className="editorialBrandHeading">
+              <strong>{brand.name}</strong>
+              {offer && offerValue(offer) ? (
+                <span className="editorialBrandOfferValue">{offerValue(offer)}</span>
+              ) : null}
+              {offer?.code ? (
+                <span className="editorialBrandCode">
+                  Use code <b>{offer.code}</b>
+                </span>
+              ) : null}
+              {offer?.expiresAt ? (
+                <span className="editorialBrandExpiry">
+                  Discount expires {formatOfferDate(offer.expiresAt)}
+                </span>
+              ) : null}
+            </span>
+            <ChevronRight aria-hidden="true" className="editorialBrandArrow" size={20} />
+          </a>
+        </header>
+        {offer?.details ? (
+          <p className="editorialBrandDetails" dir={offer.details.direction}>
+            {offer.details.value}
+          </p>
+        ) : null}
+        {storyClips.length ? (
+          <div className="referenceBrandVideoRail" aria-label={`${brand.name} videos`}>
+            {storyClips.map((clip) => (
+              <video
+                key={clip.id}
+                controls
+                playsInline
+                preload="metadata"
+                src={clip.url}
+                aria-label={`${brand.name} video ${clip.position + 1}`}
+              />
+            ))}
+          </div>
+        ) : null}
+        {collections.length || standaloneItems.length ? (
+          <div
+            className="referenceBrandShelf editorialBrandShelf"
+            data-item-count={collections.length + standaloneItems.length}
+          >
+            {collections.map((collection) => {
+              const firstItem = collection.recommendationIds.flatMap(
+                (id) => items.find((item) => item.id === id) ?? [],
+              )[0];
+              const cover = collection.imageUrl || firstItem?.imageUrl;
+              const textDirection = textDirectionFor(collection.title);
+              return (
+                <Link
+                  aria-label={`View collection ${collection.title}`}
+                  className="referenceBrandCollectionCard editorialCollectionTile"
+                  data-text-direction={textDirection}
+                  href={`/${encodeURIComponent(handle)}/pages/${collection.id}`}
+                  key={collection.id}
+                >
+                  <span className="referenceBrandCardImage editorialCollectionImage">
+                    {cover ? (
+                      <Image alt="" fill sizes="160px" src={cover} unoptimized />
+                    ) : (
+                      <span aria-hidden="true">{collection.title.slice(0, 1)}</span>
+                    )}
+                  </span>
+                  <strong dir={textDirection}>{collection.title}</strong>
+                </Link>
+              );
+            })}
+            {standaloneItems.map((item) => (
+              <RecommendationCardView
+                creatorId={creatorId}
+                hideDiscount={offer?.id === item.discount?.id}
+                key={item.id}
+                recommendation={item}
+                showPrice={false}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
+    );
+  }
   if (items.length === 1 && collections.length === 0) {
     const item = items[0]!;
     if (offer) {
@@ -1582,6 +1790,7 @@ function offerValue(offer: PublicDiscountCode): string | null {
 function StorefrontRow({
   creatorId,
   displayStyle,
+  editorial = false,
   featuredMedia = [],
   framed,
   pages,
@@ -1591,6 +1800,7 @@ function StorefrontRow({
 }: {
   creatorId: string;
   displayStyle?: 'horizontal' | 'vertical';
+  editorial?: boolean;
   featuredMedia?: FeaturedMedia[];
   framed?: boolean | undefined;
   pages: CreatorStorefront['curatedSections'];
@@ -1644,7 +1854,7 @@ function StorefrontRow({
             />
           ))}
           {featuredMedia.map((media) => (
-            <FeaturedMediaBlock key={media.id} media={media} />
+            <FeaturedMediaBlock editorial={editorial} key={media.id} media={media} />
           ))}
         </div>
       ) : null}

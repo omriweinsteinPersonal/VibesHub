@@ -14533,3 +14533,276 @@ dt {
     padding: 9px 8px 16px;
   }
 }
+
+/* These classes are rendered only by the opt-in Editorial Frame card variant. */
+.editorialBrandCard,
+.editorialMediaCard {
+  background: #fff;
+  border: 1px solid #dfe2e8;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgb(19 29 72 / 4%);
+  color: #111a3e;
+  overflow: hidden;
+}
+.editorialBrandCard {
+  margin-top: 10px;
+  padding: 14px;
+}
+.editorialBrandHeaderLink {
+  align-items: center;
+  color: inherit;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 74px minmax(0, 1fr) 20px;
+  min-width: 0;
+  text-decoration: none;
+}
+.editorialBrandMark {
+  align-items: center;
+  background: #f9fafc;
+  border: 1px solid #e5e7ec;
+  border-radius: 12px;
+  display: flex;
+  height: 74px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 74px;
+}
+.editorialBrandMark img {
+  object-fit: contain;
+  padding: 7px;
+}
+.editorialBrandMark > span {
+  font:
+    700 28px Georgia,
+    serif;
+}
+.editorialBrandHeading {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.editorialBrandHeading > strong {
+  font:
+    700 1.13rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.editorialBrandOfferValue {
+  color: #ff6552;
+  font:
+    700 1rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialBrandCode,
+.editorialBrandExpiry {
+  color: #25304e;
+  font:
+    400 0.81rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialBrandCode b {
+  font-weight: 700;
+}
+.editorialBrandExpiry {
+  color: #657084;
+  font-size: 0.72rem;
+}
+.editorialBrandArrow {
+  justify-self: end;
+}
+.editorialBrandDetails {
+  color: #34405d;
+  font:
+    400 0.82rem/1.4 Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+.editorialBrandShelf {
+  margin-top: 13px;
+}
+.editorialCollectionTile {
+  text-decoration: none;
+}
+.editorialCollectionImage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+.editorialCollectionImage > span {
+  font:
+    700 1.7rem Georgia,
+    serif;
+}
+.editorialBrandCard .referenceBrandVideoRail {
+  margin-top: 12px;
+}
+.editorialBrandCard .referenceBrandVideoRail video {
+  flex-basis: 100px;
+  width: 100px;
+}
+@media (max-width: 600px) {
+  .editorialBrandCard {
+    padding: 12px;
+  }
+  .editorialBrandHeaderLink {
+    gap: 10px;
+    grid-template-columns: 60px minmax(0, 1fr) 18px;
+  }
+  .editorialBrandMark {
+    height: 60px;
+    width: 60px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame'] .editorialBrandShelf {
+    gap: 8px;
+    grid-auto-columns: minmax(0, calc((100% - 8px) / 2));
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .editorialCollectionTile,
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .storeProductCard.compactProductCard {
+    max-width: none;
+    width: 100%;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .referenceBrandCardImage,
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .storeProductImage {
+    aspect-ratio: 1;
+  }
+}
+.editorialMediaCard {
+  width: 100%;
+}
+.editorialMediaSummary {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 86px minmax(0, 1fr) 20px;
+  min-height: 106px;
+  padding: 10px 14px;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+.editorialMediaArtwork {
+  align-items: center;
+  background: #e9ecf3;
+  border-radius: 10px;
+  display: flex;
+  height: 86px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 86px;
+}
+.editorialMediaArtwork > img {
+  object-fit: cover;
+}
+.editorialMediaArtworkFallback {
+  color: #3047d6;
+}
+.editorialMediaPlay {
+  align-items: center;
+  background: #111a3e;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  bottom: 5px;
+  color: #fff;
+  display: flex;
+  height: 27px;
+  justify-content: center;
+  left: 5px;
+  position: absolute;
+  width: 27px;
+}
+.editorialMediaCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.editorialMediaCopy small {
+  color: #3047d6;
+  font:
+    700 0.72rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialMediaCopy strong {
+  color: #111a3e;
+  display: -webkit-box;
+  font:
+    700 0.95rem/1.25 Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.editorialMediaArrow {
+  justify-self: end;
+}
+.editorialMediaPlayer {
+  border-top: 1px solid #e6e8ee;
+  padding: 12px;
+}
+.editorialMediaPlayer iframe {
+  border: 0;
+  border-radius: 10px;
+  display: block;
+  height: 230px;
+  width: 100%;
+}
+.editorialMediaCard[data-provider='spotify'] .editorialMediaPlayer iframe {
+  height: 152px;
+}
+.editorialMediaCard[data-provider='apple_music'] .editorialMediaPlayer iframe {
+  height: 175px;
+}
+.editorialMediaCard[data-provider='instagram'] .editorialMediaPlayer iframe {
+  height: 420px;
+}
+.editorialMediaPlayer > a {
+  color: #3047d6;
+  display: inline-block;
+  font:
+    700 0.78rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .editorialMediaSummary {
+    gap: 10px;
+    grid-template-columns: 72px minmax(0, 1fr) 16px;
+    min-height: 92px;
+    padding: 9px 10px;
+  }
+  .editorialMediaArtwork {
+    height: 72px;
+    width: 72px;
+  }
+}
