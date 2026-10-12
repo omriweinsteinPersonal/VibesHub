@@ -7576,7 +7576,7 @@ dt {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(38%, 42%);
   margin-top: 7px;
-  min-height: 154px;
+  min-height: 140px;
   overflow: hidden;
   text-decoration: none;
 }
@@ -7585,7 +7585,7 @@ dt {
   display: grid;
   gap: 7px;
   grid-column: 1;
-  padding: 16px 20px;
+  padding: 14px 17px;
   text-align: right;
 }
 .referenceStandaloneRecommendationContent[dir='ltr'] {
@@ -7648,7 +7648,7 @@ dt {
   background: #eee7df;
   display: block;
   grid-column: 2;
-  min-height: 154px;
+  min-height: 140px;
   overflow: hidden;
   position: relative;
 }
@@ -7667,7 +7667,7 @@ dt {
   display: grid;
   grid-template-columns: minmax(0, 58%) minmax(38%, 42%);
   margin-top: 14px;
-  min-height: 190px;
+  min-height: 172px;
   overflow: hidden;
   text-decoration: none;
 }
@@ -7675,7 +7675,7 @@ dt {
   align-content: start;
   display: grid;
   gap: 8px;
-  padding: 18px 22px;
+  padding: 15px 18px;
   text-align: right;
 }
 .referenceBrandSingleProductCopy[dir='ltr'] {
@@ -7763,7 +7763,7 @@ dt {
 }
 .referenceBrandSingleProductImage {
   background: #ebe9e6;
-  min-height: 190px;
+  min-height: 172px;
   overflow: hidden;
   position: relative;
 }
@@ -7778,14 +7778,14 @@ dt {
 @media (max-width: 620px) {
   .referenceStandaloneRecommendation {
     grid-template-columns: minmax(0, 1fr) 42%;
-    min-height: 132px;
+    min-height: 120px;
   }
   .referenceStandaloneRecommendationContent {
     gap: 5px;
-    padding: 14px;
+    padding: 12px;
   }
   .referenceStandaloneRecommendationImage {
-    min-height: 132px;
+    min-height: 120px;
   }
   .referenceStandaloneRecommendationBrand {
     font-size: 0.6rem;
@@ -7795,11 +7795,11 @@ dt {
   }
   .referenceBrandSingleProduct {
     grid-template-columns: minmax(0, 58%) 42%;
-    min-height: 156px;
+    min-height: 140px;
   }
   .referenceBrandSingleProductCopy {
     gap: 5px;
-    padding: 14px;
+    padding: 12px;
   }
   .referenceBrandSingleProductMeta span,
   .referenceBrandSingleProductMeta strong,
@@ -7810,7 +7810,7 @@ dt {
     font-size: 1.25rem;
   }
   .referenceBrandSingleProductImage {
-    min-height: 156px;
+    min-height: 140px;
   }
 }
 .referenceBrandBlock {
