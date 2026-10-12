@@ -1655,6 +1655,7 @@ function BrandOnlyRecommendationCard({
     `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
       new URL(brand.websiteUrl).hostname,
     )}&sz=128`;
+  const textDirection = textDirectionFor(brand.name);
   return (
     <a
       aria-label={`Visit ${brand.name}${offer.code ? ` with discount code ${offer.code}` : ''}`}
@@ -1663,7 +1664,7 @@ function BrandOnlyRecommendationCard({
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className="referenceStandaloneRecommendationContent" dir="auto">
+      <div className="referenceStandaloneRecommendationContent" dir={textDirection}>
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           <span>{offerValue(offer) || null}</span>
