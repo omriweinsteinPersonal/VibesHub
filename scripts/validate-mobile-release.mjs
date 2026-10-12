@@ -152,6 +152,23 @@ requireValue(
   mobilePackage.scripts?.['eas-build-post-install']?.includes('validate:build-env'),
   'EAS builds must validate their public environment before bundling.',
 );
+requireValue(
+  !Object.keys(mobilePackage.dependencies ?? {}).some((name) =>
+    name.toLowerCase().includes('webview'),
+  ),
+  'The native app must not depend on a WebView package.',
+);
+for (const [name, source] of [
+  ['Account', accountSource],
+  ['Creator Studio', studioSource],
+  ['Login', loginSource],
+  ['Public storefront', storefrontSource],
+]) {
+  requireValue(
+    !/react-native-webview|<WebView\b/u.test(source),
+    `${name} must remain a native React Native screen, not a WebView.`,
+  );
+}
 
 if (errors.length > 0) {
   console.error('Mobile release validation failed:\n');
