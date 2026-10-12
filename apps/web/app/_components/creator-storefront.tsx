@@ -1331,18 +1331,18 @@ function SingleBrandProductCard({
   return (
     <Link
       aria-label={`View ${item.productName} at ${brand.name}`}
-      className="referenceBrandSingleProduct"
+      className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
       <div
-        className="referenceBrandSingleProductCopy"
+        className="referenceStandaloneRecommendationContent"
         dir={textDirectionFor(item.productName)}
       >
-        <div className="referenceBrandSingleProductMeta">
-          <span>{brand.name}</span>
-          {offerValue(offer) ? <strong>{offerValue(offer)}</strong> : null}
+        <div className="referenceStandaloneRecommendationTopline">
+          <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+          {offerValue(offer) ? <span>{offerValue(offer)}</span> : null}
         </div>
-        <div className="referenceBrandSingleProductOffer">
+        <div className="referenceStandaloneRecommendationOffer">
           <span
             className={`referenceDiscountExpiry${offer.expiresAt ? '' : ' is-empty'}`}
           >
@@ -1358,9 +1358,9 @@ function SingleBrandProductCard({
           )}
         </div>
         <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
-        {offer.details ? <p>{offer.details.value}</p> : null}
+        {offer.details ? <small>{offer.details.value}</small> : null}
       </div>
-      <div className="referenceBrandSingleProductImage">
+      <div className="referenceStandaloneRecommendationImage">
         <Image
           alt={item.productName}
           fill
