@@ -330,7 +330,13 @@ export class RecommendationRepository {
       `;
       if (!current) return null;
       const image = await this.resolveImageSource(sql, userId, input, true);
-      const catalog = await this.upsertCatalog(sql, userId, input, image, current.offerId);
+      const catalog = await this.upsertCatalog(
+        sql,
+        userId,
+        input,
+        image,
+        current.offerId,
+      );
       const creatorBrandId = await this.ensureCreatorBrand(
         sql,
         creator.id,

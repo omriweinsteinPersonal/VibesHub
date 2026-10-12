@@ -14454,15 +14454,27 @@ dt {
   width: 172px;
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard .storeProductImage,
-.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard .storeProductImage {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductImage,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductImage {
   aspect-ratio: 1 / 1.08;
   border-radius: 12px;
   overflow: hidden;
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard .storeProductDetails,
-.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard .storeProductDetails {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductDetails,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductDetails {
   background: transparent;
   padding: 7px 2px 2px;
 }
@@ -14482,21 +14494,47 @@ dt {
   width: min(100%, 320px);
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaCover,
-.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaEmbed,
-.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaCover,
-.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaEmbed {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaCover,
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaEmbed,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaCover,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaEmbed {
   border-radius: 12px;
   overflow: hidden;
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaLink > span:last-child,
-.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaLink > span:last-child {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaLink
+  > span:last-child,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaLink
+  > span:last-child {
   padding: 7px 2px 2px;
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard .editorialMediaSummary,
-.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard .editorialMediaSummary {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaSummary,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaSummary {
   background: var(--sf-discount, #f8f6f2);
   border: 1px solid #e2d5c8;
   border-radius: 12px;
@@ -14505,8 +14543,14 @@ dt {
   padding: 8px;
 }
 
-.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard .editorialMediaArtwork,
-.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard .editorialMediaArtwork {
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaArtwork,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaArtwork {
   border-radius: 8px;
   height: 58px;
   width: 58px;
@@ -14545,8 +14589,7 @@ dt {
 /* Horizontal sections can mix compact product tiles with full media cards.
    Flex lets each child keep its own intended width instead of forcing every
    item into the product grid's fixed track. */
-.referenceStorefrontRow:not(.referenceStorefrontRowVertical)
-  .referenceStorefrontScroller,
+.referenceStorefrontRow:not(.referenceStorefrontRowVertical) .referenceStorefrontScroller,
 .referenceCollectionFrame:not(.referenceStorefrontRowVertical)
   .referenceStorefrontScroller {
   display: flex;

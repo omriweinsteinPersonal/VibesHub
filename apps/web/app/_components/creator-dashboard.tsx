@@ -2520,13 +2520,19 @@ export function CreatorDashboard() {
               </div>
 
               {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
-              <div aria-label="Filter recommendations" className="creatorRecommendationFilters" role="tablist">
-                {([
-                  ['all', 'All'],
-                  ['brands', 'Brands'],
-                  ['items', 'Items'],
-                  ['sections', 'Sections'],
-                ] as const).map(([value, label]) => (
+              <div
+                aria-label="Filter recommendations"
+                className="creatorRecommendationFilters"
+                role="tablist"
+              >
+                {(
+                  [
+                    ['all', 'All'],
+                    ['brands', 'Brands'],
+                    ['items', 'Items'],
+                    ['sections', 'Sections'],
+                  ] as const
+                ).map(([value, label]) => (
                   <button
                     aria-selected={recommendationFilter === value}
                     className={recommendationFilter === value ? 'isActive' : ''}
@@ -2540,313 +2546,527 @@ export function CreatorDashboard() {
                 ))}
               </div>
               <div className="creatorManageList">
-                {(recommendationFilter === 'all' || recommendationFilter === 'sections') && standaloneSections.map((section) => {
-                  const sectionItems = section.recommendationIds.flatMap(
-                    (id) => activeRecommendations.find((item) => item.id === id) ?? [],
-                  );
-                  const sectionMedia = section.contentItems.filter(
-                    ({ kind }) => kind === 'media',
-                  );
-                  return (
-                    <section
-                      aria-label={`${section.title} section`}
-                      className="creatorManageCollection creatorSectionManageCard"
-                      key={section.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <div>
-                          <span className="eyebrow">SECTION</span>
-                          <h3>{section.title}</h3>
-                          <p>
-                            {sectionItems.length + sectionMedia.length}{' '}
-                            {sectionItems.length + sectionMedia.length === 1
-                              ? 'content item'
-                              : 'content items'}
-                            {' · '}
-                            {section.displayStyle === 'horizontal'
-                              ? 'Horizontal scroll'
-                              : 'Vertical list'}
-                          </p>
-                        </div>
-                        <div className="creatorManageCollectionActions">
-                          <label className="creatorLiveToggle">
-                            <input
-                              checked={!hiddenCollectionIds.includes(section.id)}
-                              onChange={(event) =>
-                                void toggleVisibility(
-                                  'collection',
-                                  section.id,
-                                  event.target.checked,
-                                )
-                              }
-                              type="checkbox"
-                            />
-                            <span />
-                            {hiddenCollectionIds.includes(section.id) ? 'Off' : 'On'}
-                          </label>
-                          <button
-                            aria-label={`Edit ${section.title}`}
-                            disabled={saving}
-                            onClick={() => setEditingSectionId(section.id)}
-                            type="button"
-                          >
-                            <Pencil aria-hidden="true" size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${section.title}`}
-                            disabled={saving}
-                            onClick={() => {
-                              if (!window.confirm(`Delete the ${section.title} section?`))
-                                return;
-                              void saveCuratedSections(
-                                curatedSections.filter(({ id }) => id !== section.id),
-                              ).then((saved) => {
-                                if (saved) setEditingSectionId(null);
-                              });
-                            }}
-                            type="button"
-                          >
-                            <Trash2 aria-hidden="true" size={16} />
-                          </button>
-                        </div>
-                        <button
-                          aria-expanded={expandedSectionId === section.id}
-                          aria-label={`${expandedSectionId === section.id ? 'Hide' : 'Show'} ${section.title} content`}
-                          className="creatorSectionExpand"
-                          onClick={() =>
-                            setExpandedSectionId((current) =>
-                              current === section.id ? null : section.id,
-                            )
-                          }
-                          type="button"
-                        >
-                          {expandedSectionId === section.id ? (
-                            <ChevronDown aria-hidden="true" size={18} />
-                          ) : (
-                            <ChevronRight aria-hidden="true" size={18} />
-                          )}
-                        </button>
-                      </header>
-                      {editingSectionId === section.id ? (
-                        <div className="creatorManageCollectionEditor">
-                          <CuratedSectionForm
-                            brands={brands}
-                            collections={curatedSections.filter(
-                              ({ kind }) => kind === 'collection',
-                            )}
-                            featuredMedia={featuredMedia}
-                            initial={section}
-                            kind="section"
-                            onCancel={() => setEditingSectionId(null)}
-                            onSave={(updated) =>
-                              saveCuratedSections(
-                                curatedSections.map((current) =>
-                                  current.id === section.id ? updated : current,
-                                ),
-                              )
-                            }
-                            recommendations={activeRecommendations}
-                            saving={saving}
-                          />
-                        </div>
-                      ) : expandedSectionId === section.id && (sectionItems.length || sectionMedia.length) ? (
-                        <div className="creatorManageCollectionItems">
-                          {sectionItems.map((item) => (
-                            <RecommendationManageCard
-                              item={item}
-                              key={item.id}
-                              onToggle={() =>
-                                toggleVisibility(
-                                  'recommendation',
-                                  item.id,
-                                  !hiddenRecommendationIds.includes(item.id),
-                                )
-                              }
-                              visible={!hiddenRecommendationIds.includes(item.id)}
-                              onArchive={() =>
-                                void recommendationCommand(item, 'archive')
-                              }
-                              onEdit={() => editProduct(item)}
-                            />
-                          ))}
-                          {sectionMedia.length ? (
-                            <p className="creatorManageCollectionEmpty">
-                              {sectionMedia.length} Featured Content item
-                              {sectionMedia.length === 1 ? '' : 's'} included.
-                            </p>
-                          ) : null}
-                        </div>
-                      ) : expandedSectionId === section.id ? (
-                        <p className="creatorManageCollectionEmpty">
-                          No content yet. Edit this section to add existing content.
-                        </p>
-                      ) : null}
-                    </section>
-                  );
-                })}
-                {(recommendationFilter === 'all' || recommendationFilter === 'brands') && brandGroups.map(
-                  ({
-                    brand: managedBrand,
-                    collections: brandCollections,
-                    items: brandItems,
-                  }) => (
-                    <section
-                      className="creatorManageCollection creatorBrandManageCard"
-                      key={managedBrand.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <button
-                          aria-expanded={expandedBrandId === managedBrand.id}
-                          aria-controls={`brand-contents-${managedBrand.id}`}
-                          className="creatorBrandToggle"
-                          onClick={() =>
-                            setExpandedBrandId((current) =>
-                              current === managedBrand.id ? null : managedBrand.id,
-                            )
-                          }
-                          type="button"
-                        >
-                          <ChevronDown aria-hidden="true" size={18} />
-                          <span>
-                            <strong>{managedBrand.name}</strong>
-                            <small>
-                              {brandCollections.length} collections ?{' '}
-                              {
-                                new Set([
-                                  ...brandCollections.flatMap(({ items }) =>
-                                    items.map(({ id }) => id),
-                                  ),
-                                  ...brandItems.map(({ id }) => id),
-                                ]).size
-                              }{' '}
-                              items
-                            </small>
-                          </span>
-                        </button>
-                        <div className="creatorManageCollectionActions">
-                          <label
-                            className="creatorLiveToggle"
-                            title={
-                              hiddenBrandIds.includes(managedBrand.id)
-                                ? 'Show brand'
-                                : 'Hide brand'
-                            }
-                          >
-                            <input
-                              checked={!hiddenBrandIds.includes(managedBrand.id)}
-                              onChange={(event) =>
-                                void toggleVisibility(
-                                  'brand',
-                                  managedBrand.id,
-                                  event.target.checked,
-                                )
-                              }
-                              type="checkbox"
-                            />
-                            <span />
-                            {hiddenBrandIds.includes(managedBrand.id) ? 'Off' : 'On'}
-                          </label>
-                          <a
-                            href={managedBrand.websiteUrl}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                            <ExternalLink size={16} />
-                          </a>
-                          <button
-                            aria-label={`Edit ${managedBrand.name}`}
-                            onClick={() => {
-                              const offer = discounts.find(
-                                (item) =>
-                                  item.brandId === managedBrand.id &&
-                                  item.scopeKind === 'brand',
-                              );
-                              setEditingBrand(managedBrand);
-                              setBrand({
-                                code: offer?.code ?? '',
-                                discountType: offer?.discountAmountMinor
-                                  ? 'amount'
-                                  : 'percent',
-                                detailsHe: offer?.details?.value ?? '',
-                                discountPercent: offer?.discountPercent?.toString() ?? '',
-                                discountAmount: offer?.discountAmountMinor
-                                  ? String(offer.discountAmountMinor / 100)
-                                  : '',
-                                expiresAt: toLocalDate(offer?.expiresAt ?? null),
-                                name: managedBrand.name,
-                                websiteUrl: managedBrand.websiteUrl,
-                                logoAssetId: managedBrand.logoAssetId ?? '',
-                                logoUrl: managedBrand.logoUrl ?? '',
-                              });
-                              setComposer('brand');
-                              window.scrollTo({ behavior: 'smooth', top: 120 });
-                            }}
-                            type="button"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${managedBrand.name}`}
-                            disabled={saving}
-                            onClick={() => {
-                              const archiveRecommendations =
-                                managedBrand.itemCount > 0 &&
-                                window.confirm(
-                                  `Also remove ${managedBrand.itemCount} recommendation${managedBrand.itemCount === 1 ? '' : 's'} under ${managedBrand.name}? Choose OK to remove them too, or Cancel to keep them.`,
-                                );
-                              void apiRequest(
-                                `/creator/brands/${managedBrand.id}?archiveRecommendations=${archiveRecommendations}`,
-                                {
-                                  headers: { 'if-match': `"${managedBrand.version}"` },
-                                  method: 'DELETE',
-                                },
-                              )
-                                .then(() => load())
-                                .catch((cause: unknown) => setError(messageFor(cause)));
-                            }}
-                            type="button"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </header>
-                      <div
-                        id={`brand-contents-${managedBrand.id}`}
-                        hidden={expandedBrandId !== managedBrand.id}
+                {(recommendationFilter === 'all' ||
+                  recommendationFilter === 'sections') &&
+                  standaloneSections.map((section) => {
+                    const sectionItems = section.recommendationIds.flatMap(
+                      (id) => activeRecommendations.find((item) => item.id === id) ?? [],
+                    );
+                    const sectionMedia = section.contentItems.filter(
+                      ({ kind }) => kind === 'media',
+                    );
+                    return (
+                      <section
+                        aria-label={`${section.title} section`}
+                        className="creatorManageCollection creatorSectionManageCard"
+                        key={section.id}
                       >
-                        {brandCollections.length || brandItems.length ? (
-                          <div className="creatorBrandManageContents">
-                            {brandCollections.map((entry) => (
-                              <CollectionManageCard
-                                brands={brands}
-                                editing={editingCollectionId === entry.section.id}
-                                entry={entry}
-                                key={entry.section.id}
-                                nested
-                                onArchiveItem={(item) => {
-                                  if (
-                                    window.confirm(
-                                      'Remove this recommendation from your storefront?',
-                                    )
+                        <header className="creatorManageCollectionHeader">
+                          <div>
+                            <span className="eyebrow">SECTION</span>
+                            <h3>{section.title}</h3>
+                            <p>
+                              {sectionItems.length + sectionMedia.length}{' '}
+                              {sectionItems.length + sectionMedia.length === 1
+                                ? 'content item'
+                                : 'content items'}
+                              {' · '}
+                              {section.displayStyle === 'horizontal'
+                                ? 'Horizontal scroll'
+                                : 'Vertical list'}
+                            </p>
+                          </div>
+                          <div className="creatorManageCollectionActions">
+                            <label className="creatorLiveToggle">
+                              <input
+                                checked={!hiddenCollectionIds.includes(section.id)}
+                                onChange={(event) =>
+                                  void toggleVisibility(
+                                    'collection',
+                                    section.id,
+                                    event.target.checked,
                                   )
-                                    void recommendationCommand(item, 'archive');
-                                }}
-                                onCreateBrand={async (input) => {
-                                  const created = await apiRequest<CreatorBrand>(
-                                    '/creator/brands',
-                                    {
-                                      body: JSON.stringify(input),
-                                      idempotent: true,
-                                      method: 'POST',
-                                    },
+                                }
+                                type="checkbox"
+                              />
+                              <span />
+                              {hiddenCollectionIds.includes(section.id) ? 'Off' : 'On'}
+                            </label>
+                            <button
+                              aria-label={`Edit ${section.title}`}
+                              disabled={saving}
+                              onClick={() => setEditingSectionId(section.id)}
+                              type="button"
+                            >
+                              <Pencil aria-hidden="true" size={16} />
+                            </button>
+                            <button
+                              aria-label={`Delete ${section.title}`}
+                              disabled={saving}
+                              onClick={() => {
+                                if (
+                                  !window.confirm(`Delete the ${section.title} section?`)
+                                )
+                                  return;
+                                void saveCuratedSections(
+                                  curatedSections.filter(({ id }) => id !== section.id),
+                                ).then((saved) => {
+                                  if (saved) setEditingSectionId(null);
+                                });
+                              }}
+                              type="button"
+                            >
+                              <Trash2 aria-hidden="true" size={16} />
+                            </button>
+                          </div>
+                          <button
+                            aria-expanded={expandedSectionId === section.id}
+                            aria-label={`${expandedSectionId === section.id ? 'Hide' : 'Show'} ${section.title} content`}
+                            className="creatorSectionExpand"
+                            onClick={() =>
+                              setExpandedSectionId((current) =>
+                                current === section.id ? null : section.id,
+                              )
+                            }
+                            type="button"
+                          >
+                            {expandedSectionId === section.id ? (
+                              <ChevronDown aria-hidden="true" size={18} />
+                            ) : (
+                              <ChevronRight aria-hidden="true" size={18} />
+                            )}
+                          </button>
+                        </header>
+                        {editingSectionId === section.id ? (
+                          <div className="creatorManageCollectionEditor">
+                            <CuratedSectionForm
+                              brands={brands}
+                              collections={curatedSections.filter(
+                                ({ kind }) => kind === 'collection',
+                              )}
+                              featuredMedia={featuredMedia}
+                              initial={section}
+                              kind="section"
+                              onCancel={() => setEditingSectionId(null)}
+                              onSave={(updated) =>
+                                saveCuratedSections(
+                                  curatedSections.map((current) =>
+                                    current.id === section.id ? updated : current,
+                                  ),
+                                )
+                              }
+                              recommendations={activeRecommendations}
+                              saving={saving}
+                            />
+                          </div>
+                        ) : expandedSectionId === section.id &&
+                          (sectionItems.length || sectionMedia.length) ? (
+                          <div className="creatorManageCollectionItems">
+                            {sectionItems.map((item) => (
+                              <RecommendationManageCard
+                                item={item}
+                                key={item.id}
+                                onToggle={() =>
+                                  toggleVisibility(
+                                    'recommendation',
+                                    item.id,
+                                    !hiddenRecommendationIds.includes(item.id),
+                                  )
+                                }
+                                visible={!hiddenRecommendationIds.includes(item.id)}
+                                onArchive={() =>
+                                  void recommendationCommand(item, 'archive')
+                                }
+                                onEdit={() => editProduct(item)}
+                              />
+                            ))}
+                            {sectionMedia.length ? (
+                              <p className="creatorManageCollectionEmpty">
+                                {sectionMedia.length} Featured Content item
+                                {sectionMedia.length === 1 ? '' : 's'} included.
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : expandedSectionId === section.id ? (
+                          <p className="creatorManageCollectionEmpty">
+                            No content yet. Edit this section to add existing content.
+                          </p>
+                        ) : null}
+                      </section>
+                    );
+                  })}
+                {(recommendationFilter === 'all' || recommendationFilter === 'brands') &&
+                  brandGroups.map(
+                    ({
+                      brand: managedBrand,
+                      collections: brandCollections,
+                      items: brandItems,
+                    }) => (
+                      <section
+                        className="creatorManageCollection creatorBrandManageCard"
+                        key={managedBrand.id}
+                      >
+                        <header className="creatorManageCollectionHeader">
+                          <button
+                            aria-expanded={expandedBrandId === managedBrand.id}
+                            aria-controls={`brand-contents-${managedBrand.id}`}
+                            className="creatorBrandToggle"
+                            onClick={() =>
+                              setExpandedBrandId((current) =>
+                                current === managedBrand.id ? null : managedBrand.id,
+                              )
+                            }
+                            type="button"
+                          >
+                            <ChevronDown aria-hidden="true" size={18} />
+                            <span>
+                              <strong>{managedBrand.name}</strong>
+                              <small>
+                                {brandCollections.length} collections ?{' '}
+                                {
+                                  new Set([
+                                    ...brandCollections.flatMap(({ items }) =>
+                                      items.map(({ id }) => id),
+                                    ),
+                                    ...brandItems.map(({ id }) => id),
+                                  ]).size
+                                }{' '}
+                                items
+                              </small>
+                            </span>
+                          </button>
+                          <div className="creatorManageCollectionActions">
+                            <label
+                              className="creatorLiveToggle"
+                              title={
+                                hiddenBrandIds.includes(managedBrand.id)
+                                  ? 'Show brand'
+                                  : 'Hide brand'
+                              }
+                            >
+                              <input
+                                checked={!hiddenBrandIds.includes(managedBrand.id)}
+                                onChange={(event) =>
+                                  void toggleVisibility(
+                                    'brand',
+                                    managedBrand.id,
+                                    event.target.checked,
+                                  )
+                                }
+                                type="checkbox"
+                              />
+                              <span />
+                              {hiddenBrandIds.includes(managedBrand.id) ? 'Off' : 'On'}
+                            </label>
+                            <a
+                              href={managedBrand.websiteUrl}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                            <button
+                              aria-label={`Edit ${managedBrand.name}`}
+                              onClick={() => {
+                                const offer = discounts.find(
+                                  (item) =>
+                                    item.brandId === managedBrand.id &&
+                                    item.scopeKind === 'brand',
+                                );
+                                setEditingBrand(managedBrand);
+                                setBrand({
+                                  code: offer?.code ?? '',
+                                  discountType: offer?.discountAmountMinor
+                                    ? 'amount'
+                                    : 'percent',
+                                  detailsHe: offer?.details?.value ?? '',
+                                  discountPercent:
+                                    offer?.discountPercent?.toString() ?? '',
+                                  discountAmount: offer?.discountAmountMinor
+                                    ? String(offer.discountAmountMinor / 100)
+                                    : '',
+                                  expiresAt: toLocalDate(offer?.expiresAt ?? null),
+                                  name: managedBrand.name,
+                                  websiteUrl: managedBrand.websiteUrl,
+                                  logoAssetId: managedBrand.logoAssetId ?? '',
+                                  logoUrl: managedBrand.logoUrl ?? '',
+                                });
+                                setComposer('brand');
+                                window.scrollTo({ behavior: 'smooth', top: 120 });
+                              }}
+                              type="button"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              aria-label={`Delete ${managedBrand.name}`}
+                              disabled={saving}
+                              onClick={() => {
+                                const archiveRecommendations =
+                                  managedBrand.itemCount > 0 &&
+                                  window.confirm(
+                                    `Also remove ${managedBrand.itemCount} recommendation${managedBrand.itemCount === 1 ? '' : 's'} under ${managedBrand.name}? Choose OK to remove them too, or Cancel to keep them.`,
                                   );
-                                  setBrands((current) => [
-                                    ...current.filter(({ id }) => id !== created.id),
-                                    created,
-                                  ]);
-                                  return created;
-                                }}
-                                onDelete={() => {
+                                void apiRequest(
+                                  `/creator/brands/${managedBrand.id}?archiveRecommendations=${archiveRecommendations}`,
+                                  {
+                                    headers: { 'if-match': `"${managedBrand.version}"` },
+                                    method: 'DELETE',
+                                  },
+                                )
+                                  .then(() => load())
+                                  .catch((cause: unknown) => setError(messageFor(cause)));
+                              }}
+                              type="button"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </header>
+                        <div
+                          id={`brand-contents-${managedBrand.id}`}
+                          hidden={expandedBrandId !== managedBrand.id}
+                        >
+                          {brandCollections.length || brandItems.length ? (
+                            <div className="creatorBrandManageContents">
+                              {brandCollections.map((entry) => (
+                                <CollectionManageCard
+                                  brands={brands}
+                                  editing={editingCollectionId === entry.section.id}
+                                  entry={entry}
+                                  key={entry.section.id}
+                                  nested
+                                  onArchiveItem={(item) => {
+                                    if (
+                                      window.confirm(
+                                        'Remove this recommendation from your storefront?',
+                                      )
+                                    )
+                                      void recommendationCommand(item, 'archive');
+                                  }}
+                                  onCreateBrand={async (input) => {
+                                    const created = await apiRequest<CreatorBrand>(
+                                      '/creator/brands',
+                                      {
+                                        body: JSON.stringify(input),
+                                        idempotent: true,
+                                        method: 'POST',
+                                      },
+                                    );
+                                    setBrands((current) => [
+                                      ...current.filter(({ id }) => id !== created.id),
+                                      created,
+                                    ]);
+                                    return created;
+                                  }}
+                                  onDelete={() => {
+                                    if (
+                                      !window.confirm(
+                                        `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
+                                      )
+                                    )
+                                      return;
+                                    void saveCuratedSections(
+                                      curatedSections
+                                        .filter(({ id }) => id !== entry.section.id)
+                                        .map((section) =>
+                                          section.parentCollectionId === entry.section.id
+                                            ? { ...section, parentCollectionId: null }
+                                            : section,
+                                        ),
+                                    ).then((saved) => {
+                                      if (saved) setEditingCollectionId(null);
+                                    });
+                                  }}
+                                  onEditItem={editProduct}
+                                  onToggleItem={(item) =>
+                                    toggleVisibility(
+                                      'recommendation',
+                                      item.id,
+                                      !hiddenRecommendationIds.includes(item.id),
+                                    )
+                                  }
+                                  isItemVisible={(item) =>
+                                    !hiddenRecommendationIds.includes(item.id)
+                                  }
+                                  visible={
+                                    !hiddenCollectionIds.includes(entry.section.id)
+                                  }
+                                  onToggleVisibility={(visible) =>
+                                    toggleVisibility(
+                                      'collection',
+                                      entry.section.id,
+                                      visible,
+                                    )
+                                  }
+                                  onEditState={(editing) =>
+                                    setEditingCollectionId(
+                                      editing ? entry.section.id : null,
+                                    )
+                                  }
+                                  onSave={(updated) =>
+                                    saveCuratedSections(
+                                      curatedSections.map((section) =>
+                                        section.id === entry.section.id
+                                          ? updated
+                                          : section,
+                                      ),
+                                    )
+                                  }
+                                  profileHandle={profile?.handle}
+                                  recommendations={activeRecommendations}
+                                  saving={saving}
+                                />
+                              ))}
+                              {brandItems.length ? (
+                                <details className="creatorBrandStandaloneItems creatorManageDisclosure">
+                                  <summary>
+                                    Individual items <span>({brandItems.length})</span>
+                                  </summary>
+                                  {brandItems.map((item) => (
+                                    <RecommendationManageCard
+                                      item={item}
+                                      key={item.id}
+                                      onToggle={() =>
+                                        void toggleVisibility(
+                                          'recommendation',
+                                          item.id,
+                                          !hiddenRecommendationIds.includes(item.id),
+                                        )
+                                      }
+                                      visible={!hiddenRecommendationIds.includes(item.id)}
+                                      onArchive={() => {
+                                        if (
+                                          window.confirm(
+                                            'Remove this recommendation from your storefront?',
+                                          )
+                                        )
+                                          void recommendationCommand(item, 'archive');
+                                      }}
+                                      onEdit={() => editProduct(item)}
+                                    />
+                                  ))}
+                                </details>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="creatorManageCollectionEmpty">
+                              No recommendations have been added to this brand yet.
+                            </p>
+                          )}
+                        </div>
+                      </section>
+                    ),
+                  )}
+                {recommendationFilter === 'items' &&
+                  activeRecommendations.map((item) => (
+                    <RecommendationManageCard
+                      item={item}
+                      key={item.id}
+                      onToggle={() =>
+                        void toggleVisibility(
+                          'recommendation',
+                          item.id,
+                          !hiddenRecommendationIds.includes(item.id),
+                        )
+                      }
+                      visible={!hiddenRecommendationIds.includes(item.id)}
+                      onArchive={() => {
+                        if (
+                          window.confirm(
+                            'Remove this recommendation from your storefront?',
+                          )
+                        )
+                          void recommendationCommand(item, 'archive');
+                      }}
+                      onEdit={() => editProduct(item)}
+                    />
+                  ))}
+                {recommendationFilter === 'items' &&
+                  activeDiscounts.map((item) => (
+                    <DiscountManageCard
+                      item={item}
+                      key={item.id}
+                      onArchive={() => void archiveDiscount(item)}
+                      onEdit={() => editDiscount(item)}
+                      onToggle={() => void toggleDiscount(item)}
+                    />
+                  ))}
+                {(recommendationFilter === 'all' ||
+                  recommendationFilter === 'sections') &&
+                  ungroupedEntries
+                    .filter(
+                      (entry) =>
+                        recommendationFilter === 'all' || entry.kind === 'collection',
+                    )
+                    .map((entry) =>
+                      entry.kind === 'collection' ? (
+                        <section
+                          aria-label={`${entry.section.title} collection`}
+                          className="creatorManageCollection"
+                          key={entry.section.id}
+                        >
+                          <header className="creatorManageCollectionHeader">
+                            <div>
+                              <span className="eyebrow">COLLECTION</span>
+                              <h3>{entry.section.title}</h3>
+                              <p>
+                                {activeRecommendations.find(
+                                  ({ brandId }) => brandId === entry.section.brandId,
+                                )?.brandName ?? 'Brand'}
+                                {' · '}
+                                {entry.items.length}{' '}
+                                {entry.items.length === 1 ? 'item' : 'items'}
+                              </p>
+                            </div>
+                            <div className="creatorManageCollectionActions">
+                              <label
+                                className="creatorLiveToggle"
+                                title={
+                                  hiddenCollectionIds.includes(entry.section.id)
+                                    ? 'Show collection'
+                                    : 'Hide collection'
+                                }
+                              >
+                                <input
+                                  checked={
+                                    !hiddenCollectionIds.includes(entry.section.id)
+                                  }
+                                  onChange={(event) =>
+                                    void toggleVisibility(
+                                      'collection',
+                                      entry.section.id,
+                                      event.target.checked,
+                                    )
+                                  }
+                                  type="checkbox"
+                                />
+                                <span />
+                                {hiddenCollectionIds.includes(entry.section.id)
+                                  ? 'Off'
+                                  : 'On'}
+                              </label>
+                              {profile ? (
+                                <Link
+                                  href={`/${profile.handle}/pages/${entry.section.id}`}
+                                  target="_blank"
+                                >
+                                  View page
+                                </Link>
+                              ) : null}
+                              <button
+                                aria-label={`Edit ${entry.section.title} collection`}
+                                disabled={saving}
+                                onClick={() => setEditingCollectionId(entry.section.id)}
+                                title="Edit collection"
+                                type="button"
+                              >
+                                <Pencil aria-hidden="true" size={16} />
+                              </button>
+                              <button
+                                aria-label={`Delete ${entry.section.title} collection`}
+                                disabled={saving}
+                                onClick={() => {
                                   if (
                                     !window.confirm(
                                       `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
@@ -2865,30 +3085,35 @@ export function CreatorDashboard() {
                                     if (saved) setEditingCollectionId(null);
                                   });
                                 }}
-                                onEditItem={editProduct}
-                                onToggleItem={(item) =>
-                                  toggleVisibility(
-                                    'recommendation',
-                                    item.id,
-                                    !hiddenRecommendationIds.includes(item.id),
-                                  )
-                                }
-                                isItemVisible={(item) =>
-                                  !hiddenRecommendationIds.includes(item.id)
-                                }
-                                visible={!hiddenCollectionIds.includes(entry.section.id)}
-                                onToggleVisibility={(visible) =>
-                                  toggleVisibility(
-                                    'collection',
-                                    entry.section.id,
-                                    visible,
-                                  )
-                                }
-                                onEditState={(editing) =>
-                                  setEditingCollectionId(
-                                    editing ? entry.section.id : null,
-                                  )
-                                }
+                                title="Delete collection"
+                                type="button"
+                              >
+                                <Trash2 aria-hidden="true" size={16} />
+                              </button>
+                            </div>
+                          </header>
+                          {editingCollectionId === entry.section.id ? (
+                            <div className="creatorManageCollectionEditor">
+                              <CuratedSectionForm
+                                brands={brands}
+                                initial={entry.section}
+                                kind="collection"
+                                onCancel={() => setEditingCollectionId(null)}
+                                onCreateBrand={async (input) => {
+                                  const created = await apiRequest<CreatorBrand>(
+                                    '/creator/brands',
+                                    {
+                                      body: JSON.stringify(input),
+                                      idempotent: true,
+                                      method: 'POST',
+                                    },
+                                  );
+                                  setBrands((current) => [
+                                    ...current.filter(({ id }) => id !== created.id),
+                                    created,
+                                  ]);
+                                  return created;
+                                }}
                                 onSave={(updated) =>
                                   saveCuratedSections(
                                     curatedSections.map((section) =>
@@ -2896,269 +3121,74 @@ export function CreatorDashboard() {
                                     ),
                                   )
                                 }
-                                profileHandle={profile?.handle}
                                 recommendations={activeRecommendations}
                                 saving={saving}
                               />
-                            ))}
-                            {brandItems.length ? (
-                              <details className="creatorBrandStandaloneItems creatorManageDisclosure">
-                                <summary>
-                                  Individual items <span>({brandItems.length})</span>
-                                </summary>
-                                {brandItems.map((item) => (
-                                  <RecommendationManageCard
-                                    item={item}
-                                    key={item.id}
-                                    onToggle={() =>
-                                      void toggleVisibility(
-                                        'recommendation',
-                                        item.id,
-                                        !hiddenRecommendationIds.includes(item.id),
+                            </div>
+                          ) : entry.items.length ? (
+                            <div className="creatorManageCollectionItems">
+                              {entry.items.map((item) => (
+                                <RecommendationManageCard
+                                  item={item}
+                                  key={item.id}
+                                  onToggle={() =>
+                                    void toggleVisibility(
+                                      'recommendation',
+                                      item.id,
+                                      !hiddenRecommendationIds.includes(item.id),
+                                    )
+                                  }
+                                  visible={!hiddenRecommendationIds.includes(item.id)}
+                                  onArchive={() => {
+                                    if (
+                                      window.confirm(
+                                        'Remove this recommendation from your storefront?',
                                       )
-                                    }
-                                    visible={!hiddenRecommendationIds.includes(item.id)}
-                                    onArchive={() => {
-                                      if (
-                                        window.confirm(
-                                          'Remove this recommendation from your storefront?',
-                                        )
-                                      )
-                                        void recommendationCommand(item, 'archive');
-                                    }}
-                                    onEdit={() => editProduct(item)}
-                                  />
-                                ))}
-                              </details>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <p className="creatorManageCollectionEmpty">
-                            No recommendations have been added to this brand yet.
-                          </p>
-                        )}
-                      </div>
-                    </section>
-                  ),
-                )}
-                {recommendationFilter === 'items' && activeRecommendations.map((item) => (
-                  <RecommendationManageCard
-                    item={item}
-                    key={item.id}
-                    onToggle={() =>
-                      void toggleVisibility(
-                        'recommendation',
-                        item.id,
-                        !hiddenRecommendationIds.includes(item.id),
-                      )
-                    }
-                    visible={!hiddenRecommendationIds.includes(item.id)}
-                    onArchive={() => {
-                      if (window.confirm('Remove this recommendation from your storefront?'))
-                        void recommendationCommand(item, 'archive');
-                    }}
-                    onEdit={() => editProduct(item)}
-                  />
-                ))}
-                {recommendationFilter === 'items' && activeDiscounts.map((item) => (
-                  <DiscountManageCard
-                    item={item}
-                    key={item.id}
-                    onArchive={() => void archiveDiscount(item)}
-                    onEdit={() => editDiscount(item)}
-                    onToggle={() => void toggleDiscount(item)}
-                  />
-                ))}
-                {(recommendationFilter === 'all' || recommendationFilter === 'sections') && ungroupedEntries.filter((entry) =>
-                  recommendationFilter === 'all' || entry.kind === 'collection',
-                ).map((entry) =>
-                  entry.kind === 'collection' ? (
-                    <section
-                      aria-label={`${entry.section.title} collection`}
-                      className="creatorManageCollection"
-                      key={entry.section.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <div>
-                          <span className="eyebrow">COLLECTION</span>
-                          <h3>{entry.section.title}</h3>
-                          <p>
-                            {activeRecommendations.find(
-                              ({ brandId }) => brandId === entry.section.brandId,
-                            )?.brandName ?? 'Brand'}
-                            {' · '}
-                            {entry.items.length}{' '}
-                            {entry.items.length === 1 ? 'item' : 'items'}
-                          </p>
-                        </div>
-                        <div className="creatorManageCollectionActions">
-                          <label
-                            className="creatorLiveToggle"
-                            title={
-                              hiddenCollectionIds.includes(entry.section.id)
-                                ? 'Show collection'
-                                : 'Hide collection'
-                            }
-                          >
-                            <input
-                              checked={!hiddenCollectionIds.includes(entry.section.id)}
-                              onChange={(event) =>
-                                void toggleVisibility(
-                                  'collection',
-                                  entry.section.id,
-                                  event.target.checked,
-                                )
-                              }
-                              type="checkbox"
-                            />
-                            <span />
-                            {hiddenCollectionIds.includes(entry.section.id)
-                              ? 'Off'
-                              : 'On'}
-                          </label>
-                          {profile ? (
-                            <Link
-                              href={`/${profile.handle}/pages/${entry.section.id}`}
-                              target="_blank"
-                            >
-                              View page
-                            </Link>
-                          ) : null}
-                          <button
-                            aria-label={`Edit ${entry.section.title} collection`}
-                            disabled={saving}
-                            onClick={() => setEditingCollectionId(entry.section.id)}
-                            title="Edit collection"
-                            type="button"
-                          >
-                            <Pencil aria-hidden="true" size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${entry.section.title} collection`}
-                            disabled={saving}
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
-                                )
+                                    )
+                                      void recommendationCommand(item, 'archive');
+                                  }}
+                                  onEdit={() => editProduct(item)}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="creatorManageCollectionEmpty">
+                              No active products in this collection. Edit it to add one.
+                            </p>
+                          )}
+                        </section>
+                      ) : entry.kind === 'recommendation' ? (
+                        <RecommendationManageCard
+                          item={entry.item}
+                          key={entry.item.id}
+                          onToggle={() =>
+                            void toggleVisibility(
+                              'recommendation',
+                              entry.item.id,
+                              !hiddenRecommendationIds.includes(entry.item.id),
+                            )
+                          }
+                          visible={!hiddenRecommendationIds.includes(entry.item.id)}
+                          onArchive={() => {
+                            if (
+                              window.confirm(
+                                'Remove this recommendation from your storefront?',
                               )
-                                return;
-                              void saveCuratedSections(
-                                curatedSections
-                                  .filter(({ id }) => id !== entry.section.id)
-                                  .map((section) =>
-                                    section.parentCollectionId === entry.section.id
-                                      ? { ...section, parentCollectionId: null }
-                                      : section,
-                                  ),
-                              ).then((saved) => {
-                                if (saved) setEditingCollectionId(null);
-                              });
-                            }}
-                            title="Delete collection"
-                            type="button"
-                          >
-                            <Trash2 aria-hidden="true" size={16} />
-                          </button>
-                        </div>
-                      </header>
-                      {editingCollectionId === entry.section.id ? (
-                        <div className="creatorManageCollectionEditor">
-                          <CuratedSectionForm
-                            brands={brands}
-                            initial={entry.section}
-                            kind="collection"
-                            onCancel={() => setEditingCollectionId(null)}
-                            onCreateBrand={async (input) => {
-                              const created = await apiRequest<CreatorBrand>(
-                                '/creator/brands',
-                                {
-                                  body: JSON.stringify(input),
-                                  idempotent: true,
-                                  method: 'POST',
-                                },
-                              );
-                              setBrands((current) => [
-                                ...current.filter(({ id }) => id !== created.id),
-                                created,
-                              ]);
-                              return created;
-                            }}
-                            onSave={(updated) =>
-                              saveCuratedSections(
-                                curatedSections.map((section) =>
-                                  section.id === entry.section.id ? updated : section,
-                                ),
-                              )
-                            }
-                            recommendations={activeRecommendations}
-                            saving={saving}
-                          />
-                        </div>
-                      ) : entry.items.length ? (
-                        <div className="creatorManageCollectionItems">
-                          {entry.items.map((item) => (
-                            <RecommendationManageCard
-                              item={item}
-                              key={item.id}
-                              onToggle={() =>
-                                void toggleVisibility(
-                                  'recommendation',
-                                  item.id,
-                                  !hiddenRecommendationIds.includes(item.id),
-                                )
-                              }
-                              visible={!hiddenRecommendationIds.includes(item.id)}
-                              onArchive={() => {
-                                if (
-                                  window.confirm(
-                                    'Remove this recommendation from your storefront?',
-                                  )
-                                )
-                                  void recommendationCommand(item, 'archive');
-                              }}
-                              onEdit={() => editProduct(item)}
-                            />
-                          ))}
-                        </div>
+                            )
+                              void recommendationCommand(entry.item, 'archive');
+                          }}
+                          onEdit={() => editProduct(entry.item)}
+                        />
                       ) : (
-                        <p className="creatorManageCollectionEmpty">
-                          No active products in this collection. Edit it to add one.
-                        </p>
-                      )}
-                    </section>
-                  ) : entry.kind === 'recommendation' ? (
-                    <RecommendationManageCard
-                      item={entry.item}
-                      key={entry.item.id}
-                      onToggle={() =>
-                        void toggleVisibility(
-                          'recommendation',
-                          entry.item.id,
-                          !hiddenRecommendationIds.includes(entry.item.id),
-                        )
-                      }
-                      visible={!hiddenRecommendationIds.includes(entry.item.id)}
-                      onArchive={() => {
-                        if (
-                          window.confirm(
-                            'Remove this recommendation from your storefront?',
-                          )
-                        )
-                          void recommendationCommand(entry.item, 'archive');
-                      }}
-                      onEdit={() => editProduct(entry.item)}
-                    />
-                  ) : (
-                    <DiscountManageCard
-                      item={entry.item}
-                      key={entry.item.id}
-                      onArchive={() => void archiveDiscount(entry.item)}
-                      onEdit={() => editDiscount(entry.item)}
-                      onToggle={() => void toggleDiscount(entry.item)}
-                    />
-                  ),
-                )}
+                        <DiscountManageCard
+                          item={entry.item}
+                          key={entry.item.id}
+                          onArchive={() => void archiveDiscount(entry.item)}
+                          onEdit={() => editDiscount(entry.item)}
+                          onToggle={() => void toggleDiscount(entry.item)}
+                        />
+                      ),
+                    )}
                 {!loading && !manageEntries.length ? (
                   <div className="creatorEmpty">
                     No recommendations yet. Add your first one above.
