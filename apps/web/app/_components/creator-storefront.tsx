@@ -299,18 +299,9 @@ export function CreatorStorefrontView({
       ),
     [configuration?.featuredMedia, storefront.featuredMedia],
   );
-  const sectionMediaIds = useMemo(
-    () =>
-      new Set(
-        visibleCuratedSections.flatMap((section) =>
-          section.contentItems.filter(({ kind }) => kind === 'media').map(({ id }) => id),
-        ),
-      ),
-    [visibleCuratedSections],
-  );
   const standaloneFeaturedMedia = useMemo(
-    () => visibleFeaturedMedia.filter(({ id }) => !sectionMediaIds.has(id)),
-    [sectionMediaIds, visibleFeaturedMedia],
+    () => visibleFeaturedMedia,
+    [visibleFeaturedMedia],
   );
   const orderedStorefront = useMemo(
     () => ({ ...storefront, contentOrder, curatedSections: visibleCuratedSections }),

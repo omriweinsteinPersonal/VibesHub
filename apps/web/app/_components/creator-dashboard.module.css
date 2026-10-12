@@ -558,11 +558,12 @@
   align-items: center;
   background: #fff;
   border: 1px solid #e2dfda;
+  border-left: 3px solid #e8cdb9;
   border-radius: 14px;
   color: #1b2528;
   display: grid;
   gap: 11px;
-  grid-template-columns: 22px minmax(0, 1fr) 18px;
+  grid-template-columns: minmax(0, 1fr) 18px;
   min-height: 72px;
   padding: 12px 13px;
   text-align: left;
@@ -598,7 +599,8 @@
 
 .root :global(.creatorDashboardSidebar button[aria-current='page']) {
   background: #fff;
-  border-color: #b6cbcb;
+  border-color: #e2dfda;
+  border-left-color: #c87552;
   box-shadow: 0 6px 16px rgb(47 89 96 / 9%);
   color: #172427;
 }
@@ -606,7 +608,8 @@
 .root :global(.creatorDashboardSidebar button:hover),
 .root :global(.creatorDashboardSidebar button:focus-visible) {
   background: #fff;
-  border-color: #8eabad;
+  border-color: #d4c6bc;
+  border-left-color: #c87552;
   box-shadow: 0 6px 16px rgb(47 89 96 / 9%);
   transform: translateY(-1px);
 }

@@ -1901,14 +1901,13 @@ export function CreatorDashboard() {
         <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
           <p className="eyebrow">MANAGE</p>
           <button
-            aria-current={dashboardView === 'labels' ? 'page' : undefined}
-            onClick={() => setDashboardView('labels')}
+            aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
+            onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            <Tag aria-hidden="true" className="creatorDashboardNavIcon" size={17} />
             <span className="creatorDashboardNavCopy">
-              <strong>Storefront labels</strong>
-              <small>Customize the labels on your page.</small>
+              <strong>Recommendations</strong>
+              <small>Manage brands, items and collections.</small>
             </span>
             <ChevronRight
               aria-hidden="true"
@@ -1917,18 +1916,13 @@ export function CreatorDashboard() {
             />
           </button>
           <button
-            aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
-            onClick={() => setDashboardView('recommendations')}
+            aria-current={dashboardView === 'labels' ? 'page' : undefined}
+            onClick={() => setDashboardView('labels')}
             type="button"
           >
-            <LayoutGrid
-              aria-hidden="true"
-              className="creatorDashboardNavIcon"
-              size={17}
-            />
             <span className="creatorDashboardNavCopy">
-              <strong>Recommendations</strong>
-              <small>Manage brands, items and collections.</small>
+              <strong>Storefront labels</strong>
+              <small>Customize the labels on your page.</small>
             </span>
             <ChevronRight
               aria-hidden="true"
@@ -1941,11 +1935,6 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('media')}
             type="button"
           >
-            <PlayCircle
-              aria-hidden="true"
-              className="creatorDashboardNavIcon"
-              size={17}
-            />
             <span className="creatorDashboardNavCopy">
               <strong>Media</strong>
               <small>Add and organize your photos and videos.</small>
@@ -1961,7 +1950,6 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            <Link2 aria-hidden="true" className="creatorDashboardNavIcon" size={17} />
             <span className="creatorDashboardNavCopy">
               <strong>Social links</strong>
               <small>Connect your platforms in one place.</small>

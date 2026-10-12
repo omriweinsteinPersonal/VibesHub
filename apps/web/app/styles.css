@@ -14476,10 +14476,10 @@ dt {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  flex: 0 0 172px;
+  flex: 0 0 min(100%, 320px);
   min-width: 0;
   overflow: visible;
-  width: 172px;
+  width: min(100%, 320px);
 }
 
 .referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaCover,
@@ -14526,7 +14526,8 @@ dt {
   .referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
   .referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
   .referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
-    flex-basis: 158px;
+    flex-basis: min(100%, 320px);
+    width: min(100%, 320px);
   }
 }
 
