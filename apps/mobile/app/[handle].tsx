@@ -418,6 +418,12 @@ export default function PublicStorefrontScreen() {
               filteredRecommendations.map((recommendation) => (
                 <ProductCard
                   key={recommendation.id}
+                  onOpen={() =>
+                    router.push({
+                      pathname: '/products/[id]',
+                      params: { id: recommendation.id },
+                    })
+                  }
                   onReport={() =>
                     setReportTarget({
                       targetId: recommendation.id,
@@ -461,10 +467,12 @@ function StorefrontLoading() {
 }
 
 function ProductCard({
+  onOpen,
   onReport,
   recommendation,
   theme,
 }: {
+  onOpen: () => void;
   onReport: () => void;
   recommendation: RecommendationCard;
   theme: typeof fallbackTheme;
@@ -544,6 +552,15 @@ function ProductCard({
             ) : null}
           </View>
         ) : null}
+        <Pressable
+          accessibilityRole="button"
+          onPress={onOpen}
+          style={[styles.detailButton, { borderColor: theme.accentColor }]}
+        >
+          <Text style={[styles.detailButtonText, { color: theme.accentColor }]}>
+            Details
+          </Text>
+        </Pressable>
         <Pressable
           accessibilityRole="link"
           onPress={() => void openExternalUrl(recommendation.shopUrl)}
@@ -727,6 +744,14 @@ const styles = StyleSheet.create({
   },
   storyBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
   productBody: { padding: 18 },
+  detailButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    marginTop: 16,
+    paddingVertical: 12,
+  },
+  detailButtonText: { fontSize: 15, fontWeight: '700' },
   brand: { fontSize: 11, fontWeight: '700', letterSpacing: 1.6 },
   productName: { fontFamily: 'Georgia', fontSize: 26, marginTop: 7 },
   price: { fontSize: 17, fontWeight: '600', marginTop: 7 },

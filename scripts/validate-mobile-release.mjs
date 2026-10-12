@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 
 const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).expo;
 const mobilePackage = JSON.parse(await readFile('apps/mobile/package.json', 'utf8'));
@@ -8,6 +8,16 @@ const studioSource = await readFile('apps/mobile/app/studio.tsx', 'utf8');
 const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
 const rootLayoutSource = await readFile('apps/mobile/app/_layout.tsx', 'utf8');
 const storefrontSource = await readFile('apps/mobile/app/[handle].tsx', 'utf8');
+const notFoundSource = await readFile('apps/mobile/app/+not-found.tsx', 'utf8');
+const productDetailSource = await readFile(
+  'apps/mobile/app/products/[id].tsx',
+  'utf8',
+);
+const collectionPageSource = await readFile(
+  'apps/mobile/app/[handle]/pages/[pageId].tsx',
+  'utf8',
+);
+const mobileSources = await readSourceTree('apps/mobile');
 const reportControllerSource = await readFile(
   'apps/api/src/reports/report.controller.ts',
   'utf8',
@@ -158,17 +168,27 @@ requireValue(
   ),
   'The native app must not depend on a WebView package.',
 );
-for (const [name, source] of [
-  ['Account', accountSource],
-  ['Creator Studio', studioSource],
-  ['Login', loginSource],
-  ['Public storefront', storefrontSource],
-]) {
+for (const [name, source] of mobileSources) {
   requireValue(
-    !/react-native-webview|<WebView\b/u.test(source),
-    `${name} must remain a native React Native screen, not a WebView.`,
+    !/@expo\/dom-webview|react-native-webview|<WebView\b/u.test(source),
+    `${name} must not embed a WebView.`,
   );
 }
+requireValue(
+  !notFoundSource.includes('openExternalWebPage') &&
+    !notFoundSource.includes('Continue on swavii.com'),
+  'Unknown native routes must stay in the app instead of falling back to the website.',
+);
+requireValue(
+  productDetailSource.includes('getPublicRecommendation') &&
+    productDetailSource.includes('Shop product'),
+  'Public product links must resolve to a native product-detail screen.',
+);
+requireValue(
+  collectionPageSource.includes('getPublicStorefront') &&
+    collectionPageSource.includes('getStorefrontRecommendations'),
+  'Public storefront collection links must resolve to a native collection screen.',
+);
 
 if (errors.length > 0) {
   console.error('Mobile release validation failed:\n');
@@ -176,4 +196,19 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log('Mobile release configuration is valid.');
+}
+
+async function readSourceTree(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const sources = [];
+  for (const entry of entries) {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) {
+      if (['.expo', 'dist', 'node_modules'].includes(entry.name)) continue;
+      sources.push(...(await readSourceTree(path)));
+    } else if (/\.(?:js|jsx|ts|tsx)$/u.test(entry.name)) {
+      sources.push([path, await readFile(path, 'utf8')]);
+    }
+  }
+  return sources;
 }

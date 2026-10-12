@@ -1,6 +1,7 @@
 import {
   creatorCardSchema,
   creatorStorefrontSchema,
+  publicRecommendationDetailSchema,
   publicDiscountCodeSchema,
   recommendationCardSchema,
 } from '@vibeshub/contracts';
@@ -10,6 +11,7 @@ import type {
   CreatorCard,
   CreatorStorefront,
   PublicDiscountCode,
+  PublicRecommendationDetail,
   RecommendationCard,
 } from '@vibeshub/contracts';
 
@@ -90,6 +92,19 @@ export async function getPublicStorefront(handle: string): Promise<CreatorStoref
   const parsed = creatorStorefrontSchema.safeParse(data);
   if (!parsed.success) {
     throw new ApiError('This storefront could not be loaded. Please try again.', 502);
+  }
+  return parsed.data;
+}
+
+export async function getPublicRecommendation(
+  id: string,
+): Promise<PublicRecommendationDetail> {
+  const data = await publicRequest(
+    `/v1/discover/recommendations/${encodeURIComponent(id)}`,
+  );
+  const parsed = publicRecommendationDetailSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ApiError('This recommendation could not be loaded. Please try again.', 502);
   }
   return parsed.data;
 }
