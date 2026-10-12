@@ -154,8 +154,8 @@ export default function CreatorStudioScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" onPress={() => router.back()}>
-          <Text style={styles.back}>← Account</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/account')}>
+          <Text style={styles.back}>Account</Text>
         </Pressable>
         <Text style={styles.wordmark}>swavii</Text>
         <Pressable

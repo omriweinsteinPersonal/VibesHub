@@ -17,8 +17,8 @@ export default function AuthCallbackScreen() {
       .then(async (url) => {
         if (!url) throw new Error('The sign-in callback is missing.');
         await establishSessionFromCallback(url);
-        void getCreatorStudioBundle().catch(() => undefined);
-        if (active) router.replace('/account');
+        await getCreatorStudioBundle().catch(() => undefined);
+        if (active) router.replace('/studio');
       })
       .catch((cause: unknown) => {
         if (active) {

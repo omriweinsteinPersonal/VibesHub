@@ -39,8 +39,8 @@ export default function LoginScreen() {
           password,
         });
         if (authError) throw authError;
-        void getCreatorStudioBundle().catch(() => undefined);
-        router.replace('/account');
+        await getCreatorStudioBundle().catch(() => undefined);
+        router.replace('/studio');
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
@@ -49,8 +49,8 @@ export default function LoginScreen() {
         });
         if (authError) throw authError;
         if (data.session) {
-          void getCreatorStudioBundle().catch(() => undefined);
-          router.replace('/account');
+          await getCreatorStudioBundle().catch(() => undefined);
+          router.replace('/studio');
         } else setMessage('Check your email to confirm your account.');
       }
     } catch (cause) {
@@ -68,8 +68,8 @@ export default function LoginScreen() {
       const result =
         provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
       if (result === 'signed-in') {
-        void getCreatorStudioBundle().catch(() => undefined);
-        router.replace('/account');
+        await getCreatorStudioBundle().catch(() => undefined);
+        router.replace('/studio');
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
