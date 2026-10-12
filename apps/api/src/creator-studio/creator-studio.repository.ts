@@ -420,15 +420,15 @@ export class CreatorStudioRepository {
           reason: 'content order contains inactive content',
         };
       const recommendationIds = [
-        ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
-        ...new Set(
-          input.curatedSections.flatMap((section) =>
+        ...new Set([
+          ...input.curatedSections.flatMap((section) => section.recommendationIds),
+          ...input.curatedSections.flatMap((section) =>
             section.contentItems
               .filter(({ kind }) => kind === 'recommendation')
               .map(({ id }) => id),
           ),
-        ),
-        ...new Set(input.labels.flatMap((label) => label.recommendationIds)),
+          ...input.labels.flatMap((label) => label.recommendationIds),
+        ]),
       ];
       const mediaIds = [
         ...new Set(
@@ -497,7 +497,7 @@ export class CreatorStudioRepository {
         if (owned?.count !== recommendationIds.length) {
           return {
             kind: 'invalid_recommendations',
-            reason: 'section references an inactive recommendation',
+            reason: 'recommendation ownership or lifecycle check failed',
           };
         }
       }
