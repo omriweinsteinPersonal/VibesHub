@@ -10,6 +10,7 @@ const forwardRequestHeaders = [
   'authorization',
   'content-type',
   'idempotency-key',
+  'x-swavii-if-match',
 ] as const;
 
 const forwardResponseHeaders = ['cache-control', 'content-type', 'etag'] as const;
@@ -28,10 +29,6 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
-
-  const applicationVersion =
-    request.headers.get('x-swavii-if-match') ?? request.headers.get('if-match');
-  if (applicationVersion) headers.set('if-match', applicationVersion);
 
   try {
     const body =

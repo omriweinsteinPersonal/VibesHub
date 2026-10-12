@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('backend proxy', () => {
-  it('restores If-Match and forwards a buffered mutation body', async () => {
+  it('preserves the private version header and forwards a buffered mutation body', async () => {
     process.env.API_INTERNAL_URL = 'https://api.example.test';
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ data: { version: 4 } }), {
@@ -43,8 +43,8 @@ describe('backend proxy', () => {
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = new Headers(init.headers);
     expect(url).toBe('https://api.example.test/v1/creator/brands/brand-id');
-    expect(headers.get('if-match')).toBe('"3"');
-    expect(headers.get('x-swavii-if-match')).toBeNull();
+    expect(headers.get('if-match')).toBeNull();
+    expect(headers.get('x-swavii-if-match')).toBe('"3"');
     expect(init.body).toBeInstanceOf(ArrayBuffer);
     expect(new TextDecoder().decode(init.body as ArrayBuffer)).toBe(
       JSON.stringify({ name: 'Updated brand' }),
