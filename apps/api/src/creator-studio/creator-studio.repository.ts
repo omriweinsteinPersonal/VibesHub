@@ -348,7 +348,10 @@ export class CreatorStudioRepository {
       }
       const orderedIds = input.contentOrder.map(({ kind, id }) => `${kind}:${id}`);
       if (new Set(orderedIds).size !== orderedIds.length)
-        return { kind: 'invalid_recommendations', reason: 'duplicate content order entry' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'duplicate content order entry',
+        };
       const orderedRecommendations = input.contentOrder
         .filter(({ kind }) => kind === 'recommendation')
         .map(({ id }) => id);
@@ -374,7 +377,10 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations', reason: 'invalid page or curated section order' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'invalid page or curated section order',
+        };
       const orderedCategories = input.contentOrder
         .filter(({ kind }) => kind === 'category')
         .map(({ id }) => id);
@@ -387,11 +393,17 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations', reason: 'invalid category or curated section order' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'invalid category or curated section order',
+        };
       if (
         orderedMedia.some((id) => !input.featuredMedia.some((media) => media.id === id))
       )
-        return { kind: 'invalid_recommendations', reason: 'content order references unavailable media' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'content order references unavailable media',
+        };
       const [orderOwnership] = await sql<
         { recommendations: number; discounts: number }[]
       >`
@@ -403,7 +415,10 @@ export class CreatorStudioRepository {
         orderOwnership?.recommendations !== orderedRecommendations.length ||
         orderOwnership.discounts !== orderedDiscounts.length
       )
-        return { kind: 'invalid_recommendations', reason: 'content order contains inactive content' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'content order contains inactive content',
+        };
       const recommendationIds = [
         ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
         ...new Set(
@@ -451,7 +466,10 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations', reason: 'label references an unknown collection' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'label references an unknown collection',
+        };
       const brandIds = new Set(input.labels.flatMap((label) => label.brandIds));
       if (brandIds.size) {
         const [ownedBrands] = await sql<{ count: number }[]>`
@@ -462,7 +480,10 @@ export class CreatorStudioRepository {
             and lifecycle = 'active'
         `;
         if (ownedBrands?.count !== brandIds.size)
-          return { kind: 'invalid_recommendations', reason: 'label references an inactive brand' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'label references an inactive brand',
+          };
       }
       if (recommendationIds.length) {
         const [owned] = await sql<{ count: number }[]>`
@@ -474,11 +495,17 @@ export class CreatorStudioRepository {
             and deleted_at is null
         `;
         if (owned?.count !== recommendationIds.length) {
-          return { kind: 'invalid_recommendations', reason: 'section references an inactive recommendation' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'section references an inactive recommendation',
+          };
         }
       }
       if (mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))) {
-        return { kind: 'invalid_recommendations', reason: 'section references unavailable media' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'section references unavailable media',
+        };
       }
       if (selectedBrandIds.length) {
         const [ownedBrands] = await sql<{ count: number }[]>`
@@ -489,7 +516,10 @@ export class CreatorStudioRepository {
             and lifecycle = 'active'
         `;
         if (ownedBrands?.count !== selectedBrandIds.length)
-          return { kind: 'invalid_recommendations', reason: 'section references an inactive brand' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'section references an inactive brand',
+          };
       }
       if (
         selectedCollectionIds.some(
@@ -499,11 +529,17 @@ export class CreatorStudioRepository {
             ),
         )
       ) {
-        return { kind: 'invalid_recommendations', reason: 'section references an unknown collection' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'section references an unknown collection',
+        };
       }
       for (const section of input.curatedSections) {
         if (section.kind === 'collection' && !section.brandId)
-          return { kind: 'invalid_recommendations', reason: 'collection is missing its brand' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'collection is missing its brand',
+          };
       }
 
       await sql`delete from app.creator_storefront_sections where creator_id = ${identity.id}`;

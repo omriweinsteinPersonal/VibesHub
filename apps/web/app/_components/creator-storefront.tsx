@@ -825,8 +825,8 @@ export function CreatorStorefrontView({
                       discountCodes={codes}
                       editorial={editorialFrame}
                       handle={storefront.handle}
-                      items={filtered.filter(
-                        (item) => brandMatchesRecommendation(brand, item),
+                      items={filtered.filter((item) =>
+                        brandMatchesRecommendation(brand, item),
                       )}
                       key={brand.id}
                       offer={
@@ -857,9 +857,7 @@ export function CreatorStorefrontView({
               ? displayBrands
                   .filter((brand) =>
                     activeLabelId
-                      ? filtered.some(
-                          (item) => brandMatchesRecommendation(brand, item),
-                        )
+                      ? filtered.some((item) => brandMatchesRecommendation(brand, item))
                       : true,
                   )
                   .sort((a, b) => {
@@ -887,8 +885,8 @@ export function CreatorStorefrontView({
                             discountCodes={codes}
                             editorial={editorialFrame}
                             handle={storefront.handle}
-                            items={filtered.filter(
-                              (item) => brandMatchesRecommendation(brand, item),
+                            items={filtered.filter((item) =>
+                              brandMatchesRecommendation(brand, item),
                             )}
                             offer={
                               codes.find(
