@@ -8,9 +8,10 @@ import type {
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Alert,
   Pressable,
   RefreshControl,
@@ -24,7 +25,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '../lib/api';
 import {
+  cacheCreatorStudioBundle,
   getCreatorStudioBundle,
+  getCachedCreatorStudioBundle,
   newStudioId,
   saveCreatorBrand,
   saveStorefrontConfiguration,
@@ -38,27 +41,48 @@ type StudioView = 'overview' | 'recommendations' | 'storefront' | 'analytics' | 
 const views: { key: StudioView; label: string }[] = [
   { key: 'overview', label: 'Home' },
   { key: 'recommendations', label: 'Content' },
-  { key: 'storefront', label: 'Storefront' },
-  { key: 'analytics', label: 'Analytics' },
+  { key: 'storefront', label: 'Store' },
+  { key: 'analytics', label: 'Insights' },
   { key: 'profile', label: 'Profile' },
 ];
 
 export default function CreatorStudioScreen() {
   const router = useRouter();
+  const cachedBundle = getCachedCreatorStudioBundle();
   const [view, setView] = useState<StudioView>('overview');
-  const [bundle, setBundle] = useState<CreatorStudioBundle | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [bundle, setBundle] = useState<CreatorStudioBundle | null>(cachedBundle);
+  const [loading, setLoading] = useState(!cachedBundle);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [contentOpacity] = useState(() => new Animated.Value(1));
+  const contentScroll = useRef<ScrollView>(null);
+  const hasBundle = useRef(Boolean(cachedBundle));
+
+  const updateBundle = useCallback<
+    React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>
+  >((action) => {
+    setBundle((current) => {
+      const next = typeof action === 'function' ? action(current) : action;
+      if (next) {
+        hasBundle.current = true;
+        cacheCreatorStudioBundle(next);
+      }
+      return next;
+    });
+  }, []);
 
   const load = useCallback(
     async (refresh = false) => {
       if (refresh) setRefreshing(true);
-      else setLoading(true);
+      else if (!hasBundle.current) setLoading(true);
       setError('');
       try {
-        setBundle(await getCreatorStudioBundle());
+        updateBundle(
+          await getCreatorStudioBundle(30, {
+            forceRefresh: refresh || hasBundle.current,
+          }),
+        );
       } catch (cause) {
         if (cause instanceof ApiError && cause.status === 401) {
           router.replace('/login');
@@ -70,13 +94,38 @@ export default function CreatorStudioScreen() {
         setRefreshing(false);
       }
     },
-    [router],
+    [router, updateBundle],
   );
 
   useEffect(() => {
     const timer = globalThis.setTimeout(() => void load(), 0);
     return () => globalThis.clearTimeout(timer);
   }, [load]);
+
+  const switchView = useCallback(
+    (nextView: StudioView) => {
+      if (nextView === view) {
+        contentScroll.current?.scrollTo({ animated: true, y: 0 });
+        return;
+      }
+      setError('');
+      setNotice('');
+      Animated.timing(contentOpacity, {
+        duration: 80,
+        toValue: 0.35,
+        useNativeDriver: true,
+      }).start(() => {
+        setView(nextView);
+        contentScroll.current?.scrollTo({ animated: false, y: 0 });
+        Animated.timing(contentOpacity, {
+          duration: 180,
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
+      });
+    },
+    [contentOpacity, view],
+  );
 
   if (loading && !bundle) {
     return (
@@ -123,72 +172,73 @@ export default function CreatorStudioScreen() {
         </Pressable>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabs}
-        style={styles.tabScroller}
-      >
-        {views.map((item) => (
-          <Pressable
-            accessibilityRole="tab"
-            accessibilityState={{ selected: view === item.key }}
-            key={item.key}
-            onPress={() => {
-              setView(item.key);
-              setError('');
-              setNotice('');
-            }}
-            style={[styles.tab, view === item.key && styles.tabActive]}
-          >
-            <Text style={[styles.tabText, view === item.key && styles.tabTextActive]}>
-              {item.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      <Animated.View style={[styles.contentPane, { opacity: contentOpacity }]}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+          ref={contentScroll}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              tintColor={colors.accent}
+              onRefresh={() => void load(true)}
+            />
+          }
+        >
+          {error ? <Message kind="error" text={error} /> : null}
+          {notice ? <Message kind="success" text={notice} /> : null}
+          {view === 'overview' ? (
+            <Overview bundle={bundle} navigate={switchView} />
+          ) : view === 'recommendations' ? (
+            <Recommendations
+              brands={bundle.brands}
+              recommendations={bundle.recommendations}
+              onBundle={updateBundle}
+              onError={setError}
+              onNotice={setNotice}
+            />
+          ) : view === 'storefront' ? (
+            <StorefrontEditor
+              bundle={bundle}
+              onBundle={updateBundle}
+              onError={setError}
+              onNotice={setNotice}
+            />
+          ) : view === 'analytics' ? (
+            <Analytics bundle={bundle} />
+          ) : (
+            <ProfileEditor
+              bundle={bundle}
+              onBundle={updateBundle}
+              onError={setError}
+              onNotice={setNotice}
+            />
+          )}
+        </ScrollView>
+      </Animated.View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            tintColor={colors.accent}
-            onRefresh={() => void load(true)}
-          />
-        }
-      >
-        {error ? <Message kind="error" text={error} /> : null}
-        {notice ? <Message kind="success" text={notice} /> : null}
-        {view === 'overview' ? (
-          <Overview bundle={bundle} navigate={setView} />
-        ) : view === 'recommendations' ? (
-          <Recommendations
-            brands={bundle.brands}
-            recommendations={bundle.recommendations}
-            onBundle={setBundle}
-            onError={setError}
-            onNotice={setNotice}
-          />
-        ) : view === 'storefront' ? (
-          <StorefrontEditor
-            bundle={bundle}
-            onBundle={setBundle}
-            onError={setError}
-            onNotice={setNotice}
-          />
-        ) : view === 'analytics' ? (
-          <Analytics bundle={bundle} />
-        ) : (
-          <ProfileEditor
-            bundle={bundle}
-            onBundle={setBundle}
-            onError={setError}
-            onNotice={setNotice}
-          />
-        )}
-      </ScrollView>
+      <View accessibilityRole="tablist" style={styles.tabBar}>
+        {views.map((item) => {
+          const selected = view === item.key;
+          return (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              key={item.key}
+              onPress={() => switchView(item.key)}
+              style={({ pressed }) => [styles.tab, pressed && styles.tabPressed]}
+            >
+              <View
+                style={[styles.tabIndicator, selected && styles.tabIndicatorActive]}
+              />
+              <Text style={[styles.tabText, selected && styles.tabTextActive]}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </SafeAreaView>
   );
 }
@@ -913,13 +963,34 @@ const styles = StyleSheet.create({
   back: { color: colors.muted, fontSize: 14, fontWeight: '600' },
   wordmark: { color: colors.ink, fontFamily: 'Georgia', fontSize: 25 },
   viewPage: { color: colors.accent, fontSize: 14, fontWeight: '700' },
-  tabScroller: { flexGrow: 0 },
-  tabs: { gap: 6, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  tab: { borderRadius: 999, paddingHorizontal: 15, paddingVertical: 10 },
-  tabActive: { backgroundColor: colors.ink },
-  tabText: { color: colors.muted, fontSize: 14, fontWeight: '600' },
-  tabTextActive: { color: colors.white },
-  content: { padding: spacing.lg, paddingBottom: 80 },
+  contentPane: { flex: 1 },
+  tabBar: {
+    backgroundColor: colors.white,
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    minHeight: 58,
+    paddingHorizontal: 4,
+  },
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 58,
+    paddingHorizontal: 2,
+  },
+  tabPressed: { opacity: 0.55 },
+  tabIndicator: {
+    backgroundColor: 'transparent',
+    borderRadius: 99,
+    height: 3,
+    marginBottom: 6,
+    width: 24,
+  },
+  tabIndicatorActive: { backgroundColor: colors.accent },
+  tabText: { color: colors.muted, fontSize: 11, fontWeight: '600' },
+  tabTextActive: { color: colors.ink, fontWeight: '800' },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   eyebrow: { color: colors.accent, fontSize: 11, letterSpacing: 2 },
   title: {
     color: colors.ink,

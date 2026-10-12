@@ -15,6 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { deleteCurrentAccount } from '../lib/api';
 import { getAppleAccountDeletionAuthorizationCode } from '../lib/auth';
 import { isNativeBillingConfigured, restoreNativePurchases } from '../lib/billing';
+import {
+  clearCreatorStudioBundleCache,
+  getCreatorStudioBundle,
+} from '../lib/creator-api';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
@@ -39,11 +43,13 @@ export default function AccountScreen() {
         return;
       }
       setEmail(data.session.user.email ?? 'Creator account');
+      void getCreatorStudioBundle().catch(() => undefined);
     });
   }, [router]);
 
   async function signOut() {
     await getSupabaseClient().auth.signOut({ scope: 'local' });
+    clearCreatorStudioBundleCache();
     router.replace('/');
   }
 
@@ -109,6 +115,7 @@ export default function AccountScreen() {
         appleAuthorizationCode ? { appleAuthorizationCode } : {},
       );
       await supabase.auth.signOut({ scope: 'local' });
+      clearCreatorStudioBundleCache();
       Alert.alert('Account deleted', 'Your Swavii account and storefront were deleted.', [
         { onPress: () => router.replace('/'), text: 'Done' },
       ]);

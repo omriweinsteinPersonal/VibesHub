@@ -38,7 +38,44 @@ export interface CreatorStudioBundle {
   summary: CreatorStudioSummary;
 }
 
-export async function getCreatorStudioBundle(days = 30): Promise<CreatorStudioBundle> {
+const studioCacheLifetimeMs = 60_000;
+let studioCache: { bundle: CreatorStudioBundle; expiresAt: number } | null = null;
+let studioRequest: Promise<CreatorStudioBundle> | null = null;
+
+export function getCachedCreatorStudioBundle(): CreatorStudioBundle | null {
+  return studioCache?.bundle ?? null;
+}
+
+export function cacheCreatorStudioBundle(bundle: CreatorStudioBundle): void {
+  studioCache = { bundle, expiresAt: Date.now() + studioCacheLifetimeMs };
+}
+
+export function clearCreatorStudioBundleCache(): void {
+  studioCache = null;
+  studioRequest = null;
+}
+
+export async function getCreatorStudioBundle(
+  days = 30,
+  options: { forceRefresh?: boolean } = {},
+): Promise<CreatorStudioBundle> {
+  if (!options.forceRefresh && studioCache && studioCache.expiresAt > Date.now()) {
+    return studioCache.bundle;
+  }
+  if (!options.forceRefresh && studioRequest) return studioRequest;
+
+  const request = loadCreatorStudioBundle(days);
+  studioRequest = request;
+  try {
+    const bundle = await request;
+    cacheCreatorStudioBundle(bundle);
+    return bundle;
+  } finally {
+    if (studioRequest === request) studioRequest = null;
+  }
+}
+
+async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundle> {
   const [summary, profile, brands, recommendations, configuration, analytics] =
     await Promise.all([
       creatorRequest('/v1/creator/studio', creatorStudioSummarySchema.parse),

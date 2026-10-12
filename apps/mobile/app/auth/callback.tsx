@@ -5,6 +5,7 @@ import { Linking, Pressable, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { establishSessionFromCallback } from '../../lib/auth';
+import { getCreatorStudioBundle } from '../../lib/creator-api';
 
 export default function AuthCallbackScreen() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function AuthCallbackScreen() {
       .then(async (url) => {
         if (!url) throw new Error('The sign-in callback is missing.');
         await establishSessionFromCallback(url);
+        void getCreatorStudioBundle().catch(() => undefined);
         if (active) router.replace('/account');
       })
       .catch((cause: unknown) => {
