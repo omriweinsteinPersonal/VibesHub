@@ -269,6 +269,9 @@ export class CreatorStudioRepository {
       const ownedDiscountIds = new Set(ownedDiscounts.map(({ id }) => id));
       const ownedBrandIds = new Set(ownedBrands.map(({ id }) => id));
       const ownedCatalogBrandIds = new Set(ownedBrands.map(({ brandId }) => brandId));
+      const creatorBrandIdByCatalogId = new Map(
+        ownedBrands.map(({ id, brandId }) => [brandId, id]),
+      );
       const featuredMediaIds = new Set(input.featuredMedia.map(({ id }) => id));
       const validCollectionIds = new Set(
         input.curatedSections
@@ -301,19 +304,26 @@ export class CreatorStudioRepository {
           }
           return true;
         }),
-        curatedSections: validSections.map((section) => ({
-          ...section,
-          recommendationIds: section.recommendationIds.filter((id) =>
-            ownedRecommendationIds.has(id),
-          ),
-          contentItems: section.contentItems.filter((item) => {
-            if (item.kind === 'recommendation')
-              return ownedRecommendationIds.has(item.id);
-            if (item.kind === 'media') return featuredMediaIds.has(item.id);
-            if (item.kind === 'brand') return ownedBrandIds.has(item.id);
-            return validCollectionIds.has(item.id);
-          }),
-        })),
+        curatedSections: validSections.map((section) => {
+          const contentItems = section.contentItems.map((item) =>
+            item.kind === 'brand' && creatorBrandIdByCatalogId.has(item.id)
+              ? { ...item, id: creatorBrandIdByCatalogId.get(item.id)! }
+              : item,
+          );
+          return {
+            ...section,
+            recommendationIds: section.recommendationIds.filter((id) =>
+              ownedRecommendationIds.has(id),
+            ),
+            contentItems: contentItems.filter((item) => {
+              if (item.kind === 'recommendation')
+                return ownedRecommendationIds.has(item.id);
+              if (item.kind === 'media') return featuredMediaIds.has(item.id);
+              if (item.kind === 'brand') return ownedBrandIds.has(item.id);
+              return validCollectionIds.has(item.id);
+            }),
+          };
+        }),
         labels: input.labels.map((label) => ({
           ...label,
           recommendationIds: label.recommendationIds.filter((id) =>
