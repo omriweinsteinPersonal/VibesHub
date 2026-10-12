@@ -225,7 +225,12 @@ function Overview({
           ['storefront', 'Storefront labels', 'Customize the labels on your page.'],
           ['recommendations', 'Recommendations', 'Manage brands, items and collections.'],
           ['media', 'Media', 'Add and organize your photos and videos.', 'storefront'],
-          ['social-links', 'Social links', 'Connect your platforms in one place.', 'profile'],
+          [
+            'social-links',
+            'Social links',
+            'Connect your platforms in one place.',
+            'profile',
+          ],
         ] as [string, string, string, StudioView?][]
       ).map(([key, title, copy, target]) => (
         <Pressable

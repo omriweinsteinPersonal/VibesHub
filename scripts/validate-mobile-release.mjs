@@ -9,10 +9,7 @@ const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
 const rootLayoutSource = await readFile('apps/mobile/app/_layout.tsx', 'utf8');
 const storefrontSource = await readFile('apps/mobile/app/[handle].tsx', 'utf8');
 const notFoundSource = await readFile('apps/mobile/app/+not-found.tsx', 'utf8');
-const productDetailSource = await readFile(
-  'apps/mobile/app/products/[id].tsx',
-  'utf8',
-);
+const productDetailSource = await readFile('apps/mobile/app/products/[id].tsx', 'utf8');
 const collectionPageSource = await readFile(
   'apps/mobile/app/[handle]/pages/[pageId].tsx',
   'utf8',

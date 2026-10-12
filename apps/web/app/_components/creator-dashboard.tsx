@@ -2133,44 +2133,44 @@ export function CreatorDashboard() {
               >
                 {composer === null || composer === 'choose' ? (
                   <div className="creatorTypeGrid">
-                      <button onClick={() => setComposer('brand')} type="button">
-                        <span aria-hidden="true">
-                          <Store size={16} />
-                        </span>
-                        <strong>Brand</strong>
-                        <small>Create a brand card</small>
-                        <ChevronRight aria-hidden="true" size={16} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setProduct(emptyProduct);
-                          setComposer('product');
-                        }}
-                        type="button"
-                      >
-                        <span aria-hidden="true">
-                          <Link2 size={16} />
-                        </span>
-                        <strong>Item</strong>
-                        <small>Recommend one item</small>
-                        <ChevronRight aria-hidden="true" size={16} />
-                      </button>
-                      <button onClick={() => setComposer('collection')} type="button">
-                        <span aria-hidden="true">
-                          <LayoutGrid size={16} />
-                        </span>
-                        <strong>Collection</strong>
-                        <small>Group items together</small>
-                        <ChevronRight aria-hidden="true" size={16} />
-                      </button>
-                      <button onClick={() => setComposer('section')} type="button">
-                        <span aria-hidden="true">
-                          <Layers3 size={16} />
-                        </span>
-                        <strong>Section</strong>
-                        <small>Mix products together</small>
-                        <ChevronRight aria-hidden="true" size={16} />
-                      </button>
+                    <button onClick={() => setComposer('brand')} type="button">
+                      <span aria-hidden="true">
+                        <Store size={16} />
+                      </span>
+                      <strong>Brand</strong>
+                      <small>Create a brand card</small>
+                      <ChevronRight aria-hidden="true" size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setProduct(emptyProduct);
+                        setComposer('product');
+                      }}
+                      type="button"
+                    >
+                      <span aria-hidden="true">
+                        <Link2 size={16} />
+                      </span>
+                      <strong>Item</strong>
+                      <small>Recommend one item</small>
+                      <ChevronRight aria-hidden="true" size={16} />
+                    </button>
+                    <button onClick={() => setComposer('collection')} type="button">
+                      <span aria-hidden="true">
+                        <LayoutGrid size={16} />
+                      </span>
+                      <strong>Collection</strong>
+                      <small>Group items together</small>
+                      <ChevronRight aria-hidden="true" size={16} />
+                    </button>
+                    <button onClick={() => setComposer('section')} type="button">
+                      <span aria-hidden="true">
+                        <Layers3 size={16} />
+                      </span>
+                      <strong>Section</strong>
+                      <small>Mix products together</small>
+                      <ChevronRight aria-hidden="true" size={16} />
+                    </button>
                   </div>
                 ) : null}
                 {composer === 'product' ? (
@@ -5151,8 +5151,7 @@ function CuratedSectionForm({
             {contentItems.map((content, index) => {
               const label =
                 content.kind === 'media'
-                  ? (featuredMedia.find(({ id }) => id === content.id)?.title ??
-                    'Media')
+                  ? (featuredMedia.find(({ id }) => id === content.id)?.title ?? 'Media')
                   : (recommendations.find(({ id }) => id === content.id)?.productName ??
                     'Recommendation');
               return (
