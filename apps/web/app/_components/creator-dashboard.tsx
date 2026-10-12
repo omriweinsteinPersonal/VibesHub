@@ -1518,16 +1518,28 @@ export function CreatorDashboard() {
         contentItems,
       };
     });
+    const previousCuratedRecommendationIds = new Set(
+      curatedSections.flatMap(({ recommendationIds }) => recommendationIds),
+    );
+    const nextCuratedRecommendationIds = new Set(
+      sanitizedSections.flatMap(({ recommendationIds }) => recommendationIds),
+    );
+    const restoredRecommendationIds = [...previousCuratedRecommendationIds].filter(
+      (id) => !nextCuratedRecommendationIds.has(id),
+    );
+    const orderWithRestoredRecommendations = [
+      ...nextOrder,
+      ...restoredRecommendationIds.map((id) => ({
+        kind: 'recommendation' as const,
+        id,
+      })),
+    ];
     setSaving(true);
     setError('');
     try {
-      const groupedIds = new Set(
-        sanitizedSections.flatMap(({ recommendationIds }) => recommendationIds),
-      );
       const orderKeys = new Set<string>();
-      const normalizedOrder = nextOrder.filter(({ kind, id }) => {
+      const normalizedOrder = orderWithRestoredRecommendations.filter(({ kind, id }) => {
         const isValid =
-          (kind !== 'recommendation' || !groupedIds.has(id)) &&
           (kind !== 'recommendation' || activeRecommendationIdSet.has(id)) &&
           (kind !== 'discount' || activeDiscountIdSet.has(id)) &&
           (kind !== 'media' || activeMediaIdSet.has(id)) &&
