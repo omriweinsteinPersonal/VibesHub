@@ -1471,12 +1471,30 @@ export function CreatorDashboard() {
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
-    const activeRecommendationIdSet = new Set(activeRecommendations.map(({ id }) => id));
-    const activeBrandIdSet = new Set(brands.map(({ id }) => id));
+    // Keep references selected in the form even when a newly-created item has
+    // not made it through the recommendations refresh yet. The API remains the
+    // source of truth for ownership and lifecycle validation.
+    const activeRecommendationIdSet = new Set([
+      ...activeRecommendations.map(({ id }) => id),
+      ...nextCurated.flatMap(({ recommendationIds }) => recommendationIds),
+      ...nextLabels.flatMap(({ recommendationIds }) => recommendationIds),
+    ]);
+    const activeBrandIdSet = new Set([
+      ...brands.map(({ id }) => id),
+      ...nextCurated.flatMap(({ contentItems }) =>
+        contentItems.filter(({ kind }) => kind === 'brand').map(({ id }) => id),
+      ),
+      ...nextLabels.flatMap(({ brandIds }) => brandIds),
+    ]);
     const activeCollectionIdSet = new Set(
       collectionSections.filter(({ kind }) => kind === 'collection').map(({ id }) => id),
     );
-    const activeMediaIdSet = new Set(nextFeaturedMedia.map(({ id }) => id));
+    const activeMediaIdSet = new Set([
+      ...nextFeaturedMedia.map(({ id }) => id),
+      ...nextCurated.flatMap(({ contentItems }) =>
+        contentItems.filter(({ kind }) => kind === 'media').map(({ id }) => id),
+      ),
+    ]);
     const activeDiscountIdSet = new Set(
       discounts.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id),
     );
@@ -4944,7 +4962,14 @@ function CuratedSectionForm({
                   {group.items.map((item) => (
                     <label key={item.id}>
                       <input
-                        checked={recommendationIds.includes(item.id)}
+                        checked={
+                          kind === 'section'
+                            ? contentItems.some(
+                                ({ id, kind: contentKind }) =>
+                                  contentKind === 'recommendation' && id === item.id,
+                              )
+                            : recommendationIds.includes(item.id)
+                        }
                         type="checkbox"
                         disabled={
                           recommendationIds.length >= 20 &&

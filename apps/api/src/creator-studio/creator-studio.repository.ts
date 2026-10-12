@@ -259,8 +259,8 @@ export class CreatorStudioRepository {
             and discount.lifecycle_status <> 'archived'
             and discount.deleted_at is null
         `,
-        sql<{ id: string }[]>`
-          select brand.id
+        sql<{ id: string; brandId: string }[]>`
+          select brand.id, brand.brand_id as "brandId"
           from app.creator_brands brand
           where brand.creator_id = ${identity.id}
             and brand.lifecycle = 'active'
@@ -268,6 +268,7 @@ export class CreatorStudioRepository {
       ]);
       const ownedDiscountIds = new Set(ownedDiscounts.map(({ id }) => id));
       const ownedBrandIds = new Set(ownedBrands.map(({ id }) => id));
+      const ownedCatalogBrandIds = new Set(ownedBrands.map(({ brandId }) => brandId));
       const featuredMediaIds = new Set(input.featuredMedia.map(({ id }) => id));
       const validCollectionIds = new Set(
         input.curatedSections
@@ -275,7 +276,7 @@ export class CreatorStudioRepository {
             (section) =>
               section.kind === 'collection' &&
               section.brandId !== null &&
-              ownedBrandIds.has(section.brandId),
+              ownedCatalogBrandIds.has(section.brandId),
           )
           .map(({ id }) => id),
       );
