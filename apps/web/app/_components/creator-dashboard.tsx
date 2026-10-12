@@ -56,7 +56,6 @@ import {
 } from '../../lib/recommendation-media';
 import { randomUuid } from '../../lib/random-id';
 import { hasRecommendationImage } from '../../lib/recommendation-image';
-import { publicAssetUrl } from '../../lib/public-asset-url';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
 import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
@@ -1850,8 +1849,6 @@ export function CreatorDashboard() {
         ? !groupedRecommendationIds.has(entry.item.id)
         : true,
   );
-  const firstName = profile?.displayName.trim().split(/\s+/)[0];
-
   return (
     <main
       className={`creatorDashboardMain creatorDashboardMainWithSidebar ${styles.root}`}
@@ -1861,19 +1858,6 @@ export function CreatorDashboard() {
           <p className="eyebrow">CREATOR STUDIO / DASHBOARD</p>
           <h1 aria-busy={!profile}>Creator dashboard</h1>
           <p>Everything you need to shape your page.</p>
-        </div>
-        <div aria-hidden="true" className={styles.dashboardPortrait}>
-          {profile?.avatar?.url ? (
-            <Image
-              alt=""
-              fill
-              sizes="64px"
-              src={publicAssetUrl(profile.avatar.url)}
-              unoptimized
-            />
-          ) : (
-            <span>{firstName?.slice(0, 1).toUpperCase() || 'S'}</span>
-          )}
         </div>
       </section>
 
@@ -1896,48 +1880,72 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('labels')}
             type="button"
           >
-            <Tag aria-hidden="true" size={17} />
+            <Tag aria-hidden="true" className="creatorDashboardNavIcon" size={17} />
             <span className="creatorDashboardNavCopy">
               <strong>Storefront labels</strong>
               <small>Customize the labels on your page.</small>
             </span>
-            <ChevronRight aria-hidden="true" size={17} />
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
           <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            <LayoutGrid aria-hidden="true" size={17} />
+            <LayoutGrid
+              aria-hidden="true"
+              className="creatorDashboardNavIcon"
+              size={17}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Recommendations</strong>
               <small>Manage brands, items and collections.</small>
             </span>
-            <ChevronRight aria-hidden="true" size={17} />
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
           <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
             onClick={() => setDashboardView('media')}
             type="button"
           >
-            <PlayCircle aria-hidden="true" size={17} />
+            <PlayCircle
+              aria-hidden="true"
+              className="creatorDashboardNavIcon"
+              size={17}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Media</strong>
               <small>Add and organize your photos and videos.</small>
             </span>
-            <ChevronRight aria-hidden="true" size={17} />
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
           <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            <Link2 aria-hidden="true" size={17} />
+            <Link2 aria-hidden="true" className="creatorDashboardNavIcon" size={17} />
             <span className="creatorDashboardNavCopy">
               <strong>Social links</strong>
               <small>Connect your platforms in one place.</small>
             </span>
-            <ChevronRight aria-hidden="true" size={17} />
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
         </nav>
         <div className="creatorDashboardPanel">
@@ -2139,7 +2147,6 @@ export function CreatorDashboard() {
                       </span>
                       <strong>Brand</strong>
                       <small>Create a brand card</small>
-                      <ChevronRight aria-hidden="true" size={16} />
                     </button>
                     <button
                       onClick={() => {
@@ -2153,7 +2160,6 @@ export function CreatorDashboard() {
                       </span>
                       <strong>Item</strong>
                       <small>Recommend one item</small>
-                      <ChevronRight aria-hidden="true" size={16} />
                     </button>
                     <button onClick={() => setComposer('collection')} type="button">
                       <span aria-hidden="true">
@@ -2161,7 +2167,6 @@ export function CreatorDashboard() {
                       </span>
                       <strong>Collection</strong>
                       <small>Group items together</small>
-                      <ChevronRight aria-hidden="true" size={16} />
                     </button>
                     <button onClick={() => setComposer('section')} type="button">
                       <span aria-hidden="true">
@@ -2169,7 +2174,6 @@ export function CreatorDashboard() {
                       </span>
                       <strong>Section</strong>
                       <small>Mix products together</small>
-                      <ChevronRight aria-hidden="true" size={16} />
                     </button>
                   </div>
                 ) : null}

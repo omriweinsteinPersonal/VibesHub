@@ -542,29 +542,6 @@
   font-size: 0.95rem;
 }
 
-.dashboardPortrait {
-  align-items: center;
-  background: #fff;
-  border: 1px solid #e5d8ce;
-  border-radius: 50%;
-  color: #2f5960;
-  display: flex;
-  flex: 0 0 auto;
-  font-size: 1rem;
-  font-weight: 700;
-  height: 64px;
-  justify-content: center;
-  overflow: hidden;
-  padding: 3px;
-  position: relative;
-  width: 64px;
-}
-
-.dashboardPortrait img {
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .root :global(.creatorDashboardSidebar) {
   background: transparent;
   border: 0;
@@ -599,8 +576,24 @@
   color: #2f5960;
 }
 
+.root :global(.creatorDashboardNavIcon) {
+  color: #2f5960;
+  display: block;
+  flex: 0 0 auto;
+  height: 19px;
+  width: 19px;
+}
+
 .root :global(.creatorDashboardSidebar button > svg:last-child) {
   color: #697276;
+}
+
+.root :global(.creatorDashboardNavArrow) {
+  color: #697276;
+  display: block;
+  flex: 0 0 auto;
+  height: 17px;
+  width: 17px;
 }
 
 .root :global(.creatorDashboardSidebar button[aria-current='page']) {
@@ -731,11 +724,6 @@
 
   .root :global(.creatorDashboardIntro h1) {
     font-size: 2.25rem;
-  }
-
-  .dashboardPortrait {
-    height: 56px;
-    width: 56px;
   }
 
   .root :global(.creatorComposerCompact .creatorTypeGrid) {
