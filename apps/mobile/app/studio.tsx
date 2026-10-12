@@ -128,13 +128,7 @@ export default function CreatorStudioScreen() {
   );
 
   if (loading && !bundle) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <StatusBar style="dark" />
-        <ActivityIndicator color={colors.accent} size="large" />
-        <Text style={styles.loadingCopy}>Opening your studio…</Text>
-      </SafeAreaView>
-    );
+    return <StudioLoadingScreen />;
   }
 
   if (!bundle) {
@@ -238,6 +232,61 @@ export default function CreatorStudioScreen() {
             </Pressable>
           );
         })}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function StudioLoadingScreen() {
+  const [opacity] = useState(() => new Animated.Value(0.45));
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          duration: 650,
+          toValue: 0.9,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          duration: 650,
+          toValue: 0.45,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [opacity]);
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" />
+      <View style={styles.header}>
+        <View style={[styles.skeletonLine, styles.skeletonHeaderAction]} />
+        <Text style={styles.wordmark}>swavii</Text>
+        <View style={[styles.skeletonLine, styles.skeletonHeaderAction]} />
+      </View>
+      <Animated.View style={[styles.skeletonContent, { opacity }]}>
+        <View style={[styles.skeletonLine, styles.skeletonEyebrow]} />
+        <View style={[styles.skeletonLine, styles.skeletonTitle]} />
+        <View style={[styles.skeletonLine, styles.skeletonLede]} />
+        <View style={styles.metricGrid}>
+          {[0, 1, 2, 3].map((item) => (
+            <View key={item} style={[styles.metricCard, styles.skeletonCard]} />
+          ))}
+        </View>
+        <View style={[styles.skeletonLine, styles.skeletonSectionTitle]} />
+        {[0, 1, 2].map((item) => (
+          <View key={item} style={[styles.actionCard, styles.skeletonAction]} />
+        ))}
+      </Animated.View>
+      <View style={styles.tabBar}>
+        {views.map((item) => (
+          <View key={item.key} style={styles.tab}>
+            <View style={[styles.skeletonLine, styles.skeletonTab]} />
+          </View>
+        ))}
       </View>
     </SafeAreaView>
   );
@@ -943,7 +992,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.xl,
   },
-  loadingCopy: { color: colors.muted, marginTop: spacing.md },
   errorTitle: { color: colors.ink, fontFamily: 'Georgia', fontSize: 32 },
   errorCopy: {
     color: colors.muted,
@@ -964,6 +1012,21 @@ const styles = StyleSheet.create({
   wordmark: { color: colors.ink, fontFamily: 'Georgia', fontSize: 25 },
   viewPage: { color: colors.accent, fontSize: 14, fontWeight: '700' },
   contentPane: { flex: 1 },
+  skeletonContent: { flex: 1, padding: spacing.lg },
+  skeletonLine: { backgroundColor: '#e9e2d9', borderRadius: 999 },
+  skeletonHeaderAction: { height: 13, width: 58 },
+  skeletonEyebrow: { height: 9, marginTop: 4, width: 94 },
+  skeletonTitle: { height: 37, marginTop: spacing.md, width: '72%' },
+  skeletonLede: { height: 15, marginTop: spacing.md, width: '86%' },
+  skeletonCard: { backgroundColor: '#eee8e0', borderColor: '#eee8e0' },
+  skeletonSectionTitle: { height: 20, marginTop: spacing.xl, width: '55%' },
+  skeletonAction: {
+    backgroundColor: '#eee8e0',
+    borderColor: '#eee8e0',
+    minHeight: 76,
+    marginTop: spacing.md,
+  },
+  skeletonTab: { height: 9, width: 38 },
   tabBar: {
     backgroundColor: colors.white,
     borderTopColor: colors.border,
