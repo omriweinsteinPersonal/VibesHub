@@ -319,8 +319,18 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
+      const [current] = await sql<{ offerId: string }[]>`
+        select recommendation.offer_id as "offerId"
+        from app.recommendations recommendation
+        where recommendation.id = ${id}
+          and recommendation.creator_id = ${creator.id}
+          and recommendation.version = ${expectedVersion}
+          and recommendation.lifecycle <> 'archived'
+          and recommendation.deleted_at is null
+      `;
+      if (!current) return null;
       const image = await this.resolveImageSource(sql, userId, input, true);
-      const catalog = await this.upsertCatalog(sql, userId, input, image);
+      const catalog = await this.upsertCatalog(sql, userId, input, image, current.offerId);
       const creatorBrandId = await this.ensureCreatorBrand(
         sql,
         creator.id,
@@ -819,7 +829,11 @@ export class RecommendationRepository {
     userId: string,
     input: CreatorRecommendationInput,
     image: RecommendationImageSource,
+    existingOfferId?: string,
   ): Promise<CatalogIdentity> {
+    const destination = validateRedirectDestination(input.productUrl);
+    const destinationUrl = destination.destinationUrl;
+    const hostname = destination.hostname;
     const brandIdentity = normalizeCatalogName(input.brandName);
     const [brand] = await sql<CatalogIdRow[]>`
       insert into app.brands (slug, name, normalized_name, created_by_user_id)
@@ -835,51 +849,70 @@ export class RecommendationRepository {
     `;
     if (!brand) throw new Error('Brand upsert did not return an identity');
 
+    const [existingOffer] = existingOfferId
+      ? await sql<{ id: string; productId: string; brandId: string }[]>`
+          select offer.id, offer.product_id as "productId", product.brand_id as "brandId"
+          from app.product_offers offer
+          join app.products product on product.id = offer.product_id
+          where offer.id = ${existingOfferId} and offer.destination_url = ${destinationUrl}
+        `
+      : [];
     const productIdentity = normalizeCatalogName(input.productName);
-    const productSlug = catalogSlug(
-      `${input.brandName}-${input.productName}`,
-      `${brandIdentity}:${productIdentity}`,
-    );
-    const [product] = await sql<CatalogIdRow[]>`
-      insert into app.products (
-        slug,
-        brand_id,
-        primary_category_id,
-        name,
-        normalized_name,
-        primary_image_asset_id,
-        primary_image_url,
-        created_by_user_id
-      ) values (
-        ${productSlug},
-        ${brand.id},
-        ${input.categoryId},
-        ${input.productName},
-        ${productIdentity},
-        ${image.assetId},
-        ${image.assetId ? null : image.publicUrl},
-        ${userId}
-      )
-      on conflict (brand_id, normalized_name) do update
-      set
-        name = excluded.name,
-        primary_image_asset_id = case
-          when excluded.primary_image_asset_id is not null then excluded.primary_image_asset_id
-          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then null
-          else app.products.primary_image_asset_id
-        end,
-        primary_image_url = case
-          when excluded.primary_image_asset_id is not null then null
-          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then excluded.primary_image_url
-          else app.products.primary_image_url
-        end
-      returning id
-    `;
+    let product: CatalogIdRow | undefined;
+    if (existingOffer && existingOffer.brandId === brand.id) {
+      [product] = await sql<CatalogIdRow[]>`
+        update app.products
+        set
+          name = ${input.productName},
+          normalized_name = ${productIdentity},
+          primary_category_id = ${input.categoryId},
+          primary_image_asset_id = ${image.assetId},
+          primary_image_url = ${image.assetId ? null : image.publicUrl}
+        where id = ${existingOffer.productId}
+        returning id
+      `;
+    } else {
+      const productSlug = catalogSlug(
+        `${input.brandName}-${input.productName}`,
+        `${brandIdentity}:${productIdentity}`,
+      );
+      [product] = await sql<CatalogIdRow[]>`
+        insert into app.products (
+          slug,
+          brand_id,
+          primary_category_id,
+          name,
+          normalized_name,
+          primary_image_asset_id,
+          primary_image_url,
+          created_by_user_id
+        ) values (
+          ${productSlug},
+          ${brand.id},
+          ${input.categoryId},
+          ${input.productName},
+          ${productIdentity},
+          ${image.assetId},
+          ${image.assetId ? null : image.publicUrl},
+          ${userId}
+        )
+        on conflict (brand_id, normalized_name) do update
+        set
+          name = excluded.name,
+          primary_image_asset_id = case
+            when excluded.primary_image_asset_id is not null then excluded.primary_image_asset_id
+            when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then null
+            else app.products.primary_image_asset_id
+          end,
+          primary_image_url = case
+            when excluded.primary_image_asset_id is not null then null
+            when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then excluded.primary_image_url
+            else app.products.primary_image_url
+          end
+        returning id
+      `;
+    }
     if (!product) throw new Error('Product upsert did not return an identity');
-
-    const destination = validateRedirectDestination(input.productUrl);
-    const destinationUrl = destination.destinationUrl;
-    const hostname = destination.hostname;
     const [merchant] = await sql<CatalogIdRow[]>`
       insert into app.merchants (slug, name, hostname, homepage_url)
       values (

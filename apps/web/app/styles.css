@@ -7278,6 +7278,33 @@ dt {
   gap: 10px;
 }
 
+.creatorRecommendationFilters {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin: 0 0 14px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.creatorRecommendationFilters button {
+  background: #f7f1eb;
+  border: 1px solid #eadfd5;
+  border-radius: 999px;
+  color: #766960;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.creatorRecommendationFilters button.isActive {
+  background: #294a55;
+  border-color: #294a55;
+  color: #fff;
+}
+
 .creatorManageCollection {
   background: #fffdfb;
   border: 1px solid #e5dbd0;
@@ -7334,6 +7361,28 @@ dt {
 .creatorManageCollectionActions button:disabled {
   cursor: default;
   opacity: 0.4;
+}
+
+.creatorSectionExpand {
+  align-items: center;
+  background: #f7f1eb;
+  border: 1px solid #e5dbd0;
+  border-radius: 50%;
+  color: #5f5149;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  margin-left: 2px;
+  width: 34px;
+}
+
+.creatorSectionExpand:hover,
+.creatorSectionExpand:focus-visible {
+  background: #fff;
+  border-color: #b9a79a;
+  outline: none;
 }
 .creatorManageCollectionItems {
   display: grid;

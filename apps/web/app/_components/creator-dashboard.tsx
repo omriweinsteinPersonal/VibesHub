@@ -305,8 +305,12 @@ export function CreatorDashboard() {
   const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
   const [hiddenRecommendationIds, setHiddenRecommendationIds] = useState<string[]>([]);
   const [expandedBrandId, setExpandedBrandId] = useState<string | null>(null);
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [recommendationFilter, setRecommendationFilter] = useState<
+    'all' | 'brands' | 'items' | 'sections'
+  >('all');
   const [dashboardView, setDashboardView] = useState<
     'recommendations' | 'labels' | 'connectors' | 'media'
   >('recommendations');
@@ -2528,8 +2532,27 @@ export function CreatorDashboard() {
               </div>
 
               {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
+              <div aria-label="Filter recommendations" className="creatorRecommendationFilters" role="tablist">
+                {([
+                  ['all', 'All'],
+                  ['brands', 'Brands'],
+                  ['items', 'Items'],
+                  ['sections', 'Sections'],
+                ] as const).map(([value, label]) => (
+                  <button
+                    aria-selected={recommendationFilter === value}
+                    className={recommendationFilter === value ? 'isActive' : ''}
+                    key={value}
+                    onClick={() => setRecommendationFilter(value)}
+                    role="tab"
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
               <div className="creatorManageList">
-                {standaloneSections.map((section) => {
+                {(recommendationFilter === 'all' || recommendationFilter === 'sections') && standaloneSections.map((section) => {
                   const sectionItems = section.recommendationIds.flatMap(
                     (id) => activeRecommendations.find((item) => item.id === id) ?? [],
                   );
@@ -2598,6 +2621,23 @@ export function CreatorDashboard() {
                             <Trash2 aria-hidden="true" size={16} />
                           </button>
                         </div>
+                        <button
+                          aria-expanded={expandedSectionId === section.id}
+                          aria-label={`${expandedSectionId === section.id ? 'Hide' : 'Show'} ${section.title} content`}
+                          className="creatorSectionExpand"
+                          onClick={() =>
+                            setExpandedSectionId((current) =>
+                              current === section.id ? null : section.id,
+                            )
+                          }
+                          type="button"
+                        >
+                          {expandedSectionId === section.id ? (
+                            <ChevronDown aria-hidden="true" size={18} />
+                          ) : (
+                            <ChevronRight aria-hidden="true" size={18} />
+                          )}
+                        </button>
                       </header>
                       {editingSectionId === section.id ? (
                         <div className="creatorManageCollectionEditor">
@@ -2621,7 +2661,7 @@ export function CreatorDashboard() {
                             saving={saving}
                           />
                         </div>
-                      ) : sectionItems.length || sectionMedia.length ? (
+                      ) : expandedSectionId === section.id && (sectionItems.length || sectionMedia.length) ? (
                         <div className="creatorManageCollectionItems">
                           {sectionItems.map((item) => (
                             <RecommendationManageCard
@@ -2648,15 +2688,15 @@ export function CreatorDashboard() {
                             </p>
                           ) : null}
                         </div>
-                      ) : (
+                      ) : expandedSectionId === section.id ? (
                         <p className="creatorManageCollectionEmpty">
                           No content yet. Edit this section to add existing content.
                         </p>
-                      )}
+                      ) : null}
                     </section>
                   );
                 })}
-                {brandGroups.map(
+                {(recommendationFilter === 'all' || recommendationFilter === 'brands') && brandGroups.map(
                   ({
                     brand: managedBrand,
                     collections: brandCollections,
@@ -2913,7 +2953,37 @@ export function CreatorDashboard() {
                     </section>
                   ),
                 )}
-                {ungroupedEntries.map((entry) =>
+                {recommendationFilter === 'items' && activeRecommendations.map((item) => (
+                  <RecommendationManageCard
+                    item={item}
+                    key={item.id}
+                    onToggle={() =>
+                      void toggleVisibility(
+                        'recommendation',
+                        item.id,
+                        !hiddenRecommendationIds.includes(item.id),
+                      )
+                    }
+                    visible={!hiddenRecommendationIds.includes(item.id)}
+                    onArchive={() => {
+                      if (window.confirm('Remove this recommendation from your storefront?'))
+                        void recommendationCommand(item, 'archive');
+                    }}
+                    onEdit={() => editProduct(item)}
+                  />
+                ))}
+                {recommendationFilter === 'items' && activeDiscounts.map((item) => (
+                  <DiscountManageCard
+                    item={item}
+                    key={item.id}
+                    onArchive={() => void archiveDiscount(item)}
+                    onEdit={() => editDiscount(item)}
+                    onToggle={() => void toggleDiscount(item)}
+                  />
+                ))}
+                {(recommendationFilter === 'all' || recommendationFilter === 'sections') && ungroupedEntries.filter((entry) =>
+                  recommendationFilter === 'all' || entry.kind === 'collection',
+                ).map((entry) =>
                   entry.kind === 'collection' ? (
                     <section
                       aria-label={`${entry.section.title} collection`}
