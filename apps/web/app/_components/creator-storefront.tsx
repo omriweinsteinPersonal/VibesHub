@@ -376,10 +376,21 @@ export function CreatorStorefrontView({
   ]);
   const rows = useMemo(() => {
     const cardBrands = displayBrands;
+    const sectionRecommendationIds = new Set(
+      orderedStorefront.curatedSections
+        .filter(({ kind }) => kind !== 'page')
+        .flatMap((section) =>
+          sectionContentRecommendations(section, orderedStorefront, filtered).map(
+            ({ id }) => id,
+          ),
+        ),
+    );
     return groupRecommendations(
       orderedStorefront,
       filtered.filter(
-        (item) => !cardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
+        (item) =>
+          sectionRecommendationIds.has(item.id) ||
+          !cardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
       ),
     );
   }, [displayBrands, filtered, orderedStorefront]);
