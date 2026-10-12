@@ -1,10 +1,10 @@
 import type { CreatorStorefront, RecommendationCard } from '@vibeshub/contracts';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,7 +13,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getPublicStorefront, getStorefrontRecommendations } from '../../../lib/api';
+import {
+  getPublicStorefront,
+  getStorefrontRecommendations,
+  prefetchPublicRecommendation,
+  readCachedPublicStorefront,
+  readCachedStorefrontRecommendations,
+} from '../../../lib/api';
 
 interface PageData {
   recommendations: RecommendationCard[];
@@ -28,9 +34,10 @@ export default function StorefrontCollectionScreen() {
   const router = useRouter();
   const handle = first(params.handle);
   const pageId = first(params.pageId);
-  const [data, setData] = useState<PageData | null>(null);
+  const [initialData] = useState<PageData | null>(() => readInitialPageData(handle));
+  const [data, setData] = useState<PageData | null>(initialData);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
 
   const load = useCallback(async () => {
     if (!handle || !pageId) {
@@ -39,7 +46,7 @@ export default function StorefrontCollectionScreen() {
       return;
     }
     setError('');
-    setLoading(true);
+    if (!initialData) setLoading(true);
     try {
       const [storefront, recommendations] = await Promise.all([
         getPublicStorefront(handle),
@@ -51,7 +58,7 @@ export default function StorefrontCollectionScreen() {
     } finally {
       setLoading(false);
     }
-  }, [handle, pageId]);
+  }, [handle, initialData, pageId]);
 
   useEffect(() => {
     const timer = globalThis.setTimeout(() => void load(), 0);
@@ -151,6 +158,7 @@ export default function StorefrontCollectionScreen() {
                   params: { id: recommendation.id },
                 })
               }
+              onPressIn={() => void prefetchPublicRecommendation(recommendation.id)}
               style={[
                 styles.card,
                 {
@@ -162,9 +170,11 @@ export default function StorefrontCollectionScreen() {
               <View style={styles.imageStage}>
                 <Image
                   accessibilityLabel={recommendation.productName}
-                  resizeMode="contain"
-                  source={{ uri: recommendation.imageUrl }}
+                  cachePolicy="memory-disk"
+                  contentFit="contain"
+                  source={recommendation.imageUrl}
                   style={styles.image}
+                  transition={180}
                 />
               </View>
               <View style={styles.cardBody}>
@@ -197,6 +207,13 @@ export default function StorefrontCollectionScreen() {
 
 function first(value?: string | string[]): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function readInitialPageData(handle?: string): PageData | null {
+  if (!handle) return null;
+  const storefront = readCachedPublicStorefront(handle);
+  const recommendations = readCachedStorefrontRecommendations(handle);
+  return storefront && recommendations ? { recommendations, storefront } : null;
 }
 
 const styles = StyleSheet.create({

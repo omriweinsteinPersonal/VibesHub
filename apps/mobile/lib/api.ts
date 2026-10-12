@@ -33,6 +33,13 @@ export interface BillingSummary {
 }
 
 const defaultRequestTimeoutMs = 20_000;
+const publicCacheLifetimeMs = 2 * 60_000;
+const publicCache = new Map<string, { data: unknown; expiresAt: number }>();
+const publicRequests = new Map<string, Promise<unknown>>();
+
+interface PublicRequestOptions {
+  forceRefresh?: boolean;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -82,13 +89,18 @@ export async function getBillingSummary(): Promise<BillingSummary> {
   return body.data;
 }
 
-export async function getCreators(): Promise<CreatorCard[]> {
-  const data = await publicCollectionRequest('/v1/creators?limit=48');
+export async function getCreators(
+  options: PublicRequestOptions = {},
+): Promise<CreatorCard[]> {
+  const data = await publicCollectionRequest('/v1/creators?limit=48', options);
   return creatorCardSchema.array().parse(data);
 }
 
-export async function getPublicStorefront(handle: string): Promise<CreatorStorefront> {
-  const data = await publicRequest(`/v1/creators/${encodeURIComponent(handle)}`);
+export async function getPublicStorefront(
+  handle: string,
+  options: PublicRequestOptions = {},
+): Promise<CreatorStorefront> {
+  const data = await publicRequest(`/v1/creators/${encodeURIComponent(handle)}`, options);
   const parsed = creatorStorefrontSchema.safeParse(data);
   if (!parsed.success) {
     throw new ApiError('This storefront could not be loaded. Please try again.', 502);
@@ -98,9 +110,11 @@ export async function getPublicStorefront(handle: string): Promise<CreatorStoref
 
 export async function getPublicRecommendation(
   id: string,
+  options: PublicRequestOptions = {},
 ): Promise<PublicRecommendationDetail> {
   const data = await publicRequest(
     `/v1/discover/recommendations/${encodeURIComponent(id)}`,
+    options,
   );
   const parsed = publicRecommendationDetailSchema.safeParse(data);
   if (!parsed.success) {
@@ -111,20 +125,58 @@ export async function getPublicRecommendation(
 
 export async function getStorefrontRecommendations(
   handle: string,
+  options: PublicRequestOptions = {},
 ): Promise<RecommendationCard[]> {
   const data = await publicCollectionRequest(
     `/v1/creators/${encodeURIComponent(handle)}/recommendations?limit=48`,
+    options,
   );
   return recommendationCardSchema.array().parse(data);
 }
 
 export async function getStorefrontDiscountCodes(
   handle: string,
+  options: PublicRequestOptions = {},
 ): Promise<PublicDiscountCode[]> {
   const data = await publicCollectionRequest(
     `/v1/creators/${encodeURIComponent(handle)}/discount-codes`,
+    options,
   );
   return publicDiscountCodeSchema.array().parse(data);
+}
+
+export function readCachedPublicRecommendation(
+  id: string,
+): PublicRecommendationDetail | null {
+  return readCached(
+    `/v1/discover/recommendations/${encodeURIComponent(id)}`,
+    publicRecommendationDetailSchema,
+  );
+}
+
+export function readCachedPublicStorefront(handle: string): CreatorStorefront | null {
+  return readCached(
+    `/v1/creators/${encodeURIComponent(handle)}`,
+    creatorStorefrontSchema,
+  );
+}
+
+export function readCachedStorefrontRecommendations(
+  handle: string,
+): RecommendationCard[] | null {
+  return readCached(
+    `/v1/creators/${encodeURIComponent(handle)}/recommendations?limit=48`,
+    recommendationCardSchema.array(),
+  );
+}
+
+export function readCachedStorefrontDiscountCodes(
+  handle: string,
+): PublicDiscountCode[] | null {
+  return readCached(
+    `/v1/creators/${encodeURIComponent(handle)}/discount-codes`,
+    publicDiscountCodeSchema.array(),
+  );
 }
 
 async function authenticatedRequest(
@@ -146,7 +198,53 @@ async function authenticatedRequest(
   });
 }
 
-async function publicRequest(path: string): Promise<unknown> {
+export async function prefetchPublicStorefront(handle: string): Promise<void> {
+  await Promise.all([
+    getPublicStorefront(handle),
+    getStorefrontRecommendations(handle),
+    getStorefrontDiscountCodes(handle),
+  ]);
+}
+
+export async function prefetchPublicRecommendation(id: string): Promise<void> {
+  await getPublicRecommendation(id);
+}
+
+async function publicRequest(
+  path: string,
+  options: PublicRequestOptions = {},
+): Promise<unknown> {
+  const cached = publicCache.get(path);
+  if (!options.forceRefresh && cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+  if (!options.forceRefresh) {
+    const pending = publicRequests.get(path);
+    if (pending) return pending;
+  }
+
+  const request = fetchPublicRequest(path);
+  publicRequests.set(path, request);
+  try {
+    const data = await request;
+    publicCache.set(path, { data, expiresAt: Date.now() + publicCacheLifetimeMs });
+    return data;
+  } finally {
+    if (publicRequests.get(path) === request) publicRequests.delete(path);
+  }
+}
+
+function readCached<T>(
+  path: string,
+  schema: { safeParse(value: unknown): { data?: T; success: boolean } },
+): T | null {
+  const cached = publicCache.get(path);
+  if (!cached || cached.expiresAt <= Date.now()) return null;
+  const parsed = schema.safeParse(cached.data);
+  return parsed.success ? (parsed.data ?? null) : null;
+}
+
+async function fetchPublicRequest(path: string): Promise<unknown> {
   const response = await fetchWithTimeout(`${getApiUrl()}${path}`);
   const body = (await response.json().catch(() => null)) as
     ({ data?: unknown } & ApiProblem) | null;
@@ -154,12 +252,12 @@ async function publicRequest(path: string): Promise<unknown> {
   return body?.data;
 }
 
-async function publicCollectionRequest(path: string): Promise<unknown[]> {
-  const response = await fetchWithTimeout(`${getApiUrl()}${path}`);
-  const body = (await response.json().catch(() => null)) as
-    ({ data?: unknown[] } & ApiProblem) | null;
-  if (!response.ok) throw responseError(response.status, body, 'The request failed.');
-  return body?.data ?? [];
+async function publicCollectionRequest(
+  path: string,
+  options: PublicRequestOptions = {},
+): Promise<unknown[]> {
+  const data = await publicRequest(path, options);
+  return Array.isArray(data) ? data : [];
 }
 
 async function fetchWithTimeout(

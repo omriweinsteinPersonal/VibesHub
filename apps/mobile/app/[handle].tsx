@@ -4,13 +4,14 @@ import type {
   PublicDiscountCode,
   RecommendationCard,
 } from '@vibeshub/contracts';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  Image as NativeImage,
   Linking,
   Pressable,
   RefreshControl,
@@ -29,6 +30,10 @@ import {
   getPublicStorefront,
   getStorefrontDiscountCodes,
   getStorefrontRecommendations,
+  prefetchPublicRecommendation,
+  readCachedPublicStorefront,
+  readCachedStorefrontDiscountCodes,
+  readCachedStorefrontRecommendations,
 } from '../lib/api';
 import {
   getContentSafetyInstallationId,
@@ -57,13 +62,26 @@ const fallbackTheme = {
   textColor: '#30251f',
 };
 
+function readInitialStorefrontData(handle?: string): StorefrontData | null {
+  if (!handle) return null;
+  const storefront = readCachedPublicStorefront(handle);
+  const recommendations = readCachedStorefrontRecommendations(handle);
+  const codes = readCachedStorefrontDiscountCodes(handle);
+  return storefront && recommendations && codes
+    ? { codes, recommendations, storefront }
+    : null;
+}
+
 export default function PublicStorefrontScreen() {
   const params = useLocalSearchParams<{ handle?: string | string[] }>();
   const router = useRouter();
   const handle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
-  const [data, setData] = useState<StorefrontData | null>(null);
+  const [initialData] = useState<StorefrontData | null>(() =>
+    readInitialStorefrontData(handle),
+  );
+  const [data, setData] = useState<StorefrontData | null>(initialData);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
   const [creatorHidden, setCreatorHidden] = useState(false);
@@ -80,13 +98,13 @@ export default function PublicStorefrontScreen() {
         return;
       }
       if (refresh) setRefreshing(true);
-      else setLoading(true);
+      else if (!initialData) setLoading(true);
       setError(null);
       try {
         const [storefront, recommendations, codes, hiddenCreatorIds] = await Promise.all([
-          getPublicStorefront(handle),
-          getStorefrontRecommendations(handle),
-          getStorefrontDiscountCodes(handle),
+          getPublicStorefront(handle, { forceRefresh: refresh }),
+          getStorefrontRecommendations(handle, { forceRefresh: refresh }),
+          getStorefrontDiscountCodes(handle, { forceRefresh: refresh }),
           getHiddenCreatorIds(),
         ]);
         if (sequence !== loadSequence.current) return;
@@ -105,7 +123,7 @@ export default function PublicStorefrontScreen() {
         setRefreshing(false);
       }
     },
-    [handle],
+    [handle, initialData],
   );
 
   useEffect(() => {
@@ -267,8 +285,11 @@ export default function PublicStorefrontScreen() {
             {data.storefront.avatarUrl ? (
               <Image
                 accessibilityLabel={`${data.storefront.displayName}'s profile photo`}
-                source={{ uri: data.storefront.avatarUrl }}
+                cachePolicy="memory-disk"
+                contentFit="cover"
+                source={data.storefront.avatarUrl}
                 style={[styles.avatar, { borderColor: '#ffffff' }]}
+                transition={160}
               />
             ) : (
               <View style={[styles.avatar, styles.avatarFallback]}>
@@ -424,6 +445,7 @@ export default function PublicStorefrontScreen() {
                       params: { id: recommendation.id },
                     })
                   }
+                  onOpenStart={() => void prefetchPublicRecommendation(recommendation.id)}
                   onReport={() =>
                     setReportTarget({
                       targetId: recommendation.id,
@@ -468,11 +490,13 @@ function StorefrontLoading() {
 
 function ProductCard({
   onOpen,
+  onOpenStart,
   onReport,
   recommendation,
   theme,
 }: {
   onOpen: () => void;
+  onOpenStart: () => void;
   onReport: () => void;
   recommendation: RecommendationCard;
   theme: typeof fallbackTheme;
@@ -486,7 +510,7 @@ function ProductCard({
       ]}
     >
       <View style={[styles.imageStage, { backgroundColor: theme.productBackground }]}>
-        <Image
+        <NativeImage
           blurRadius={24}
           source={{ uri: recommendation.imageUrl }}
           style={styles.imageBackdrop}
@@ -494,9 +518,11 @@ function ProductCard({
         <View style={styles.imageVeil} />
         <Image
           accessibilityLabel={recommendation.productName}
-          resizeMode="contain"
-          source={{ uri: recommendation.imageUrl }}
+          cachePolicy="memory-disk"
+          contentFit="contain"
+          source={recommendation.imageUrl}
           style={styles.productImage}
+          transition={180}
         />
         {hasStory ? (
           <View style={styles.storyBadge}>
@@ -555,6 +581,7 @@ function ProductCard({
         <Pressable
           accessibilityRole="button"
           onPress={onOpen}
+          onPressIn={onOpenStart}
           style={[styles.detailButton, { borderColor: theme.accentColor }]}
         >
           <Text style={[styles.detailButtonText, { color: theme.accentColor }]}>

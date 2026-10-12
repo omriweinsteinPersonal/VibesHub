@@ -1,11 +1,11 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getSupabaseClient } from '../lib/supabase';
-import { getCreators } from '../lib/api';
+import { getCreators, prefetchPublicStorefront } from '../lib/api';
 import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
 
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
@@ -123,13 +123,20 @@ export default function HomeScreen() {
                     params: { handle: creator.handle },
                   })
                 }
+                onPressIn={() => void prefetchPublicStorefront(creator.handle)}
                 style={({ pressed }) => [
                   styles.creatorCard,
                   pressed && styles.creatorCardPressed,
                 ]}
               >
                 {creator.avatarUrl ? (
-                  <Image source={{ uri: creator.avatarUrl }} style={styles.avatar} />
+                  <Image
+                    cachePolicy="memory-disk"
+                    contentFit="cover"
+                    source={creator.avatarUrl}
+                    style={styles.avatar}
+                    transition={160}
+                  />
                 ) : (
                   <View style={[styles.avatar, styles.avatarFallback]}>
                     <Text style={styles.avatarInitial}>

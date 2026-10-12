@@ -1,10 +1,11 @@
 import type { PublicRecommendationDetail } from '@vibeshub/contracts';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
+  Image as NativeImage,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,7 +14,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ApiError, getPublicRecommendation } from '../../lib/api';
+import {
+  ApiError,
+  getPublicRecommendation,
+  readCachedPublicRecommendation,
+} from '../../lib/api';
 import { openExternalWebPage } from '../../lib/external-browser';
 
 const palette = {
@@ -29,11 +34,14 @@ export default function ProductDetailScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [initialRecommendation] = useState(() =>
+    id ? readCachedPublicRecommendation(id) : null,
+  );
   const [activeImage, setActiveImage] = useState(0);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialRecommendation);
   const [recommendation, setRecommendation] = useState<PublicRecommendationDetail | null>(
-    null,
+    initialRecommendation,
   );
 
   const load = useCallback(async () => {
@@ -43,7 +51,7 @@ export default function ProductDetailScreen() {
       return;
     }
     setError('');
-    setLoading(true);
+    if (!initialRecommendation) setLoading(true);
     try {
       setRecommendation(await getPublicRecommendation(id));
     } catch (cause) {
@@ -55,7 +63,7 @@ export default function ProductDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, initialRecommendation]);
 
   useEffect(() => {
     const timer = globalThis.setTimeout(() => void load(), 0);
@@ -120,7 +128,7 @@ export default function ProductDetailScreen() {
         <View style={styles.mediaStage}>
           {shownImage ? (
             <>
-              <Image
+              <NativeImage
                 blurRadius={24}
                 source={{ uri: shownImage }}
                 style={styles.backdrop}
@@ -128,9 +136,11 @@ export default function ProductDetailScreen() {
               <View style={styles.imageVeil} />
               <Image
                 accessibilityLabel={`${recommendation.productName}, photo ${activeImage + 1}`}
-                resizeMode="contain"
-                source={{ uri: shownImage }}
+                cachePolicy="memory-disk"
+                contentFit="contain"
+                source={shownImage}
                 style={styles.image}
+                transition={180}
               />
             </>
           ) : (
@@ -155,9 +165,11 @@ export default function ProductDetailScreen() {
                 ]}
               >
                 <Image
-                  resizeMode="cover"
-                  source={{ uri: url }}
+                  cachePolicy="memory-disk"
+                  contentFit="cover"
+                  source={url}
                   style={styles.thumbnailImage}
+                  transition={120}
                 />
               </Pressable>
             ))}

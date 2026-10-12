@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,9 +11,10 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getCreators } from '../lib/api';
+import { getCreators, prefetchPublicStorefront } from '../lib/api';
 import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
 
 const palette = {
@@ -40,7 +40,7 @@ export default function CreatorsScreen() {
     else setLoading(true);
     setError(null);
     try {
-      setCreators(await getCreators());
+      setCreators(await getCreators({ forceRefresh: refresh }));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Creators could not be loaded.');
     } finally {
@@ -127,10 +127,17 @@ export default function CreatorsScreen() {
                     params: { handle: creator.handle },
                   })
                 }
+                onPressIn={() => void prefetchPublicStorefront(creator.handle)}
                 style={({ pressed }) => [styles.creatorCard, pressed && styles.pressed]}
               >
                 {creator.avatarUrl ? (
-                  <Image source={{ uri: creator.avatarUrl }} style={styles.avatar} />
+                  <Image
+                    cachePolicy="memory-disk"
+                    contentFit="cover"
+                    source={creator.avatarUrl}
+                    style={styles.avatar}
+                    transition={160}
+                  />
                 ) : (
                   <View style={[styles.avatar, styles.avatarFallback]}>
                     <Text style={styles.avatarInitial}>
