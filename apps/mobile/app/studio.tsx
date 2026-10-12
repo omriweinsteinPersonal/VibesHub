@@ -209,12 +209,8 @@ function Overview({
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO</Text>
-      <Text style={styles.title}>
-        Your studio, {firstName(bundle.summary.displayName)}.
-      </Text>
-      <Text style={styles.lede}>
-        Manage the page your audience sees—without leaving the app.
-      </Text>
+      <Text style={styles.title}>Creator dashboard</Text>
+      <Text style={styles.lede}>Everything you need to shape your page.</Text>
       <View style={styles.metricGrid}>
         {metrics.map(([label, value]) => (
           <View key={label} style={styles.metricCard}>
@@ -223,16 +219,20 @@ function Overview({
           </View>
         ))}
       </View>
-      <Text style={styles.sectionTitle}>Keep your page fresh</Text>
+      <Text style={styles.sectionTitle}>Manage your workspace</Text>
       {(
         [
-          ['recommendations', 'Recommendations', 'Add brands and manage what is live.'],
-          ['storefront', 'Storefront', 'Organize labels and featured media.'],
-          ['analytics', 'Analytics', 'See what your audience explores.'],
-          ['profile', 'Profile & links', 'Update your bio and social links.'],
-        ] as [StudioView, string, string][]
-      ).map(([key, title, copy]) => (
-        <Pressable key={key} onPress={() => navigate(key)} style={styles.actionCard}>
+          ['storefront', 'Storefront labels', 'Customize the labels on your page.'],
+          ['recommendations', 'Recommendations', 'Manage brands, items and collections.'],
+          ['media', 'Media', 'Add and organize your photos and videos.', 'storefront'],
+          ['social-links', 'Social links', 'Connect your platforms in one place.', 'profile'],
+        ] as [string, string, string, StudioView?][]
+      ).map(([key, title, copy, target]) => (
+        <Pressable
+          key={key}
+          onPress={() => navigate(target ?? (key as StudioView))}
+          style={styles.actionCard}
+        >
           <View style={styles.actionCopy}>
             <Text style={styles.actionTitle}>{title}</Text>
             <Text style={styles.actionDescription}>{copy}</Text>
@@ -342,7 +342,7 @@ function Recommendations({
         <View style={styles.headingCopy}>
           <Text style={styles.title}>Recommendations</Text>
           <Text style={styles.lede}>
-            Manage your brands and what appears on your page.
+            Keep your brands, collections and individual picks beautifully organized.
           </Text>
         </View>
         <Pressable onPress={() => openBrand()} style={styles.compactButton}>
@@ -601,7 +601,7 @@ function StorefrontEditor({
       ))}
 
       <View style={styles.editorCard}>
-        <Text style={styles.cardTitle}>Add featured content</Text>
+        <Text style={styles.cardTitle}>Add media</Text>
         <Text style={styles.cardMeta}>YouTube, Instagram, Spotify or Apple Music.</Text>
         <Field
           autoCapitalize="none"
@@ -616,7 +616,7 @@ function StorefrontEditor({
           onPress={addMedia}
           style={styles.primarySmall}
         >
-          <Text style={styles.primaryButtonText}>Add featured content</Text>
+          <Text style={styles.primaryButtonText}>Add media</Text>
         </Pressable>
       </View>
       {configuration.featuredMedia.map((item) => (
@@ -873,10 +873,6 @@ function lifecycleLabel(value: CreatorRecommendation['lifecycle']): string {
       : 'Hidden from your storefront';
 }
 
-function firstName(value: string): string {
-  return value.trim().split(/\s+/)[0] || value;
-}
-
 function messageFor(cause: unknown): string {
   return cause instanceof Error
     ? cause.message
@@ -971,7 +967,7 @@ const styles = StyleSheet.create({
   actionCopy: { flex: 1 },
   actionTitle: { color: colors.ink, fontSize: 17, fontWeight: '700' },
   actionDescription: { color: colors.muted, lineHeight: 20, marginTop: 3 },
-  chevron: { color: colors.accent, fontSize: 28, marginLeft: spacing.md },
+  chevron: { color: '#2f5960', fontSize: 28, marginLeft: spacing.md },
   editorCard: {
     backgroundColor: colors.white,
     borderColor: colors.border,

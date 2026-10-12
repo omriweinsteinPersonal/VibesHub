@@ -153,7 +153,7 @@ export default function CreatorHomePage() {
         <div className={styles.nextHeading}>
           <div>
             <h2 id="creator-home-next">What would you like to do?</h2>
-            <p>Make a change, add a find, or see what resonates.</p>
+            <p>Make a change, add a find, or see what&apos;s getting noticed.</p>
           </div>
           <Link className={styles.accountLink} href="/account">
             Account settings <ArrowUpRight aria-hidden="true" size={14} />
@@ -165,7 +165,6 @@ export default function CreatorHomePage() {
             href="/dashboard"
             icon={Plus}
             title="Add to your page"
-            tone="clay"
           >
             Share a new recommendation or build a collection.
           </HomeAction>
@@ -174,7 +173,6 @@ export default function CreatorHomePage() {
             href={editorHref}
             icon={LayoutTemplate}
             title="Make it yours"
-            tone="sage"
           >
             Arrange sections and style the page around your point of view.
           </HomeAction>
@@ -183,7 +181,6 @@ export default function CreatorHomePage() {
             href="/analytics"
             icon={ChartNoAxesCombined}
             title="See what connects"
-            tone="sand"
           >
             Understand which pages, picks and collections draw attention.
           </HomeAction>
@@ -199,17 +196,15 @@ function HomeAction({
   href,
   icon: Icon,
   title,
-  tone,
 }: {
   action: string;
   children: ReactNode;
   href: string;
   icon: LucideIcon;
   title: string;
-  tone: 'clay' | 'sage' | 'sand';
 }) {
   return (
-    <Link className={`${styles.actionCard} ${styles[tone]}`} href={href}>
+    <Link className={styles.actionCard} href={href}>
       <span aria-hidden="true" className={styles.actionIcon}>
         <Icon size={17} />
       </span>

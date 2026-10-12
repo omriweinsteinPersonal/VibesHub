@@ -18,9 +18,8 @@ import {
   ArrowLeft,
   ArrowDown,
   ArrowUp,
-  Check,
   ChevronDown,
-  Copy,
+  ChevronRight,
   ExternalLink,
   GripVertical,
   LayoutGrid,
@@ -57,6 +56,7 @@ import {
 } from '../../lib/recommendation-media';
 import { randomUuid } from '../../lib/random-id';
 import { hasRecommendationImage } from '../../lib/recommendation-image';
+import { publicAssetUrl } from '../../lib/public-asset-url';
 import { CreatorConnectorsEditor } from './creator-connectors-editor';
 import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
@@ -1852,19 +1852,6 @@ export function CreatorDashboard() {
   );
   const firstName = profile?.displayName.trim().split(/\s+/)[0];
 
-  async function copyStorefrontLink() {
-    if (!profile?.handle) return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/${encodeURIComponent(profile.handle)}`,
-      );
-      setNotice('Storefront link copied.');
-      setError('');
-    } catch {
-      setError('Could not copy the link. Open your storefront to copy its URL.');
-    }
-  }
-
   return (
     <main
       className={`creatorDashboardMain creatorDashboardMainWithSidebar ${styles.root}`}
@@ -1872,48 +1859,23 @@ export function CreatorDashboard() {
       <section className="creatorDashboardIntro">
         <div>
           <p className="eyebrow">CREATOR STUDIO / DASHBOARD</p>
-          <h1 aria-busy={!profile}>
-            {firstName ? (
-              `Your studio, ${firstName}.`
-            ) : (
-              <span aria-hidden="true">&nbsp;</span>
-            )}
-          </h1>
-          <p>Make your page feel like you, one recommendation at a time.</p>
+          <h1 aria-busy={!profile}>Creator dashboard</h1>
+          <p>Everything you need to shape your page.</p>
         </div>
-        {profile?.handle ? (
-          <Link
-            className={styles.storefrontLink}
-            href={`/${encodeURIComponent(profile.handle)}`}
-          >
-            <ExternalLink aria-hidden="true" size={16} />
-            View storefront
-          </Link>
-        ) : null}
+        <div aria-hidden="true" className={styles.dashboardPortrait}>
+          {profile?.avatar?.url ? (
+            <Image
+              alt=""
+              fill
+              sizes="64px"
+              src={publicAssetUrl(profile.avatar.url)}
+              unoptimized
+            />
+          ) : (
+            <span>{firstName?.slice(0, 1).toUpperCase() || 'S'}</span>
+          )}
+        </div>
       </section>
-
-      {profile?.handle ? (
-        <section aria-label="Your live storefront" className={styles.liveBanner}>
-          <span className={styles.liveIcon}>
-            <Check aria-hidden="true" size={18} />
-          </span>
-          <div className={styles.liveCopy}>
-            <strong>Your page is live</strong>
-            <span>
-              swavii.com/{profile.handle} · Share it wherever your audience finds you.
-            </span>
-          </div>
-          <button
-            aria-label="Copy storefront link"
-            className={styles.copyButton}
-            onClick={() => void copyStorefrontLink()}
-            type="button"
-          >
-            <Copy aria-hidden="true" size={15} />
-            <span>Copy link</span>
-          </button>
-        </section>
-      ) : null}
 
       {error ? (
         <p className="formError" role="alert">
@@ -1935,8 +1897,11 @@ export function CreatorDashboard() {
             type="button"
           >
             <Tag aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Storefront labels</span>
-            <span className="creatorDashboardNavMobile">Storefront labels</span>
+            <span className="creatorDashboardNavCopy">
+              <strong>Storefront labels</strong>
+              <small>Customize the labels on your page.</small>
+            </span>
+            <ChevronRight aria-hidden="true" size={17} />
           </button>
           <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
@@ -1944,8 +1909,11 @@ export function CreatorDashboard() {
             type="button"
           >
             <LayoutGrid aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Recommendations</span>
-            <span className="creatorDashboardNavMobile">Recommendations</span>
+            <span className="creatorDashboardNavCopy">
+              <strong>Recommendations</strong>
+              <small>Manage brands, items and collections.</small>
+            </span>
+            <ChevronRight aria-hidden="true" size={17} />
           </button>
           <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
@@ -1953,8 +1921,11 @@ export function CreatorDashboard() {
             type="button"
           >
             <PlayCircle aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Featured content</span>
-            <span className="creatorDashboardNavMobile">Featured content</span>
+            <span className="creatorDashboardNavCopy">
+              <strong>Media</strong>
+              <small>Add and organize your photos and videos.</small>
+            </span>
+            <ChevronRight aria-hidden="true" size={17} />
           </button>
           <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
@@ -1962,8 +1933,11 @@ export function CreatorDashboard() {
             type="button"
           >
             <Link2 aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Social links</span>
-            <span className="creatorDashboardNavMobile">Social links</span>
+            <span className="creatorDashboardNavCopy">
+              <strong>Social links</strong>
+              <small>Connect your platforms in one place.</small>
+            </span>
+            <ChevronRight aria-hidden="true" size={17} />
           </button>
         </nav>
         <div className="creatorDashboardPanel">
@@ -1971,7 +1945,7 @@ export function CreatorDashboard() {
             <section className="creatorRecommendationSection">
               <div className="creatorSectionHeading">
                 <div>
-                  <h2>Featured content</h2>
+                  <h2>Media</h2>
                   <p>Add videos, posts and music from your social platforms.</p>
                 </div>
                 <button
@@ -2133,7 +2107,7 @@ export function CreatorDashboard() {
                   </article>
                 ))}
                 {!featuredMedia.length ? (
-                  <p className="creatorEmptyState">No featured content yet.</p>
+                  <p className="creatorEmptyState">No media yet.</p>
                 ) : null}
               </div>
             </section>
@@ -2149,20 +2123,23 @@ export function CreatorDashboard() {
                 </div>
               </div>
 
-              <div className="creatorComposer" id="creator-composer">
+              <div
+                className={`creatorComposer ${
+                  composer === null || composer === 'choose'
+                    ? 'creatorComposerCompact'
+                    : ''
+                }`}
+                id="creator-composer"
+              >
                 {composer === null || composer === 'choose' ? (
-                  <div className="creatorComposerBody">
-                    <div className="creatorComposerIntro">
-                      <h3>Add recommendation</h3>
-                      <p>Choose what you want to share with your audience.</p>
-                    </div>
-                    <div className="creatorTypeGrid">
+                  <div className="creatorTypeGrid">
                       <button onClick={() => setComposer('brand')} type="button">
                         <span aria-hidden="true">
                           <Store size={16} />
                         </span>
                         <strong>Brand</strong>
-                        <small>Create a brand card.</small>
+                        <small>Create a brand card</small>
+                        <ChevronRight aria-hidden="true" size={16} />
                       </button>
                       <button
                         onClick={() => {
@@ -2175,23 +2152,25 @@ export function CreatorDashboard() {
                           <Link2 size={16} />
                         </span>
                         <strong>Item</strong>
-                        <small>Recommend one item with a link.</small>
+                        <small>Recommend one item</small>
+                        <ChevronRight aria-hidden="true" size={16} />
                       </button>
                       <button onClick={() => setComposer('collection')} type="button">
                         <span aria-hidden="true">
                           <LayoutGrid size={16} />
                         </span>
                         <strong>Collection</strong>
-                        <small>Create a collection of items from one brand.</small>
+                        <small>Group items together</small>
+                        <ChevronRight aria-hidden="true" size={16} />
                       </button>
                       <button onClick={() => setComposer('section')} type="button">
                         <span aria-hidden="true">
                           <Layers3 size={16} />
                         </span>
                         <strong>Section</strong>
-                        <small>Mix products from different brands in one section.</small>
+                        <small>Mix products together</small>
+                        <ChevronRight aria-hidden="true" size={16} />
                       </button>
-                    </div>
                   </div>
                 ) : null}
                 {composer === 'product' ? (
@@ -5052,7 +5031,7 @@ function CuratedSectionForm({
               ))}
             </div>
           ) : (
-            <p>No featured content yet. Add it from Featured content first.</p>
+            <p>No media yet. Add it from Media first.</p>
           )}
         </fieldset>
       ) : null}
@@ -5173,7 +5152,7 @@ function CuratedSectionForm({
               const label =
                 content.kind === 'media'
                   ? (featuredMedia.find(({ id }) => id === content.id)?.title ??
-                    'Featured content')
+                    'Media')
                   : (recommendations.find(({ id }) => id === content.id)?.productName ??
                     'Recommendation');
               return (
