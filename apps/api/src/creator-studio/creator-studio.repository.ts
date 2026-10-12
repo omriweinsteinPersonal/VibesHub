@@ -310,18 +310,22 @@ export class CreatorStudioRepository {
               ? { ...item, id: creatorBrandIdByCatalogId.get(item.id)! }
               : item,
           );
+          const validContentItems = contentItems.filter((item) => {
+            if (item.kind === 'recommendation')
+              return ownedRecommendationIds.has(item.id);
+            if (item.kind === 'media') return featuredMediaIds.has(item.id);
+            if (item.kind === 'brand') return ownedBrandIds.has(item.id);
+            return validCollectionIds.has(item.id);
+          });
+          const contentRecommendationIds = validContentItems
+            .filter(({ kind }) => kind === 'recommendation')
+            .map(({ id }) => id);
           return {
             ...section,
-            recommendationIds: section.recommendationIds.filter((id) =>
-              ownedRecommendationIds.has(id),
-            ),
-            contentItems: contentItems.filter((item) => {
-              if (item.kind === 'recommendation')
-                return ownedRecommendationIds.has(item.id);
-              if (item.kind === 'media') return featuredMediaIds.has(item.id);
-              if (item.kind === 'brand') return ownedBrandIds.has(item.id);
-              return validCollectionIds.has(item.id);
-            }),
+            recommendationIds: [
+              ...new Set([...section.recommendationIds, ...contentRecommendationIds]),
+            ].filter((id) => ownedRecommendationIds.has(id)),
+            contentItems: validContentItems,
           };
         }),
         labels: input.labels.map((label) => ({

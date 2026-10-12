@@ -1497,18 +1497,27 @@ export function CreatorDashboard() {
     const activeDiscountIdSet = new Set(
       discounts.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id),
     );
-    const sanitizedSections = collectionSections.map((section) => ({
-      ...section,
-      recommendationIds: section.recommendationIds.filter((id) =>
-        activeRecommendationIdSet.has(id),
-      ),
-      contentItems: section.contentItems.filter((item) => {
+    const sanitizedSections = collectionSections.map((section) => {
+      const contentItems = section.contentItems.filter((item) => {
         if (item.kind === 'recommendation') return activeRecommendationIdSet.has(item.id);
         if (item.kind === 'brand') return activeBrandIdSet.has(item.id);
         if (item.kind === 'collection') return activeCollectionIdSet.has(item.id);
         return activeMediaIdSet.has(item.id);
-      }),
-    }));
+      });
+      const recommendationIds =
+        section.kind === 'section'
+          ? contentItems
+              .filter(({ kind }) => kind === 'recommendation')
+              .map(({ id }) => id)
+          : section.recommendationIds;
+      return {
+        ...section,
+        recommendationIds: [...new Set(recommendationIds)].filter((id) =>
+          activeRecommendationIdSet.has(id),
+        ),
+        contentItems,
+      };
+    });
     setSaving(true);
     setError('');
     try {
@@ -4652,6 +4661,9 @@ function CuratedSectionForm({
       return groups;
     }, new Map<string, { name: string; items: CreatorRecommendation[] }>()),
   );
+  const selectedSectionRecommendationIds = contentItems
+    .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+    .map(({ id }) => id);
   function toggleSectionContent(item: {
     id: string;
     kind: 'recommendation' | 'media' | 'brand' | 'collection';
@@ -4955,18 +4967,24 @@ function CuratedSectionForm({
                         }
                         type="checkbox"
                         disabled={
-                          recommendationIds.length >= 20 &&
-                          !recommendationIds.includes(item.id)
+                          (kind === 'section'
+                            ? selectedSectionRecommendationIds.length
+                            : recommendationIds.length) >= 20 &&
+                          !(kind === 'section'
+                            ? selectedSectionRecommendationIds.includes(item.id)
+                            : recommendationIds.includes(item.id))
                         }
                         onChange={(event) => {
                           setSelectionError('');
-                          setRecommendationIds((current) =>
-                            event.target.checked
-                              ? [...current, item.id]
-                              : current.filter((id) => id !== item.id),
-                          );
-                          if (kind === 'section')
+                          if (kind === 'section') {
                             toggleSectionContent({ id: item.id, kind: 'recommendation' });
+                          } else {
+                            setRecommendationIds((current) =>
+                              event.target.checked
+                                ? [...current, item.id]
+                                : current.filter((id) => id !== item.id),
+                            );
+                          }
                         }}
                       />
                       <span className="creatorCuratedProductThumb">
