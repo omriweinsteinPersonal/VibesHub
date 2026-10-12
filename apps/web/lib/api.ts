@@ -35,7 +35,17 @@ export async function apiRequest<T>(path: string, init: ApiRequestInit = {}): Pr
   if (init.body) headers.set('content-type', 'application/json');
   if (init.idempotent) headers.set('idempotency-key', randomUuid());
 
-  return request<T>(path, { ...init, headers }, init.timeoutMs);
+  // Vercel treats the standard If-Match header as a CDN precondition before a
+  // same-origin route handler gets a chance to forward the request. Carry the
+  // application version through a private header instead; the backend proxy
+  // restores If-Match when it calls the API.
+  const apiUrl = getApiUrl();
+  if (apiUrl.startsWith('/') && headers.has('if-match')) {
+    headers.set('x-swavii-if-match', headers.get('if-match')!);
+    headers.delete('if-match');
+  }
+
+  return request<T>(path, { ...init, headers }, init.timeoutMs, apiUrl);
 }
 
 export async function apiCollectionRequest<T>(path: string): Promise<{
@@ -89,8 +99,9 @@ async function request<T>(
   path: string,
   init?: ApiRequestInit,
   timeoutMs = defaultRequestTimeoutMs,
+  apiUrl = getApiUrl(),
 ): Promise<T> {
-  const response = await fetchWithTimeout(`${getApiUrl()}/v1${path}`, init, timeoutMs);
+  const response = await fetchWithTimeout(`${apiUrl}/v1${path}`, init, timeoutMs);
   if (response.status === 204) return undefined as T;
   const body = await parseResponseBody<{ data?: T } & ProblemDetails>(response);
   if (!response.ok) {

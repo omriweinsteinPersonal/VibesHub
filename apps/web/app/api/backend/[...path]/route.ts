@@ -10,7 +10,6 @@ const forwardRequestHeaders = [
   'authorization',
   'content-type',
   'idempotency-key',
-  'if-match',
 ] as const;
 
 const forwardResponseHeaders = ['cache-control', 'content-type', 'etag'] as const;
@@ -30,16 +29,22 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
     if (value) headers.set(name, value);
   }
 
+  const applicationVersion =
+    request.headers.get('x-swavii-if-match') ?? request.headers.get('if-match');
+  if (applicationVersion) headers.set('if-match', applicationVersion);
+
   try {
+    const body =
+      request.method === 'GET' || request.method === 'HEAD'
+        ? undefined
+        : await request.arrayBuffer();
     const response = await fetch(target, {
-      body:
-        request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body,
+      ...(body === undefined ? {} : { body }),
       cache: 'no-store',
-      duplex: 'half',
       headers,
       method: request.method,
       redirect: 'manual',
-    } as RequestInit);
+    });
     const responseHeaders = new Headers({ 'cache-control': 'no-store' });
 
     for (const name of forwardResponseHeaders) {
