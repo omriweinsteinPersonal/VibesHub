@@ -14542,6 +14542,37 @@ dt {
   flex-basis: auto;
 }
 
+/* Horizontal sections can mix compact product tiles with full media cards.
+   Flex lets each child keep its own intended width instead of forcing every
+   item into the product grid's fixed track. */
+.referenceStorefrontRow:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller,
+.referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller {
+  display: flex;
+  align-items: flex-start;
+}
+
+.referenceStorefrontRow:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller
+  > .compactProductCard,
+.referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller
+  > .compactProductCard {
+  flex: 0 0 172px;
+}
+
+@media (max-width: 900px) {
+  .referenceStorefrontRow:not(.referenceStorefrontRowVertical)
+    .referenceStorefrontScroller
+    > .compactProductCard,
+  .referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+    .referenceStorefrontScroller
+    > .compactProductCard {
+    flex-basis: 158px;
+  }
+}
+
 .creatorSectionManageCard {
   border-color: #d8c8b9;
 }
