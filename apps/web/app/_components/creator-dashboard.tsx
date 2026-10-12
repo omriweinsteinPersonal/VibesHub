@@ -25,7 +25,6 @@ import {
   LayoutGrid,
   Layers3,
   Link2,
-  PlayCircle,
   Pencil,
   Plus,
   Sparkles,
