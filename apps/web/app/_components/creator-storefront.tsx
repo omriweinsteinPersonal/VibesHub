@@ -1965,7 +1965,7 @@ export function groupRecommendations(
             items,
             key: layer.id,
             title: section?.title ?? 'Collection',
-            framed: layer.kind === 'collection',
+            framed: true,
             media,
             displayStyle: section?.displayStyle ?? 'horizontal',
           });
@@ -2020,7 +2020,7 @@ export function groupRecommendations(
           items,
           key: section.id,
           title: section.title,
-          framed: section.kind === 'collection',
+          framed: true,
           media,
           displayStyle: section.displayStyle,
         });
@@ -2084,7 +2084,7 @@ export function groupRecommendations(
           items,
           key: section.id,
           title: section.title,
-          framed: section.kind === 'collection',
+          framed: true,
           media,
           displayStyle: section.displayStyle,
         },
