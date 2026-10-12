@@ -14440,6 +14440,107 @@ dt {
   width: 100%;
 }
 
+/* Sections use the same shelf language as the recommendation cards inside a
+   brand: the image owns the tile, while the copy sits directly on the
+   storefront surface instead of inside a second white card. */
+.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard,
+.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: none;
+  overflow: visible;
+  width: 172px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard .storeProductImage,
+.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard .storeProductImage {
+  aspect-ratio: 1 / 1.08;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard .storeProductDetails,
+.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard .storeProductDetails {
+  background: transparent;
+  padding: 7px 2px 2px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+  align-self: start;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 0 0 172px;
+  min-width: 0;
+  overflow: visible;
+  width: 172px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaCover,
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaEmbed,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaCover,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaEmbed {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaLink > span:last-child,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock .featuredMediaLink > span:last-child {
+  padding: 7px 2px 2px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard .editorialMediaSummary,
+.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard .editorialMediaSummary {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 12px;
+  grid-template-columns: 58px minmax(0, 1fr) 14px;
+  min-height: 78px;
+  padding: 8px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard .editorialMediaArtwork,
+.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard .editorialMediaArtwork {
+  border-radius: 8px;
+  height: 58px;
+  width: 58px;
+}
+
+@media (max-width: 900px) {
+  .referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard,
+  .referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+    width: 158px;
+  }
+
+  .referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+    flex-basis: 158px;
+  }
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .compactProductCard,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .editorialMediaCard {
+  width: 100%;
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .editorialMediaCard {
+  flex-basis: auto;
+}
+
 .creatorSectionManageCard {
   border-color: #d8c8b9;
 }
