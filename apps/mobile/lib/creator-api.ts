@@ -144,6 +144,10 @@ async function creatorRequest<T>(
   const headers = new Headers(init.headers);
   headers.set('authorization', `Bearer ${session.access_token}`);
   if (init.body) headers.set('content-type', 'application/json');
+  if (headers.has('if-match')) {
+    headers.set('x-swavii-if-match', headers.get('if-match')!);
+    headers.delete('if-match');
+  }
 
   let response: Response;
   try {
