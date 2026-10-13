@@ -842,9 +842,27 @@ export function CreatorStorefrontView({
                     />
                   ))}
                   {compactLabelItems.length ? (
-                    <div className="referenceStorefrontRow referenceCompactLabelRow">
-                      <div className="referenceStorefrontScroller">
-                        {compactLabelItems.map((item) => (
+                    <div className="referenceCompactLabelStandaloneList">
+                      {compactLabelItems.map((item) => {
+                        const brand = displayBrands.find((candidate) =>
+                          brandMatchesRecommendation(candidate, item),
+                        );
+                        const discount =
+                          item.discount ??
+                          codes.find(
+                            (code) =>
+                              code.scopeKind === 'item' && code.scopeId === item.id,
+                          ) ??
+                          null;
+                        return brand ? (
+                          <StandaloneRecommendationCard
+                            brand={brand}
+                            discount={discount}
+                            handle={storefront.handle}
+                            item={item}
+                            key={item.id}
+                          />
+                        ) : (
                           <RecommendationCardView
                             creatorId={storefront.id}
                             key={item.id}
@@ -852,8 +870,8 @@ export function CreatorStorefrontView({
                             showBrand
                             showPrice={false}
                           />
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
                   ) : null}
                 </div>

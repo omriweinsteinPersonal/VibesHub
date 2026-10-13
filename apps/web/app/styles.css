@@ -10275,14 +10275,17 @@ dt {
   margin-top: 4px;
 }
 
-/* Label results reuse the Home row shell so product cards keep the exact same
-   width, image ratio, spacing, and horizontal scroll behavior. */
-.referenceCompactLabelRow {
-  margin-top: 0;
+/* Products that are not part of a selected brand card use Home's horizontal
+   standalone recommendation treatment, stacked as a clean label list. */
+.referenceCompactLabelStandaloneList {
+  display: grid;
+  gap: 12px;
   min-width: 0;
 }
-.referenceCompactLabelRow .referenceStorefrontScroller {
+.referenceCompactLabelStandaloneList > .referenceStandaloneRecommendation {
+  margin-top: 0;
   min-width: 0;
+  width: 100%;
 }
 
 .referenceCompactLabelGroup {
