@@ -55,31 +55,6 @@ const groups: Array<{
     fields: [{ key: 'collectionBackground', label: 'Frame background' }],
   },
 ];
-const templateThemes: Array<{
-  id: 'editorial-frame';
-  name: string;
-  description: string;
-  theme: StorefrontTheme;
-}> = [
-  {
-    id: 'editorial-frame',
-    name: 'Editorial Frame',
-    description: 'A distinctive header and outer frame around your existing cards.',
-    theme: {
-      templateId: 'editorial-frame',
-      profileBackground: '#fff9f1',
-      profileImageUrl: '',
-      recommendationsBackground: '#fff9f1',
-      dividerColor: '#d9d4ce',
-      productBackground: '#ffffff',
-      discountBackground: '#ffffff',
-      collectionBackground: '#ffffff',
-      accentColor: '#3047d6',
-      textColor: '#171a2d',
-    },
-  },
-];
-
 const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
   { name: 'Editorial', theme: defaultStorefrontTheme },
   {
@@ -149,7 +124,10 @@ export function StorefrontPhonePreview({
   const [configuration, setConfiguration] = useState<StorefrontThemeConfiguration | null>(
     null,
   );
-  const [draft, setDraft] = useState<StorefrontTheme>(theme);
+  const [draft, setDraft] = useState<StorefrontTheme>({
+    ...theme,
+    templateId: 'classic',
+  });
   const [selected, setSelected] = useState<ThemeSection>('profile');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -184,7 +162,7 @@ export function StorefrontPhonePreview({
       .then((value) => {
         if (!active) return;
         setConfiguration(value);
-        setDraft(value.theme);
+        setDraft({ ...value.theme, templateId: 'classic' });
       })
       .catch((cause: unknown) => {
         if (active)
@@ -445,67 +423,6 @@ export function StorefrontPhonePreview({
               </label>
             </section>
             <div>
-              <section
-                aria-labelledby="template-picker-title"
-                className="storefrontTemplatePicker"
-              >
-                <div>
-                  <h3 id="template-picker-title">Templates</h3>
-                  <p>
-                    Choose a visual frame without changing how your recommendations work.
-                  </p>
-                </div>
-                <div
-                  className="storefrontTemplateList"
-                  role="group"
-                  aria-label="Templates"
-                >
-                  <button
-                    aria-pressed={(draft.templateId ?? 'classic') === 'classic'}
-                    className="storefrontTemplateOption classicTemplateOption"
-                    onClick={() => {
-                      setDraft((current) => ({ ...current, templateId: 'classic' }));
-                      setNotice('');
-                    }}
-                    type="button"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="storefrontTemplatePreview classicTemplatePreview"
-                    />
-                    <span>
-                      <strong>Classic</strong>
-                      <small>Keep the current storefront look.</small>
-                    </span>
-                  </button>
-                  {templateThemes.map((template) => (
-                    <button
-                      aria-pressed={(draft.templateId ?? 'classic') === template.id}
-                      className="storefrontTemplateOption editorialTemplateOption"
-                      key={template.id}
-                      onClick={() => {
-                        setDraft((current) => ({
-                          ...current,
-                          ...template.theme,
-                          profileImageUrl: current.profileImageUrl,
-                          layout: current.layout,
-                        }));
-                        setNotice('');
-                      }}
-                      type="button"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="storefrontTemplatePreview editorialTemplatePreview"
-                      />
-                      <span>
-                        <strong>{template.name}</strong>
-                        <small>{template.description}</small>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
               <div
                 className="storefrontPaletteList"
                 role="group"

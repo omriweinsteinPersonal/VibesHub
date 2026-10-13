@@ -1697,6 +1697,7 @@ export function CreatorDashboard() {
       mediaDraft.thumbnailUrl || enriched?.thumbnailUrl || detected.thumbnailUrl;
     const item: FeaturedMedia = {
       ...mediaDraft,
+      displayMode: 'embed',
       provider: detected.provider,
       thumbnailUrl: resolvedThumbnailUrl,
       id: editingMediaId ?? randomUuid(),
@@ -2035,21 +2036,9 @@ export function CreatorDashboard() {
                       }
                     />
                   </label>
-                  <label>
-                    Display
-                    <select
-                      value={mediaDraft.displayMode}
-                      onChange={(event) =>
-                        setMediaDraft((current) => ({
-                          ...current,
-                          displayMode: event.target.value as FeaturedMedia['displayMode'],
-                        }))
-                      }
-                    >
-                      <option value="embed">Embedded player</option>
-                      <option value="link">Link card</option>
-                    </select>
-                  </label>
+                  <p className="fieldHint creatorFullField">
+                    Media will be shown as an embedded player.
+                  </p>
                   {mediaDraft.thumbnailUrl ? (
                     <div className="creatorMediaPreview">
                       <Image
