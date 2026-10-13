@@ -88,6 +88,10 @@ export default function CreatorStudioScreen() {
           router.replace('/login');
           return;
         }
+        if (cause instanceof ApiError && cause.status === 403) {
+          router.replace('/creator-apply');
+          return;
+        }
         setError(messageFor(cause));
       } finally {
         setLoading(false);

@@ -168,7 +168,7 @@ async function creatorCollectionRequest<T>(
   return creatorRequest(path, (value) => parse(value));
 }
 
-async function creatorRequest<T>(
+export async function creatorRequest<T>(
   path: string,
   parse: (value: unknown) => T,
   init: RequestInit = {},

@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithApple, signInWithGoogle } from '../lib/auth';
-import { getCreatorStudioBundle } from '../lib/creator-api';
+import { getSignedInDestination } from '../lib/creator-onboarding';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
@@ -39,8 +39,7 @@ export default function LoginScreen() {
           password,
         });
         if (authError) throw authError;
-        await getCreatorStudioBundle().catch(() => undefined);
-        router.replace('/studio');
+        router.replace(await getSignedInDestination());
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
@@ -49,8 +48,7 @@ export default function LoginScreen() {
         });
         if (authError) throw authError;
         if (data.session) {
-          await getCreatorStudioBundle().catch(() => undefined);
-          router.replace('/studio');
+          router.replace(await getSignedInDestination());
         } else setMessage('Check your email to confirm your account.');
       }
     } catch (cause) {
@@ -68,8 +66,7 @@ export default function LoginScreen() {
       const result =
         provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
       if (result === 'signed-in') {
-        await getCreatorStudioBundle().catch(() => undefined);
-        router.replace('/studio');
+        router.replace(await getSignedInDestination());
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
