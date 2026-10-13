@@ -311,6 +311,16 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
         on conflict do nothing
       `;
       await transaction`
+        insert into app.creator_social_links (
+          creator_id, platform, url, handle, sort_order
+        )
+        select
+          ${creator.id}, platform, url, handle, position
+        from app.creator_application_social_links
+        where application_id = ${id}
+        order by position, id
+      `;
+      await transaction`
         insert into app.user_capabilities (user_id, capability, granted_by)
         values
           (${application.userId}, 'creator:manage_profile', ${reviewerUserId}),
