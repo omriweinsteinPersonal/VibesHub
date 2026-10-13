@@ -4811,7 +4811,7 @@ function CuratedSectionForm({
           ? 'Collection name'
           : kind === 'page'
             ? 'Page title'
-          : 'Carousel name'}
+            : 'Carousel name'}
         <input
           maxLength={80}
           onChange={(event) => setTitle(event.target.value)}
