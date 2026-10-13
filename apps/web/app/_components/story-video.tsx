@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
+import { Play, X } from 'lucide-react';
 
 import { trackClientAnalytics } from '../../lib/analytics';
 
@@ -200,26 +200,6 @@ export function StoryVideo({
                     <X aria-hidden="true" size={16} />
                   </button>
                 </div>
-                {clips.length > 1 ? (
-                  <div className="storyViewerNavigation">
-                    <button
-                      aria-label="Previous story"
-                      disabled={activeIndex === 0}
-                      onClick={() => showClip(activeIndex - 1)}
-                      type="button"
-                    >
-                      <ChevronLeft aria-hidden="true" size={22} />
-                    </button>
-                    <button
-                      aria-label="Next story"
-                      disabled={activeIndex === clips.length - 1}
-                      onClick={() => showClip(activeIndex + 1)}
-                      type="button"
-                    >
-                      <ChevronRight aria-hidden="true" size={22} />
-                    </button>
-                  </div>
-                ) : null}
                 {playbackError ? (
                   <div className="storyViewerError" role="alert">
                     <p>This video preview could not be played.</p>
@@ -230,7 +210,6 @@ export function StoryVideo({
                 ) : (
                   <video
                     autoPlay
-                    controls
                     key={activeUrl}
                     onEnded={(event) => finishClip(event.currentTarget)}
                     onError={() => setPlaybackError(true)}
@@ -241,6 +220,24 @@ export function StoryVideo({
                     src={activeUrl}
                   />
                 )}
+                {clips.length > 1 ? (
+                  <div className="storyViewerTapZones" aria-hidden="false">
+                    <button
+                      aria-label="Previous story"
+                      className="storyViewerTapZone storyViewerTapZonePrevious"
+                      disabled={activeIndex === 0}
+                      onClick={() => showClip(activeIndex - 1)}
+                      type="button"
+                    />
+                    <button
+                      aria-label="Next story"
+                      className="storyViewerTapZone storyViewerTapZoneNext"
+                      disabled={activeIndex === clips.length - 1}
+                      onClick={() => showClip(activeIndex + 1)}
+                      type="button"
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>,
             document.body,
