@@ -14,7 +14,16 @@ export async function getContentSafetyInstallationId(): Promise<string> {
 }
 
 export async function getHiddenCreatorIds(): Promise<Set<string>> {
-  const stored = await SecureStore.getItemAsync(hiddenCreatorsKey);
+  let stored: string | null;
+  try {
+    stored = await SecureStore.getItemAsync(hiddenCreatorsKey);
+  } catch {
+    // Storefront content should remain available when the device keychain is
+    // temporarily unavailable (for example after a device restore or while
+    // running an unsigned simulator build). Hiding creators is a local-only
+    // preference, so falling back to an empty set is safe.
+    return new Set();
+  }
   if (!stored) return new Set();
   try {
     const parsed: unknown = JSON.parse(stored);
