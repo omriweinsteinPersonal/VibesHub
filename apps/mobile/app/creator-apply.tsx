@@ -93,7 +93,9 @@ export default function CreatorApplicationScreen() {
       return setError('Use 2–30 lowercase letters, numbers, hyphens or underscores.');
     }
     if (!categoryId) return setError('Choose your main category.');
-    if (!bio.trim()) return setError('Add a short bio for your storefront.');
+    if (!bio.trim() || !/[\u0590-\u05ff]/u.test(bio)) {
+      return setError('Add a short bio in Hebrew for your storefront.');
+    }
     if (!normalizedInstagram) {
       return setError('Add a valid HTTPS Instagram profile URL.');
     }
@@ -244,14 +246,14 @@ export default function CreatorApplicationScreen() {
                 })}
               </View>
 
-              <FieldLabel text="Short bio" />
+              <FieldLabel text="Short bio in Hebrew" />
               <TextInput
                 accessibilityLabel="Creator bio"
                 editable={!submitting}
                 maxLength={1000}
                 multiline
                 onChangeText={setBio}
-                placeholder="What do you create and recommend?"
+                placeholder="מה אתם יוצרים ועל מה אתם ממליצים?"
                 style={[styles.input, styles.textArea]}
                 textAlignVertical="top"
                 value={bio}

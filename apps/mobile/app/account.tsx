@@ -19,6 +19,7 @@ import {
   clearCreatorStudioBundleCache,
   getCreatorStudioBundle,
 } from '../lib/creator-api';
+import { getAccountSummary } from '../lib/creator-onboarding';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
@@ -31,19 +32,29 @@ const webLinks = {
 export default function AccountScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [hasCreatorProfile, setHasCreatorProfile] = useState<boolean | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         router.replace('/login');
         return;
       }
       setEmail(data.session.user.email ?? 'Creator account');
-      void getCreatorStudioBundle().catch(() => undefined);
+      try {
+        const account = await getAccountSummary();
+        const isCreator = Boolean(account.creator);
+        setHasCreatorProfile(isCreator);
+        if (isCreator) void getCreatorStudioBundle().catch(() => undefined);
+      } catch (cause) {
+        setError(
+          cause instanceof Error ? cause.message : 'Account details could not be loaded.',
+        );
+      }
     });
   }, [router]);
 
@@ -136,20 +147,40 @@ export default function AccountScreen() {
         <Text style={styles.title}>Your account</Text>
         <Text style={styles.email}>{email || 'Loading your account…'}</Text>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Creator tools</Text>
-          <Text style={styles.sectionCopy}>
-            Manage your storefront, recommendations, links and analytics in the Swavii
-            creator studio.
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/studio')}
-            style={styles.primaryButton}
-          >
-            <Text style={styles.primaryButtonText}>Open creator studio</Text>
-          </Pressable>
-        </View>
+        {hasCreatorProfile === null ? (
+          <View style={styles.section}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        ) : hasCreatorProfile ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Creator tools</Text>
+            <Text style={styles.sectionCopy}>
+              Manage your storefront, recommendations, links and analytics in the
+              Swavii creator studio.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/studio')}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>Open creator studio</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Finish creator setup</Text>
+            <Text style={styles.sectionCopy}>
+              Choose your public address and add the details for your storefront.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/creator-apply')}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>Continue creator setup</Text>
+            </Pressable>
+          </View>
+        )}
 
         {isNativeBillingConfigured() ? (
           <View style={styles.section}>
