@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Apple Music">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fa2d55"/><stop offset="1" stop-color="#8c4bff"/></linearGradient></defs>
+  <rect width="24" height="24" rx="6" fill="url(#g)"/>
+  <path fill="#fff" d="M15.7 6.2v8.4a2.6 2.6 0 1 1-1.1-2.1V8.7l-5.1 1.1v6.2a2.6 2.6 0 1 1-1.1-2.1V8.9c0-.4.3-.8.7-.9l5.7-1.2c.5-.1.9.2.9.7Z"/>
+</svg>

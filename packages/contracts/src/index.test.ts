@@ -46,6 +46,15 @@ describe('shared API contracts', () => {
       }).requestedHandle,
     ).toBe('noa_levi');
 
+    expect(
+      creatorApplicationInputSchema.parse({
+        socialLinks: [
+          { platform: 'spotify', url: 'https://open.spotify.com/user/noa' },
+          { platform: 'apple_music', url: 'https://music.apple.com/profile/noa' },
+        ],
+      }).socialLinks,
+    ).toHaveLength(2);
+
     expect(() =>
       creatorApplicationInputSchema.parse({
         socialLinks: [{ platform: 'website', url: 'http://example.com' }],

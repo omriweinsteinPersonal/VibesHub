@@ -2435,23 +2435,6 @@ export function CreatorDashboard() {
                         brands={brands}
                         kind="collection"
                         recommendations={activeRecommendations}
-                        onAddNewItem={async (section, brandName) => {
-                          const saved = await saveSections(
-                            selectedSections,
-                            [...curatedSections, section],
-                            [...contentOrder, { kind: 'collection', id: section.id }],
-                          );
-                          if (!saved) return false;
-                          setProduct({
-                            ...emptyProduct,
-                            brandName,
-                            collectionIds: [section.id],
-                            categoryId: '',
-                            categoryIds: [],
-                          });
-                          setComposer('product');
-                          return true;
-                        }}
                         onCreateBrand={async (input) => {
                           const created = await apiRequest<CreatorBrand>(
                             '/creator/brands',
@@ -2553,7 +2536,7 @@ export function CreatorDashboard() {
                     );
                     return (
                       <section
-                        aria-label={`${section.title} section`}
+                        aria-label={`${section.title} carousel`}
                         className="creatorManageCollection creatorSectionManageCard"
                         key={section.id}
                       >
@@ -2566,8 +2549,6 @@ export function CreatorDashboard() {
                               {sectionItems.length + sectionMedia.length === 1
                                 ? 'content item'
                                 : 'content items'}
-                              {' · '}
-                              Horizontal carousel
                             </p>
                           </div>
                           <div className="creatorManageCollectionActions">
@@ -2599,7 +2580,7 @@ export function CreatorDashboard() {
                               disabled={saving}
                               onClick={() => {
                                 if (
-                                  !window.confirm(`Delete the ${section.title} section?`)
+                                  !window.confirm(`Delete the ${section.title} carousel?`)
                                 )
                                   return;
                                 void saveCuratedSections(
@@ -2683,7 +2664,7 @@ export function CreatorDashboard() {
                           </div>
                         ) : expandedSectionId === section.id ? (
                           <p className="creatorManageCollectionEmpty">
-                            No content yet. Edit this section to add existing content.
+                            No content yet. Edit this carousel to add existing content.
                           </p>
                         ) : null}
                       </section>
@@ -3451,7 +3432,12 @@ function StorefrontLabelsEditor({
     <section className="creatorLabelsEditor">
       <div className="creatorSectionHeading">
         <div>
-          <h2>Storefront labels</h2>
+          <div className="creatorLabelsHeadingTitle">
+            <span aria-hidden="true" className="creatorLabelsHeadingMark">
+              <Tag size={16} />
+            </span>
+            <h2>Storefront labels</h2>
+          </div>
           <p>Add category filters or create your own groups such as My favorites.</p>
         </div>
         <button
@@ -4688,7 +4674,6 @@ function CuratedSectionForm({
   initial,
   kind,
   onCancel,
-  onAddNewItem,
   onCreateBrand,
   onSave,
   recommendations,
@@ -4700,7 +4685,6 @@ function CuratedSectionForm({
   initial?: CuratedSection;
   kind: CuratedSection['kind'];
   onCancel: () => void;
-  onAddNewItem?: (section: CuratedSection, brandName: string) => Promise<boolean>;
   onCreateBrand?: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
   onSave: (section: CuratedSection) => Promise<boolean>;
   recommendations: CreatorRecommendation[];
@@ -5154,39 +5138,6 @@ function CuratedSectionForm({
           />
           Also show these items as individual recommendations
         </label>
-      ) : null}
-      {kind === 'collection' && onAddNewItem ? (
-        <button
-          className="creatorInlineAction"
-          disabled={saving || !title.trim() || !brandId}
-          onClick={() => {
-            const selectedBrand = availableBrands.find(
-              (item) => item.brandId === brandId,
-            );
-            void onAddNewItem(
-              {
-                id: sectionId,
-                kind: 'collection',
-                brandId,
-                contentItems: recommendationIds.map((id) => ({
-                  id,
-                  kind: 'recommendation' as const,
-                })),
-                displayStyle: 'horizontal' as const,
-                recommendationIds,
-                title: title.trim(),
-                description: '',
-                imageUrl: imageUrl || null,
-                parentCollectionId: null,
-                showItemsIndividually,
-              },
-              selectedBrand?.name ?? '',
-            ).catch((cause: unknown) => setSelectionError(messageFor(cause)));
-          }}
-          type="button"
-        >
-          + Save collection and create a new item
-        </button>
       ) : null}
       {recommendationIds.length > 1 ? (
         <div className="creatorCuratedOrder">

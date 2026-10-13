@@ -14806,6 +14806,91 @@ dt {
   }
 }
 
+/* Compact, scannable selection rows for collections and carousels. */
+.creatorCuratedChoices {
+  max-height: 280px;
+}
+.creatorCuratedChoices label {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  min-height: 48px;
+  padding: 6px 10px;
+  text-align: start;
+}
+.creatorCuratedChoices label:has(.creatorCuratedProductThumb) {
+  grid-template-columns: 20px 38px minmax(0, 1fr);
+}
+.creatorCuratedChoices label > span:last-child {
+  align-content: center;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.creatorCuratedChoices label > span:last-child small {
+  color: #8b8078;
+  font-size: 0.72rem;
+}
+
+/* Carousels are a compact, clearly-marked content type in the dashboard. */
+.creatorSectionManageCard {
+  background: #fffdfa;
+  border-color: #d3b4a2;
+  padding: 12px 14px;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader {
+  gap: 10px;
+  margin-bottom: 0;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader .eyebrow {
+  color: #b66542;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader h3 {
+  font-size: 1.25rem;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader p {
+  font-size: 0.72rem;
+}
+
+/* Use the same warm visual language as the rest of the creator dashboard. */
+.creatorLabelsEditor {
+  background: #fbf7f2;
+  border: 1px solid #eadfd5;
+  border-radius: 18px;
+  padding: 18px;
+}
+.creatorLabelsHeadingTitle {
+  align-items: center;
+  display: flex;
+  gap: 9px;
+}
+.creatorLabelsHeadingMark {
+  align-items: center;
+  background: #f1dfd2;
+  border-radius: 9px;
+  color: #b66542;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+.creatorLabelsEditor > .creatorSectionHeading p {
+  max-width: 520px;
+}
+.creatorLabelsEditor > .button {
+  background: #fff;
+  border-color: #d9b7a3;
+  color: #a75737;
+}
+.creatorLabelEditorCard {
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(83 55 38 / 5%);
+}
+
 /* These classes are rendered only by the opt-in Editorial Frame card variant. */
 .editorialBrandCard,
 .editorialMediaCard {

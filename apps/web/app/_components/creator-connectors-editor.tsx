@@ -11,6 +11,13 @@ import { apiRequest } from '../../lib/api';
 import { connectorLabel, creatorConnectors } from '../../lib/creator-connectors';
 import { CreatorConnectorIcon } from './creator-connector-icon';
 
+type ConnectorPlatform = CreatorProfileSocialLink['platform'] | 'spotify' | 'apple_music';
+type ConnectorLink = {
+  handle?: string | null | undefined;
+  platform: ConnectorPlatform;
+  url: string;
+};
+
 export function CreatorConnectorsEditor({
   onSaved,
   profile,
@@ -18,9 +25,7 @@ export function CreatorConnectorsEditor({
   onSaved: (profile: CreatorProfileSettings) => void;
   profile: CreatorProfileSettings | null;
 }) {
-  const [links, setLinks] = useState<CreatorProfileSocialLink[]>(
-    () => profile?.socialLinks ?? [],
-  );
+  const [links, setLinks] = useState<ConnectorLink[]>(() => profile?.socialLinks ?? []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -143,7 +148,10 @@ export function CreatorConnectorsEditor({
                   disabled={saving}
                   key={platform}
                   onClick={() => {
-                    setLinks((current) => [...current, { platform, url: '' }]);
+                    setLinks((current) => [
+                      ...current,
+                      { handle: null, platform, url: '' },
+                    ]);
                     setError('');
                     setNotice('');
                   }}
