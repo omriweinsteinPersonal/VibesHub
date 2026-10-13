@@ -840,7 +840,7 @@ export function CreatorStorefrontView({
                     />
                   ))}
                   {compactLabelItems.length ? (
-                    <div className="referenceCompactLabelGrid">
+                    <div className="referenceStorefrontScroller referenceCompactLabelScroller">
                       {compactLabelItems.map((item) => (
                         <RecommendationCardView
                           creatorId={storefront.id}

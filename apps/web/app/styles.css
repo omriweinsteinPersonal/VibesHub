@@ -14903,6 +14903,35 @@ dt {
   box-shadow: 0 3px 12px rgb(83 55 38 / 5%);
 }
 
+/* Custom labels use the same horizontal recommendation rail as Home. */
+.referenceCompactLabelScroller {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-auto-columns: 172px;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.referenceCompactLabelScroller::-webkit-scrollbar {
+  display: none;
+}
+.referenceCompactLabelScroller > .compactProductCard {
+  grid-column: auto;
+  scroll-snap-align: start;
+  width: 172px;
+}
+@media (max-width: 900px) {
+  .referenceCompactLabelScroller {
+    grid-auto-columns: 158px;
+  }
+  .referenceCompactLabelScroller > .compactProductCard {
+    width: 158px;
+  }
+}
+
 /* These classes are rendered only by the opt-in Editorial Frame card variant. */
 .editorialBrandCard,
 .editorialMediaCard {
