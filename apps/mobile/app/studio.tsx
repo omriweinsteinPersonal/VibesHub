@@ -897,6 +897,7 @@ function Field({
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
         {...props}
+        accessibilityLabel={props.accessibilityLabel ?? label}
         multiline={multiline}
         placeholderTextColor={colors.muted}
         style={[styles.input, multiline && styles.textarea]}
