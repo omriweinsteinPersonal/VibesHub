@@ -8420,13 +8420,36 @@ dt {
   gap: 2px;
   min-width: 0;
 }
+.creatorCuratedModeNote {
+  background: #f7f3ee;
+  border: 1px solid #e7ddd3;
+  border-radius: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+}
+.creatorCuratedModeNote span,
+.creatorCuratedModeNote small {
+  color: #786d62;
+  font-size: 0.75rem;
+}
+.creatorCuratedModeNote strong {
+  color: #2e241d;
+  font-size: 0.9rem;
+}
 .creatorCuratedOrder {
   margin-top: 16px;
 }
 .creatorCuratedOrder > p {
   color: #786d62;
   font-size: 0.8rem;
-  margin: 0 0 8px;
+  margin: 0;
+}
+.creatorCuratedOrderHint {
+  color: #9a8f86;
+  display: block;
+  font-size: 0.72rem;
+  margin: 3px 0 8px;
 }
 .creatorCuratedOrder ol {
   list-style: none;
@@ -8435,19 +8458,40 @@ dt {
 }
 .creatorCuratedOrder li {
   align-items: center;
+  background: #fff;
   border: 1px solid #e6ddd2;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   gap: 8px;
   margin-bottom: 6px;
-  padding: 6px 8px;
+  min-height: 44px;
+  padding: 6px 10px;
+  transition: border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
 }
-.creatorCuratedOrder li > span:nth-child(2) {
+.creatorCuratedOrder li.isDragging {
+  border-color: #c77955;
+  box-shadow: 0 6px 14px rgb(61 42 30 / 12%);
+  opacity: 0.55;
+}
+.creatorCuratedOrder li > span:last-child {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.creatorCuratedOrderNumber {
+  align-items: center;
+  background: #f5eee7;
+  border-radius: 7px;
+  color: #725847;
+  display: inline-flex;
+  flex: 0 0 28px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0.04em;
 }
 .creatorCuratedOrder button {
   background: transparent;

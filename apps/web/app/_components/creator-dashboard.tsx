@@ -16,8 +16,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowLeft,
-  ArrowDown,
-  ArrowUp,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -2184,8 +2182,8 @@ export function CreatorDashboard() {
                       <span aria-hidden="true">
                         <Layers3 size={16} />
                       </span>
-                      <strong>Section</strong>
-                      <small>Mix products together</small>
+                      <strong>Carousel</strong>
+                      <small>Mix products and media together</small>
                     </button>
                   </div>
                 ) : null}
@@ -2497,7 +2495,6 @@ export function CreatorDashboard() {
                         [...curatedSections, section],
                         [...contentOrder, { kind: 'section', id: section.id }],
                       );
-                      if (saved) setEditingSectionId(section.id);
                       return saved;
                     }}
                     recommendations={activeRecommendations}
@@ -2529,7 +2526,7 @@ export function CreatorDashboard() {
                     ['all', 'All'],
                     ['brands', 'Brands'],
                     ['items', 'Items'],
-                    ['sections', 'Sections'],
+                    ['sections', 'Carousels'],
                   ] as const
                 ).map(([value, label]) => (
                   <button
@@ -2562,7 +2559,7 @@ export function CreatorDashboard() {
                       >
                         <header className="creatorManageCollectionHeader">
                           <div>
-                            <span className="eyebrow">SECTION</span>
+                            <span className="eyebrow">CAROUSEL</span>
                             <h3>{section.title}</h3>
                             <p>
                               {sectionItems.length + sectionMedia.length}{' '}
@@ -2570,9 +2567,7 @@ export function CreatorDashboard() {
                                 ? 'content item'
                                 : 'content items'}
                               {' · '}
-                              {section.displayStyle === 'horizontal'
-                                ? 'Horizontal scroll'
-                                : 'Vertical list'}
+                              Horizontal carousel
                             </p>
                           </div>
                           <div className="creatorManageCollectionActions">
@@ -4745,6 +4740,7 @@ function CuratedSectionForm({
   const [draggingRecommendationId, setDraggingRecommendationId] = useState<string | null>(
     null,
   );
+  const [draggingContentKey, setDraggingContentKey] = useState<string | null>(null);
   const visibleRecommendations = brandId
     ? recommendations.filter((item) => item.brandId === brandId)
     : recommendations;
@@ -4792,7 +4788,7 @@ function CuratedSectionForm({
       kind,
       brandId: brandId || null,
       contentItems: nextContentItems,
-      displayStyle,
+      displayStyle: kind === 'section' ? 'horizontal' : displayStyle,
       recommendationIds: nextContentItems
         .filter(({ kind: contentKind }) => contentKind === 'recommendation')
         .map(({ id }) => id),
@@ -4815,7 +4811,7 @@ function CuratedSectionForm({
           ? 'Collection name'
           : kind === 'page'
             ? 'Page title'
-            : 'Section name'}
+          : 'Carousel name'}
         <input
           maxLength={80}
           onChange={(event) => setTitle(event.target.value)}
@@ -4831,18 +4827,11 @@ function CuratedSectionForm({
         />
       </label>
       {kind === 'section' ? (
-        <label>
-          Display style
-          <select
-            value={displayStyle}
-            onChange={(event) =>
-              setDisplayStyle(event.target.value as CuratedSection['displayStyle'])
-            }
-          >
-            <option value="horizontal">Horizontal scroll</option>
-            <option value="vertical">Vertical list</option>
-          </select>
-        </label>
+        <div className="creatorCuratedModeNote">
+          <span>Layout</span>
+          <strong>Horizontal carousel</strong>
+          <small>Items will appear in one swipeable row on your storefront.</small>
+        </div>
       ) : null}
       {kind === 'collection' ? (
         <label>
@@ -5210,6 +5199,7 @@ function CuratedSectionForm({
               if (!item) return null;
               return (
                 <li
+                  className={draggingRecommendationId === id ? 'isDragging' : ''}
                   key={id}
                   onDragOver={(event: DragEvent<HTMLLIElement>) => {
                     if (!draggingRecommendationId || saving) return;
@@ -5238,27 +5228,10 @@ function CuratedSectionForm({
                   >
                     <GripVertical size={16} />
                   </span>
+                  <span aria-hidden="true" className="creatorCuratedOrderNumber">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <span>{item.productName}</span>
-                  <button
-                    aria-label={`Move ${item.productName} up`}
-                    disabled={index === 0 || saving}
-                    onClick={() =>
-                      setRecommendationIds(move(recommendationIds, index, index - 1))
-                    }
-                    type="button"
-                  >
-                    <ArrowUp size={15} />
-                  </button>
-                  <button
-                    aria-label={`Move ${item.productName} down`}
-                    disabled={index === recommendationIds.length - 1 || saving}
-                    onClick={() =>
-                      setRecommendationIds(move(recommendationIds, index, index + 1))
-                    }
-                    type="button"
-                  >
-                    <ArrowDown size={15} />
-                  </button>
                 </li>
               );
             })}
@@ -5267,33 +5240,59 @@ function CuratedSectionForm({
       ) : null}
       {kind === 'section' && contentItems.length ? (
         <div className="creatorCuratedOrder">
-          <p>Content order in this section</p>
+          <p>Carousel order</p>
+          <small className="creatorCuratedOrderHint">
+            Drag items to set the order they appear on your storefront.
+          </small>
           <ol>
             {contentItems.map((content, index) => {
               const label =
                 content.kind === 'media'
                   ? (featuredMedia.find(({ id }) => id === content.id)?.title ?? 'Media')
-                  : (recommendations.find(({ id }) => id === content.id)?.productName ??
-                    'Recommendation');
+                  : content.kind === 'brand'
+                    ? (brands.find(({ id }) => id === content.id)?.name ?? 'Brand')
+                    : content.kind === 'collection'
+                      ? (collections.find(({ id }) => id === content.id)?.title ?? 'Collection')
+                      : (recommendations.find(({ id }) => id === content.id)?.productName ??
+                        'Recommendation');
+              const contentKey = `${content.kind}:${content.id}`;
               return (
-                <li key={`${content.kind}:${content.id}`}>
+                <li
+                  className={draggingContentKey === contentKey ? 'isDragging' : ''}
+                  key={contentKey}
+                  onDragOver={(event: DragEvent<HTMLLIElement>) => {
+                    if (!draggingContentKey || saving) return;
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event: DragEvent<HTMLLIElement>) => {
+                    event.preventDefault();
+                    const sourceKey = event.dataTransfer.getData('text/plain');
+                    const from = contentItems.findIndex(
+                      (item) => `${item.kind}:${item.id}` === sourceKey,
+                    );
+                    setDraggingContentKey(null);
+                    if (saving || from < 0 || from === index) return;
+                    setContentItems(move(contentItems, from, index));
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="creatorLayerDragHandle"
+                    draggable={!saving}
+                    onDragEnd={() => setDraggingContentKey(null)}
+                    onDragStart={(event: DragEvent<HTMLSpanElement>) => {
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('text/plain', contentKey);
+                      setDraggingContentKey(contentKey);
+                    }}
+                  >
+                    <GripVertical size={16} />
+                  </span>
+                  <span aria-hidden="true" className="creatorCuratedOrderNumber">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <span>{label}</span>
-                  <button
-                    aria-label={`Move ${label} up`}
-                    disabled={index === 0 || saving}
-                    onClick={() => setContentItems(move(contentItems, index, index - 1))}
-                    type="button"
-                  >
-                    <ArrowUp size={15} />
-                  </button>
-                  <button
-                    aria-label={`Move ${label} down`}
-                    disabled={index === contentItems.length - 1 || saving}
-                    onClick={() => setContentItems(move(contentItems, index, index + 1))}
-                    type="button"
-                  >
-                    <ArrowDown size={15} />
-                  </button>
                 </li>
               );
             })}
@@ -5311,7 +5310,13 @@ function CuratedSectionForm({
           disabled={saving || (kind !== 'section' && !recommendations.length)}
           type="submit"
         >
-          {saving ? 'Saving...' : initial ? 'Save changes' : `Create ${kind}`}
+          {saving
+            ? 'Saving...'
+            : initial
+              ? 'Save changes'
+              : kind === 'section'
+                ? 'Create carousel'
+                : `Create ${kind}`}
         </button>
         <button className="button secondary" onClick={onCancel} type="button">
           Cancel
