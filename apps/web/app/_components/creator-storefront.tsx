@@ -399,11 +399,18 @@ export function CreatorStorefrontView({
     ) {
       return [];
     }
-    return filtered.filter(
-      (item) =>
-        !selectedCardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
-    );
-  }, [activeLabel, filtered, selectedCardBrands]);
+    // Labels use the same product-card stream as Home. A brand selected by a
+    // label is a filter, not a request to wrap all of its products in a brand
+    // block.
+    return filtered;
+  }, [activeLabel, filtered]);
+  const compactLabelBrandOnly = useMemo(
+    () =>
+      selectedCardBrands.filter(
+        (brand) => !filtered.some((item) => brandMatchesRecommendation(brand, item)),
+      ),
+    [filtered, selectedCardBrands],
+  );
   const showingCompactLabelGrid = Boolean(
     activeLabel && !activeLabel.categorySlug && (activeLabel.layout ?? 'grid') === 'grid',
   );
@@ -815,7 +822,7 @@ export function CreatorStorefrontView({
             {showingCompactLabelGrid ? (
               <StorefrontSlot id="filtered" label="Filtered recommendations">
                 <div className="referenceCompactLabelGroups">
-                  {selectedCardBrands.map((brand) => (
+                  {compactLabelBrandOnly.map((brand) => (
                     <BrandBlock
                       brand={brand}
                       collections={visibleCuratedSections.filter(
