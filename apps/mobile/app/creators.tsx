@@ -119,6 +119,7 @@ export default function CreatorsScreen() {
             visibleCreators.map((creator) => (
               <Pressable
                 accessibilityHint="Opens this creator's public storefront"
+                accessibilityLabel={creator.displayName}
                 accessibilityRole="button"
                 key={creator.id}
                 onPress={() =>

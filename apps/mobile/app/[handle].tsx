@@ -579,6 +579,7 @@ function ProductCard({
           </View>
         ) : null}
         <Pressable
+          accessibilityLabel={`View details for ${recommendation.productName}`}
           accessibilityRole="button"
           onPress={onOpen}
           onPressIn={onOpenStart}
@@ -589,6 +590,7 @@ function ProductCard({
           </Text>
         </Pressable>
         <Pressable
+          accessibilityLabel={`Shop ${recommendation.productName}`}
           accessibilityRole="link"
           onPress={() => void openExternalUrl(recommendation.shopUrl)}
           style={[styles.shopButton, { backgroundColor: theme.accentColor }]}
