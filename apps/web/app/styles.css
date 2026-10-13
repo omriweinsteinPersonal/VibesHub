@@ -8466,7 +8466,10 @@ dt {
   margin-bottom: 6px;
   min-height: 44px;
   padding: 6px 10px;
-  transition: border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
 }
 .creatorCuratedOrder li.isDragging {
   border-color: #c77955;

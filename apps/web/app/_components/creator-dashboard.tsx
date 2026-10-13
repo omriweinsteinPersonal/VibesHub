@@ -5252,9 +5252,10 @@ function CuratedSectionForm({
                   : content.kind === 'brand'
                     ? (brands.find(({ id }) => id === content.id)?.name ?? 'Brand')
                     : content.kind === 'collection'
-                      ? (collections.find(({ id }) => id === content.id)?.title ?? 'Collection')
-                      : (recommendations.find(({ id }) => id === content.id)?.productName ??
-                        'Recommendation');
+                      ? (collections.find(({ id }) => id === content.id)?.title ??
+                        'Collection')
+                      : (recommendations.find(({ id }) => id === content.id)
+                          ?.productName ?? 'Recommendation');
               const contentKey = `${content.kind}:${content.id}`;
               return (
                 <li
