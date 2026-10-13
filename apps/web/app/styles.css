@@ -10265,7 +10265,7 @@ dt {
 /* Label grids keep the brand context without wrapping each group in a large card. */
 .referenceCompactLabelGroups {
   display: grid;
-  gap: 0;
+  gap: 18px;
   margin-top: 6px;
 }
 .referenceCompactLabelGroups > .referenceBrandBlock {
@@ -10273,6 +10273,16 @@ dt {
 }
 .referenceCompactLabelGroups > .referenceBrandBlock:first-child {
   margin-top: 4px;
+}
+
+/* Label results reuse the Home row shell so product cards keep the exact same
+   width, image ratio, spacing, and horizontal scroll behavior. */
+.referenceCompactLabelRow {
+  margin-top: 0;
+  min-width: 0;
+}
+.referenceCompactLabelRow .referenceStorefrontScroller {
+  min-width: 0;
 }
 
 .referenceCompactLabelGroup {
@@ -10324,7 +10334,7 @@ dt {
 
 @media (max-width: 520px) {
   .referenceCompactLabelGroups {
-    gap: 0;
+    gap: 14px;
     margin-top: 4px;
   }
 

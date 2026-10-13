@@ -840,16 +840,18 @@ export function CreatorStorefrontView({
                     />
                   ))}
                   {compactLabelItems.length ? (
-                    <div className="referenceStorefrontScroller referenceCompactLabelScroller">
-                      {compactLabelItems.map((item) => (
-                        <RecommendationCardView
-                          creatorId={storefront.id}
-                          key={item.id}
-                          recommendation={item}
-                          showBrand
-                          showPrice={false}
-                        />
-                      ))}
+                    <div className="referenceStorefrontRow referenceCompactLabelRow">
+                      <div className="referenceStorefrontScroller">
+                        {compactLabelItems.map((item) => (
+                          <RecommendationCardView
+                            creatorId={storefront.id}
+                            key={item.id}
+                            recommendation={item}
+                            showBrand
+                            showPrice={false}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ) : null}
                 </div>
