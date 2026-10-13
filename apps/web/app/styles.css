@@ -14806,6 +14806,18 @@ dt {
   }
 }
 
+/* Every mixed storefront row uses one shared rhythm, regardless of whether
+   the next item is a product, brand card, or media embed. */
+.referenceStorefrontRow .referenceStorefrontScroller,
+.referenceCollectionFrame .referenceStorefrontScroller {
+  column-gap: 12px;
+  row-gap: 12px;
+}
+.referenceStorefrontRow .referenceStorefrontScroller > *,
+.referenceCollectionFrame .referenceStorefrontScroller > * {
+  margin-block: 0;
+}
+
 /* Compact, scannable selection rows for collections and carousels. */
 .creatorCuratedChoices {
   max-height: 280px;

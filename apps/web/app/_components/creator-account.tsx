@@ -8,10 +8,11 @@ import type {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, Camera, Check, Copy, ExternalLink, Upload } from 'lucide-react';
+import { ArrowUpRight, Copy, LogOut, Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
+import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { isCreatorHandle } from '../../lib/creator-handle';
 import {
   creatorImageAccept,
@@ -79,7 +80,7 @@ const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
 
 export function CreatorAccount() {
   const router = useRouter();
-  const { setCreatorProfile } = useCreatorNavigation();
+  const { clearStorefrontHref, setCreatorProfile } = useCreatorNavigation();
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
@@ -89,6 +90,7 @@ export function CreatorAccount() {
   const [notice, setNotice] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingMedia, setSavingMedia] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [editingMedia, setEditingMedia] = useState(false);
   const [uploadStage, setUploadStage] = useState<UploadStage>('idle');
   const stagedAssetRef = useRef<string | null>(null);
@@ -320,9 +322,23 @@ export function CreatorAccount() {
     }
   }
 
-  const publicHref = profile ? `/${encodeURIComponent(profile.handle)}` : '';
   const creatorHref = profile ? `/creator/${encodeURIComponent(profile.handle)}` : '';
   const instagram = profileEditor?.instagramUrl.trim() ?? '';
+
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      const auth = getSupabaseBrowserClient().auth as unknown as {
+        signOut: () => Promise<unknown>;
+      };
+      await auth.signOut();
+      clearStorefrontHref();
+      router.replace('/');
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <main className={styles.page}>
@@ -332,11 +348,6 @@ export function CreatorAccount() {
           <h1>Your account.</h1>
           <p>The details behind your page and your collaborations.</p>
         </div>
-        {profile ? (
-          <Link className={styles.outlineButton} href={publicHref}>
-            <ExternalLink aria-hidden="true" size={16} /> View page
-          </Link>
-        ) : null}
       </header>
 
       {error ? (
@@ -355,17 +366,6 @@ export function CreatorAccount() {
 
       {profile && profileEditor && mediaKit && mediaEditor ? (
         <>
-          <section className={styles.identity} aria-label="Your public identity">
-            <Avatar name={profileEditor.displayName} url={profileEditor.avatarUrl} />
-            <div className={styles.identityCopy}>
-              <strong>{profileEditor.displayName || 'Your name'}</strong>
-              <span>
-                swavii.com/{profile.handle} <span aria-hidden="true">·</span>{' '}
-                {profile.primaryCategory?.name ?? 'Creator'}
-              </span>
-            </div>
-            <span className={styles.liveBadge}>Page is live</span>
-          </section>
           <div className={styles.layout}>
             <div className={styles.stack}>
               <form className={styles.profileForm} onSubmit={saveProfile}>
@@ -453,42 +453,6 @@ export function CreatorAccount() {
                       />
                     </label>
                   </div>
-                </section>
-                <section className={styles.card}>
-                  <div className={styles.sectionHeading}>
-                    <div>
-                      <h2>Social presence</h2>
-                      <p>Give people a way to keep up with you elsewhere.</p>
-                    </div>
-                    <span className={styles.sectionTag}>CONNECT</span>
-                  </div>
-                  <div className={styles.socialRow}>
-                    <span className={styles.socialIcon}>
-                      <Camera aria-hidden="true" size={17} />
-                    </span>
-                    <label className={styles.socialField}>
-                      Instagram
-                      <input
-                        aria-label="Instagram link"
-                        value={profileEditor.instagramUrl}
-                        onChange={(event) =>
-                          updateProfile('instagramUrl', event.target.value)
-                        }
-                        placeholder="@yourhandle or instagram.com/yourhandle"
-                      />
-                    </label>
-                    {instagram ? (
-                      <Check
-                        aria-hidden="true"
-                        className={styles.socialCheck}
-                        size={18}
-                      />
-                    ) : null}
-                  </div>
-                  <Link className={styles.textLink} href={creatorHref}>
-                    Manage all links in Storefront{' '}
-                    <ArrowUpRight aria-hidden="true" size={16} />
-                  </Link>
                 </section>
                 <div className={styles.saveRow}>
                   <span>Changes to your public profile appear after saving.</span>
@@ -771,6 +735,15 @@ export function CreatorAccount() {
               </section>
             </aside>
           </div>
+          <button
+            className={styles.logoutButton}
+            disabled={signingOut}
+            onClick={() => void signOut()}
+            type="button"
+          >
+            <LogOut aria-hidden="true" size={16} />
+            {signingOut ? 'Signing out…' : 'Log out'}
+          </button>
         </>
       ) : null}
     </main>
