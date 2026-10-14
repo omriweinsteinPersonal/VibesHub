@@ -4689,9 +4689,8 @@ function CuratedSectionForm({
   const [recommendationIds, setRecommendationIds] = useState<string[]>(
     initial?.recommendationIds ?? [],
   );
-  const [displayStyle, setDisplayStyle] = useState<CuratedSection['displayStyle']>(
-    initial?.displayStyle ?? 'horizontal',
-  );
+  const displayStyle: CuratedSection['displayStyle'] =
+    initial?.displayStyle ?? 'horizontal';
   const [contentItems, setContentItems] = useState<CuratedSection['contentItems']>(
     initial?.contentItems?.length
       ? initial.contentItems
