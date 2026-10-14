@@ -2533,12 +2533,6 @@ export function CreatorDashboard() {
                           <div>
                             <span className="eyebrow">CAROUSEL</span>
                             <h3>{section.title}</h3>
-                            <p>
-                              {sectionItems.length + sectionMedia.length}{' '}
-                              {sectionItems.length + sectionMedia.length === 1
-                                ? 'content item'
-                                : 'content items'}
-                            </p>
                           </div>
                           <div className="creatorManageCollectionActions">
                             <label className="creatorLiveToggle">
@@ -5128,7 +5122,7 @@ function CuratedSectionForm({
           Also show these items as individual recommendations
         </label>
       ) : null}
-      {recommendationIds.length > 1 ? (
+      {kind !== 'section' && recommendationIds.length > 1 ? (
         <div className="creatorCuratedOrder">
           <p>Product order in this {kind}</p>
           <ol>

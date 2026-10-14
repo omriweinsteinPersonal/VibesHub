@@ -967,8 +967,16 @@ export function CreatorStorefrontView({
               ? null
               : !showingCompactLabelGrid
                 ? blocks.map(({ key, row, code, media }) => {
+                    const isCarousel = Boolean(
+                      row &&
+                        visibleCuratedSections.some(
+                          (section) =>
+                            section.id === row.key && section.kind === 'section',
+                        ),
+                    );
                     const productContent = row ? (
                       <StorefrontRow
+                        carousel={isCarousel}
                         creatorId={storefront.id}
                         editorial={editorialFrame}
                         framed={row.framed}
@@ -1809,6 +1817,7 @@ function offerValue(offer: PublicDiscountCode): string | null {
 }
 
 function StorefrontRow({
+  carousel = false,
   creatorId,
   displayStyle,
   editorial = false,
@@ -1819,6 +1828,7 @@ function StorefrontRow({
   storefrontHandle,
   title,
 }: {
+  carousel?: boolean;
   creatorId: string;
   displayStyle?: 'horizontal' | 'vertical';
   editorial?: boolean;
@@ -1839,15 +1849,18 @@ function StorefrontRow({
   return (
     <section
       className={`referenceStorefrontRow${framed ? ' referenceCollectionFrame' : ''}${displayStyle === 'vertical' ? ' referenceStorefrontRowVertical' : ''}`}
+      data-carousel={carousel || undefined}
     >
       <header>
         <div>
-          <h3>{title}</h3>
-          <p>
-            {recommendations.length + featuredMedia.length
-              ? `${recommendations.length + featuredMedia.length} ${recommendations.length + featuredMedia.length === 1 ? 'item' : 'items'}`
-              : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
-          </p>
+          <h3 className={carousel ? 'referenceCarouselTitle' : undefined}>{title}</h3>
+          {!carousel ? (
+            <p>
+              {recommendations.length + featuredMedia.length
+                ? `${recommendations.length + featuredMedia.length} ${recommendations.length + featuredMedia.length === 1 ? 'item' : 'items'}`
+                : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
+            </p>
+          ) : null}
         </div>
         {recommendations.length ? (
           <div>
@@ -1869,6 +1882,7 @@ function StorefrontRow({
           {recommendations.map((recommendation) => (
             <RecommendationCardView
               creatorId={creatorId}
+              hideDiscount={carousel}
               key={recommendation.id}
               recommendation={recommendation}
               showPrice={false}

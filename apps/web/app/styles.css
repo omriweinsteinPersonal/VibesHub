@@ -1202,6 +1202,22 @@ svg.lucide {
   min-height: 210px;
   padding: 28px;
 }
+.creatorManageCard .creatorManageActions {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: auto auto;
+  justify-items: center;
+}
+.creatorManageCard .creatorManageActions .creatorLiveToggle {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+}
+.creatorManageCard .creatorManageActions > button {
+  grid-row: 1;
+}
 .creatorManageImage {
   border-radius: 22px;
   height: 116px;
@@ -3066,6 +3082,12 @@ svg.lucide {
 .referenceStorefrontRow h3 {
   font-size: 2.2rem;
   margin: 0 0 6px;
+}
+.referenceStorefrontRow[data-carousel='true'] h3.referenceCarouselTitle {
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 1.36rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 .referenceStorefrontRow p {
   color: #82766e;
@@ -7339,6 +7361,34 @@ dt {
   display: flex;
   flex: 0 0 auto;
   gap: 4px;
+}
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: auto auto;
+  justify-items: center;
+}
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > .creatorLiveToggle {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+}
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > a,
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > button {
+  grid-row: 1;
 }
 .creatorManageCollectionActions button {
   align-items: center;
