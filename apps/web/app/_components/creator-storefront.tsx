@@ -1942,6 +1942,12 @@ function sectionContentRecommendations(
   return recommendations.filter(({ id }) => selectedIds.has(id));
 }
 
+function isBrandOwnedCollection(
+  section: CreatorStorefront['curatedSections'][number],
+): boolean {
+  return section.kind === 'collection' && Boolean(section.brandId);
+}
+
 export function groupRecommendations(
   storefront: CreatorStorefront,
   recommendations: RecommendationCard[],
@@ -1978,6 +1984,12 @@ export function groupRecommendations(
           ({ id, kind }) => id === layer.id && kind === layer.kind,
         );
         if (!section) continue;
+        if (isBrandOwnedCollection(section)) {
+          sectionContentRecommendations(section, storefront, recommendations).forEach(
+            ({ id }) => used.add(id),
+          );
+          continue;
+        }
         const contentItems = section?.contentItems?.length
           ? section.contentItems
           : (section?.recommendationIds ?? []).map((id) => ({
@@ -2033,6 +2045,12 @@ export function groupRecommendations(
     for (const section of curatedSections.filter(({ kind }) => kind !== 'page')) {
       if (contentOrder.some(({ kind, id }) => kind === section.kind && id === section.id))
         continue;
+      if (isBrandOwnedCollection(section)) {
+        sectionContentRecommendations(section, storefront, recommendations).forEach(
+          ({ id }) => used.add(id),
+        );
+        continue;
+      }
       const contentItems = section.contentItems?.length
         ? section.contentItems
         : section.recommendationIds.map((id) => ({
@@ -2095,6 +2113,12 @@ export function groupRecommendations(
   }> = curatedSections
     .filter(({ kind }) => kind !== 'page')
     .flatMap((section) => {
+      if (isBrandOwnedCollection(section)) {
+        sectionContentRecommendations(section, storefront, recommendations).forEach(
+          ({ id }) => used.add(id),
+        );
+        return [];
+      }
       const contentItems = section.contentItems?.length
         ? section.contentItems
         : section.recommendationIds.map((id) => ({
