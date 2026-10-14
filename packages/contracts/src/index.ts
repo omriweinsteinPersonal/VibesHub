@@ -554,6 +554,7 @@ const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const defaultStorefrontTheme = {
   templateId: 'classic',
   headerStyle: 'classic',
+  bioAlign: 'center',
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
   recommendationsBackground: '#ffffff',
@@ -573,6 +574,7 @@ export const storefrontThemeSchema = z
     // original Classic shell until a creator explicitly selects a template.
     templateId: z.enum(['classic', 'editorial-frame']).optional(),
     headerStyle: z.enum(['classic', 'circular']).default('classic'),
+    bioAlign: z.enum(['left', 'center', 'right']).default('center'),
     profileBackground: storefrontColorSchema,
     // Optional so existing storefront themes remain valid when the Hero image
     // feature is introduced. The client only renders safe http(s) URLs.

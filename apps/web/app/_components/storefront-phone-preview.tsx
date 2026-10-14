@@ -15,7 +15,7 @@ import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = Exclude<
   keyof StorefrontTheme,
-  'layout' | 'profileImageUrl' | 'templateId' | 'headerStyle' | 'headingFont' | 'bodyFont'
+  'layout' | 'profileImageUrl' | 'templateId' | 'headerStyle' | 'bioAlign' | 'headingFont' | 'bodyFont'
 >;
 type ThemeSection = 'theme' | 'header' | 'templates' | 'typography';
 const desktopQuery = '(min-width: 901px)';
@@ -356,6 +356,24 @@ export function StorefrontPhonePreview({
                       rows={4}
                       value={bioDraft ?? ''}
                     />
+                    <label className="storefrontBioAlignment">
+                      <span>Text alignment</span>
+                      <select
+                        aria-label="Bio text alignment"
+                        onChange={(event) => {
+                          setDraft((current) => ({
+                            ...current,
+                            bioAlign: event.target.value as StorefrontTheme['bioAlign'],
+                          }));
+                          setNotice('');
+                        }}
+                        value={draft.bioAlign}
+                      >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </label>
                     <button
                       className="button primary"
                       disabled={bioSaving || bioDraft === null}
@@ -406,8 +424,8 @@ export function StorefrontPhonePreview({
                         {group.id === 'header' ? (
                           <div className="storefrontChoiceGrid" role="group" aria-label="Header style">
                             {[
-                              ['classic', 'Current', 'Keep the existing profile header.'],
-                              ['circular', 'Circular profile', 'Center the profile photo with page color around it.'],
+                              ['classic', 'Full-bleed', 'Keep the immersive profile header.'],
+                              ['circular', 'Circular', 'Center the profile photo above the name.'],
                             ].map(([value, label, description]) => (
                               <button
                                 aria-pressed={draft.headerStyle === value}

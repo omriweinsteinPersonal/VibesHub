@@ -610,6 +610,7 @@ export function CreatorStorefrontView({
          data-header-style={previewTheme.headerStyle ?? 'classic'}
          data-heading-font={previewTheme.headingFont ?? 'display'}
          data-body-font={previewTheme.bodyFont ?? 'aptos'}
+         data-bio-align={previewTheme.bioAlign ?? 'center'}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (

@@ -14605,6 +14605,23 @@ dt {
   outline-offset: 1px;
 }
 
+.storefrontBioAlignment {
+  align-items: center;
+  display: flex;
+  font-size: 0.78rem;
+  justify-content: space-between;
+}
+
+.storefrontBioAlignment select {
+  background: #fffdfa;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #2d2924;
+  font: inherit;
+  min-height: 34px;
+  padding: 0 9px;
+}
+
 .storefrontBioEditor .button {
   justify-self: start;
 }
@@ -14776,6 +14793,9 @@ dt {
 .creatorStorefrontCanvas[data-header-style='circular']
   .referenceStorefrontHero
   .referenceStorefrontAvatar {
+  background-image: var(--sf-profile-image, none);
+  background-position: center;
+  background-size: cover;
   border: 4px solid color-mix(in srgb, var(--sf-accent) 28%, white);
   box-shadow: 0 8px 20px rgb(48 37 31 / 12%);
   height: 92px;
@@ -14800,6 +14820,18 @@ dt {
 
 .creatorStorefrontCanvas[data-body-font='serif'] {
   font-family: Georgia, 'Times New Roman', serif;
+}
+
+.creatorStorefrontCanvas[data-bio-align='left'] .referenceStorefrontBio {
+  text-align: left;
+}
+
+.creatorStorefrontCanvas[data-bio-align='center'] .referenceStorefrontBio {
+  text-align: center;
+}
+
+.creatorStorefrontCanvas[data-bio-align='right'] .referenceStorefrontBio {
+  text-align: right;
 }
 
 @media (max-width: 900px) {
