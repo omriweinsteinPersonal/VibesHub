@@ -129,6 +129,7 @@ export default function LoginScreen() {
           <View style={styles.divider} />
         </View>
         <TextInput
+          accessibilityLabel="Email"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -138,17 +139,27 @@ export default function LoginScreen() {
           value={email}
         />
         <TextInput
+          accessibilityLabel="Password"
           autoCapitalize="none"
           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           onChangeText={setPassword}
+          onSubmitEditing={() => void submit()}
           placeholder="Password"
+          returnKeyType="done"
           secureTextEntry
+          submitBehavior="blurAndSubmit"
           style={styles.input}
           value={password}
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {message ? <Text style={styles.success}>{message}</Text> : null}
-        <Pressable disabled={loading} onPress={submit} style={styles.submit}>
+        <Pressable
+          accessibilityLabel={mode === 'login' ? 'Submit login' : 'Create your page'}
+          accessibilityRole="button"
+          disabled={loading}
+          onPress={submit}
+          style={styles.submit}
+        >
           <Text style={styles.submitText}>
             {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create your page'}
           </Text>
