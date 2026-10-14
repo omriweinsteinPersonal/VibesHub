@@ -14784,8 +14784,10 @@ dt {
   .referenceStorefrontHero
   .referenceStorefrontInner {
   align-items: center;
+  display: flex;
   flex-direction: column;
   gap: 12px;
+  justify-content: center;
   min-height: 0;
   text-align: center;
 }
@@ -14800,6 +14802,12 @@ dt {
   box-shadow: 0 8px 20px rgb(48 37 31 / 12%);
   height: 92px;
   width: 92px;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontName {
+  align-self: center;
 }
 
 .creatorStorefrontCanvas[data-heading-font='sans']
