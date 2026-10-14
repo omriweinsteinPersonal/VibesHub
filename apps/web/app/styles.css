@@ -7722,6 +7722,9 @@ dt {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.referenceStandaloneRecommendationContent h3[dir='rtl'] {
+  text-align: right;
+}
 .referenceStandaloneRecommendationOffer {
   align-items: start;
   display: flex;
@@ -7783,6 +7786,9 @@ dt {
 }
 .referenceBrandSingleProductCopy[dir='rtl'] {
   direction: rtl;
+  text-align: right;
+}
+.referenceBrandSingleProductCopy h3[dir='rtl'] {
   text-align: right;
 }
 .referenceBrandSingleProductMeta,

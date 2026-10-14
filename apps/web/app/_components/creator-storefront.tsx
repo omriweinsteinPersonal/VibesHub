@@ -1050,7 +1050,7 @@ function StandaloneRecommendationCard({
     >
       <div
         className="referenceStandaloneRecommendationContent"
-        dir={textDirectionFor(item.productName)}
+        dir="ltr"
       >
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
@@ -1357,7 +1357,7 @@ function SingleBrandProductCard({
     >
       <div
         className="referenceStandaloneRecommendationContent"
-        dir={textDirectionFor(item.productName)}
+        dir="ltr"
       >
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
