@@ -7529,10 +7529,9 @@ dt {
 }
 .creatorDashboardSidebar button.creatorDashboardNavCard {
   align-items: center;
-  display: grid;
+  display: flex;
   direction: ltr;
   gap: 12px;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
   min-height: 76px;
   padding: 11px 10px;
   position: relative;
@@ -7552,6 +7551,7 @@ dt {
   height: 42px;
   justify-content: center;
   position: relative;
+  flex: 0 0 auto;
   width: 42px;
 }
 .creatorDashboardNavBadge::after {
@@ -7733,24 +7733,33 @@ dt {
 }
 .creatorDashboardNavCopy {
   display: grid;
+  flex: 1 1 auto;
   gap: 3px;
   min-width: 0;
+  overflow: hidden;
   text-align: left;
 }
 .creatorDashboardNavCopy strong {
   color: inherit;
   font-size: 0.86rem;
   line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .creatorDashboardNavCopy small {
   color: #756b64;
   font-size: 0.68rem;
   font-weight: 400;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .creatorDashboardNavArrow {
   color: #8e837a;
   flex: 0 0 auto;
+  margin-left: auto;
 }
 .creatorDashboardNavMobile {
   display: none;
@@ -14159,7 +14168,6 @@ dt {
 /* Dashboard navigation cards: keep the visual entry points legible on phones. */
 @media (max-width: 760px) {
   .creatorDashboardSidebar button.creatorDashboardNavCard {
-    grid-template-columns: 34px minmax(0, 1fr) auto;
     min-height: 64px;
     padding: 9px 8px;
     width: 100%;
@@ -14195,7 +14203,6 @@ dt {
   }
 
   .creatorDashboardSidebar button.creatorDashboardNavCard {
-    grid-template-columns: 42px minmax(0, 1fr) auto;
     min-height: 72px;
     padding: 10px 12px;
     white-space: normal;
