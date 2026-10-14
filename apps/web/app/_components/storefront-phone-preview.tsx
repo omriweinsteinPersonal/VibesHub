@@ -15,9 +15,9 @@ import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = Exclude<
   keyof StorefrontTheme,
-  'layout' | 'profileImageUrl' | 'templateId'
+  'layout' | 'profileImageUrl' | 'templateId' | 'headerStyle' | 'headingFont' | 'bodyFont'
 >;
-type ThemeSection = 'profile' | 'recommendations' | 'product' | 'discount' | 'collection';
+type ThemeSection = 'theme' | 'header' | 'templates' | 'typography';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
   id: ThemeSection;
@@ -25,65 +25,29 @@ const groups: Array<{
   fields: Array<{ key: ThemeKey; label: string }>;
 }> = [
   {
-    id: 'profile',
-    title: 'Profile',
-    fields: [{ key: 'profileBackground', label: 'Background' }],
-  },
-  {
-    id: 'recommendations',
-    title: 'Recommendations',
+    id: 'theme',
+    title: 'Theme',
     fields: [
       { key: 'recommendationsBackground', label: 'Page background' },
-      { key: 'dividerColor', label: 'Section dividers' },
+      { key: 'productBackground', label: 'Section / card background' },
+      { key: 'accentColor', label: 'Accent' },
       { key: 'textColor', label: 'Text' },
-      { key: 'accentColor', label: 'Buttons and accents' },
     ],
   },
   {
-    id: 'product',
-    title: 'Product cards',
-    fields: [{ key: 'productBackground', label: 'Card background' }],
+    id: 'header',
+    title: 'Header',
+    fields: [],
   },
   {
-    id: 'discount',
-    title: 'Brand discounts',
-    fields: [{ key: 'discountBackground', label: 'Card background' }],
+    id: 'templates',
+    title: 'Templates',
+    fields: [],
   },
   {
-    id: 'collection',
-    title: 'Collections',
-    fields: [{ key: 'collectionBackground', label: 'Frame background' }],
-  },
-];
-const palettes: Array<{ name: string; theme: StorefrontTheme }> = [
-  { name: 'Editorial', theme: defaultStorefrontTheme },
-  {
-    name: 'Sand',
-    theme: {
-      profileBackground: '#eee4d6',
-      profileImageUrl: '',
-      recommendationsBackground: '#faf7f2',
-      dividerColor: '#e3d4c7',
-      productBackground: '#ffffff',
-      discountBackground: '#f1e8dc',
-      collectionBackground: '#f5eee5',
-      accentColor: '#8b6248',
-      textColor: '#302820',
-    },
-  },
-  {
-    name: 'Slate',
-    theme: {
-      profileBackground: '#dde4e7',
-      profileImageUrl: '',
-      recommendationsBackground: '#f5f7f7',
-      dividerColor: '#c4d2d7',
-      productBackground: '#ffffff',
-      discountBackground: '#e8edee',
-      collectionBackground: '#edf1f2',
-      accentColor: '#3e6570',
-      textColor: '#26343a',
-    },
+    id: 'typography',
+    title: 'Typography',
+    fields: [],
   },
 ];
 
@@ -128,7 +92,7 @@ export function StorefrontPhonePreview({
     ...theme,
     templateId: 'classic',
   });
-  const [selected, setSelected] = useState<ThemeSection>('profile');
+  const [selected, setSelected] = useState<ThemeSection>('theme');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -423,79 +387,6 @@ export function StorefrontPhonePreview({
               </label>
             </section>
             <div>
-              <div
-                className="storefrontPaletteList"
-                role="group"
-                aria-label="Color palettes"
-              >
-                {palettes.map(({ name, theme: palette }) => (
-                  <button
-                    aria-pressed={Object.keys(defaultStorefrontTheme)
-                      .filter((key) => key !== 'templateId')
-                      .every(
-                        (key) => draft[key as ThemeKey] === palette[key as ThemeKey],
-                      )}
-                    key={name}
-                    onClick={() => {
-                      setDraft((current) => ({
-                        ...palette,
-                        templateId: current.templateId,
-                        profileImageUrl: current.profileImageUrl,
-                        layout: current.layout,
-                      }));
-                      setNotice('');
-                    }}
-                    type="button"
-                  >
-                    <span aria-hidden="true" className="storefrontPaletteSwatches">
-                      <i style={{ background: palette.profileBackground }} />
-                      <i style={{ background: palette.recommendationsBackground }} />
-                      <i style={{ background: palette.accentColor }} />
-                    </span>
-                    {name}
-                  </button>
-                ))}
-              </div>
-              <section
-                className="storefrontHeroSettings"
-                aria-labelledby="hero-settings-title"
-              >
-                <div>
-                  <h3 id="hero-settings-title">Profile hero</h3>
-                  <p>
-                    Blend a favorite image into the profile and recommendation colors.
-                  </p>
-                </div>
-                <label>
-                  Image URL <span className="fieldOptional">Optional</span>
-                  <input
-                    aria-label="Profile hero image URL"
-                    inputMode="url"
-                    onChange={(event) => {
-                      setDraft((current) => ({
-                        ...current,
-                        profileImageUrl: event.target.value,
-                      }));
-                      setNotice('');
-                    }}
-                    placeholder="https://…"
-                    type="text"
-                    value={draft.profileImageUrl ?? ''}
-                  />
-                </label>
-                {draft.profileImageUrl ? (
-                  <button
-                    className="storefrontHeroClear"
-                    onClick={() => {
-                      setDraft((current) => ({ ...current, profileImageUrl: '' }));
-                      setNotice('');
-                    }}
-                    type="button"
-                  >
-                    Remove image
-                  </button>
-                ) : null}
-              </section>
               <div className="storefrontDesignFields">
                 {groups.map((group) => (
                   <section
@@ -512,7 +403,63 @@ export function StorefrontPhonePreview({
                     </button>
                     {selected === group.id ? (
                       <div className="storefrontColorFields">
-                        {group.fields.map(({ key, label }) => (
+                        {group.id === 'header' ? (
+                          <div className="storefrontChoiceGrid" role="group" aria-label="Header style">
+                            {[
+                              ['classic', 'Current', 'Keep the existing profile header.'],
+                              ['circular', 'Circular profile', 'Center the profile photo with page color around it.'],
+                            ].map(([value, label, description]) => (
+                              <button
+                                aria-pressed={draft.headerStyle === value}
+                                className="storefrontChoiceCard"
+                                key={value}
+                                onClick={() => {
+                                  setDraft((current) => ({ ...current, headerStyle: value as 'classic' | 'circular' }));
+                                  setNotice('');
+                                }}
+                                type="button"
+                              >
+                                <strong>{label}</strong>
+                                <span>{description}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : group.id === 'templates' ? (
+                          <p className="storefrontEditorHint">More templates will be added here soon.</p>
+                        ) : group.id === 'typography' ? (
+                          <div className="storefrontTypographyFields">
+                            <label>
+                              <span>Headings</span>
+                              <select
+                                aria-label="Heading font"
+                                onChange={(event) => {
+                                  setDraft((current) => ({ ...current, headingFont: event.target.value as StorefrontTheme['headingFont'] }));
+                                  setNotice('');
+                                }}
+                                value={draft.headingFont}
+                              >
+                                <option value="display">Display serif</option>
+                                <option value="sans">Clean sans</option>
+                                <option value="editorial">Editorial serif</option>
+                              </select>
+                            </label>
+                            <label>
+                              <span>Body text</span>
+                              <select
+                                aria-label="Body font"
+                                onChange={(event) => {
+                                  setDraft((current) => ({ ...current, bodyFont: event.target.value as StorefrontTheme['bodyFont'] }));
+                                  setNotice('');
+                                }}
+                                value={draft.bodyFont}
+                              >
+                                <option value="aptos">Aptos</option>
+                                <option value="sans">Modern sans</option>
+                                <option value="serif">Soft serif</option>
+                              </select>
+                            </label>
+                          </div>
+                        ) : group.fields.map(({ key, label }) => (
                           <label key={key}>
                             <span>{label}</span>
                             <span className="storefrontColorControl">

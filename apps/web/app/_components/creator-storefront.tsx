@@ -607,6 +607,9 @@ export function CreatorStorefrontView({
         className="creatorStorefrontCanvas"
         data-mobile-preview={isMobilePreview}
         data-template={previewTheme.templateId ?? 'classic'}
+         data-header-style={previewTheme.headerStyle ?? 'classic'}
+         data-heading-font={previewTheme.headingFont ?? 'display'}
+         data-body-font={previewTheme.bodyFont ?? 'aptos'}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
@@ -650,23 +653,15 @@ export function CreatorStorefrontView({
         }}
         style={
           {
-            '--sf-profile': previewTheme.profileBackground,
+            '--sf-profile': previewTheme.recommendationsBackground,
             '--sf-profile-image': profileImageUrl
               ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
               : 'none',
             '--sf-page': previewTheme.recommendationsBackground,
             '--sf-divider': previewTheme.dividerColor,
             '--sf-product': previewTheme.productBackground,
-            '--sf-discount':
-              previewTheme.templateId === 'editorial-frame' &&
-              previewTheme.discountBackground === '#fff1eb'
-                ? '#ffffff'
-                : previewTheme.discountBackground,
-            '--sf-collection':
-              previewTheme.templateId === 'editorial-frame' &&
-              previewTheme.collectionBackground === '#eeeafe'
-                ? '#ffffff'
-                : previewTheme.collectionBackground,
+            '--sf-discount': previewTheme.productBackground,
+            '--sf-collection': previewTheme.productBackground,
             '--sf-accent': previewTheme.accentColor,
             '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
             '--sf-text': previewTheme.textColor,

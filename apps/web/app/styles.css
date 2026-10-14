@@ -10105,6 +10105,51 @@ dt {
   font-variant-numeric: tabular-nums;
   min-width: 58px;
 }
+.storefrontChoiceGrid,
+.storefrontTypographyFields {
+  display: grid;
+  gap: 9px;
+}
+.storefrontChoiceCard {
+  background: #fffdfa;
+  border: 1px solid #e6ddd4;
+  border-radius: 12px;
+  color: #30251f;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+}
+.storefrontChoiceCard[aria-pressed='true'] {
+  background: #fff5ec;
+  border-color: #b77856;
+  box-shadow: 0 0 0 1px #b77856;
+}
+.storefrontChoiceCard strong {
+  font-size: 0.82rem;
+}
+.storefrontChoiceCard span {
+  color: #766b63;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.storefrontTypographyFields label {
+  align-items: center;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 12px;
+  justify-content: space-between;
+}
+.storefrontTypographyFields select {
+  background: #fffdfa;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #30251f;
+  font: inherit;
+  min-height: 36px;
+  padding: 0 9px;
+}
 .storefrontContrastNotice {
   background: #fff5ec;
   border-radius: 9px;
@@ -14709,6 +14754,52 @@ dt {
 
 .creatorStorefrontCanvas .referenceStorefrontHero .referenceStorefrontName h1 {
   text-shadow: none;
+}
+
+/* Creator-selectable header and type treatments. The classic layout remains
+   the default so older saved themes render unchanged. */
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontHero {
+  background: var(--sf-page);
+  padding-block: 28px 24px;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontInner {
+  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  text-align: center;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontAvatar {
+  border: 4px solid color-mix(in srgb, var(--sf-accent) 28%, white);
+  box-shadow: 0 8px 20px rgb(48 37 31 / 12%);
+  height: 92px;
+  width: 92px;
+}
+
+.creatorStorefrontCanvas[data-heading-font='sans']
+  :is(.referenceStorefrontName h1, .referenceStorefrontRow h3, .referenceCollectionFrame h3) {
+  font-family: var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-weight: 700;
+}
+
+.creatorStorefrontCanvas[data-heading-font='editorial']
+  :is(.referenceStorefrontName h1, .referenceStorefrontRow h3, .referenceCollectionFrame h3) {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+
+.creatorStorefrontCanvas[data-body-font='sans'] {
+  font-family: var(--font-vh-body), ui-sans-serif, sans-serif;
+}
+
+.creatorStorefrontCanvas[data-body-font='serif'] {
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 @media (max-width: 900px) {

@@ -553,6 +553,7 @@ const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const defaultStorefrontTheme = {
   templateId: 'classic',
+  headerStyle: 'classic',
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
   recommendationsBackground: '#ffffff',
@@ -562,6 +563,8 @@ export const defaultStorefrontTheme = {
   collectionBackground: '#fbf9f6',
   accentColor: '#b77856',
   textColor: '#30251f',
+  headingFont: 'display',
+  bodyFont: 'aptos',
 } as const;
 
 export const storefrontThemeSchema = z
@@ -569,6 +572,7 @@ export const storefrontThemeSchema = z
     // Optional for existing storefront themes. Missing values render as the
     // original Classic shell until a creator explicitly selects a template.
     templateId: z.enum(['classic', 'editorial-frame']).optional(),
+    headerStyle: z.enum(['classic', 'circular']).default('classic'),
     profileBackground: storefrontColorSchema,
     // Optional so existing storefront themes remain valid when the Hero image
     // feature is introduced. The client only renders safe http(s) URLs.
@@ -580,6 +584,8 @@ export const storefrontThemeSchema = z
     collectionBackground: storefrontColorSchema,
     accentColor: storefrontColorSchema,
     textColor: storefrontColorSchema,
+    headingFont: z.enum(['display', 'sans', 'editorial']).default('display'),
+    bodyFont: z.enum(['aptos', 'sans', 'serif']).default('aptos'),
     // Layout lives alongside the visual design in the existing theme JSON.
     // Optional for older clients and storefronts that retain their default order.
     layout: z
