@@ -7577,6 +7577,160 @@ dt {
   background: #eee7df;
   color: #6f625a;
 }
+.creatorDashboardNavBadge::after {
+  display: none;
+}
+.creatorDashboardNavBadgeShape {
+  display: block;
+  height: 26px;
+  position: relative;
+  width: 29px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  background: #d6b6a0;
+  border-radius: 3px;
+  content: '';
+  height: 20px;
+  position: absolute;
+  top: 4px;
+  width: 16px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::before {
+  left: 1px;
+  transform: rotate(-17deg);
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  right: 1px;
+  transform: rotate(14deg);
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape {
+  background: #b85f38;
+  border-radius: 3px;
+  height: 22px;
+  left: 1px;
+  top: 2px;
+  transform: rotate(-8deg);
+  width: 18px;
+  z-index: 1;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span {
+  display: none;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::marker {
+  content: '★';
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape {
+  color: #fff9f4;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  color: #fff9f4;
+  content: '★';
+  font-size: 10px;
+  height: auto;
+  line-height: 22px;
+  position: absolute;
+  right: 4px;
+  text-align: center;
+  top: 0;
+  transform: none;
+  width: 10px;
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::after {
+  background: #c66d45;
+  border-radius: 2px 4px 4px 2px;
+  clip-path: polygon(0 18%, 72% 0, 100% 25%, 100% 78%, 70% 100%, 0 84%);
+  content: '';
+  height: 21px;
+  position: absolute;
+  width: 17px;
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::before {
+  left: 2px;
+  top: 1px;
+  transform: rotate(-17deg);
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::after {
+  background: #d9b69d;
+  right: 1px;
+  top: 4px;
+  transform: rotate(19deg);
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  border: 2px solid #b86a49;
+  border-radius: 3px;
+  content: '';
+  height: 18px;
+  position: absolute;
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before {
+  left: 4px;
+  top: 1px;
+  transform: rotate(-5deg);
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  background: #bd6845;
+  left: 1px;
+  top: 5px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape {
+  border-bottom: 7px solid #fff8f3;
+  border-left: 9px solid transparent;
+  border-right: 0 solid transparent;
+  height: 0;
+  left: 8px;
+  top: 8px;
+  width: 0;
+  z-index: 1;
+}
+.creatorDashboardNavBadge-social .creatorDashboardNavBadgeShape::before {
+  background: #9b6b52;
+  content: '';
+  height: 2px;
+  left: 6px;
+  position: absolute;
+  top: 14px;
+  transform: rotate(-28deg);
+  width: 18px;
+  box-shadow: 10px 2px 0 #9b6b52;
+}
+.creatorDashboardNavBadge-social .creatorDashboardNavBadgeShape::after {
+  background: #b95f3b;
+  border-radius: 50%;
+  box-shadow: -10px 12px 0 #8e674f, 10px 13px 0 #c18a6a;
+  content: '';
+  height: 10px;
+  left: 10px;
+  position: absolute;
+  top: 3px;
+  width: 10px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  background: #d6b6a0;
+  border-radius: 3px;
+  content: '';
+  height: 20px;
+  position: absolute;
+  right: -7px;
+  top: 2px;
+  transform: rotate(14deg);
+  width: 16px;
+  z-index: -1;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span::after {
+  color: #fff9f4;
+  content: '★';
+  font-size: 10px;
+  left: 4px;
+  line-height: 22px;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 10px;
+}
 .creatorDashboardNavCopy {
   display: grid;
   gap: 3px;

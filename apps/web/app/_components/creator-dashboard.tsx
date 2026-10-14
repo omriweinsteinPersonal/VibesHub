@@ -1904,9 +1904,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            <span aria-hidden="true" className="creatorDashboardNavBadge">
-              <Layers3 size={21} />
-            </span>
+            <DashboardNavBadge kind="recommendations" />
             <span className="creatorDashboardNavCopy">
               <strong>Recommendations</strong>
               <small>Manage brands, items and collections.</small>
@@ -1923,9 +1921,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('labels')}
             type="button"
           >
-            <span aria-hidden="true" className="creatorDashboardNavBadge">
-              <Tag size={21} />
-            </span>
+            <DashboardNavBadge kind="labels" />
             <span className="creatorDashboardNavCopy">
               <strong>Storefront labels</strong>
               <small>Customize the labels on your page.</small>
@@ -1942,9 +1938,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('media')}
             type="button"
           >
-            <span aria-hidden="true" className="creatorDashboardNavBadge">
-              <LayoutGrid size={21} />
-            </span>
+            <DashboardNavBadge kind="media" />
             <span className="creatorDashboardNavCopy">
               <strong>Media</strong>
               <small>Add and organize your photos and videos.</small>
@@ -1961,9 +1955,7 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            <span aria-hidden="true" className="creatorDashboardNavBadge">
-              <Link2 size={21} />
-            </span>
+            <DashboardNavBadge kind="social" />
             <span className="creatorDashboardNavCopy">
               <strong>Social links</strong>
               <small>Connect your platforms in one place.</small>
@@ -3196,6 +3188,21 @@ export function CreatorDashboard() {
         </div>
       </div>
     </main>
+  );
+}
+
+function DashboardNavBadge({
+  kind,
+}: {
+  kind: 'labels' | 'media' | 'recommendations' | 'social';
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`creatorDashboardNavBadge creatorDashboardNavBadge-${kind}`}
+    >
+      <span className="creatorDashboardNavBadgeShape" />
+    </span>
   );
 }
 
