@@ -7530,12 +7530,14 @@ dt {
 .creatorDashboardSidebar button.creatorDashboardNavCard {
   align-items: center;
   display: grid;
+  direction: ltr;
   gap: 12px;
   grid-template-columns: 42px minmax(0, 1fr) auto;
   min-height: 76px;
   padding: 11px 10px;
   position: relative;
   text-align: left;
+  width: 100%;
 }
 .creatorDashboardNavCardRecommendations {
   border-left: 3px solid #c97850 !important;
@@ -7579,6 +7581,7 @@ dt {
   display: grid;
   gap: 3px;
   min-width: 0;
+  text-align: left;
 }
 .creatorDashboardNavCopy strong {
   color: inherit;
@@ -14005,6 +14008,7 @@ dt {
     grid-template-columns: 34px minmax(0, 1fr) auto;
     min-height: 64px;
     padding: 9px 8px;
+    width: 100%;
   }
 
   .creatorDashboardNavBadge {
@@ -14041,6 +14045,7 @@ dt {
     min-height: 72px;
     padding: 10px 12px;
     white-space: normal;
+    width: 100%;
   }
 
   .creatorDashboardNavBadge {
