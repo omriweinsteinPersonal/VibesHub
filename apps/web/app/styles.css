@@ -7772,35 +7772,28 @@ dt {
   width: 0;
 }
 .creatorDashboardNavCopy {
-  display: grid;
-  flex: 1 1 0%;
-  gap: 3px;
+  display: block;
   min-width: 0;
-  overflow: hidden;
   text-align: left;
-  width: 0;
+  width: auto;
 }
 .creatorDashboardNavCopy strong {
   color: inherit;
-  font-size: 0.86rem;
-  line-height: 1.15;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.2;
 }
 .creatorDashboardNavCopy small {
   color: #756b64;
+  display: block;
   font-size: 0.68rem;
   font-weight: 400;
   line-height: 1.35;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .creatorDashboardNavArrow {
   color: #8e837a;
-  flex: 0 0 auto;
-  margin-left: auto;
+  float: right;
+  margin: 8px 0 0 8px;
 }
 .creatorDashboardNavMobile {
   display: none;

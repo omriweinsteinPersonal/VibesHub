@@ -1900,11 +1900,9 @@ export function CreatorDashboard() {
           <p className="eyebrow">MANAGE</p>
           <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
-            className="creatorDashboardNavCard creatorDashboardNavCardRecommendations"
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            <DashboardNavBadge kind="recommendations" />
             <span className="creatorDashboardNavCopy">
               <strong>Recommendations</strong>
               <small>Manage brands, items and collections.</small>
@@ -1917,11 +1915,9 @@ export function CreatorDashboard() {
           </button>
           <button
             aria-current={dashboardView === 'labels' ? 'page' : undefined}
-            className="creatorDashboardNavCard creatorDashboardNavCardLabels"
             onClick={() => setDashboardView('labels')}
             type="button"
           >
-            <DashboardNavBadge kind="labels" />
             <span className="creatorDashboardNavCopy">
               <strong>Storefront labels</strong>
               <small>Customize the labels on your page.</small>
@@ -1934,11 +1930,9 @@ export function CreatorDashboard() {
           </button>
           <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
-            className="creatorDashboardNavCard creatorDashboardNavCardMedia"
             onClick={() => setDashboardView('media')}
             type="button"
           >
-            <DashboardNavBadge kind="media" />
             <span className="creatorDashboardNavCopy">
               <strong>Media</strong>
               <small>Add and organize your photos and videos.</small>
@@ -1951,11 +1945,9 @@ export function CreatorDashboard() {
           </button>
           <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
-            className="creatorDashboardNavCard creatorDashboardNavCardSocial"
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            <DashboardNavBadge kind="social" />
             <span className="creatorDashboardNavCopy">
               <strong>Social links</strong>
               <small>Connect your platforms in one place.</small>
@@ -3188,21 +3180,6 @@ export function CreatorDashboard() {
         </div>
       </div>
     </main>
-  );
-}
-
-function DashboardNavBadge({
-  kind,
-}: {
-  kind: 'labels' | 'media' | 'recommendations' | 'social';
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`creatorDashboardNavBadge creatorDashboardNavBadge-${kind}`}
-    >
-      <span className="creatorDashboardNavBadgeShape" />
-    </span>
   );
 }
 
