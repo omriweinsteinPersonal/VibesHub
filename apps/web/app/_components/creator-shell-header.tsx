@@ -55,17 +55,6 @@ export function CreatorShellHeader({
                 </Link>
               ))}
           </nav>
-          <div className="creatorShellActions">
-            <Link
-              aria-current={pathname === '/account' ? 'page' : undefined}
-              data-pending={pendingHref === '/account' || undefined}
-              href="/account"
-              onNavigate={() => startNavigation('/account')}
-            >
-              <User aria-hidden="true" size={16} />
-              Account
-            </Link>
-          </div>
         </div>
       </header>
       {showBottomBar ? <CreatorBottomBar /> : null}
