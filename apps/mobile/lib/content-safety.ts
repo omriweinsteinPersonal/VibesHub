@@ -16,7 +16,9 @@ export async function getContentSafetyInstallationId(): Promise<string> {
 
   const installationId = Crypto.randomUUID();
   fallbackInstallationId = installationId;
-  await SecureStore.setItemAsync(installationIdKey, installationId).catch(() => undefined);
+  await SecureStore.setItemAsync(installationIdKey, installationId).catch(
+    () => undefined,
+  );
   return installationId;
 }
 
@@ -35,9 +37,7 @@ export async function getHiddenCreatorIds(): Promise<Set<string>> {
   try {
     const parsed: unknown = JSON.parse(stored);
     if (!Array.isArray(parsed)) return new Set(fallbackHiddenCreatorIds);
-    return new Set(
-      parsed.filter((value): value is string => typeof value === 'string'),
-    );
+    return new Set(parsed.filter((value): value is string => typeof value === 'string'));
   } catch {
     return new Set(fallbackHiddenCreatorIds);
   }

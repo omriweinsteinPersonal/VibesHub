@@ -99,7 +99,10 @@ export default function CreatorApplicationScreen() {
     if (!normalizedInstagram) {
       return setError('Add a valid HTTPS Instagram profile URL.');
     }
-    if (followerCount !== null && (!Number.isInteger(followerCount) || followerCount < 0)) {
+    if (
+      followerCount !== null &&
+      (!Number.isInteger(followerCount) || followerCount < 0)
+    ) {
       return setError('Follower count must be a positive whole number.');
     }
 
@@ -238,7 +241,9 @@ export default function CreatorApplicationScreen() {
                       onPress={() => setCategoryId(category.id)}
                       style={[styles.chip, selected && styles.selectedChip]}
                     >
-                      <Text style={[styles.chipText, selected && styles.selectedChipText]}>
+                      <Text
+                        style={[styles.chipText, selected && styles.selectedChipText]}
+                      >
                         {category.name}
                       </Text>
                     </Pressable>

@@ -969,10 +969,9 @@ export function CreatorStorefrontView({
                 ? blocks.map(({ key, row, code, media }) => {
                     const isCarousel = Boolean(
                       row &&
-                        visibleCuratedSections.some(
-                          (section) =>
-                            section.id === row.key && section.kind === 'section',
-                        ),
+                      visibleCuratedSections.some(
+                        (section) => section.id === row.key && section.kind === 'section',
+                      ),
                     );
                     const productContent = row ? (
                       <StorefrontRow
@@ -1048,10 +1047,7 @@ function StandaloneRecommendationCard({
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div
-        className="referenceStandaloneRecommendationContent"
-        dir="ltr"
-      >
+      <div className="referenceStandaloneRecommendationContent" dir="ltr">
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           {value ? <span>{value}</span> : null}
@@ -1355,10 +1351,7 @@ function SingleBrandProductCard({
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div
-        className="referenceStandaloneRecommendationContent"
-        dir="ltr"
-      >
+      <div className="referenceStandaloneRecommendationContent" dir="ltr">
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           {offerValue(offer) ? <span>{offerValue(offer)}</span> : null}

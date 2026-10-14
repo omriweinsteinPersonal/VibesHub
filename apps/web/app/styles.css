@@ -7700,7 +7700,9 @@ dt {
 .creatorDashboardNavBadge-social .creatorDashboardNavBadgeShape::after {
   background: #b95f3b;
   border-radius: 50%;
-  box-shadow: -10px 12px 0 #8e674f, 10px 13px 0 #c18a6a;
+  box-shadow:
+    -10px 12px 0 #8e674f,
+    10px 13px 0 #c18a6a;
   content: '';
   height: 10px;
   left: 10px;

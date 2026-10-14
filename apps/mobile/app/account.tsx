@@ -155,8 +155,8 @@ export default function AccountScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Creator tools</Text>
             <Text style={styles.sectionCopy}>
-              Manage your storefront, recommendations, links and analytics in the
-              Swavii creator studio.
+              Manage your storefront, recommendations, links and analytics in the Swavii
+              creator studio.
             </Text>
             <Pressable
               accessibilityRole="button"
