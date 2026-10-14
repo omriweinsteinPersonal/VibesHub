@@ -7733,13 +7733,52 @@ dt {
   top: 0;
   width: 10px;
 }
+.creatorDashboardNavBadgeShape span {
+  display: block;
+  inset: 0;
+  position: absolute;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span {
+  display: block;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape {
+  background: #bd6845;
+  border-radius: 3px;
+  border: 0;
+  height: 18px;
+  left: 1px;
+  top: 5px;
+  transform: none;
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before {
+  background: transparent;
+  border: 2px solid #b86a49;
+  height: 18px;
+  left: 4px;
+  top: -4px;
+  transform: rotate(-5deg);
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid #fff8f3;
+  border-top: 5px solid transparent;
+  content: '';
+  height: 0;
+  left: 8px;
+  position: absolute;
+  top: 4px;
+  width: 0;
+}
 .creatorDashboardNavCopy {
   display: grid;
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   gap: 3px;
   min-width: 0;
   overflow: hidden;
   text-align: left;
+  width: 0;
 }
 .creatorDashboardNavCopy strong {
   color: inherit;
@@ -14169,6 +14208,16 @@ dt {
 
 /* Dashboard navigation cards: keep the visual entry points legible on phones. */
 @media (max-width: 760px) {
+  .creatorDashboardWorkspace {
+    display: block;
+  }
+
+  .creatorDashboardSidebar {
+    margin-bottom: 14px;
+    position: static;
+    width: 100%;
+  }
+
   .creatorDashboardSidebar button.creatorDashboardNavCard {
     min-height: 64px;
     padding: 9px 8px;
