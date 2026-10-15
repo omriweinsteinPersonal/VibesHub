@@ -4982,6 +4982,9 @@ function CuratedSectionForm({
     null,
   );
   const [draggingContentKey, setDraggingContentKey] = useState<string | null>(null);
+  useEffect(() => {
+    setAvailableBrands(brands);
+  }, [brands]);
   const visibleRecommendations =
     kind === 'collection'
       ? brandId
