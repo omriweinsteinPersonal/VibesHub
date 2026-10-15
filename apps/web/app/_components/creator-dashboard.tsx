@@ -4939,7 +4939,7 @@ function CuratedSectionForm({
   saving: boolean;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
-  const [availableBrands, setAvailableBrands] = useState(brands);
+  const [createdBrands, setCreatedBrands] = useState<CreatorBrand[]>([]);
   const [brandId, setBrandId] = useState(initial?.brandId ?? '');
   const [creatingBrand, setCreatingBrand] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
@@ -4982,9 +4982,13 @@ function CuratedSectionForm({
     null,
   );
   const [draggingContentKey, setDraggingContentKey] = useState<string | null>(null);
-  useEffect(() => {
-    setAvailableBrands(brands);
-  }, [brands]);
+  const availableBrands = useMemo(
+    () => [
+      ...brands,
+      ...createdBrands.filter((created) => !brands.some(({ id }) => id === created.id)),
+    ],
+    [brands, createdBrands],
+  );
   const visibleRecommendations =
     kind === 'collection'
       ? brandId
@@ -5313,7 +5317,7 @@ function CuratedSectionForm({
                 websiteUrl: newBrandUrl.trim(),
               })
                 .then((created) => {
-                  setAvailableBrands((current) => [
+                  setCreatedBrands((current) => [
                     ...current.filter(({ id }) => id !== created.id),
                     created,
                   ]);
