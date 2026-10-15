@@ -5,6 +5,7 @@ import {
   creatorRecommendationSchema,
   creatorStorefrontConfigurationSchema,
   creatorStudioSummarySchema,
+  storefrontThemeConfigurationSchema,
 } from '@vibeshub/contracts';
 import type {
   CreatorAnalyticsDashboard,
@@ -16,6 +17,8 @@ import type {
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
   CreatorStudioSummary,
+  StorefrontTheme,
+  StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
 import * as Crypto from 'expo-crypto';
 
@@ -36,6 +39,7 @@ export interface CreatorStudioBundle {
   profile: CreatorProfileSettings;
   recommendations: CreatorRecommendation[];
   summary: CreatorStudioSummary;
+  theme: StorefrontThemeConfiguration;
 }
 
 const studioCacheLifetimeMs = 60_000;
@@ -76,7 +80,7 @@ export async function getCreatorStudioBundle(
 }
 
 async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundle> {
-  const [summary, profile, brands, recommendations, configuration, analytics] =
+  const [summary, profile, brands, recommendations, configuration, analytics, theme] =
     await Promise.all([
       creatorRequest('/v1/creator/studio', creatorStudioSummarySchema.parse),
       creatorRequest('/v1/creator/profile', creatorProfileSettingsSchema.parse),
@@ -94,9 +98,13 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
         `/v1/creator/analytics?days=${days}`,
         creatorAnalyticsDashboardSchema.parse,
       ),
+      creatorRequest(
+        '/v1/creator/studio/storefront-theme',
+        storefrontThemeConfigurationSchema.parse,
+      ),
     ]);
 
-  return { analytics, brands, configuration, profile, recommendations, summary };
+  return { analytics, brands, configuration, profile, recommendations, summary, theme };
 }
 
 export function updateCreatorProfile(
@@ -161,6 +169,21 @@ export function getCreatorAnalytics(days: 7 | 30): Promise<CreatorAnalyticsDashb
   return creatorRequest(
     `/v1/creator/analytics?days=${days}`,
     creatorAnalyticsDashboardSchema.parse,
+  );
+}
+
+export function saveStorefrontTheme(
+  configuration: StorefrontThemeConfiguration,
+  theme: StorefrontTheme,
+): Promise<StorefrontThemeConfiguration> {
+  return creatorRequest(
+    '/v1/creator/studio/storefront-theme',
+    storefrontThemeConfigurationSchema.parse,
+    {
+      body: JSON.stringify(theme),
+      headers: { 'if-match': `"${configuration.version}"` },
+      method: 'PUT',
+    },
   );
 }
 

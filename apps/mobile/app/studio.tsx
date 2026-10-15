@@ -4,7 +4,9 @@ import type {
   CreatorRecommendation,
   CreatorStorefrontConfiguration,
   FeaturedMedia,
+  StorefrontTheme,
 } from '@vibeshub/contracts';
+import { defaultStorefrontTheme } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -34,6 +36,7 @@ import {
   newStudioId,
   saveCreatorBrand,
   saveStorefrontConfiguration,
+  saveStorefrontTheme,
   transitionCreatorRecommendation,
   updateCreatorProfile,
   type CreatorStudioBundle,
@@ -52,6 +55,35 @@ const tabIcons = {
   recommendations: LayoutDashboard,
   storefront: Store,
 } as const;
+
+const storefrontTemplates: readonly {
+  colors: Partial<StorefrontTheme>;
+  id: NonNullable<StorefrontTheme['templateId']>;
+  title: string;
+}[] = [
+  {
+    colors: { recommendationsBackground: '#d8ef66' },
+    id: 'citrus-glow',
+    title: 'Citrus Glow',
+  },
+  {
+    colors: { recommendationsBackground: '#d99a78' },
+    id: 'clay-editorial',
+    title: 'Clay Editorial',
+  },
+  {
+    colors: {
+      accentColor: '#d6e8d1',
+      collectionBackground: '#f4efe3',
+      discountBackground: '#f4efe3',
+      productBackground: '#f4efe3',
+      recommendationsBackground: '#123f3b',
+      textColor: '#173c38',
+    },
+    id: 'forest-glass',
+    title: 'Forest Glass',
+  },
+];
 
 export default function CreatorStudioScreen() {
   const router = useRouter();
@@ -616,10 +648,33 @@ function StorefrontEditor({
   onNotice: (message: string) => void;
 }) {
   const [configuration, setConfiguration] = useState(bundle.configuration);
+  const [themeConfiguration, setThemeConfiguration] = useState(bundle.theme);
   const [labelTitle, setLabelTitle] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaTitle, setMediaTitle] = useState('');
   const [saving, setSaving] = useState(false);
+
+  async function selectTemplate(template: (typeof storefrontTemplates)[number]) {
+    if (saving || themeConfiguration.theme.templateId === template.id) return;
+    setSaving(true);
+    onError('');
+    try {
+      const theme: StorefrontTheme = {
+        ...defaultStorefrontTheme,
+        ...themeConfiguration.theme,
+        ...template.colors,
+        templateId: template.id,
+      };
+      const saved = await saveStorefrontTheme(themeConfiguration, theme);
+      setThemeConfiguration(saved);
+      onBundle((current) => (current ? { ...current, theme: saved } : current));
+      onNotice(`${template.title} is live on your storefront.`);
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const save = useCallback(
     async (next: CreatorStorefrontConfiguration) => {
@@ -737,6 +792,43 @@ function StorefrontEditor({
       <Text style={styles.lede}>
         Add quick filters and feature videos, posts or music.
       </Text>
+
+      <Text style={styles.sectionTitle}>Design template</Text>
+      <Text style={styles.cardMeta}>
+        These are the same storefront templates available on the web.
+      </Text>
+      <ScrollView
+        contentContainerStyle={styles.templateRail}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
+        {storefrontTemplates.map((template) => {
+          const selected = themeConfiguration.theme.templateId === template.id;
+          return (
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              disabled={saving}
+              key={template.id}
+              onPress={() => void selectTemplate(template)}
+              style={[styles.templateCard, selected && styles.templateCardSelected]}
+            >
+              <View
+                style={[
+                  styles.templateSwatch,
+                  {
+                    backgroundColor:
+                      template.colors.recommendationsBackground ??
+                      defaultStorefrontTheme.recommendationsBackground,
+                  },
+                ]}
+              />
+              <Text style={styles.templateTitle}>{template.title}</Text>
+              <Text style={styles.templateState}>{selected ? 'Selected' : 'Choose'}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
 
       <View style={styles.editorCard}>
         <Text style={styles.cardTitle}>Add label</Text>
@@ -1198,6 +1290,19 @@ const styles = StyleSheet.create({
   rangeButtonActive: { backgroundColor: colors.white },
   rangeButtonText: { color: colors.muted, fontSize: 13, fontWeight: '700' },
   rangeButtonTextActive: { color: colors.ink },
+  templateRail: { gap: 10, paddingVertical: spacing.md },
+  templateCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    padding: 10,
+    width: 134,
+  },
+  templateCardSelected: { borderColor: colors.accent, borderWidth: 2, padding: 9 },
+  templateSwatch: { borderRadius: 10, height: 72, marginBottom: 10 },
+  templateTitle: { color: colors.ink, fontSize: 14, fontWeight: '700' },
+  templateState: { color: colors.muted, fontSize: 12, marginTop: 3 },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: spacing.xl },
   metricCard: {
     backgroundColor: colors.white,
