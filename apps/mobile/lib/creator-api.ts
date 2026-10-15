@@ -1,6 +1,7 @@
 import {
   creatorAnalyticsDashboardSchema,
   creatorBrandSchema,
+  creatorHandleAvailabilitySchema,
   creatorProfileSettingsSchema,
   creatorRecommendationSchema,
   creatorStorefrontConfigurationSchema,
@@ -116,6 +117,14 @@ export function updateCreatorProfile(
     headers: { 'if-match': `"${profile.version}"` },
     method: 'PATCH',
   });
+}
+
+export async function getCreatorHandleAvailability(handle: string): Promise<boolean> {
+  const result = await creatorRequest(
+    `/v1/creator/profile/handle-availability?handle=${encodeURIComponent(handle)}`,
+    creatorHandleAvailabilitySchema.parse,
+  );
+  return result.available;
 }
 
 export function saveCreatorBrand(

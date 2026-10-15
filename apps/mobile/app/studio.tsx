@@ -31,6 +31,7 @@ import { ApiError } from '../lib/api';
 import {
   cacheCreatorStudioBundle,
   getCreatorAnalytics,
+  getCreatorHandleAvailability,
   getCreatorStudioBundle,
   getCachedCreatorStudioBundle,
   newStudioId,
@@ -41,6 +42,7 @@ import {
   updateCreatorProfile,
   type CreatorStudioBundle,
 } from '../lib/creator-api';
+import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
 import {
   creatorWorkspaceTabs,
   type CreatorWorkspaceView,
@@ -999,16 +1001,61 @@ function ProfileEditor({
 }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(bundle.profile.displayName);
+  const [handle, setHandle] = useState(bundle.profile.handle);
   const [bio, setBio] = useState(bundle.profile.bioHe);
   const [instagram, setInstagram] = useState(
     linkFor(bundle.profile.socialLinks, 'instagram'),
   );
   const [website, setWebsite] = useState(linkFor(bundle.profile.socialLinks, 'website'));
   const [saving, setSaving] = useState(false);
+  const [handleResult, setHandleResult] = useState<{
+    handle: string;
+    status: 'available' | 'unavailable' | 'idle';
+  }>({ handle: bundle.profile.handle, status: 'available' });
+
+  const normalizedHandle = handle.trim();
+  const handleStatus: CreatorHandleStatus = !normalizedHandle
+    ? 'idle'
+    : !isCreatorHandle(normalizedHandle)
+      ? 'invalid'
+      : normalizedHandle === bundle.profile.handle
+        ? 'available'
+        : handleResult.handle === normalizedHandle
+          ? handleResult.status
+          : 'checking';
+
+  useEffect(() => {
+    const normalized = handle.trim();
+    if (!isCreatorHandle(normalized) || normalized === bundle.profile.handle) return;
+
+    let active = true;
+    const timer = globalThis.setTimeout(() => {
+      void getCreatorHandleAvailability(normalized)
+        .then((available) => {
+          if (active) {
+            setHandleResult({
+              handle: normalized,
+              status: available ? 'available' : 'unavailable',
+            });
+          }
+        })
+        .catch(() => {
+          if (active) setHandleResult({ handle: normalized, status: 'idle' });
+        });
+    }, 350);
+    return () => {
+      active = false;
+      globalThis.clearTimeout(timer);
+    };
+  }, [bundle.profile.handle, handle]);
 
   async function save() {
     if (!displayName.trim()) {
       onError('Add your display name.');
+      return;
+    }
+    if (!isCreatorHandle(handle) || handleStatus !== 'available') {
+      onError('Choose an available storefront address before saving.');
       return;
     }
     setSaving(true);
@@ -1027,9 +1074,23 @@ function ProfileEditor({
       const profile = await updateCreatorProfile(bundle.profile, {
         bioHe: bio,
         displayName: displayName.trim(),
+        handle: handle.trim(),
         socialLinks,
       });
-      onBundle((current) => (current ? { ...current, profile } : current));
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              profile,
+              summary: {
+                ...current.summary,
+                displayName: profile.displayName,
+                handle: profile.handle,
+              },
+            }
+          : current,
+      );
+      setHandle(profile.handle);
       onNotice('Your profile and links are live.');
     } catch (cause) {
       onError(messageFor(cause));
@@ -1045,6 +1106,14 @@ function ProfileEditor({
       <Text style={styles.lede}>These details appear at the top of your storefront.</Text>
       <View style={styles.editorCard}>
         <Field label="Display name" onChangeText={setDisplayName} value={displayName} />
+        <Field
+          autoCapitalize="none"
+          autoCorrect={false}
+          label="Storefront address"
+          onChangeText={setHandle}
+          value={handle}
+        />
+        <Text style={styles.cardMeta}>{handleStatusMessage(handleStatus)}</Text>
         <Field label="Bio" multiline onChangeText={setBio} value={bio} />
         <Field
           autoCapitalize="none"
@@ -1060,12 +1129,8 @@ function ProfileEditor({
           onChangeText={setWebsite}
           value={website}
         />
-        <View style={styles.readOnlyRow}>
-          <Text style={styles.fieldLabel}>Storefront address</Text>
-          <Text style={styles.readOnlyValue}>swavii.com/{bundle.profile.handle}</Text>
-        </View>
         <Pressable
-          disabled={saving}
+          disabled={saving || handleStatus !== 'available'}
           onPress={() => void save()}
           style={styles.primaryButton}
         >
@@ -1091,6 +1156,14 @@ function ProfileEditor({
       </Pressable>
     </>
   );
+}
+
+function handleStatusMessage(status: CreatorHandleStatus): string {
+  if (status === 'checking') return 'Checking availability…';
+  if (status === 'available') return 'This storefront address is available.';
+  if (status === 'unavailable') return 'That storefront address is already taken.';
+  if (status === 'invalid') return 'Use at least two characters without /, ?, # or %.';
+  return 'Choose the address visitors will use to open your storefront.';
 }
 
 function Field({
