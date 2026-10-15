@@ -1,9 +1,12 @@
 'use client';
 
 import {
+  storefrontTitlesSchema,
   defaultStorefrontTheme,
   storefrontThemeConfigurationSchema,
+  type CreatorStorefrontConfiguration,
   type CreatorProfileSettings,
+  type StorefrontTitle,
   type StorefrontTheme,
   type StorefrontThemeConfiguration,
 } from '@vibeshub/contracts';
@@ -22,7 +25,7 @@ type ThemeKey = Exclude<
   | 'headingFont'
   | 'bodyFont'
 >;
-type ThemeSection = 'theme' | 'header' | 'templates' | 'typography';
+type ThemeSection = 'theme' | 'header' | 'templates' | 'typography' | 'titles';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
   id: ThemeSection;
@@ -52,6 +55,11 @@ const groups: Array<{
   {
     id: 'typography',
     title: 'Typography',
+    fields: [],
+  },
+  {
+    id: 'titles',
+    title: 'Titles',
     fields: [],
   },
 ];
@@ -93,6 +101,8 @@ export function StorefrontPhonePreview({
   const [configuration, setConfiguration] = useState<StorefrontThemeConfiguration | null>(
     null,
   );
+  const [titleDraft, setTitleDraft] = useState<StorefrontTitle[]>([]);
+  const [titlesSaving, setTitlesSaving] = useState(false);
   const [draft, setDraft] = useState<StorefrontTheme>({
     ...theme,
     templateId: 'classic',
@@ -144,6 +154,16 @@ export function StorefrontPhonePreview({
     return () => {
       active = false;
     };
+  }, [canEdit, showPhone]);
+
+  useEffect(() => {
+    if (!canEdit || !showPhone) return;
+    apiRequest<CreatorStorefrontConfiguration>('/creator/studio/storefront-sections')
+      .then((value) => {
+        const titles = storefrontTitlesSchema.parse(value.titles ?? []);
+        setTitleDraft(titles);
+      })
+      .catch(() => undefined);
   }, [canEdit, showPhone]);
 
   useEffect(() => {
@@ -274,6 +294,56 @@ export function StorefrontPhonePreview({
       setError(cause instanceof Error ? cause.message : 'Could not save the design.');
     } finally {
       setSaving(false);
+    }
+  }
+  function addTitle() {
+    setTitleDraft((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        text: '',
+        format: 'heading',
+        align: 'center',
+        size: 'medium',
+        beforeId: null,
+      },
+    ]);
+  }
+  async function saveTitles() {
+    if (titlesSaving || titleDraft.some((title) => !title.text.trim())) return;
+    setTitlesSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const latest = await apiRequest<CreatorStorefrontConfiguration>(
+        '/creator/studio/storefront-sections',
+      );
+      const value = await apiRequest<CreatorStorefrontConfiguration>(
+        '/creator/studio/storefront-sections',
+        {
+          body: JSON.stringify({
+            brandOrder: latest.brandOrder,
+            categoryIds: latest.sections.map(({ category }) => category.id),
+            contentOrder: latest.contentOrder,
+            curatedSections: latest.curatedSections,
+            featuredMedia: latest.featuredMedia,
+            hiddenBrandIds: latest.hiddenBrandIds,
+            hiddenCollectionIds: latest.hiddenCollectionIds,
+            hiddenRecommendationIds: latest.hiddenRecommendationIds,
+            labels: latest.labels,
+            titles: titleDraft.map((title) => ({ ...title, text: title.text.trim() })),
+          }),
+          headers: { 'if-match': `"${latest.version}"` },
+          method: 'PUT',
+        },
+      );
+      const titles = storefrontTitlesSchema.parse(value.titles ?? []);
+      setTitleDraft(titles);
+      setNotice('Titles saved to your storefront.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save titles.');
+    } finally {
+      setTitlesSaving(false);
     }
   }
 
@@ -507,6 +577,14 @@ export function StorefrontPhonePreview({
                               </select>
                             </label>
                           </div>
+                        ) : group.id === 'titles' ? (
+                          <TitlesEditor
+                            draft={titleDraft}
+                            onAdd={addTitle}
+                            onChange={setTitleDraft}
+                            onSave={() => void saveTitles()}
+                            saving={titlesSaving}
+                          />
                         ) : (
                           group.fields.map(({ key, label }) => (
                             <label key={key}>
@@ -613,6 +691,84 @@ export function StorefrontPhonePreview({
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+function TitlesEditor({
+  draft,
+  onAdd,
+  onChange,
+  onSave,
+  saving,
+}: {
+  draft: StorefrontTitle[];
+  onAdd: () => void;
+  onChange: (titles: StorefrontTitle[]) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  return (
+    <div className="storefrontTitlesEditor">
+      <div className="storefrontTitlesEditorHeader">
+        <p>Add simple titles to organize your storefront.</p>
+        <button onClick={onAdd} type="button">
+          Add title
+        </button>
+      </div>
+      {draft.map((title, index) => (
+        <article key={title.id}>
+          <label>
+            <span>Title {index + 1}</span>
+            <input
+              maxLength={2000}
+              onChange={(event) =>
+                onChange(
+                  draft.map((item) =>
+                    item.id === title.id ? { ...item, text: event.target.value } : item,
+                  ),
+                )
+              }
+              placeholder="Your storefront title"
+              value={title.text}
+            />
+          </label>
+          <label>
+            <span>Alignment</span>
+            <select
+              onChange={(event) =>
+                onChange(
+                  draft.map((item) =>
+                    item.id === title.id
+                      ? { ...item, align: event.target.value as StorefrontTitle['align'] }
+                      : item,
+                  ),
+                )
+              }
+              value={title.align}
+            >
+              <option value="start">Left</option>
+              <option value="center">Center</option>
+              <option value="end">Right</option>
+            </select>
+          </label>
+          <button
+            onClick={() => onChange(draft.filter((item) => item.id !== title.id))}
+            type="button"
+          >
+            Remove
+          </button>
+        </article>
+      ))}
+      {!draft.length ? <p className="storefrontEditorHint">No titles yet.</p> : null}
+      <button
+        className="button primary"
+        disabled={saving || draft.some((title) => !title.text.trim())}
+        onClick={onSave}
+        type="button"
+      >
+        {saving ? 'Saving…' : 'Save titles'}
+      </button>
     </div>
   );
 }

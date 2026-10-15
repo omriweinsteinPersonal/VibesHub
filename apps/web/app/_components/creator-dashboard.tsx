@@ -316,7 +316,7 @@ export function CreatorDashboard() {
     'all' | 'brands' | 'items' | 'sections'
   >('all');
   const [dashboardView, setDashboardView] = useState<
-    'recommendations' | 'labels' | 'connectors' | 'media' | 'titles'
+    'recommendations' | 'labels' | 'connectors' | 'media'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1757,20 +1757,6 @@ export function CreatorDashboard() {
     return saveSections(selectedSections, nextCurated, nextOrder);
   }
 
-  async function saveTitles(nextTitles: StorefrontTitle[]) {
-    await saveSections(
-      selectedSections,
-      curatedSections,
-      contentOrder,
-      storefrontLabels,
-      hiddenBrandIds,
-      hiddenCollectionIds,
-      hiddenRecommendationIds,
-      featuredMedia,
-      nextTitles,
-    );
-  }
-
   function startMediaEditor(item?: FeaturedMedia) {
     setMediaEditorOpen(true);
     setEditingMediaId(item?.id ?? null);
@@ -2039,21 +2025,6 @@ export function CreatorDashboard() {
             />
           </button>
           <button
-            aria-current={dashboardView === 'titles' ? 'page' : undefined}
-            onClick={() => setDashboardView('titles')}
-            type="button"
-          >
-            <span className="creatorDashboardNavCopy">
-              <strong>Titles</strong>
-              <small>Add headings and guide visitors through your page.</small>
-            </span>
-            <ChevronRight
-              aria-hidden="true"
-              className="creatorDashboardNavArrow"
-              size={17}
-            />
-          </button>
-          <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
             onClick={() => setDashboardView('media')}
             type="button"
@@ -2243,15 +2214,6 @@ export function CreatorDashboard() {
                 ) : null}
               </div>
             </section>
-          ) : dashboardView === 'titles' ? (
-            <StorefrontTitlesEditor
-              key={storefrontTitles
-                .map(({ align, id, text }) => `${id}:${align}:${text}`)
-                .join('|')}
-              onSave={saveTitles}
-              saving={saving}
-              titles={storefrontTitles}
-            />
           ) : dashboardView === 'recommendations' ? (
             <section className="creatorRecommendationSection">
               <div className="creatorSectionHeading">
@@ -4797,114 +4759,6 @@ function DiscountManageCard({
         </button>
       </div>
     </article>
-  );
-}
-
-function StorefrontTitlesEditor({
-  onSave,
-  saving,
-  titles,
-}: {
-  onSave: (titles: StorefrontTitle[]) => Promise<void>;
-  saving: boolean;
-  titles: StorefrontTitle[];
-}) {
-  const [draft, setDraft] = useState<StorefrontTitle[]>(titles);
-
-  function addTitle() {
-    setDraft((current) => [
-      ...current,
-      {
-        id: randomUuid(),
-        text: '',
-        format: 'heading',
-        align: 'center',
-        size: 'medium',
-        beforeId: null,
-      },
-    ]);
-  }
-
-  return (
-    <section className="creatorRecommendationSection">
-      <div className="creatorSectionHeading">
-        <div>
-          <h2>Titles</h2>
-          <p>Add headings to organize your storefront and choose their alignment.</p>
-        </div>
-        <button className="button primary" onClick={addTitle} type="button">
-          <Plus aria-hidden="true" size={16} />
-          <span>Add title</span>
-        </button>
-      </div>
-      <div className="creatorTitlesEditor">
-        {draft.map((title, index) => (
-          <article className="creatorTitleEditorCard" key={title.id}>
-            <label>
-              Title
-              <input
-                maxLength={2000}
-                onChange={(event) =>
-                  setDraft((current) =>
-                    current.map((item) =>
-                      item.id === title.id ? { ...item, text: event.target.value } : item,
-                    ),
-                  )
-                }
-                placeholder="Your storefront title"
-                value={title.text}
-              />
-            </label>
-            <label>
-              Alignment
-              <select
-                onChange={(event) =>
-                  setDraft((current) =>
-                    current.map((item) =>
-                      item.id === title.id
-                        ? {
-                            ...item,
-                            align: event.target.value as StorefrontTitle['align'],
-                          }
-                        : item,
-                    ),
-                  )
-                }
-                value={title.align}
-              >
-                <option value="start">Left</option>
-                <option value="center">Center</option>
-                <option value="end">Right</option>
-              </select>
-            </label>
-            <div className="creatorTitleEditorActions">
-              <button
-                onClick={() =>
-                  setDraft((current) => current.filter((item) => item.id !== title.id))
-                }
-                type="button"
-              >
-                Remove
-              </button>
-              <small>Title {index + 1}</small>
-            </div>
-          </article>
-        ))}
-        {!draft.length ? <p className="creatorEmptyState">No titles yet.</p> : null}
-      </div>
-      <div className="creatorFormActions">
-        <button
-          className="button primary"
-          disabled={saving || draft.some((title) => !title.text.trim())}
-          onClick={() =>
-            void onSave(draft.map((title) => ({ ...title, text: title.text.trim() })))
-          }
-          type="button"
-        >
-          {saving ? 'Saving…' : 'Save titles'}
-        </button>
-      </div>
-    </section>
   );
 }
 
