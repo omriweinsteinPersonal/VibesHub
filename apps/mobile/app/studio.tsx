@@ -16,6 +16,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -35,16 +36,12 @@ import {
   updateCreatorProfile,
   type CreatorStudioBundle,
 } from '../lib/creator-api';
+import {
+  creatorWorkspaceTabs,
+  type CreatorWorkspaceView,
+} from '../lib/creator-workspace';
 
-type StudioView = 'overview' | 'recommendations' | 'storefront' | 'analytics' | 'profile';
-
-const views: { key: StudioView; label: string }[] = [
-  { key: 'overview', label: 'Home' },
-  { key: 'recommendations', label: 'Content' },
-  { key: 'storefront', label: 'Store' },
-  { key: 'analytics', label: 'Insights' },
-  { key: 'profile', label: 'Profile' },
-];
+type StudioView = CreatorWorkspaceView;
 
 export default function CreatorStudioScreen() {
   const router = useRouter();
@@ -217,7 +214,7 @@ export default function CreatorStudioScreen() {
       </Animated.View>
 
       <View accessibilityRole="tablist" style={styles.tabBar}>
-        {views.map((item) => {
+        {creatorWorkspaceTabs.map((item) => {
           const selected = view === item.key;
           return (
             <Pressable
@@ -286,7 +283,7 @@ function StudioLoadingScreen() {
         ))}
       </Animated.View>
       <View style={styles.tabBar}>
-        {views.map((item) => (
+        {creatorWorkspaceTabs.map((item) => (
           <View key={item.key} style={styles.tab}>
             <View style={[styles.skeletonLine, styles.skeletonTab]} />
           </View>
@@ -303,42 +300,88 @@ function Overview({
   bundle: CreatorStudioBundle;
   navigate: (view: StudioView) => void;
 }) {
-  const metrics = [
-    ['Recommendations', bundle.summary.counts.recommendations],
-    ['Collections', bundle.summary.counts.collections],
-    ['Discounts', bundle.summary.counts.brandDiscounts],
-    ['Story clips', bundle.summary.counts.storyClips],
-  ] as const;
+  const router = useRouter();
+  const firstName = bundle.summary.displayName.trim().split(/\s+/)[0];
+  const pageUrl = `https://swavii.com/${bundle.summary.handle}`;
+
+  async function sharePage() {
+    await Share.share({
+      message: `Explore ${bundle.summary.displayName}'s recommendations on Swavii: ${pageUrl}`,
+      title: `${bundle.summary.displayName} on Swavii`,
+      url: pageUrl,
+    });
+  }
+
   return (
     <>
-      <Text style={styles.eyebrow}>CREATOR STUDIO</Text>
-      <Text style={styles.title}>Creator dashboard</Text>
-      <Text style={styles.lede}>Everything you need to shape your page.</Text>
-      <View style={styles.metricGrid}>
-        {metrics.map(([label, value]) => (
-          <View key={label} style={styles.metricCard}>
-            <Text style={styles.metricValue}>{value}</Text>
-            <Text style={styles.metricLabel}>{label}</Text>
-          </View>
-        ))}
+      <Text style={styles.eyebrow}>CREATOR STUDIO / HOME</Text>
+      <Text style={styles.title}>
+        Welcome back,{`\n`}
+        {firstName || bundle.summary.displayName}.
+      </Text>
+      <Text style={styles.lede}>
+        Your page is yours to shape. Pick up wherever inspiration left you.
+      </Text>
+
+      <View style={styles.pagePanel}>
+        <View style={styles.liveRow}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveLabel}>YOUR PAGE IS LIVE</Text>
+        </View>
+        <Text style={styles.pagePanelTitle}>Your page, ready to share.</Text>
+        <Text style={styles.pagePanelCopy}>
+          Every link, photo and recommendation in a space that feels like you.
+        </Text>
+        <Text numberOfLines={1} style={styles.pageUrl}>
+          swavii.com/{bundle.summary.handle}
+        </Text>
+        <View style={styles.buttonRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({
+                pathname: '/[handle]',
+                params: { handle: bundle.summary.handle },
+              })
+            }
+            style={styles.primarySmall}
+          >
+            <Text style={styles.primaryButtonText}>View your page</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Share storefront link"
+            accessibilityRole="button"
+            onPress={() => void sharePage()}
+            style={styles.secondarySmall}
+          >
+            <Text style={styles.secondaryButtonText}>Share link</Text>
+          </Pressable>
+        </View>
       </View>
-      <Text style={styles.sectionTitle}>Manage your workspace</Text>
+
+      <Text style={styles.sectionTitle}>What would you like to do?</Text>
       {(
         [
-          ['storefront', 'Storefront labels', 'Customize the labels on your page.'],
-          ['recommendations', 'Recommendations', 'Manage brands, items and collections.'],
-          ['media', 'Media', 'Add and organize your photos and videos.', 'storefront'],
           [
-            'social-links',
-            'Social links',
-            'Connect your platforms in one place.',
-            'profile',
+            'recommendations',
+            'Add to your page',
+            'Share a new recommendation or manage your brands and picks.',
           ],
-        ] as [string, string, string, StudioView?][]
-      ).map(([key, title, copy, target]) => (
+          [
+            'storefront',
+            'Make it yours',
+            'Arrange sections and shape the page around your point of view.',
+          ],
+          [
+            'analytics',
+            'See what connects',
+            'Understand which pages and recommendations draw attention.',
+          ],
+        ] as [StudioView, string, string][]
+      ).map(([target, title, copy]) => (
         <Pressable
-          key={key}
-          onPress={() => navigate(target ?? (key as StudioView))}
+          key={target}
+          onPress={() => navigate(target)}
           style={styles.actionCard}
         >
           <View style={styles.actionCopy}>
@@ -445,7 +488,7 @@ function Recommendations({
 
   return (
     <>
-      <Text style={styles.eyebrow}>YOUR CONTENT</Text>
+      <Text style={styles.eyebrow}>CREATOR STUDIO / DASHBOARD</Text>
       <View style={styles.headingRow}>
         <View style={styles.headingCopy}>
           <Text style={styles.title}>Recommendations</Text>
@@ -675,7 +718,7 @@ function StorefrontEditor({
 
   return (
     <>
-      <Text style={styles.eyebrow}>YOUR STOREFRONT</Text>
+      <Text style={styles.eyebrow}>CREATOR STUDIO / STOREFRONT</Text>
       <Text style={styles.title}>Organize your page</Text>
       <Text style={styles.lede}>
         Add quick filters and feature videos, posts or music.
@@ -759,7 +802,9 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
   );
   return (
     <>
-      <Text style={styles.eyebrow}>LAST {bundle.analytics.range.days} DAYS</Text>
+      <Text style={styles.eyebrow}>
+        CREATOR STUDIO / ANALYTICS · LAST {bundle.analytics.range.days} DAYS
+      </Text>
       <Text style={styles.title}>See what resonates</Text>
       <Text style={styles.lede}>A clear view of what people explore on your page.</Text>
       <View style={styles.metricGrid}>
@@ -847,7 +892,7 @@ function ProfileEditor({
 
   return (
     <>
-      <Text style={styles.eyebrow}>PUBLIC PROFILE</Text>
+      <Text style={styles.eyebrow}>CREATOR STUDIO / ACCOUNT</Text>
       <Text style={styles.title}>Profile & links</Text>
       <Text style={styles.lede}>These details appear at the top of your storefront.</Text>
       <View style={styles.editorCard}>
@@ -1091,6 +1136,35 @@ const styles = StyleSheet.create({
   },
   metricValue: { color: colors.ink, fontFamily: 'Georgia', fontSize: 34 },
   metricLabel: { color: colors.muted, fontSize: 13, marginTop: 4 },
+  pagePanel: {
+    backgroundColor: '#f4eadf',
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    marginTop: spacing.xl,
+    padding: spacing.lg,
+  },
+  liveRow: { alignItems: 'center', flexDirection: 'row', gap: 7 },
+  liveDot: { backgroundColor: '#4c8b59', borderRadius: 99, height: 7, width: 7 },
+  liveLabel: {
+    color: '#4c6c52',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  pagePanelTitle: {
+    color: colors.ink,
+    fontFamily: 'Georgia',
+    fontSize: 27,
+    marginTop: spacing.md,
+  },
+  pagePanelCopy: { color: colors.muted, lineHeight: 21, marginTop: 7 },
+  pageUrl: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: spacing.md,
+  },
   sectionTitle: {
     color: colors.ink,
     fontSize: 20,
