@@ -14,7 +14,13 @@ import { apiRequest } from '../../lib/api';
 
 type ThemeKey = Exclude<
   keyof StorefrontTheme,
-  'layout' | 'profileImageUrl' | 'templateId' | 'headerStyle' | 'bioAlign' | 'headingFont' | 'bodyFont'
+  | 'layout'
+  | 'profileImageUrl'
+  | 'templateId'
+  | 'headerStyle'
+  | 'bioAlign'
+  | 'headingFont'
+  | 'bodyFont'
 >;
 type ThemeSection = 'theme' | 'header' | 'templates' | 'typography';
 const desktopQuery = '(min-width: 901px)';
@@ -421,17 +427,32 @@ export function StorefrontPhonePreview({
                     {selected === group.id ? (
                       <div className="storefrontColorFields">
                         {group.id === 'header' ? (
-                          <div className="storefrontChoiceGrid" role="group" aria-label="Header style">
+                          <div
+                            className="storefrontChoiceGrid"
+                            role="group"
+                            aria-label="Header style"
+                          >
                             {[
-                              ['classic', 'Full-bleed', 'Keep the immersive profile header.'],
-                              ['circular', 'Circular', 'Center the profile photo above the name.'],
+                              [
+                                'classic',
+                                'Full-bleed',
+                                'Keep the immersive profile header.',
+                              ],
+                              [
+                                'circular',
+                                'Circular',
+                                'Center the profile photo above the name.',
+                              ],
                             ].map(([value, label, description]) => (
                               <button
                                 aria-pressed={draft.headerStyle === value}
                                 className="storefrontChoiceCard"
                                 key={value}
                                 onClick={() => {
-                                  setDraft((current) => ({ ...current, headerStyle: value as 'classic' | 'circular' }));
+                                  setDraft((current) => ({
+                                    ...current,
+                                    headerStyle: value as 'classic' | 'circular',
+                                  }));
                                   setNotice('');
                                 }}
                                 type="button"
@@ -442,7 +463,9 @@ export function StorefrontPhonePreview({
                             ))}
                           </div>
                         ) : group.id === 'templates' ? (
-                          <p className="storefrontEditorHint">More templates will be added here soon.</p>
+                          <p className="storefrontEditorHint">
+                            More templates will be added here soon.
+                          </p>
                         ) : group.id === 'typography' ? (
                           <div className="storefrontTypographyFields">
                             <label>
@@ -450,7 +473,11 @@ export function StorefrontPhonePreview({
                               <select
                                 aria-label="Heading font"
                                 onChange={(event) => {
-                                  setDraft((current) => ({ ...current, headingFont: event.target.value as StorefrontTheme['headingFont'] }));
+                                  setDraft((current) => ({
+                                    ...current,
+                                    headingFont: event.target
+                                      .value as StorefrontTheme['headingFont'],
+                                  }));
                                   setNotice('');
                                 }}
                                 value={draft.headingFont}
@@ -465,7 +492,11 @@ export function StorefrontPhonePreview({
                               <select
                                 aria-label="Body font"
                                 onChange={(event) => {
-                                  setDraft((current) => ({ ...current, bodyFont: event.target.value as StorefrontTheme['bodyFont'] }));
+                                  setDraft((current) => ({
+                                    ...current,
+                                    bodyFont: event.target
+                                      .value as StorefrontTheme['bodyFont'],
+                                  }));
                                   setNotice('');
                                 }}
                                 value={draft.bodyFont}
@@ -476,26 +507,28 @@ export function StorefrontPhonePreview({
                               </select>
                             </label>
                           </div>
-                        ) : group.fields.map(({ key, label }) => (
-                          <label key={key}>
-                            <span>{label}</span>
-                            <span className="storefrontColorControl">
-                              <input
-                                aria-label={`${group.title}: ${label}`}
-                                onChange={(event) => {
-                                  setDraft((current) => ({
-                                    ...current,
-                                    [key]: event.target.value,
-                                  }));
-                                  setNotice('');
-                                }}
-                                type="color"
-                                value={draft[key]}
-                              />
-                              <output>{draft[key].toUpperCase()}</output>
-                            </span>
-                          </label>
-                        ))}
+                        ) : (
+                          group.fields.map(({ key, label }) => (
+                            <label key={key}>
+                              <span>{label}</span>
+                              <span className="storefrontColorControl">
+                                <input
+                                  aria-label={`${group.title}: ${label}`}
+                                  onChange={(event) => {
+                                    setDraft((current) => ({
+                                      ...current,
+                                      [key]: event.target.value,
+                                    }));
+                                    setNotice('');
+                                  }}
+                                  type="color"
+                                  value={draft[key]}
+                                />
+                                <output>{draft[key].toUpperCase()}</output>
+                              </span>
+                            </label>
+                          ))
+                        )}
                       </div>
                     ) : null}
                   </section>

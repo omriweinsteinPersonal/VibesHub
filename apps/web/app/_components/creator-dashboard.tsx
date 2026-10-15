@@ -311,8 +311,7 @@ export function CreatorDashboard() {
     'all' | 'brands' | 'items' | 'sections'
   >('all');
   const [dashboardView, setDashboardView] = useState<
-    'recommendations' | 'labels' | 'connectors' | 'media'
-     | 'titles'
+    'recommendations' | 'labels' | 'connectors' | 'media' | 'titles'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1709,7 +1708,7 @@ export function CreatorDashboard() {
     event.preventDefault();
     const detected = detectFeaturedMedia(mediaDraft.url);
     if (!detected) {
-       setError('Paste a valid YouTube, Instagram, TikTok, Spotify or Apple Music link.');
+      setError('Paste a valid YouTube, Instagram, TikTok, Spotify or Apple Music link.');
       return;
     }
     const enriched = await enrichMediaDraft(mediaDraft.url, detected);
@@ -4756,7 +4755,10 @@ function StorefrontTitlesEditor({
                   setDraft((current) =>
                     current.map((item) =>
                       item.id === title.id
-                        ? { ...item, align: event.target.value as StorefrontTitle['align'] }
+                        ? {
+                            ...item,
+                            align: event.target.value as StorefrontTitle['align'],
+                          }
                         : item,
                     ),
                   )
@@ -4770,7 +4772,9 @@ function StorefrontTitlesEditor({
             </label>
             <div className="creatorTitleEditorActions">
               <button
-                onClick={() => setDraft((current) => current.filter((item) => item.id !== title.id))}
+                onClick={() =>
+                  setDraft((current) => current.filter((item) => item.id !== title.id))
+                }
                 type="button"
               >
                 Remove
@@ -4785,7 +4789,9 @@ function StorefrontTitlesEditor({
         <button
           className="button primary"
           disabled={saving || draft.some((title) => !title.text.trim())}
-          onClick={() => void onSave(draft.map((title) => ({ ...title, text: title.text.trim() })))}
+          onClick={() =>
+            void onSave(draft.map((title) => ({ ...title, text: title.text.trim() })))
+          }
           type="button"
         >
           {saving ? 'Saving…' : 'Save titles'}

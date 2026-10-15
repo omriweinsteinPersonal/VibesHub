@@ -607,10 +607,10 @@ export function CreatorStorefrontView({
         className="creatorStorefrontCanvas"
         data-mobile-preview={isMobilePreview}
         data-template={previewTheme.templateId ?? 'classic'}
-         data-header-style={previewTheme.headerStyle ?? 'classic'}
-         data-heading-font={previewTheme.headingFont ?? 'display'}
-         data-body-font={previewTheme.bodyFont ?? 'aptos'}
-         data-bio-align={previewTheme.bioAlign ?? 'center'}
+        data-header-style={previewTheme.headerStyle ?? 'classic'}
+        data-heading-font={previewTheme.headingFont ?? 'display'}
+        data-body-font={previewTheme.bodyFont ?? 'aptos'}
+        data-bio-align={previewTheme.bioAlign ?? 'center'}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
@@ -1170,9 +1170,9 @@ function EditorialMediaCard({ media }: { media: FeaturedMedia }) {
         ? 'YouTube'
         : media.provider === 'tiktok'
           ? 'TikTok'
-        : media.provider === 'spotify'
-          ? 'Spotify'
-          : 'Instagram';
+          : media.provider === 'spotify'
+            ? 'Spotify'
+            : 'Instagram';
   const summary = (
     <>
       <span className="editorialMediaArtwork">

@@ -14863,13 +14863,21 @@ dt {
 }
 
 .creatorStorefrontCanvas[data-heading-font='sans']
-  :is(.referenceStorefrontName h1, .referenceStorefrontRow h3, .referenceCollectionFrame h3) {
+  :is(
+    .referenceStorefrontName h1,
+    .referenceStorefrontRow h3,
+    .referenceCollectionFrame h3
+  ) {
   font-family: var(--font-vh-body), ui-sans-serif, sans-serif;
   font-weight: 700;
 }
 
 .creatorStorefrontCanvas[data-heading-font='editorial']
-  :is(.referenceStorefrontName h1, .referenceStorefrontRow h3, .referenceCollectionFrame h3) {
+  :is(
+    .referenceStorefrontName h1,
+    .referenceStorefrontRow h3,
+    .referenceCollectionFrame h3
+  ) {
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
 }
