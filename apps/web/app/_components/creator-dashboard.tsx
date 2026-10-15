@@ -70,6 +70,11 @@ type CollectionManageEntry = {
   section: CuratedSection;
   items: CreatorRecommendation[];
 };
+type CollectionDiscountDraft = {
+  code: string;
+  discountPercent: string;
+  expiresAt: string;
+};
 
 interface ProductEditor {
   additionalImages: Array<{ imageAssetId: string; url: string }>;
@@ -1327,6 +1332,86 @@ export function CreatorDashboard() {
     }
   }
 
+  async function saveCollectionDiscount(
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) {
+    const existing = discounts.find(
+      (discount) => discount.scopeKind === 'collection' && discount.scopeId === section.id,
+    );
+    const brand = brands.find(({ brandId }) => brandId === section.brandId);
+    if (!brand) return false;
+    const hasOffer = Boolean(draft?.code.trim() || draft?.discountPercent);
+    if (
+      draft?.discountPercent &&
+      (!Number.isInteger(Number(draft.discountPercent)) ||
+        Number(draft.discountPercent) < 1 ||
+        Number(draft.discountPercent) > 100)
+    ) {
+      setError('Enter a whole-number discount from 1 to 100%.');
+      return false;
+    }
+    try {
+      if (!hasOffer) {
+        if (existing) {
+          await apiRequest(`/creator/discount-codes/${existing.id}/archive`, {
+            headers: { 'if-match': `"${existing.version}"` },
+            idempotent: true,
+            method: 'POST',
+          });
+          setDiscounts((current) => current.filter(({ id }) => id !== existing.id));
+        }
+        return true;
+      }
+      const body: DiscountOfferPayload = {
+        brandId: brand.id,
+        code: draft?.code.trim() || null,
+        detailsHe: null,
+        discountPercent: draft?.discountPercent ? Number(draft.discountPercent) : null,
+        discountAmountMinor: null,
+        expiresAt: toDateTimeIso(draft?.expiresAt ?? ''),
+        label: draft?.discountPercent ? `${draft.discountPercent}% off` : null,
+        merchantUrl: brand.websiteUrl,
+        offerType: 'creator_code',
+        priority: 0,
+        recurrenceRule: 'none',
+        scopeId: section.id,
+        scopeKind: 'collection',
+        source: 'manual',
+        stackable: false,
+        startsAt: null,
+      };
+      const saved = existing
+        ? await saveOffer<CreatorDiscountCode>(
+            `/creator/discount-codes/${existing.id}`,
+            body,
+            { headers: { 'if-match': `"${existing.version}"` }, method: 'PATCH' },
+          )
+        : await saveOffer<CreatorDiscountCode>('/creator/discount-codes', body, {
+            idempotent: true,
+            method: 'POST',
+          });
+      const refreshed = await apiRequest<CreatorDiscountCode>(
+        `/creator/discount-codes/${saved.id}`,
+      );
+      let published = refreshed;
+      if (refreshed.lifecycle !== 'published') {
+        published = await apiRequest<CreatorDiscountCode>(
+          `/creator/discount-codes/${refreshed.id}/confirm`,
+          { headers: { 'if-match': `"${refreshed.version}"` }, idempotent: true, method: 'POST' },
+        );
+      }
+      setDiscounts((current) => [
+        ...current.filter(({ id }) => id !== published.id),
+        published,
+      ]);
+      return true;
+    } catch (cause) {
+      setError(messageFor(cause));
+      return false;
+    }
+  }
+
   async function recommendationCommand(
     item: CreatorRecommendation,
     command: 'archive' | 'publish' | 'unpublish',
@@ -2466,6 +2551,7 @@ export function CreatorDashboard() {
                     <div className="creatorComposerBody">
                       <CuratedSectionForm
                         brands={brands}
+                        discounts={discounts}
                         kind="collection"
                         recommendations={activeRecommendations}
                         onCreateBrand={async (input) => {
@@ -2483,6 +2569,7 @@ export function CreatorDashboard() {
                           ]);
                           return created;
                         }}
+                        onSaveCollectionDiscount={saveCollectionDiscount}
                         onCancel={closeComposer}
                         onSave={(section) =>
                           saveSections(
@@ -2646,6 +2733,7 @@ export function CreatorDashboard() {
                               collections={curatedSections.filter(
                                 ({ kind }) => kind === 'collection',
                               )}
+                              discounts={discounts}
                               featuredMedia={featuredMedia}
                               initial={section}
                               kind="section"
@@ -2834,6 +2922,7 @@ export function CreatorDashboard() {
                               {brandCollections.map((entry) => (
                                 <CollectionManageCard
                                   brands={brands}
+                                  discounts={discounts}
                                   editing={editingCollectionId === entry.section.id}
                                   entry={entry}
                                   key={entry.section.id}
@@ -2861,6 +2950,7 @@ export function CreatorDashboard() {
                                     ]);
                                     return created;
                                   }}
+                                  onSaveCollectionDiscount={saveCollectionDiscount}
                                   onDelete={() => {
                                     if (
                                       !window.confirm(
@@ -3098,6 +3188,7 @@ export function CreatorDashboard() {
                             <div className="creatorManageCollectionEditor">
                               <CuratedSectionForm
                                 brands={brands}
+                                discounts={discounts}
                                 initial={entry.section}
                                 kind="collection"
                                 onCancel={() => setEditingCollectionId(null)}
@@ -3116,6 +3207,7 @@ export function CreatorDashboard() {
                                   ]);
                                   return created;
                                 }}
+                                onSaveCollectionDiscount={saveCollectionDiscount}
                                 onSave={(updated) =>
                                   saveCuratedSections(
                                     curatedSections.map((section) =>
@@ -3229,11 +3321,13 @@ export function CreatorDashboard() {
 
 function CollectionManageCard({
   brands,
+  discounts = [],
   editing,
   entry,
   nested = false,
   onArchiveItem,
   onCreateBrand,
+  onSaveCollectionDiscount,
   onDelete,
   onEditItem,
   onToggleItem,
@@ -3247,11 +3341,16 @@ function CollectionManageCard({
   saving,
 }: {
   brands: CreatorBrand[];
+  discounts?: CreatorDiscountCode[];
   editing: boolean;
   entry: CollectionManageEntry;
   nested?: boolean;
   onArchiveItem: (item: CreatorRecommendation) => void;
   onCreateBrand: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
+  onSaveCollectionDiscount: (
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) => Promise<boolean>;
   onDelete: () => void;
   onEditItem: (item: CreatorRecommendation) => void;
   onToggleItem: (item: CreatorRecommendation) => Promise<boolean> | void;
@@ -3323,10 +3422,12 @@ function CollectionManageCard({
           <div className="creatorManageCollectionEditor">
             <CuratedSectionForm
               brands={brands}
+              discounts={discounts}
               initial={entry.section}
               kind="collection"
               onCancel={() => onEditState(false)}
               onCreateBrand={onCreateBrand}
+              onSaveCollectionDiscount={onSaveCollectionDiscount}
               onSave={onSave}
               recommendations={recommendations}
               saving={saving}
@@ -4805,22 +4906,29 @@ function StorefrontTitlesEditor({
 function CuratedSectionForm({
   brands = [],
   collections = [],
+  discounts = [],
   featuredMedia = [],
   initial,
   kind,
   onCancel,
   onCreateBrand,
+  onSaveCollectionDiscount,
   onSave,
   recommendations,
   saving,
 }: {
   brands?: CreatorBrand[];
   collections?: CuratedSection[];
+  discounts?: CreatorDiscountCode[];
   featuredMedia?: FeaturedMedia[];
   initial?: CuratedSection;
   kind: CuratedSection['kind'];
   onCancel: () => void;
   onCreateBrand?: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
+  onSaveCollectionDiscount?: (
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) => Promise<boolean>;
   onSave: (section: CuratedSection) => Promise<boolean>;
   recommendations: CreatorRecommendation[];
   saving: boolean;
@@ -4855,13 +4963,39 @@ function CuratedSectionForm({
     initial?.showItemsIndividually ?? false,
   );
   const [selectionError, setSelectionError] = useState('');
+  const existingCollectionDiscount = discounts.find(
+    (discount) => discount.scopeKind === 'collection' && discount.scopeId === sectionId,
+  );
+  const [useBrandDiscount, setUseBrandDiscount] = useState(
+    !existingCollectionDiscount,
+  );
+  const [collectionDiscountDraft, setCollectionDiscountDraft] =
+    useState<CollectionDiscountDraft>({
+      code: existingCollectionDiscount?.code ?? '',
+      discountPercent: existingCollectionDiscount?.discountPercent?.toString() ?? '',
+      expiresAt: existingCollectionDiscount?.expiresAt?.slice(0, 10) ?? '',
+    });
   const [draggingRecommendationId, setDraggingRecommendationId] = useState<string | null>(
     null,
   );
   const [draggingContentKey, setDraggingContentKey] = useState<string | null>(null);
-  const visibleRecommendations = brandId
-    ? recommendations.filter((item) => item.brandId === brandId)
-    : recommendations;
+  const visibleRecommendations =
+    kind === 'collection'
+      ? brandId
+        ? recommendations.filter((item) => item.brandId === brandId)
+        : []
+      : brandId
+        ? recommendations.filter((item) => item.brandId === brandId)
+        : recommendations;
+  const selectedBrand = availableBrands.find((brand) => brand.brandId === brandId);
+  const brandDiscount =
+    kind === 'collection' && brandId
+      ? discounts.find(
+          (discount) =>
+            discount.scopeKind === 'brand' && discount.brandId === selectedBrand?.id,
+        )
+      : undefined;
+  const displayedDiscount = brandDiscount ?? existingCollectionDiscount;
   const recommendationGroups = Array.from(
     visibleRecommendations.reduce((groups, item) => {
       const key = item.brandId || `unassigned:${item.brandName}`;
@@ -4893,8 +5027,21 @@ function CuratedSectionForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (kind === 'collection' && !brandId) {
+      setSelectionError('Choose a brand before selecting products.');
+      return;
+    }
     if (kind !== 'section' && !recommendationIds.length) {
       setSelectionError('Choose at least one product.');
+      return;
+    }
+    if (
+      kind === 'collection' &&
+      recommendationIds.some(
+        (id) => recommendations.find((item) => item.id === id)?.brandId !== brandId,
+      )
+    ) {
+      setSelectionError('Every product in a collection must belong to its selected brand.');
       return;
     }
     const nextContentItems =
@@ -4919,6 +5066,27 @@ function CuratedSectionForm({
           ? parentCollectionId || null
           : (initial?.parentCollectionId ?? null),
     });
+    if (saved && kind === 'collection' && onSaveCollectionDiscount) {
+      const discountSaved = await onSaveCollectionDiscount(
+        {
+          id: sectionId,
+          kind,
+          brandId: brandId || null,
+          contentItems: nextContentItems,
+          displayStyle,
+          recommendationIds: nextContentItems
+            .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+            .map(({ id }) => id),
+          showItemsIndividually,
+          title: title.trim(),
+          description: initial?.description ?? '',
+          imageUrl: imageUrl || null,
+          parentCollectionId: initial?.parentCollectionId ?? null,
+        },
+        useBrandDiscount ? null : collectionDiscountDraft,
+      );
+      if (!discountSaved) return;
+    }
     if (saved) onCancel();
   }
 
@@ -4959,6 +5127,7 @@ function CuratedSectionForm({
             value={brandId}
             onChange={(event) => {
               setBrandId(event.target.value);
+              setUseBrandDiscount(true);
               if (event.target.value) setCreatingBrand(false);
               setRecommendationIds((ids) =>
                 ids.filter(
@@ -4969,14 +5138,14 @@ function CuratedSectionForm({
               );
             }}
           >
-            <option value="">All brands — browse products</option>
+            <option value="">Choose a brand first</option>
             {availableBrands.map((brand) => (
               <option key={brand.brandId} value={brand.brandId}>
                 {brand.name}
               </option>
             ))}
           </select>
-          {brandId && availableBrands.find((item) => item.brandId === brandId) ? (
+          {brandId && selectedBrand ? (
             <small>Using this brand&apos;s saved name and website.</small>
           ) : null}
           {onCreateBrand ? (
@@ -4989,6 +5158,87 @@ function CuratedSectionForm({
             </button>
           ) : null}
         </label>
+      ) : null}
+      {kind === 'collection' && brandId && displayedDiscount ? (
+        <div className="creatorDiscountInheritance">
+          <label className="creatorCheckboxField">
+            <input
+              checked={useBrandDiscount}
+              onChange={(event) => {
+                const checked = event.target.checked;
+                setUseBrandDiscount(checked);
+                if (!checked && !collectionDiscountDraft.code && displayedDiscount) {
+                  setCollectionDiscountDraft({
+                    code: displayedDiscount.code ?? '',
+                    discountPercent: displayedDiscount.discountPercent?.toString() ?? '',
+                    expiresAt: displayedDiscount.expiresAt?.slice(0, 10) ?? '',
+                  });
+                }
+              }}
+              type="checkbox"
+            />
+            <span>
+              <strong>Use the same discount as {selectedBrand?.name ?? 'this brand'}</strong>
+              <small>
+                {displayedDiscount.code ? `${displayedDiscount.code} · ` : ''}
+                {displayedDiscount.discountPercent
+                  ? `${displayedDiscount.discountPercent}% off`
+                  : displayedDiscount.discountAmountMinor
+                    ? `${(displayedDiscount.discountAmountMinor / 100).toFixed(2)} off`
+                    : 'Brand discount'}
+                {displayedDiscount.expiresAt
+                  ? ` · ends ${new Date(displayedDiscount.expiresAt).toLocaleDateString()}`
+                  : ''}
+              </small>
+            </span>
+          </label>
+          {!useBrandDiscount ? (
+            <div className="creatorCollectionDiscountFields">
+              <label>
+                Code
+                <input
+                  maxLength={50}
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      code: event.target.value,
+                    }))
+                  }
+                  value={collectionDiscountDraft.code}
+                />
+              </label>
+              <label>
+                Discount %
+                <input
+                  inputMode="numeric"
+                  max="100"
+                  min="1"
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      discountPercent: event.target.value,
+                    }))
+                  }
+                  type="number"
+                  value={collectionDiscountDraft.discountPercent}
+                />
+              </label>
+              <label>
+                Expires
+                <input
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      expiresAt: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={collectionDiscountDraft.expiresAt}
+                />
+              </label>
+            </div>
+          ) : null}
+        </div>
       ) : null}
       {kind === 'collection' ? (
         <label>
@@ -5155,7 +5405,9 @@ function CuratedSectionForm({
           <legend>
             {kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}
           </legend>
-          {recommendations.length ? (
+          {kind === 'collection' && !brandId ? (
+            <p>Choose a brand above to see its products.</p>
+          ) : recommendations.length ? (
             <div className="creatorCuratedChoices">
               {recommendationGroups.map(([id, group]) => (
                 <section className="creatorCuratedBrandGroup" key={id}>

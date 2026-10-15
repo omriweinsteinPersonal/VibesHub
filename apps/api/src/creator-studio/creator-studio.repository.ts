@@ -501,6 +501,38 @@ export class CreatorStudioRepository {
           };
         }
       }
+      const collectionRecommendationIds = [
+        ...new Set(
+          input.curatedSections
+            .filter((section) => section.kind === 'collection')
+            .flatMap((section) => section.recommendationIds),
+        ),
+      ];
+      if (collectionRecommendationIds.length) {
+        const collectionItems = await sql<{ id: string; brandId: string }[]>`
+          select recommendation.id, product.brand_id as "brandId"
+          from app.recommendations recommendation
+          join app.products product on product.id = recommendation.product_id
+          where recommendation.creator_id = ${identity.id}
+            and recommendation.id = any(${collectionRecommendationIds}::uuid[])
+            and recommendation.lifecycle <> 'archived'
+            and recommendation.deleted_at is null
+        `;
+        const itemBrandIds = new Map(
+          collectionItems.map((item) => [item.id, item.brandId]),
+        );
+        for (const section of input.curatedSections) {
+          if (
+            section.kind === 'collection' &&
+            section.recommendationIds.some((id) => itemBrandIds.get(id) !== section.brandId)
+          ) {
+            return {
+              kind: 'invalid_recommendations',
+              reason: 'collection products must belong to its selected brand',
+            };
+          }
+        }
+      }
       if (mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))) {
         return {
           kind: 'invalid_recommendations',

@@ -1002,6 +1002,79 @@ svg.lucide {
   font-size: 0.76rem;
   line-height: 17px;
 }
+.creatorDiscountInheritance {
+  background: #faf7f3;
+  border: 1px solid #e6ddd2;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.creatorDiscountInheritance .creatorCheckboxField {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin: 0;
+}
+.creatorDiscountInheritance .creatorCheckboxField > input {
+  accent-color: var(--vh-accent);
+  flex: 0 0 auto;
+  height: 18px;
+  margin: 2px 0 0;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+.creatorDiscountInheritance .creatorCheckboxField > span {
+  display: grid;
+  gap: 2px;
+  line-height: 18px;
+}
+.creatorDiscountInheritance strong {
+  color: var(--vh-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+.creatorDiscountInheritance small {
+  color: #786c62;
+  font-size: 0.76rem;
+  line-height: 17px;
+}
+.creatorDiscountInheritance .creatorFormHint {
+  display: block;
+  margin: 8px 0 0 28px;
+}
+.creatorCollectionDiscountFields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(86px, 0.65fr) minmax(120px, 0.9fr);
+  margin: 12px 0 0 28px;
+}
+.creatorCollectionDiscountFields label {
+  color: #786c62;
+  display: grid;
+  font-size: 0.72rem;
+  gap: 4px;
+}
+.creatorCollectionDiscountFields input {
+  background: #fff;
+  border: 1px solid #ded5ca;
+  border-radius: 7px;
+  color: var(--vh-ink);
+  font: inherit;
+  min-height: 36px;
+  min-width: 0;
+  padding: 6px 8px;
+  width: 100%;
+}
+@media (max-width: 520px) {
+  .creatorCollectionDiscountFields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .creatorCollectionDiscountFields label:first-child {
+    grid-column: 1 / -1;
+  }
+}
 .creatorProductSavePrompt {
   align-items: center;
   background: #faf7f3;
@@ -8348,8 +8421,8 @@ dt {
   padding: 12px;
 }
 .referenceBrandCollectionCard strong {
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 1.05rem;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
   font-weight: 400;
 }
 .referenceBrandCollectionCard small {
@@ -8392,13 +8465,20 @@ dt {
 }
 .creatorProductPage > header {
   border-bottom: 1px solid #e6ddd2;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
   margin: 32px 0;
   padding-bottom: 26px;
 }
+.creatorProductPageHeaderMain {
+  min-width: 0;
+}
 .creatorProductPage > header h1 {
-  font-family: var(--font-vh-display), Georgia, serif;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
   font-size: clamp(2.2rem, 5vw, 3.8rem);
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   margin: 8px 0;
 }
 .creatorProductPage > header p:last-child {
@@ -8413,9 +8493,53 @@ dt {
 .creatorProductPageGrid > * {
   min-width: 0;
 }
+.creatorProductPageOffer {
+  align-items: flex-end;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 92px;
+  padding-top: 5px;
+  text-align: right;
+}
+.creatorProductPageOffer > span {
+  color: #69584e;
+  font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.creatorProductPageOffer > strong {
+  background: rgb(255 255 255 / 48%);
+  border: 1px dashed color-mix(in srgb, currentColor 48%, transparent);
+  border-radius: 6px;
+  color: #17120f;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.creatorProductPageOffer small {
+  color: #75695f;
+  display: grid;
+  font-size: 0.68rem;
+  gap: 2px;
+  line-height: 1.15;
+}
+.creatorProductPageOffer small b {
+  font-size: 0.76rem;
+  font-weight: 400;
+}
 @media (max-width: 620px) {
   .creatorProductPage {
     padding: 28px 14px 80px;
+  }
+  .creatorProductPage > header {
+    gap: 12px;
+  }
+  .creatorProductPageOffer {
+    min-width: 76px;
   }
   .creatorProductPageGrid {
     gap: 10px;
@@ -12770,8 +12894,8 @@ dt {
 .creatorStorefrontCanvas .referenceBrandShelf .referenceBrandCollectionCard strong {
   color: #17120f;
   display: block;
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 0.88rem;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
   font-weight: 400;
   line-height: 1.22;
   min-height: 2.44em;
