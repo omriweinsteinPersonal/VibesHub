@@ -678,7 +678,14 @@ export type StorefrontTitle = z.infer<typeof storefrontTitleSchema>;
 export const featuredMediaSchema = z
   .object({
     id: idSchema,
-    provider: z.enum(['youtube', 'instagram', 'tiktok', 'spotify', 'apple_music']),
+    provider: z.enum([
+      'youtube',
+      'instagram',
+      'tiktok',
+      'spotify',
+      'apple_music',
+      'maps',
+    ]),
     url: z.url({ protocol: /^https$/ }).max(2_048),
     title: z.string().trim().min(1).max(160),
     thumbnailUrl: z
@@ -686,6 +693,7 @@ export const featuredMediaSchema = z
       .max(2_048)
       .nullable()
       .default(null),
+    location: z.string().trim().max(160).optional(),
     displayMode: z.enum(['embed', 'link']).default('embed'),
     visible: z.boolean().default(true),
   })

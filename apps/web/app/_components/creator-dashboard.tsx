@@ -24,6 +24,7 @@ import {
   LayoutGrid,
   Layers3,
   Link2,
+  MapPinned,
   Pencil,
   Plus,
   Sparkles,
@@ -65,6 +66,11 @@ type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][num
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
 type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
+type MapDraft = {
+  location: string;
+  title: string;
+  url: string;
+};
 type CollectionManageEntry = {
   kind: 'collection';
   section: CuratedSection;
@@ -304,6 +310,13 @@ export function CreatorDashboard() {
   });
   const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
   const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
+  const [mapDraft, setMapDraft] = useState<MapDraft>({
+    location: '',
+    title: '',
+    url: '',
+  });
+  const [editingMapId, setEditingMapId] = useState<string | null>(null);
+  const [mapEditorOpen, setMapEditorOpen] = useState(false);
   const [storefrontLabels, setStorefrontLabels] = useState<StorefrontLabel[]>([]);
   const [hiddenBrandIds, setHiddenBrandIds] = useState<string[]>([]);
   const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
@@ -316,7 +329,7 @@ export function CreatorDashboard() {
     'all' | 'brands' | 'items' | 'sections'
   >('all');
   const [dashboardView, setDashboardView] = useState<
-    'recommendations' | 'labels' | 'connectors' | 'media'
+    'recommendations' | 'labels' | 'connectors' | 'media' | 'maps'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1835,6 +1848,100 @@ export function CreatorDashboard() {
     }
   }
 
+  function startMapEditor(item?: FeaturedMedia) {
+    setEditingMapId(item?.id ?? null);
+    setMapDraft({
+      location: item?.location ?? '',
+      title: item?.title ?? '',
+      url: item?.url ?? '',
+    });
+    setMapEditorOpen(true);
+    setError('');
+  }
+
+  async function saveMap(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const url = normalizeMapUrl(mapDraft.url);
+    if (!url) {
+      setError('Paste a valid Google Maps link.');
+      return;
+    }
+    const title = mapDraft.title.trim();
+    if (!title) {
+      setError('Add a name for this map recommendation.');
+      return;
+    }
+    const item: FeaturedMedia = {
+      displayMode: 'link',
+      id: editingMapId ?? randomUuid(),
+      location: mapDraft.location.trim() || undefined,
+      provider: 'maps',
+      thumbnailUrl: null,
+      title,
+      url,
+      visible: editingMapId
+        ? (featuredMedia.find(({ id }) => id === editingMapId)?.visible ?? true)
+        : true,
+    };
+    const nextMedia = editingMapId
+      ? featuredMedia.map((current) => (current.id === item.id ? item : current))
+      : [...featuredMedia, item];
+    const nextOrder = contentOrder.some(
+      ({ kind, id }) => kind === 'media' && id === item.id,
+    )
+      ? contentOrder
+      : [...contentOrder, { kind: 'media' as const, id: item.id }];
+    if (
+      await saveSections(
+        selectedSections,
+        curatedSections,
+        nextOrder,
+        storefrontLabels,
+        hiddenBrandIds,
+        hiddenCollectionIds,
+        hiddenRecommendationIds,
+        nextMedia,
+      )
+    ) {
+      setMapDraft({ location: '', title: '', url: '' });
+      setEditingMapId(null);
+      setMapEditorOpen(false);
+    }
+  }
+
+  async function removeMap(id: string) {
+    const nextMedia = featuredMedia.filter((item) => item.id !== id);
+    const nextOrder = contentOrder.filter(
+      (layer) => layer.kind !== 'media' || layer.id !== id,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      nextOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
+  }
+
+  async function toggleMap(id: string) {
+    const nextMedia = featuredMedia.map((item) =>
+      item.id === id ? { ...item, visible: !item.visible } : item,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      contentOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
+  }
+
   async function removeFeaturedMedia(id: string) {
     const nextMedia = featuredMedia.filter((item) => item.id !== id);
     const nextOrder = contentOrder.filter(
@@ -2040,6 +2147,21 @@ export function CreatorDashboard() {
             />
           </button>
           <button
+            aria-current={dashboardView === 'maps' ? 'page' : undefined}
+            onClick={() => setDashboardView('maps')}
+            type="button"
+          >
+            <span className="creatorDashboardNavCopy">
+              <strong>Maps</strong>
+              <small>Add places and recommendations from Google Maps.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
+          </button>
+          <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
             onClick={() => setDashboardView('connectors')}
             type="button"
@@ -2170,47 +2292,174 @@ export function CreatorDashboard() {
                 </form>
               ) : null}
               <div className="creatorMediaManageList">
-                {featuredMedia.map((item) => (
-                  <article className="creatorMediaManageCard" key={item.id}>
-                    {item.thumbnailUrl ? (
-                      <Image
-                        alt=""
-                        fill
-                        sizes="120px"
-                        src={item.thumbnailUrl}
-                        unoptimized
-                      />
-                    ) : null}
-                    <div>
-                      <small>{item.provider.replace('_', ' ')}</small>
-                      <h3>{item.title}</h3>
-                    </div>
-                    <label className="creatorLiveToggle">
-                      <input
-                        checked={item.visible}
-                        onChange={() => void toggleFeaturedMedia(item.id)}
-                        type="checkbox"
-                      />
-                      <span /> {item.visible ? 'On' : 'Off'}
-                    </label>
-                    <button
-                      aria-label={`Edit ${item.title}`}
-                      onClick={() => startMediaEditor(item)}
-                      type="button"
-                    >
-                      <Pencil aria-hidden="true" size={16} />
-                    </button>
-                    <button
-                      aria-label={`Remove ${item.title}`}
-                      onClick={() => void removeFeaturedMedia(item.id)}
-                      type="button"
-                    >
-                      <Trash2 aria-hidden="true" size={16} />
-                    </button>
-                  </article>
-                ))}
-                {!featuredMedia.length ? (
+                {featuredMedia
+                  .filter((item) => item.provider !== 'maps')
+                  .map((item) => (
+                    <article className="creatorMediaManageCard" key={item.id}>
+                      {item.thumbnailUrl ? (
+                        <Image
+                          alt=""
+                          fill
+                          sizes="120px"
+                          src={item.thumbnailUrl}
+                          unoptimized
+                        />
+                      ) : null}
+                      <div>
+                        <small>{item.provider.replace('_', ' ')}</small>
+                        <h3>{item.title}</h3>
+                      </div>
+                      <label className="creatorLiveToggle">
+                        <input
+                          checked={item.visible}
+                          onChange={() => void toggleFeaturedMedia(item.id)}
+                          type="checkbox"
+                        />
+                        <span /> {item.visible ? 'On' : 'Off'}
+                      </label>
+                      <button
+                        aria-label={`Edit ${item.title}`}
+                        onClick={() => startMediaEditor(item)}
+                        type="button"
+                      >
+                        <Pencil aria-hidden="true" size={16} />
+                      </button>
+                      <button
+                        aria-label={`Remove ${item.title}`}
+                        onClick={() => void removeFeaturedMedia(item.id)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={16} />
+                      </button>
+                    </article>
+                  ))}
+                {!featuredMedia.some((item) => item.provider !== 'maps') ? (
                   <p className="creatorEmptyState">No media yet.</p>
+                ) : null}
+              </div>
+            </section>
+          ) : dashboardView === 'maps' ? (
+            <section className="creatorRecommendationSection">
+              <div className="creatorSectionHeading">
+                <div>
+                  <h2>Maps</h2>
+                  <p>Add a place recommendation that opens directly in Google Maps.</p>
+                </div>
+                <button
+                  className="button primary"
+                  onClick={() => startMapEditor()}
+                  type="button"
+                >
+                  <MapPinned aria-hidden="true" size={16} />
+                  <span>Add map</span>
+                </button>
+              </div>
+              {mapEditorOpen ? (
+                <form
+                  className="creatorComposer creatorComposerBody creatorFormGrid"
+                  onSubmit={(event) => void saveMap(event)}
+                >
+                  <label>
+                    Google Maps link
+                    <input
+                      required
+                      type="url"
+                      value={mapDraft.url}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          url: event.target.value,
+                        }))
+                      }
+                      placeholder="https://maps.google.com/..."
+                    />
+                    <small>Paste a Google Maps place or directions link.</small>
+                  </label>
+                  <label>
+                    Map name
+                    <input
+                      required
+                      maxLength={160}
+                      value={mapDraft.title}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          title: event.target.value,
+                        }))
+                      }
+                      placeholder="Best coffee in Tel Aviv"
+                    />
+                  </label>
+                  <label>
+                    Location <span className="fieldOptional">(optional)</span>
+                    <input
+                      maxLength={160}
+                      value={mapDraft.location}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          location: event.target.value,
+                        }))
+                      }
+                      placeholder="Florentin, Tel Aviv"
+                    />
+                  </label>
+                  <div className="creatorFormActions creatorFullField">
+                    <button className="button primary" disabled={saving} type="submit">
+                      {saving ? 'Saving…' : editingMapId ? 'Save map' : 'Add map'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingMapId(null);
+                        setMapEditorOpen(false);
+                        setMapDraft({ location: '', title: '', url: '' });
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+              <div className="creatorMediaManageList">
+                {featuredMedia
+                  .filter((item) => item.provider === 'maps')
+                  .map((item) => (
+                    <article className="creatorMediaManageCard" key={item.id}>
+                      <span className="creatorMapManageIcon" aria-hidden="true">
+                        <MapPinned size={20} />
+                      </span>
+                      <div>
+                        <small>Maps</small>
+                        <h3>{item.title}</h3>
+                        {item.location ? <p>{item.location}</p> : null}
+                      </div>
+                      <label className="creatorLiveToggle">
+                        <input
+                          checked={item.visible}
+                          onChange={() => void toggleMap(item.id)}
+                          type="checkbox"
+                        />
+                        <span /> {item.visible ? 'On' : 'Off'}
+                      </label>
+                      <button
+                        aria-label={`Edit ${item.title}`}
+                        onClick={() => startMapEditor(item)}
+                        type="button"
+                      >
+                        <Pencil aria-hidden="true" size={16} />
+                      </button>
+                      <button
+                        aria-label={`Remove ${item.title}`}
+                        onClick={() => void removeMap(item.id)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={16} />
+                      </button>
+                    </article>
+                  ))}
+                {!featuredMedia.some((item) => item.provider === 'maps') ? (
+                  <p className="creatorEmptyState">No maps yet.</p>
                 ) : null}
               </div>
             </section>
@@ -5718,6 +5967,26 @@ async function enrichMediaDraft(
     return { title, thumbnailUrl };
   } catch {
     // Metadata is an enhancement; saving the original link should still work.
+    return null;
+  }
+}
+
+function normalizeMapUrl(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== 'https:') return null;
+    const host = url.hostname.toLowerCase();
+    if (
+      host !== 'google.com' &&
+      host !== 'www.google.com' &&
+      host !== 'maps.google.com' &&
+      host !== 'www.google.co.il' &&
+      host !== 'maps.app.goo.gl'
+    )
+      return null;
+    if (!host.includes('google') && host !== 'maps.app.goo.gl') return null;
+    return url.toString();
+  } catch {
     return null;
   }
 }

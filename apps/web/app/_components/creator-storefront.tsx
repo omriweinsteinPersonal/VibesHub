@@ -25,6 +25,8 @@ import {
   BadgeCheck,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  MapPinned,
   Music2,
   Play,
   Search,
@@ -1100,6 +1102,7 @@ function FeaturedMediaBlock({
   editorial?: boolean;
   media: FeaturedMedia;
 }) {
+  if (media.provider === 'maps') return <MapRecommendationCard media={media} />;
   if (editorial) return <EditorialMediaCard media={media} />;
   const embedUrl = featuredMediaEmbedUrl(media);
   if (media.provider === 'instagram') {
@@ -1159,6 +1162,31 @@ function FeaturedMediaBlock({
           </span>
         </a>
       )}
+    </article>
+  );
+}
+
+function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
+  return (
+    <article className="featuredMapCard">
+      <div className="featuredMapArtwork" aria-hidden="true">
+        <MapPinned size={28} />
+      </div>
+      <div className="featuredMapCopy" dir="auto">
+        <small>MAP RECOMMENDATION</small>
+        <strong>{media.title}</strong>
+        {media.location ? <span>{media.location}</span> : null}
+      </div>
+      <a
+        aria-label={`Open ${media.title} in Google Maps`}
+        className="featuredMapLink"
+        href={media.url}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span>Open in Google Maps</span>
+        <ExternalLink aria-hidden="true" size={16} />
+      </a>
     </article>
   );
 }
