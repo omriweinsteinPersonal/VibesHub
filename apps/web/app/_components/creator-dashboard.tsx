@@ -68,6 +68,7 @@ type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
 type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
 type MapDraft = {
   location: string;
+  thumbnailUrl: string;
   title: string;
   url: string;
 };
@@ -312,6 +313,7 @@ export function CreatorDashboard() {
   const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
   const [mapDraft, setMapDraft] = useState<MapDraft>({
     location: '',
+    thumbnailUrl: '',
     title: '',
     url: '',
   });
@@ -1852,6 +1854,7 @@ export function CreatorDashboard() {
     setEditingMapId(item?.id ?? null);
     setMapDraft({
       location: item?.location ?? '',
+      thumbnailUrl: item?.thumbnailUrl ?? '',
       title: item?.title ?? '',
       url: item?.url ?? '',
     });
@@ -1871,12 +1874,21 @@ export function CreatorDashboard() {
       setError('Add a name for this map recommendation.');
       return;
     }
+    const thumbnailUrl = mapDraft.thumbnailUrl.trim();
+    if (thumbnailUrl) {
+      try {
+        if (new URL(thumbnailUrl).protocol !== 'https:') throw new Error('invalid');
+      } catch {
+        setError('Paste a valid HTTPS image link or leave it empty.');
+        return;
+      }
+    }
     const item: FeaturedMedia = {
       displayMode: 'link',
       id: editingMapId ?? randomUuid(),
       location: mapDraft.location.trim() || undefined,
       provider: 'maps',
-      thumbnailUrl: null,
+      thumbnailUrl: thumbnailUrl || null,
       title,
       url,
       visible: editingMapId
@@ -1903,7 +1915,7 @@ export function CreatorDashboard() {
         nextMedia,
       )
     ) {
-      setMapDraft({ location: '', title: '', url: '' });
+      setMapDraft({ location: '', thumbnailUrl: '', title: '', url: '' });
       setEditingMapId(null);
       setMapEditorOpen(false);
     }
@@ -2404,6 +2416,21 @@ export function CreatorDashboard() {
                       placeholder="Florentin, Tel Aviv"
                     />
                   </label>
+                  <label>
+                    Place image <span className="fieldOptional">(optional)</span>
+                    <input
+                      type="url"
+                      value={mapDraft.thumbnailUrl}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          thumbnailUrl: event.target.value,
+                        }))
+                      }
+                      placeholder="https://…/budapest.jpg"
+                    />
+                    <small>This image appears on the right side of the map card.</small>
+                  </label>
                   <div className="creatorFormActions creatorFullField">
                     <button className="button primary" disabled={saving} type="submit">
                       {saving ? 'Saving…' : editingMapId ? 'Save map' : 'Add map'}
@@ -2412,7 +2439,12 @@ export function CreatorDashboard() {
                       onClick={() => {
                         setEditingMapId(null);
                         setMapEditorOpen(false);
-                        setMapDraft({ location: '', title: '', url: '' });
+                        setMapDraft({
+                          location: '',
+                          thumbnailUrl: '',
+                          title: '',
+                          url: '',
+                        });
                       }}
                       type="button"
                     >
