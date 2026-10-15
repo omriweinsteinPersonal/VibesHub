@@ -79,6 +79,19 @@ const templatePresets = [
     description: 'Warm terracotta, soft cream, and an editorial feel.',
     colors: { recommendationsBackground: '#d99a78' },
   },
+  {
+    id: 'forest-glass',
+    title: 'Forest Glass',
+    description: 'Deep teal texture, soft ivory cards, and a gallery-like profile.',
+    colors: {
+      recommendationsBackground: '#123f3b',
+      productBackground: '#f4efe3',
+      collectionBackground: '#f4efe3',
+      discountBackground: '#f4efe3',
+      accentColor: '#d6e8d1',
+      textColor: '#173c38',
+    },
+  },
 ] as const;
 
 function subscribe(callback: () => void) {

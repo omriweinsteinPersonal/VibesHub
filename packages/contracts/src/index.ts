@@ -579,6 +579,7 @@ export const storefrontThemeSchema = z
         'citrus-glow',
         'midnight-electric',
         'clay-editorial',
+        'forest-glass',
       ])
       .optional(),
     headerStyle: z.enum(['classic', 'circular']).default('classic'),

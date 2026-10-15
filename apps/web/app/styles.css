@@ -10307,6 +10307,11 @@ dt {
 .storefrontTemplateSwatch-clay-editorial {
   background: #d99a78;
 }
+.storefrontTemplateSwatch-forest-glass {
+  background:
+    radial-gradient(circle at 20% 30%, rgb(165 218 184 / 35%), transparent 34%),
+    linear-gradient(135deg, #123f3b, #1d6258 48%, #0a2d2d);
+}
 .storefrontTemplateCard > span:last-child {
   display: grid;
   gap: 4px;
@@ -10339,11 +10344,26 @@ dt {
       rgb(122 62 40 / 6%) 35px 37px
     );
 }
+.creatorStorefrontCanvas[data-template='forest-glass'] {
+  background-color: #123f3b;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgb(155 211 182 / 22%) 0 18%, transparent 48%),
+    radial-gradient(ellipse at 84% 78%, rgb(7 48 47 / 58%) 0 17%, transparent 56%),
+    repeating-radial-gradient(
+      ellipse at 40% 38%,
+      transparent 0 32px,
+      rgb(202 232 209 / 8%) 33px 35px,
+      transparent 36px 74px
+    ),
+    linear-gradient(140deg, #0c302f 0%, #16534b 48%, #0b302f 100%);
+  background-attachment: fixed;
+}
 /* Templates style only the outer chrome. Recommendation cards keep their
    existing structure, media treatment, and controls. */
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
-    [data-template='clay-editorial']
+    [data-template='clay-editorial'],
+    [data-template='forest-glass']
   )
   .referenceStorefrontLabels {
   background: color-mix(in srgb, var(--sf-page) 78%, white);
@@ -10355,7 +10375,8 @@ dt {
 }
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
-    [data-template='clay-editorial']
+    [data-template='clay-editorial'],
+    [data-template='forest-glass']
   )
   .referenceStorefrontLabels
   button {
@@ -10369,6 +10390,51 @@ dt {
   button[aria-pressed='true'] {
   background: color-mix(in srgb, var(--sf-page) 58%, white);
   color: var(--sf-text);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontHero {
+  background-color: transparent;
+  background-image:
+    linear-gradient(180deg, rgb(9 42 41 / 12%), rgb(9 42 41 / 42%)),
+    var(--sf-profile-image, none);
+  background-position: center, center;
+  background-size: cover;
+  border-bottom-color: rgb(222 244 222 / 16%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontName h1,
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontBio {
+  color: #f4efe3;
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontAvatar {
+  border-color: #d6e8d1;
+  box-shadow:
+    0 0 0 5px rgb(214 232 209 / 18%),
+    0 16px 30px rgb(4 25 25 / 32%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontLabels {
+  background: rgb(17 60 56 / 76%);
+  border-color: rgb(214 232 209 / 36%);
+  box-shadow: 0 10px 24px rgb(3 25 25 / 24%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontLabels button {
+  color: #edf5e9;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: #f4efe3;
+  color: #123f3b;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontActions.referenceConnectors
+  > a {
+  background: rgb(215 235 216 / 14%);
+  border-color: rgb(215 235 216 / 34%);
+  color: #f4efe3;
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceCollectionFrame,
+.creatorStorefrontCanvas[data-template='forest-glass'] .storeProductCard,
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceDiscountLayer article {
+  box-shadow: 0 16px 30px rgb(5 30 28 / 18%);
 }
 .creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar {
   background-color: var(--sf-product);

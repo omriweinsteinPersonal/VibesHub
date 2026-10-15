@@ -98,7 +98,13 @@ export default async function StorefrontPageRoute({
               {collectionDiscount.expiresAt ? (
                 <small>
                   <span>Discount expires</span>
-                  <b>{new Date(collectionDiscount.expiresAt).toLocaleDateString()}</b>
+                  <b>
+                    {new Intl.DateTimeFormat('en-GB', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    }).format(new Date(collectionDiscount.expiresAt))}
+                  </b>
                 </small>
               ) : null}
             </aside>
