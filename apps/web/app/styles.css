@@ -8759,6 +8759,25 @@ dt {
   gap: 7px;
 }
 
+.creatorCuratedForm > .creatorCheckboxField {
+  align-items: center;
+  color: #4f443d;
+  display: flex;
+  flex-direction: row;
+  font-size: 0.82rem;
+  gap: 8px;
+}
+
+.creatorCuratedForm > .creatorCheckboxField > input {
+  accent-color: var(--vh-accent);
+  flex: 0 0 auto;
+  height: 16px;
+  margin: 0;
+  min-height: 16px;
+  padding: 0;
+  width: 16px;
+}
+
 .creatorCuratedForm > label input {
   border: 1px solid #ded5ca;
   border-radius: 8px;
