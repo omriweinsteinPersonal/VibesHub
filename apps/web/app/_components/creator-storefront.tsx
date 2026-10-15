@@ -35,7 +35,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
 } from 'react';
 
 import { StorefrontLayout, StorefrontRegion, StorefrontSlot } from './storefront-layout';
@@ -51,6 +50,7 @@ type StorefrontLayer = CreatorStorefrontConfigurationInput['contentOrder'][numbe
 
 function safeProfileImageUrl(value: string | undefined) {
   if (!value) return '';
+  if (value.startsWith('/')) return value;
   try {
     const url = new URL(value);
     return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : '';
@@ -106,6 +106,8 @@ export function CreatorStorefrontView({
     safeProfileImageUrl(
       storefront.avatarUrl ? publicAssetUrl(storefront.avatarUrl) : undefined,
     );
+  const avatarImageUrl =
+    profileImageUrl || (storefront.avatarUrl ? publicAssetUrl(storefront.avatarUrl) : '');
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -666,7 +668,7 @@ export function CreatorStorefrontView({
             '--sf-accent': previewTheme.accentColor,
             '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
             '--sf-text': previewTheme.textColor,
-          } as CSSProperties
+          }
         }
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
@@ -694,13 +696,13 @@ export function CreatorStorefrontView({
                       : undefined
                   }
                 >
-                  {storefront.avatarUrl ? (
+                  {avatarImageUrl ? (
                     <Image
                       alt={`${storefront.displayName} profile photo`}
                       fill
                       priority
                       sizes="180px"
-                      src={publicAssetUrl(storefront.avatarUrl)}
+                      src={avatarImageUrl}
                       unoptimized
                     />
                   ) : (
