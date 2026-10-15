@@ -2155,6 +2155,9 @@ export function CreatorDashboard() {
             </section>
           ) : dashboardView === 'titles' ? (
             <StorefrontTitlesEditor
+              key={storefrontTitles
+                .map(({ align, id, text }) => `${id}:${align}:${text}`)
+                .join('|')}
               onSave={saveTitles}
               saving={saving}
               titles={storefrontTitles}
@@ -4701,8 +4704,6 @@ function StorefrontTitlesEditor({
   titles: StorefrontTitle[];
 }) {
   const [draft, setDraft] = useState<StorefrontTitle[]>(titles);
-
-  useEffect(() => setDraft(titles), [titles]);
 
   function addTitle() {
     setDraft((current) => [
