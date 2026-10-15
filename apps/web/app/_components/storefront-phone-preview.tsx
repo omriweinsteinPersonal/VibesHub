@@ -64,6 +64,51 @@ const groups: Array<{
   },
 ];
 
+const templatePresets = [
+  {
+    id: 'citrus-glow',
+    title: 'Citrus Glow',
+    description: 'A bright lime gradient with a playful citrus accent.',
+    colors: {
+      recommendationsBackground: '#e9ff72',
+      productBackground: '#f8ffd9',
+      discountBackground: '#efff9d',
+      collectionBackground: '#f5ffd0',
+      accentColor: '#e8682a',
+      textColor: '#253014',
+      dividerColor: '#cbdc68',
+    },
+  },
+  {
+    id: 'midnight-electric',
+    title: 'Midnight Electric',
+    description: 'A deep night backdrop with a crisp electric-blue glow.',
+    colors: {
+      recommendationsBackground: '#091a2e',
+      productBackground: '#102940',
+      discountBackground: '#153653',
+      collectionBackground: '#0d2238',
+      accentColor: '#61c7ff',
+      textColor: '#eef8ff',
+      dividerColor: '#2b5a79',
+    },
+  },
+  {
+    id: 'clay-editorial',
+    title: 'Clay Editorial',
+    description: 'Warm terracotta, soft cream, and an editorial feel.',
+    colors: {
+      recommendationsBackground: '#f0c1a3',
+      productBackground: '#fff7ef',
+      discountBackground: '#f7dfd1',
+      collectionBackground: '#fff0e4',
+      accentColor: '#b85836',
+      textColor: '#3a2118',
+      dividerColor: '#d8a98b',
+    },
+  },
+] as const;
+
 function subscribe(callback: () => void) {
   const query = window.matchMedia(desktopQuery);
   query.addEventListener('change', callback);
@@ -105,7 +150,6 @@ export function StorefrontPhonePreview({
   const [titlesSaving, setTitlesSaving] = useState(false);
   const [draft, setDraft] = useState<StorefrontTheme>({
     ...theme,
-    templateId: 'classic',
   });
   const [selected, setSelected] = useState<ThemeSection>('theme');
   const [saving, setSaving] = useState(false);
@@ -141,7 +185,7 @@ export function StorefrontPhonePreview({
       .then((value) => {
         if (!active) return;
         setConfiguration(value);
-        setDraft({ ...value.theme, templateId: 'classic' });
+        setDraft(value.theme);
       })
       .catch((cause: unknown) => {
         if (active)
@@ -533,9 +577,37 @@ export function StorefrontPhonePreview({
                             ))}
                           </div>
                         ) : group.id === 'templates' ? (
-                          <p className="storefrontEditorHint">
-                            More templates will be added here soon.
-                          </p>
+                          <div
+                            aria-label="Storefront templates"
+                            className="storefrontChoiceGrid storefrontTemplateGrid"
+                            role="group"
+                          >
+                            {templatePresets.map((template) => (
+                              <button
+                                aria-pressed={draft.templateId === template.id}
+                                className="storefrontChoiceCard storefrontTemplateCard"
+                                key={template.id}
+                                onClick={() => {
+                                  setDraft((current) => ({
+                                    ...current,
+                                    templateId: template.id,
+                                    ...template.colors,
+                                  }));
+                                  setNotice('');
+                                }}
+                                type="button"
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className={`storefrontTemplateSwatch storefrontTemplateSwatch-${template.id}`}
+                                />
+                                <span>
+                                  <strong>{template.title}</strong>
+                                  <span>{template.description}</span>
+                                </span>
+                              </button>
+                            ))}
+                          </div>
                         ) : group.id === 'typography' ? (
                           <div className="storefrontTypographyFields">
                             <label>
