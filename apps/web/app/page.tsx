@@ -15,6 +15,11 @@ import {
   Video,
 } from 'lucide-react';
 import { HomeGallery, HomeStudio } from './_components/home-experience';
+import {
+  organizationStructuredData,
+  siteName,
+  websiteStructuredData,
+} from '../lib/site-metadata';
 import styles from './home.module.css';
 
 const signup = '/auth?mode=signup';
@@ -22,14 +27,22 @@ const description =
   'Swavii lets creators build a personal page that looks and feels like them—bringing together recommendations, collections, links, photos, videos and more in one place.';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/' },
   description,
-  openGraph: { description },
-  twitter: { description },
+  openGraph: { description, title: siteName, url: '/' },
+  title: siteName,
+  twitter: { description, title: siteName },
 };
 
 export default function HomePage() {
   return (
     <div className={styles.page}>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([websiteStructuredData, organizationStructuredData]),
+        }}
+        type="application/ld+json"
+      />
       <a className={styles.skip} href="#main">
         Skip to content
       </a>
