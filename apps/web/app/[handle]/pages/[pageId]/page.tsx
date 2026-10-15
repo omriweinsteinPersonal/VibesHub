@@ -56,11 +56,13 @@ export default async function StorefrontPageRoute({
     <div className="editorialPage">
       <main
         className="creatorProductPage"
-        style={{
-          '--sf-accent': storefront.theme.accentColor,
-          '--sf-product': storefront.theme.productBackground,
-          '--sf-text': storefront.theme.textColor,
-        }}
+        style={
+          {
+            '--sf-accent': storefront.theme.accentColor,
+            '--sf-product': storefront.theme.productBackground,
+            '--sf-text': storefront.theme.textColor,
+          } as React.CSSProperties
+        }
       >
         <Link className="creatorProductPageBack" href={`/${encodeURIComponent(handle)}`}>
           <ChevronLeft aria-hidden="true" size={16} />
