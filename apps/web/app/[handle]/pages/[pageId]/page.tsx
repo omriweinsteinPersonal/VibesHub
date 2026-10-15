@@ -3,10 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
-import {
-  publicApiCollectionRequest,
-  publicApiRequest,
-} from '../../../../lib/api';
+import { publicApiCollectionRequest, publicApiRequest } from '../../../../lib/api';
 import { loadStorefrontRecommendations } from '../../../../lib/storefront-recommendations';
 import { RecommendationCardView } from '../../../_components/recommendation-card';
 
@@ -45,15 +42,14 @@ export default async function StorefrontPageRoute({
   );
   const collectionDiscount =
     page.kind === 'collection'
-      ? discountResult.data.find(
+      ? (discountResult.data.find(
           (code) => code.scopeKind === 'collection' && code.scopeId === page.id,
         ) ??
         (collectionBrand
           ? discountResult.data.find(
-              (code) =>
-                code.scopeKind === 'brand' && code.brandId === collectionBrand.id,
+              (code) => code.scopeKind === 'brand' && code.brandId === collectionBrand.id,
             )
-          : undefined)
+          : undefined))
       : undefined;
 
   return (
@@ -85,7 +81,9 @@ export default async function StorefrontPageRoute({
                     ? `₪${collectionDiscount.discountAmountMinor / 100} off`
                     : collectionDiscount.label}
               </span>
-              {collectionDiscount.code ? <strong>{collectionDiscount.code}</strong> : null}
+              {collectionDiscount.code ? (
+                <strong>{collectionDiscount.code}</strong>
+              ) : null}
               {collectionDiscount.expiresAt ? (
                 <small>
                   <span>Discount expires</span>

@@ -524,7 +524,9 @@ export class CreatorStudioRepository {
         for (const section of input.curatedSections) {
           if (
             section.kind === 'collection' &&
-            section.recommendationIds.some((id) => itemBrandIds.get(id) !== section.brandId)
+            section.recommendationIds.some(
+              (id) => itemBrandIds.get(id) !== section.brandId,
+            )
           ) {
             return {
               kind: 'invalid_recommendations',

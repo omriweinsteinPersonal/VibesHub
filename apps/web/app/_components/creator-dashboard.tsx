@@ -1337,7 +1337,8 @@ export function CreatorDashboard() {
     draft: CollectionDiscountDraft | null,
   ) {
     const existing = discounts.find(
-      (discount) => discount.scopeKind === 'collection' && discount.scopeId === section.id,
+      (discount) =>
+        discount.scopeKind === 'collection' && discount.scopeId === section.id,
     );
     const brand = brands.find(({ brandId }) => brandId === section.brandId);
     if (!brand) return false;
@@ -1398,7 +1399,11 @@ export function CreatorDashboard() {
       if (refreshed.lifecycle !== 'published') {
         published = await apiRequest<CreatorDiscountCode>(
           `/creator/discount-codes/${refreshed.id}/confirm`,
-          { headers: { 'if-match': `"${refreshed.version}"` }, idempotent: true, method: 'POST' },
+          {
+            headers: { 'if-match': `"${refreshed.version}"` },
+            idempotent: true,
+            method: 'POST',
+          },
         );
       }
       setDiscounts((current) => [
@@ -4966,9 +4971,7 @@ function CuratedSectionForm({
   const existingCollectionDiscount = discounts.find(
     (discount) => discount.scopeKind === 'collection' && discount.scopeId === sectionId,
   );
-  const [useBrandDiscount, setUseBrandDiscount] = useState(
-    !existingCollectionDiscount,
-  );
+  const [useBrandDiscount, setUseBrandDiscount] = useState(!existingCollectionDiscount);
   const [collectionDiscountDraft, setCollectionDiscountDraft] =
     useState<CollectionDiscountDraft>({
       code: existingCollectionDiscount?.code ?? '',
@@ -5041,7 +5044,9 @@ function CuratedSectionForm({
         (id) => recommendations.find((item) => item.id === id)?.brandId !== brandId,
       )
     ) {
-      setSelectionError('Every product in a collection must belong to its selected brand.');
+      setSelectionError(
+        'Every product in a collection must belong to its selected brand.',
+      );
       return;
     }
     const nextContentItems =
@@ -5178,7 +5183,9 @@ function CuratedSectionForm({
               type="checkbox"
             />
             <span>
-              <strong>Use the same discount as {selectedBrand?.name ?? 'this brand'}</strong>
+              <strong>
+                Use the same discount as {selectedBrand?.name ?? 'this brand'}
+              </strong>
               <small>
                 {displayedDiscount.code ? `${displayedDiscount.code} · ` : ''}
                 {displayedDiscount.discountPercent
