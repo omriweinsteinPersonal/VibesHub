@@ -8,6 +8,7 @@ import type {
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { ChartColumn, House, LayoutDashboard, Store, User } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -42,6 +43,14 @@ import {
 } from '../lib/creator-workspace';
 
 type StudioView = CreatorWorkspaceView;
+
+const tabIcons = {
+  analytics: ChartColumn,
+  overview: House,
+  profile: User,
+  recommendations: LayoutDashboard,
+  storefront: Store,
+} as const;
 
 export default function CreatorStudioScreen() {
   const router = useRouter();
@@ -147,7 +156,7 @@ export default function CreatorStudioScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <View style={styles.header}>
         <Pressable accessibilityRole="button" onPress={() => router.push('/account')}>
           <Text style={styles.back}>Account</Text>
@@ -216,6 +225,7 @@ export default function CreatorStudioScreen() {
       <View accessibilityRole="tablist" style={styles.tabBar}>
         {creatorWorkspaceTabs.map((item) => {
           const selected = view === item.key;
+          const Icon = tabIcons[item.key];
           return (
             <Pressable
               accessibilityRole="tab"
@@ -224,8 +234,10 @@ export default function CreatorStudioScreen() {
               onPress={() => switchView(item.key)}
               style={({ pressed }) => [styles.tab, pressed && styles.tabPressed]}
             >
-              <View
-                style={[styles.tabIndicator, selected && styles.tabIndicatorActive]}
+              <Icon
+                color={selected ? colors.accent : colors.muted}
+                size={20}
+                strokeWidth={selected ? 2.4 : 1.8}
               />
               <Text style={[styles.tabText, selected && styles.tabTextActive]}>
                 {item.label}
@@ -262,7 +274,7 @@ function StudioLoadingScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <View style={styles.header}>
         <View style={[styles.skeletonLine, styles.skeletonHeaderAction]} />
         <Text style={styles.wordmark}>swavii</Text>
@@ -285,6 +297,7 @@ function StudioLoadingScreen() {
       <View style={styles.tabBar}>
         {creatorWorkspaceTabs.map((item) => (
           <View key={item.key} style={styles.tab}>
+            <View style={[styles.skeletonLine, styles.skeletonTabIcon]} />
             <View style={[styles.skeletonLine, styles.skeletonTab]} />
           </View>
         ))}
@@ -850,6 +863,7 @@ function ProfileEditor({
   onError: (message: string) => void;
   onNotice: (message: string) => void;
 }) {
+  const router = useRouter();
   const [displayName, setDisplayName] = useState(bundle.profile.displayName);
   const [bio, setBio] = useState(bundle.profile.bioHe);
   const [instagram, setInstagram] = useState(
@@ -928,6 +942,19 @@ function ProfileEditor({
           )}
         </Pressable>
       </View>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push('/account')}
+        style={styles.accountSettingsButton}
+      >
+        <View style={styles.actionCopy}>
+          <Text style={styles.actionTitle}>Account settings</Text>
+          <Text style={styles.actionDescription}>
+            Purchases, support, legal information, sign out and account deletion.
+          </Text>
+        </View>
+        <Text style={styles.chevron}>›</Text>
+      </Pressable>
     </>
   );
 }
@@ -1051,16 +1078,15 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    borderBottomColor: colors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 58,
+    minHeight: 62,
     paddingHorizontal: spacing.lg,
   },
-  back: { color: colors.muted, fontSize: 14, fontWeight: '600' },
-  wordmark: { color: colors.ink, fontFamily: 'Georgia', fontSize: 25 },
-  viewPage: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  back: { color: colors.white, fontSize: 14, fontWeight: '600' },
+  wordmark: { color: colors.white, fontSize: 27, fontWeight: '800' },
+  viewPage: { color: colors.white, fontSize: 14, fontWeight: '700' },
   contentPane: { flex: 1 },
   skeletonContent: { flex: 1, padding: spacing.lg },
   skeletonLine: { backgroundColor: '#e9e2d9', borderRadius: 999 },
@@ -1077,6 +1103,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   skeletonTab: { height: 9, width: 38 },
+  skeletonTabIcon: { height: 18, marginBottom: 5, width: 18 },
   tabBar: {
     backgroundColor: colors.white,
     borderTopColor: colors.border,
@@ -1090,18 +1117,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     minHeight: 58,
+    gap: 4,
     paddingHorizontal: 2,
   },
   tabPressed: { opacity: 0.55 },
-  tabIndicator: {
-    backgroundColor: 'transparent',
-    borderRadius: 99,
-    height: 3,
-    marginBottom: 6,
-    width: 24,
-  },
-  tabIndicatorActive: { backgroundColor: colors.accent },
-  tabText: { color: colors.muted, fontSize: 11, fontWeight: '600' },
+  tabText: { color: colors.muted, fontSize: 10, fontWeight: '600' },
   tabTextActive: { color: colors.ink, fontWeight: '800' },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   eyebrow: { color: colors.accent, fontSize: 11, letterSpacing: 2 },
@@ -1181,6 +1201,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 10,
     padding: spacing.md,
+  },
+  accountSettingsButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginTop: spacing.md,
+    padding: spacing.lg,
   },
   actionCopy: { flex: 1 },
   actionTitle: { color: colors.ink, fontSize: 17, fontWeight: '700' },
