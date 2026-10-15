@@ -28,6 +28,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/api';
 import {
   cacheCreatorStudioBundle,
+  getCreatorAnalytics,
   getCreatorStudioBundle,
   getCachedCreatorStudioBundle,
   newStudioId,
@@ -800,26 +801,66 @@ function StorefrontEditor({
 }
 
 function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
+  const initialRange = bundle.analytics.range.days === 7 ? 7 : 30;
+  const [analytics, setAnalytics] = useState(bundle.analytics);
+  const [range, setRange] = useState<7 | 30>(initialRange);
+  const [loading, setLoading] = useState(false);
+  const [rangeError, setRangeError] = useState('');
   const metrics = [
-    ['Page views', bundle.analytics.summary.storefrontViews],
-    ['Unique visitors', bundle.analytics.summary.uniqueVisitors],
-    ['Product clicks', bundle.analytics.summary.shopClicks],
-    ['Instagram taps', bundle.analytics.summary.instagramTaps],
+    ['Page views', analytics.summary.storefrontViews],
+    ['Unique visitors', analytics.summary.uniqueVisitors],
+    ['Product clicks', analytics.summary.shopClicks],
+    ['Instagram taps', analytics.summary.instagramTaps],
   ] as const;
   const top = useMemo(
     () =>
-      [...bundle.analytics.recommendations]
+      [...analytics.recommendations]
         .sort((a, b) => b.shopClicks - a.shopClicks || b.views - a.views)
         .slice(0, 5),
-    [bundle.analytics.recommendations],
+    [analytics.recommendations],
   );
+
+  async function selectRange(nextRange: 7 | 30) {
+    if (nextRange === range || loading) return;
+    setRange(nextRange);
+    setLoading(true);
+    setRangeError('');
+    try {
+      setAnalytics(await getCreatorAnalytics(nextRange));
+    } catch (cause) {
+      setRangeError(messageFor(cause));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <>
-      <Text style={styles.eyebrow}>
-        CREATOR STUDIO / ANALYTICS · LAST {bundle.analytics.range.days} DAYS
-      </Text>
+      <Text style={styles.eyebrow}>CREATOR STUDIO / ANALYTICS</Text>
       <Text style={styles.title}>See what resonates</Text>
       <Text style={styles.lede}>A clear view of what people explore on your page.</Text>
+      <View accessibilityRole="tablist" style={styles.rangeControl}>
+        {([7, 30] as const).map((days) => {
+          const selected = range === days;
+          return (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              disabled={loading}
+              key={days}
+              onPress={() => void selectRange(days)}
+              style={[styles.rangeButton, selected && styles.rangeButtonActive]}
+            >
+              <Text
+                style={[styles.rangeButtonText, selected && styles.rangeButtonTextActive]}
+              >
+                Last {days} days
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {rangeError ? <Message kind="error" text={rangeError} /> : null}
       <View style={styles.metricGrid}>
         {metrics.map(([label, value]) => (
           <View key={label} style={styles.metricCard}>
@@ -828,6 +869,7 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
           </View>
         ))}
       </View>
+      {loading ? <ActivityIndicator color={colors.accent} style={styles.saving} /> : null}
       <Text style={styles.sectionTitle}>Most explored</Text>
       {top.length ? (
         top.map((item, index) => (
@@ -1144,6 +1186,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   compactButtonText: { color: colors.white, fontWeight: '700' },
+  rangeControl: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#eee6dc',
+    borderRadius: radii.control,
+    flexDirection: 'row',
+    marginTop: spacing.lg,
+    padding: 3,
+  },
+  rangeButton: { borderRadius: radii.control, paddingHorizontal: 14, paddingVertical: 9 },
+  rangeButtonActive: { backgroundColor: colors.white },
+  rangeButtonText: { color: colors.muted, fontSize: 13, fontWeight: '700' },
+  rangeButtonTextActive: { color: colors.ink },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: spacing.xl },
   metricCard: {
     backgroundColor: colors.white,

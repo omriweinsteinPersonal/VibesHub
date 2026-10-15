@@ -157,6 +157,13 @@ export function saveStorefrontConfiguration(
   );
 }
 
+export function getCreatorAnalytics(days: 7 | 30): Promise<CreatorAnalyticsDashboard> {
+  return creatorRequest(
+    `/v1/creator/analytics?days=${days}`,
+    creatorAnalyticsDashboardSchema.parse,
+  );
+}
+
 export function newStudioId(): string {
   return Crypto.randomUUID();
 }
