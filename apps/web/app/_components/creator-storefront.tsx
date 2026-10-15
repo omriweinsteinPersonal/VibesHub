@@ -777,6 +777,7 @@ export function CreatorStorefrontView({
           </StorefrontRegion>
 
           <StorefrontRegion>
+            {!showingCompactLabelGrid ? renderTitles(null) : null}
             {labels.length ? (
               <StorefrontSlot id="labels" label="Labels">
                 <nav aria-label="Store filters" className="referenceStorefrontLabels">
@@ -1022,7 +1023,6 @@ export function CreatorStorefrontView({
                     );
                   })
                 : null}
-            {!showingCompactLabelGrid ? renderTitles(null) : null}
           </StorefrontRegion>
         </StorefrontLayout>
       </div>
