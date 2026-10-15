@@ -443,6 +443,147 @@
     padding-right: 12px;
   }
 }
+
+/* Forest Glass follows the deep, mineral teal atmosphere from the approved
+   mockup. These rules only style the page chrome; recommendation cards retain
+   their own surfaces and component styling. */
+.layout[data-template='forest-glass'] {
+  background-color: #0b302e;
+  background-image:
+    radial-gradient(ellipse at 47% 5%, rgb(112 174 151 / 19%), transparent 36%),
+    radial-gradient(ellipse at 2% 35%, rgb(138 192 166 / 12%), transparent 27%),
+    radial-gradient(ellipse at 96% 61%, rgb(2 24 25 / 52%), transparent 40%),
+    repeating-radial-gradient(
+      ellipse 74% 42% at 8% 18%,
+      transparent 0 22px,
+      rgb(190 224 202 / 8%) 23px 24px,
+      transparent 25px 44px
+    ),
+    repeating-radial-gradient(
+      ellipse 82% 48% at 94% 44%,
+      transparent 0 34px,
+      rgb(112 177 153 / 10%) 35px 36px,
+      transparent 37px 66px
+    ),
+    linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
+  color: #f3f2e9;
+  position: relative;
+}
+.layout[data-template='forest-glass'] .profile,
+.layout[data-template='forest-glass'] .socials,
+.layout[data-template='forest-glass'] .content:global(.referenceStorefrontProducts) {
+  background-color: transparent;
+}
+.layout[data-template='forest-glass'] .profile.hero {
+  background-color: #0b302e;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgb(5 30 30 / 3%) 0%,
+      rgb(5 30 30 / 9%) 54%,
+      #0b302e 100%
+    ),
+    var(--sf-profile-image, none);
+  background-position: center, center 42%;
+  background-size: cover;
+  min-height: 340px;
+}
+.layout[data-template='forest-glass'][data-header-style='circular'] .profile.hero {
+  background-image:
+    radial-gradient(ellipse at 50% 26%, rgb(145 203 178 / 16%), transparent 42%),
+    linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
+  min-height: 0;
+  padding: 38px 5vw 14px;
+}
+.layout[data-template='forest-glass'] .profile.hero :global(.referenceStorefrontName h1),
+.layout[data-template='forest-glass'] .profile :global(.referenceStorefrontBio) {
+  color: #f3f2e9;
+  text-shadow: 0 2px 18px rgb(1 20 20 / 34%);
+}
+.layout[data-template='forest-glass'] .profile.hero :global(.referenceStorefrontInner) {
+  min-height: 120px;
+}
+.layout[data-template='forest-glass'] .profile :global(.referenceStorefrontAvatar) {
+  border-color: rgb(226 241 225 / 92%);
+  box-shadow:
+    0 0 0 5px rgb(221 242 222 / 20%),
+    0 0 24px 10px rgb(180 226 202 / 34%),
+    0 0 56px 20px rgb(127 200 177 / 20%),
+    0 14px 30px rgb(0 16 17 / 42%);
+}
+.layout[data-template='forest-glass'] .socials {
+  gap: 10px;
+  padding-bottom: 22px;
+  padding-top: 8px;
+}
+.layout[data-template='forest-glass'] .socials :global(.referenceConnectorLink) {
+  background: rgb(229 243 231 / 13%);
+  border: 1px solid rgb(226 242 230 / 15%);
+  border-radius: 50%;
+  color: #fff;
+  height: 38px;
+  width: 38px;
+}
+.layout[data-template='forest-glass']
+  .socials
+  :global(.referenceConnectorLink:hover),
+.layout[data-template='forest-glass']
+  .socials
+  :global(.referenceConnectorLink:focus-visible) {
+  background: rgb(239 249 237 / 24%);
+  border-color: rgb(239 249 237 / 48%);
+  color: #fff;
+}
+.layout[data-template='forest-glass'] .labels {
+  background: rgb(224 241 226 / 12%);
+  border: 1px solid rgb(224 241 226 / 23%);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 12%),
+    0 10px 28px rgb(0 20 20 / 16%);
+  margin-inline: 16px;
+  padding: 5px;
+  backdrop-filter: blur(14px);
+}
+.layout[data-template='forest-glass'] .labels :global(button[aria-pressed]) {
+  border-radius: 999px;
+  color: #eef5ea;
+}
+.layout[data-template='forest-glass']
+  .labels
+  :global(button[aria-pressed='true']) {
+  background: #f3f1e7;
+  color: #173b37;
+}
+.layout[data-template='forest-glass'] .firstContent:global(.referenceStorefrontProducts) {
+  background: linear-gradient(
+    180deg,
+    rgb(11 48 46 / 0%) 0,
+    rgb(11 48 46 / 82%) 24px,
+    #0b302e 54px
+  );
+}
+.layout[data-template='forest-glass'] .content:global(.referenceStorefrontProducts) {
+  padding-bottom: 16px;
+}
+@media (max-width: 620px) {
+  .layout[data-template='forest-glass'] .profile.hero {
+    min-height: 320px;
+  }
+  .layout[data-template='forest-glass'][data-header-style='circular'] .profile.hero {
+    min-height: 0;
+    padding-top: 34px;
+  }
+  .layout[data-template='forest-glass'][data-header-style='circular']
+    .profile.hero
+    :global(.referenceStorefrontAvatar) {
+    box-shadow:
+      0 0 0 5px rgb(221 242 222 / 24%),
+      0 0 26px 11px rgb(180 226 202 / 38%),
+      0 0 56px 20px rgb(127 200 177 / 23%),
+      0 14px 30px rgb(0 16 17 / 42%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .sortable,
   .handle {
