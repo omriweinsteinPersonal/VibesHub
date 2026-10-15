@@ -1688,7 +1688,7 @@ export function CreatorDashboard() {
     event.preventDefault();
     const detected = detectFeaturedMedia(mediaDraft.url);
     if (!detected) {
-      setError('Paste a valid YouTube, Instagram, Spotify or Apple Music link.');
+       setError('Paste a valid YouTube, Instagram, TikTok, Spotify or Apple Music link.');
       return;
     }
     const enriched = await enrichMediaDraft(mediaDraft.url, detected);
@@ -2016,10 +2016,10 @@ export function CreatorDashboard() {
                           });
                         }
                       }}
-                      placeholder="https://www.youtube.com/watch?v=…"
+                      placeholder="https://www.tiktok.com/@creator/video/…"
                     />
                     <small>
-                      Paste a YouTube, Instagram, Spotify or Apple Music link.
+                      Paste a YouTube, Instagram, TikTok, Spotify or Apple Music link.
                     </small>
                   </label>
                   <label>
@@ -5353,6 +5353,12 @@ function detectFeaturedMedia(value: string): {
     }
     if (host === 'instagram.com' && /^\/(?:p|reel)\//u.test(url.pathname)) {
       return { provider: 'instagram', thumbnailUrl: null, title: 'Instagram post' };
+    }
+    if (
+      ['tiktok.com', 'm.tiktok.com'].includes(host) &&
+      /^\/@[^/]+\/video\/\d+/u.test(url.pathname)
+    ) {
+      return { provider: 'tiktok', thumbnailUrl: null, title: 'TikTok video' };
     }
     if (host === 'open.spotify.com' || host === 'spotify.link') {
       return { provider: 'spotify', thumbnailUrl: null, title: 'Spotify content' };

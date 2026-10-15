@@ -1168,6 +1168,8 @@ function EditorialMediaCard({ media }: { media: FeaturedMedia }) {
       ? 'Apple Music'
       : media.provider === 'youtube'
         ? 'YouTube'
+        : media.provider === 'tiktok'
+          ? 'TikTok'
         : media.provider === 'spotify'
           ? 'Spotify'
           : 'Instagram';
@@ -1323,6 +1325,13 @@ function featuredMediaEmbedUrl(media: FeaturedMedia): string | null {
     }
     if (media.provider === 'instagram' && /^\/(?:p|reel)\//u.test(url.pathname)) {
       return `https://www.instagram.com${url.pathname.replace(/\/$/, '')}/embed/`;
+    }
+    if (
+      media.provider === 'tiktok' &&
+      ['tiktok.com', 'm.tiktok.com'].includes(url.hostname.replace(/^www\./, ''))
+    ) {
+      const id = url.pathname.match(/\/video\/(\d+)/u)?.[1];
+      return id ? `https://www.tiktok.com/player/v1/${id}?description=1` : null;
     }
     if (
       media.provider === 'spotify' &&
