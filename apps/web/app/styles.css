@@ -9726,6 +9726,7 @@ dt {
   --vh-accent: var(--sf-accent);
   background: var(--sf-page);
   color: var(--sf-text);
+  min-height: 100dvh;
 }
 .creatorStorefrontCanvas[data-mobile-preview='true'] {
   min-height: 100vh;
@@ -13786,7 +13787,7 @@ dt {
   overflow-wrap: anywhere;
 }
 .referenceStorefrontProducts .storefrontContentBlock {
-  margin: 20px 0 12px;
+  margin: 10px 0 8px;
   overflow-wrap: anywhere;
 }
 .referenceStorefrontProducts .storefrontMediaBlock {

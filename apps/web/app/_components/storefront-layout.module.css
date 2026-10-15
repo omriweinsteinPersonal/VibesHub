@@ -57,6 +57,11 @@
   text-align: center;
 }
 .profile.hero :global(.referenceStorefrontAvatar) {
+  display: grid;
+}
+:global(.creatorStorefrontCanvas[data-header-style='classic'])
+  .profile.hero
+  :global(.referenceStorefrontAvatar) {
   display: none;
 }
 .profile.hero :global(.referenceStorefrontName) {
