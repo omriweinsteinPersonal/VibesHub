@@ -7,7 +7,9 @@
   padding-bottom: 0;
 }
 .layout[data-compact-preview='true'][data-layout-editable='true'] {
-  padding-bottom: min(68dvh, 580px);
+  /* Leave a full viewport plus a little breathing room below the last block
+     so the mobile Design drawer never covers the final title or card. */
+  padding-bottom: calc(100dvh + 120px);
 }
 .instructions {
   padding: 10px 20px;
