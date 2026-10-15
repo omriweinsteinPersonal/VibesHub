@@ -34,26 +34,24 @@ export function CreatorShellHeader({
         <div className="creatorShellHeaderInner">
           <Brand href="/creator-home" homeLogo={homeLogo} />
           <nav aria-label="Creator workspace">
-            {links
-              .filter(({ label }) => label !== 'Account')
-              .map((link) => (
-                <Link
-                  aria-current={pathname === link.href ? 'page' : undefined}
-                  aria-disabled={!link.href || undefined}
-                  data-pending={pendingHref === link.href || undefined}
-                  href={link.href ?? pathname}
-                  key={link.label}
-                  onClick={(event) => {
-                    if (!link.href) event.preventDefault();
-                  }}
-                  onNavigate={() => {
-                    if (link.href) startNavigation(link.href);
-                  }}
-                  tabIndex={link.href ? undefined : -1}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            {links.map((link) => (
+              <Link
+                aria-current={pathname === link.href ? 'page' : undefined}
+                aria-disabled={!link.href || undefined}
+                data-pending={pendingHref === link.href || undefined}
+                href={link.href ?? pathname}
+                key={link.label}
+                onClick={(event) => {
+                  if (!link.href) event.preventDefault();
+                }}
+                onNavigate={() => {
+                  if (link.href) startNavigation(link.href);
+                }}
+                tabIndex={link.href ? undefined : -1}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>
