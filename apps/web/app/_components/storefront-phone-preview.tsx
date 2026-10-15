@@ -68,44 +68,16 @@ const templatePresets = [
   {
     id: 'citrus-glow',
     title: 'Citrus Glow',
-    description: 'A bright lime gradient with a playful citrus accent.',
+    description: 'A bright lime tone with a subtle organic texture.',
     colors: {
-      recommendationsBackground: '#e9ff72',
-      productBackground: '#f8ffd9',
-      discountBackground: '#efff9d',
-      collectionBackground: '#f5ffd0',
-      accentColor: '#e8682a',
-      textColor: '#253014',
-      dividerColor: '#cbdc68',
-    },
-  },
-  {
-    id: 'midnight-electric',
-    title: 'Midnight Electric',
-    description: 'A deep night backdrop with a crisp electric-blue glow.',
-    colors: {
-      recommendationsBackground: '#091a2e',
-      productBackground: '#102940',
-      discountBackground: '#153653',
-      collectionBackground: '#0d2238',
-      accentColor: '#61c7ff',
-      textColor: '#eef8ff',
-      dividerColor: '#2b5a79',
+      recommendationsBackground: '#d8ef66',
     },
   },
   {
     id: 'clay-editorial',
     title: 'Clay Editorial',
     description: 'Warm terracotta, soft cream, and an editorial feel.',
-    colors: {
-      recommendationsBackground: '#f0c1a3',
-      productBackground: '#fff7ef',
-      discountBackground: '#f7dfd1',
-      collectionBackground: '#fff0e4',
-      accentColor: '#b85836',
-      textColor: '#3a2118',
-      dividerColor: '#d8a98b',
-    },
+    colors: { recommendationsBackground: '#d99a78' },
   },
 ] as const;
 

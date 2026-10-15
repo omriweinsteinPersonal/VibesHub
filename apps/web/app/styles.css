@@ -10289,13 +10289,10 @@ dt {
   width: 42px;
 }
 .storefrontTemplateSwatch-citrus-glow {
-  background: linear-gradient(145deg, #f4ff9a, #b9ff18 52%, #ff8a45);
-}
-.storefrontTemplateSwatch-midnight-electric {
-  background: linear-gradient(145deg, #071426, #0d3d68 56%, #61c7ff);
+  background: #d8ef66;
 }
 .storefrontTemplateSwatch-clay-editorial {
-  background: linear-gradient(145deg, #f8e6d5, #d98963 58%, #8c432b);
+  background: #d99a78;
 }
 .storefrontTemplateCard > span:last-child {
   display: grid;
@@ -10308,73 +10305,53 @@ dt {
 /* Curated storefront templates. They change the atmosphere and palette while
    leaving the creator's content and layout untouched. */
 .creatorStorefrontCanvas[data-template='citrus-glow'] {
-  background: linear-gradient(145deg, #f1ff86 0%, #d9ff38 48%, #b6f51d 100%);
+  background-color: #d8ef66;
+  background-image:
+    radial-gradient(circle at 18% 10%, rgb(255 255 255 / 22%), transparent 27%),
+    radial-gradient(circle at 85% 70%, rgb(137 169 34 / 16%), transparent 30%),
+    repeating-radial-gradient(ellipse at 35% 40%, transparent 0 28px, rgb(105 132 26 / 7%) 29px 31px);
 }
-.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontHero {
-  background: linear-gradient(145deg, #f1ff86, #c8ff35 60%, #b6f51d);
-}
-.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontName h1,
-.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontBio,
-.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontRow h3,
-.creatorStorefrontCanvas[data-template='citrus-glow'] .storeProductDetails {
-  color: #253014;
-}
-
-.creatorStorefrontCanvas[data-template='midnight-electric'] {
-  background: linear-gradient(145deg, #071426 0%, #0a223b 54%, #0b416b 100%);
-}
-.creatorStorefrontCanvas[data-template='midnight-electric'] .referenceStorefrontHero {
-  background: linear-gradient(145deg, #071426, #0b2a48 58%, #0a416b);
-}
-.creatorStorefrontCanvas[data-template='midnight-electric']
-  :is(
-    .referenceStorefrontName h1,
-    .referenceStorefrontBio,
-    .referenceStorefrontRow h3,
-    .referenceStorefrontRow > header p,
-    .storeProductDetails,
-    .referenceDiscountIdentity,
-    .referenceCollectionFrame h3,
-    .referenceBrandBlock > header h3
-  ) {
-  color: #eef8ff;
-}
-.creatorStorefrontCanvas[data-template='midnight-electric']
-  :is(
-    .referenceBrandBlock,
-    .referenceCollectionFrame,
-    .storeProductCard,
-    .referenceStorefrontRow
-  ) {
-  background: rgb(12 35 59 / 88%);
-  border-color: #2b5a79;
-}
-.creatorStorefrontCanvas[data-template='midnight-electric']
-  :is(.referenceStorefrontLabels, .referenceStorefrontLabels button) {
-  color: #ccecff;
-}
-
 .creatorStorefrontCanvas[data-template='clay-editorial'] {
-  background: linear-gradient(145deg, #f2c4a8 0%, #e09a75 52%, #f3dfc3 100%);
+  background-color: #d99a78;
+  background-image:
+    radial-gradient(circle at 20% 15%, rgb(255 245 233 / 20%), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgb(122 62 40 / 12%), transparent 34%),
+    repeating-radial-gradient(ellipse at 60% 45%, transparent 0 34px, rgb(122 62 40 / 6%) 35px 37px);
 }
-.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontHero {
-  background: linear-gradient(145deg, #f2c4a8, #db916e 58%, #f3dfc3);
+/* Templates style only the outer chrome. Recommendation cards keep their
+   existing structure, media treatment, and controls. */
+.creatorStorefrontCanvas:is([data-template='citrus-glow'], [data-template='clay-editorial'])
+  .referenceStorefrontLabels {
+  background: color-mix(in srgb, var(--sf-page) 78%, white);
+  border: 1px solid color-mix(in srgb, var(--sf-page) 62%, var(--sf-text));
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgb(55 39 27 / 8%);
+  margin-inline: 12px;
+  padding: 5px;
 }
-.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontName h1,
-.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontBio,
-.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontRow h3,
-.creatorStorefrontCanvas[data-template='clay-editorial'] .storeProductDetails {
-  color: #3a2118;
+.creatorStorefrontCanvas:is([data-template='citrus-glow'], [data-template='clay-editorial'])
+  .referenceStorefrontLabels button {
+  border-radius: 999px;
 }
-.creatorStorefrontCanvas[data-template='clay-editorial']
-  :is(
-    .referenceBrandBlock,
-    .referenceCollectionFrame,
-    .storeProductCard,
-    .referenceStorefrontRow
-  ) {
-  background: #fff7ef;
-  border-color: #d8a98b;
+.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontLabels
+  button[aria-pressed='true'],
+.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--sf-page) 58%, white);
+  color: var(--sf-text);
+}
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar {
+  background-color: var(--sf-product);
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
 }
 .storefrontTypographyFields label {
   align-items: center;
