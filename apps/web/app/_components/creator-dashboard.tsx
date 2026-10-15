@@ -10,6 +10,7 @@ import type {
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
   FeaturedMedia,
+  StorefrontTitle,
   StoryClipInput,
 } from '@vibeshub/contracts';
 import Image from 'next/image';
@@ -288,6 +289,7 @@ export function CreatorDashboard() {
   const [curatedSections, setCuratedSections] = useState<CuratedSection[]>([]);
   const [contentOrder, setContentOrder] = useState<ContentLayer[]>([]);
   const [featuredMedia, setFeaturedMedia] = useState<FeaturedMedia[]>([]);
+  const [storefrontTitles, setStorefrontTitles] = useState<StorefrontTitle[]>([]);
   const [mediaDraft, setMediaDraft] = useState<FeaturedMediaDraft>({
     provider: 'youtube',
     url: '',
@@ -310,6 +312,7 @@ export function CreatorDashboard() {
   >('all');
   const [dashboardView, setDashboardView] = useState<
     'recommendations' | 'labels' | 'connectors' | 'media'
+     | 'titles'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -373,6 +376,7 @@ export function CreatorDashboard() {
         const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
         setConfiguration({ ...config, contentOrder: loadedOrder });
         setFeaturedMedia(config.featuredMedia ?? []);
+        setStorefrontTitles(config.titles ?? []);
         setStorefrontLabels(config.labels ?? []);
         setHiddenBrandIds(config.hiddenBrandIds ?? []);
         setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
@@ -1468,6 +1472,7 @@ export function CreatorDashboard() {
     nextHiddenCollections = hiddenCollectionIds,
     nextHiddenRecommendations = hiddenRecommendationIds,
     nextFeaturedMedia = featuredMedia,
+    nextTitles = storefrontTitles,
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
@@ -1591,6 +1596,7 @@ export function CreatorDashboard() {
         ),
         contentOrder: normalizedOrder,
         featuredMedia: nextFeaturedMedia,
+        titles: nextTitles,
         labels: nextLabels.map((label) => ({
           ...label,
           recommendationIds: label.recommendationIds.filter((id) =>
@@ -1636,6 +1642,7 @@ export function CreatorDashboard() {
       setHiddenCollectionIds(updated.hiddenCollectionIds ?? []);
       setHiddenRecommendationIds(updated.hiddenRecommendationIds ?? []);
       setFeaturedMedia(updated.featuredMedia ?? []);
+      setStorefrontTitles(updated.titles ?? []);
       setNotice('Storefront sections saved.');
       return true;
     } catch (cause) {
@@ -1659,6 +1666,20 @@ export function CreatorDashboard() {
       }
     }
     return saveSections(selectedSections, nextCurated, nextOrder);
+  }
+
+  async function saveTitles(nextTitles: StorefrontTitle[]) {
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      contentOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      featuredMedia,
+      nextTitles,
+    );
   }
 
   function startMediaEditor(item?: FeaturedMedia) {
@@ -1929,6 +1950,21 @@ export function CreatorDashboard() {
             />
           </button>
           <button
+            aria-current={dashboardView === 'titles' ? 'page' : undefined}
+            onClick={() => setDashboardView('titles')}
+            type="button"
+          >
+            <span className="creatorDashboardNavCopy">
+              <strong>Titles</strong>
+              <small>Add headings and guide visitors through your page.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
+          </button>
+          <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
             onClick={() => setDashboardView('media')}
             type="button"
@@ -2118,6 +2154,12 @@ export function CreatorDashboard() {
                 ) : null}
               </div>
             </section>
+          ) : dashboardView === 'titles' ? (
+            <StorefrontTitlesEditor
+              onSave={saveTitles}
+              saving={saving}
+              titles={storefrontTitles}
+            />
           ) : dashboardView === 'recommendations' ? (
             <section className="creatorRecommendationSection">
               <div className="creatorSectionHeading">
@@ -4650,6 +4692,109 @@ function DiscountManageCard({
   );
 }
 
+function StorefrontTitlesEditor({
+  onSave,
+  saving,
+  titles,
+}: {
+  onSave: (titles: StorefrontTitle[]) => Promise<void>;
+  saving: boolean;
+  titles: StorefrontTitle[];
+}) {
+  const [draft, setDraft] = useState<StorefrontTitle[]>(titles);
+
+  useEffect(() => setDraft(titles), [titles]);
+
+  function addTitle() {
+    setDraft((current) => [
+      ...current,
+      {
+        id: randomUuid(),
+        text: '',
+        format: 'heading',
+        align: 'center',
+        size: 'medium',
+        beforeId: null,
+      },
+    ]);
+  }
+
+  return (
+    <section className="creatorRecommendationSection">
+      <div className="creatorSectionHeading">
+        <div>
+          <h2>Titles</h2>
+          <p>Add headings to organize your storefront and choose their alignment.</p>
+        </div>
+        <button className="button primary" onClick={addTitle} type="button">
+          <Plus aria-hidden="true" size={16} />
+          <span>Add title</span>
+        </button>
+      </div>
+      <div className="creatorTitlesEditor">
+        {draft.map((title, index) => (
+          <article className="creatorTitleEditorCard" key={title.id}>
+            <label>
+              Title
+              <input
+                maxLength={2000}
+                onChange={(event) =>
+                  setDraft((current) =>
+                    current.map((item) =>
+                      item.id === title.id ? { ...item, text: event.target.value } : item,
+                    ),
+                  )
+                }
+                placeholder="Your storefront title"
+                value={title.text}
+              />
+            </label>
+            <label>
+              Alignment
+              <select
+                onChange={(event) =>
+                  setDraft((current) =>
+                    current.map((item) =>
+                      item.id === title.id
+                        ? { ...item, align: event.target.value as StorefrontTitle['align'] }
+                        : item,
+                    ),
+                  )
+                }
+                value={title.align}
+              >
+                <option value="start">Left</option>
+                <option value="center">Center</option>
+                <option value="end">Right</option>
+              </select>
+            </label>
+            <div className="creatorTitleEditorActions">
+              <button
+                onClick={() => setDraft((current) => current.filter((item) => item.id !== title.id))}
+                type="button"
+              >
+                Remove
+              </button>
+              <small>Title {index + 1}</small>
+            </div>
+          </article>
+        ))}
+        {!draft.length ? <p className="creatorEmptyState">No titles yet.</p> : null}
+      </div>
+      <div className="creatorFormActions">
+        <button
+          className="button primary"
+          disabled={saving || draft.some((title) => !title.text.trim())}
+          onClick={() => void onSave(draft.map((title) => ({ ...title, text: title.text.trim() })))}
+          type="button"
+        >
+          {saving ? 'Saving…' : 'Save titles'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function CuratedSectionForm({
   brands = [],
   collections = [],
@@ -5399,6 +5544,15 @@ async function enrichMediaDraft(
         title?: string;
         thumbnail_url?: string;
         author_name?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'tiktok') {
+      const response = await fetch(`https://www.tiktok.com/oembed?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
       };
       title = metadata.title || title;
       thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;

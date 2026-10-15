@@ -14622,6 +14622,58 @@ dt {
   padding: 0 9px;
 }
 
+.creatorTitlesEditor {
+  display: grid;
+  gap: 12px;
+}
+
+.creatorTitleEditorCard {
+  background: #fffdfa;
+  border: 1px solid #e4d9cf;
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.creatorTitleEditorCard label {
+  color: #4b4139;
+  display: grid;
+  font-size: 0.78rem;
+  gap: 6px;
+}
+
+.creatorTitleEditorCard input,
+.creatorTitleEditorCard select {
+  background: #fff;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #2d2924;
+  font: inherit;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.creatorTitleEditorActions {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.creatorTitleEditorActions button {
+  background: transparent;
+  border: 0;
+  color: #9a5135;
+  cursor: pointer;
+  font-size: 0.76rem;
+  padding: 0;
+}
+
+.creatorTitleEditorActions small {
+  color: #8a7c70;
+  font-size: 0.72rem;
+}
+
 .storefrontBioEditor .button {
   justify-self: start;
 }
