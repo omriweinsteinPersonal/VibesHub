@@ -449,60 +449,78 @@
 .layout[data-template='aurora-veil'] {
   background-color: #281a34;
   background-image:
-    radial-gradient(ellipse at 53% 8%, rgb(196 164 221 / 21%), transparent 34%),
-    radial-gradient(ellipse at 6% 43%, rgb(106 68 132 / 30%), transparent 38%),
-    radial-gradient(ellipse at 92% 72%, rgb(16 10 26 / 74%), transparent 44%),
-    repeating-radial-gradient(
-      ellipse 82% 47% at 7% 37%,
-      transparent 0 30px,
-      rgb(224 205 239 / 12%) 31px 32px,
-      transparent 33px 60px
+    radial-gradient(circle at 50% 18%, rgb(196 164 221 / 22%), transparent 22%),
+    radial-gradient(circle at 8% 46%, rgb(106 68 132 / 30%), transparent 34%),
+    radial-gradient(circle at 92% 76%, rgb(16 10 26 / 74%), transparent 39%),
+    radial-gradient(
+      circle at 50% 18%,
+      transparent 0 82px,
+      rgb(224 205 239 / 11%) 83px 84px,
+      transparent 85px 132px,
+      rgb(224 205 239 / 8%) 133px 134px,
+      transparent 135px 194px,
+      rgb(224 205 239 / 6%) 195px 196px,
+      transparent 197px
     ),
-    repeating-radial-gradient(
-      ellipse 72% 43% at 97% 68%,
-      transparent 0 42px,
-      rgb(166 124 193 / 13%) 43px 44px,
-      transparent 45px 82px
+    radial-gradient(
+      circle at 4% 83%,
+      transparent 0 92px,
+      rgb(166 124 193 / 10%) 93px 94px,
+      transparent 95px 148px,
+      rgb(166 124 193 / 7%) 149px 150px,
+      transparent 151px
     ),
     linear-gradient(148deg, #281a34 0%, #422b50 48%, #21152d 100%);
 }
 .layout[data-template='desert-rose'] {
   background-color: #643a32;
   background-image:
-    radial-gradient(ellipse at 64% 4%, rgb(236 164 129 / 22%), transparent 35%),
-    radial-gradient(ellipse at 2% 70%, rgb(153 78 61 / 34%), transparent 39%),
-    radial-gradient(ellipse at 100% 56%, rgb(48 25 26 / 42%), transparent 44%),
-    repeating-radial-gradient(
-      ellipse 92% 44% at 88% 12%,
-      transparent 0 28px,
-      rgb(255 220 193 / 12%) 29px 30px,
-      transparent 31px 56px
+    radial-gradient(circle at 64% 4%, rgb(236 164 129 / 22%), transparent 30%),
+    radial-gradient(circle at 2% 70%, rgb(153 78 61 / 34%), transparent 34%),
+    radial-gradient(circle at 100% 56%, rgb(48 25 26 / 42%), transparent 38%),
+    radial-gradient(
+      circle at 88% 12%,
+      transparent 0 86px,
+      rgb(255 220 193 / 12%) 87px 88px,
+      transparent 89px 140px,
+      rgb(255 220 193 / 8%) 141px 142px,
+      transparent 143px 208px,
+      rgb(255 220 193 / 5%) 209px 210px,
+      transparent 211px
     ),
-    repeating-radial-gradient(
-      ellipse 84% 50% at 7% 70%,
-      transparent 0 38px,
-      rgb(231 153 121 / 13%) 39px 40px,
-      transparent 41px 74px
+    radial-gradient(
+      circle at 5% 76%,
+      transparent 0 102px,
+      rgb(231 153 121 / 10%) 103px 104px,
+      transparent 105px 166px,
+      rgb(231 153 121 / 6%) 167px 168px,
+      transparent 169px
     ),
     linear-gradient(154deg, #75443a 0%, #63382f 54%, #512e2c 100%);
 }
 .layout[data-template='glacier-current'] {
   background-color: #102f43;
   background-image:
-    radial-gradient(ellipse at 53% 7%, rgb(124 190 207 / 21%), transparent 34%),
-    radial-gradient(ellipse at 0% 62%, rgb(43 111 133 / 30%), transparent 40%),
-    radial-gradient(ellipse at 97% 48%, rgb(5 22 37 / 62%), transparent 42%),
-    repeating-radial-gradient(
-      ellipse 82% 45% at 8% 76%,
-      transparent 0 27px,
-      rgb(165 214 221 / 13%) 28px 29px,
-      transparent 30px 55px
+    radial-gradient(circle at 53% 7%, rgb(124 190 207 / 21%), transparent 29%),
+    radial-gradient(circle at 0% 62%, rgb(43 111 133 / 30%), transparent 35%),
+    radial-gradient(circle at 97% 48%, rgb(5 22 37 / 62%), transparent 37%),
+    radial-gradient(
+      circle at 8% 76%,
+      transparent 0 82px,
+      rgb(165 214 221 / 13%) 83px 84px,
+      transparent 85px 134px,
+      rgb(165 214 221 / 8%) 135px 136px,
+      transparent 137px 198px,
+      rgb(165 214 221 / 5%) 199px 200px,
+      transparent 201px
     ),
-    repeating-radial-gradient(
-      ellipse 92% 50% at 97% 22%,
-      transparent 0 39px,
-      rgb(91 161 180 / 14%) 40px 41px,
-      transparent 42px 76px
+    radial-gradient(
+      circle at 97% 22%,
+      transparent 0 104px,
+      rgb(91 161 180 / 11%) 105px 106px,
+      transparent 107px 168px,
+      rgb(91 161 180 / 7%) 169px 170px,
+      transparent 171px
     ),
     linear-gradient(145deg, #102f43 0%, #19485d 49%, #0a2639 100%);
 }
@@ -786,20 +804,26 @@
 .layout[data-template='forest-glass'] {
   background-color: #0b302e;
   background-image:
-    radial-gradient(ellipse at 47% 5%, rgb(112 174 151 / 19%), transparent 36%),
-    radial-gradient(ellipse at 2% 35%, rgb(138 192 166 / 12%), transparent 27%),
-    radial-gradient(ellipse at 96% 61%, rgb(2 24 25 / 52%), transparent 40%),
-    repeating-radial-gradient(
-      ellipse 74% 42% at 8% 18%,
-      transparent 0 22px,
-      rgb(190 224 202 / 8%) 23px 24px,
-      transparent 25px 44px
+    radial-gradient(circle at 50% 16%, rgb(112 174 151 / 20%), transparent 28%),
+    radial-gradient(circle at 0% 42%, rgb(138 192 166 / 12%), transparent 31%),
+    radial-gradient(circle at 96% 72%, rgb(2 24 25 / 52%), transparent 37%),
+    radial-gradient(
+      circle at 50% 17%,
+      transparent 0 76px,
+      rgb(190 224 202 / 9%) 77px 78px,
+      transparent 79px 126px,
+      rgb(190 224 202 / 7%) 127px 128px,
+      transparent 129px 187px,
+      rgb(190 224 202 / 5%) 188px 189px,
+      transparent 190px
     ),
-    repeating-radial-gradient(
-      ellipse 82% 48% at 94% 44%,
-      transparent 0 34px,
-      rgb(112 177 153 / 10%) 35px 36px,
-      transparent 37px 66px
+    radial-gradient(
+      circle at 100% 92%,
+      transparent 0 82px,
+      rgb(112 177 153 / 9%) 83px 84px,
+      transparent 85px 136px,
+      rgb(112 177 153 / 6%) 137px 138px,
+      transparent 139px
     ),
     linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
   color: #f3f2e9;

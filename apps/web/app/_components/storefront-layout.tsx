@@ -347,6 +347,7 @@ export function StorefrontLayout({
     <div
       className={styles.layout}
       data-template={theme.templateId ?? 'classic'}
+      data-header-style={theme.headerStyle ?? 'classic'}
       data-compact-preview={compactPreview}
       data-sort-region="page"
       data-layout-editable={editable}
