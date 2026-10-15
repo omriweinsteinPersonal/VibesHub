@@ -11,7 +11,6 @@ import { ChevronDown, ChevronUp, Eye, Pencil, SlidersHorizontal } from 'lucide-r
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { apiRequest } from '../../lib/api';
-import { contrastRatio } from '../../lib/storefront-theme';
 
 type ThemeKey = Exclude<
   keyof StorefrontTheme,
@@ -502,17 +501,6 @@ export function StorefrontPhonePreview({
                   </section>
                 ))}
               </div>
-              {[
-                draft.profileBackground,
-                draft.recommendationsBackground,
-                draft.productBackground,
-                draft.discountBackground,
-                draft.collectionBackground,
-              ].some((color) => contrastRatio(draft.textColor, color) < 4.5) ? (
-                <p className="storefrontContrastNotice">
-                  Some text and background colors need more contrast to stay readable.
-                </p>
-              ) : null}
               {error ? (
                 <p className="formError" role="alert">
                   {error}
