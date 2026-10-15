@@ -8465,14 +8465,13 @@ dt {
 }
 .creatorProductPage > header {
   border-bottom: 1px solid #e6ddd2;
-  display: flex;
-  gap: 24px;
-  justify-content: space-between;
   margin: 32px 0;
   padding-bottom: 26px;
+  position: relative;
 }
 .creatorProductPageHeaderMain {
   min-width: 0;
+  width: 100%;
 }
 .creatorProductPage > header h1 {
   font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
@@ -8496,11 +8495,12 @@ dt {
 .creatorProductPageOffer {
   align-items: flex-end;
   display: flex;
-  flex: 0 0 auto;
   flex-direction: column;
   gap: 5px;
   min-width: 92px;
-  padding-top: 5px;
+  position: absolute;
+  right: 0;
+  top: -18px;
   text-align: right;
 }
 .creatorProductPageOffer > span {
@@ -8548,10 +8548,11 @@ dt {
     padding: 28px 14px 80px;
   }
   .creatorProductPage > header {
-    gap: 12px;
+    padding-top: 10px;
   }
   .creatorProductPageOffer {
     min-width: 76px;
+    top: -12px;
   }
   .creatorProductPageGrid {
     gap: 10px;
