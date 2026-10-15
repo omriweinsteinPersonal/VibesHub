@@ -29,7 +29,14 @@ import {
   Play,
   Search,
 } from 'lucide-react';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 
 import { StorefrontLayout, StorefrontRegion, StorefrontSlot } from './storefront-layout';
 import { apiCollectionRequest, apiRequest } from '../../lib/api';
@@ -41,6 +48,7 @@ import { CreatorConnectorIcon } from './creator-connector-icon';
 import { RecommendationCardView } from './recommendation-card';
 
 type StorefrontLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
+type StorefrontCanvasStyle = CSSProperties & Record<`--sf-${string}`, string>;
 
 function safeProfileImageUrl(value: string | undefined) {
   if (!value) return '';
@@ -648,20 +656,22 @@ export function CreatorStorefrontView({
             window.location.origin,
           );
         }}
-        style={{
-          '--sf-profile': previewTheme.recommendationsBackground,
-          '--sf-profile-image': profileImageUrl
-            ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
-            : 'none',
-          '--sf-page': previewTheme.recommendationsBackground,
-          '--sf-divider': previewTheme.dividerColor,
-          '--sf-product': previewTheme.productBackground,
-          '--sf-discount': previewTheme.productBackground,
-          '--sf-collection': previewTheme.productBackground,
-          '--sf-accent': previewTheme.accentColor,
-          '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
-          '--sf-text': previewTheme.textColor,
-        }}
+        style={
+          {
+            '--sf-profile': previewTheme.recommendationsBackground,
+            '--sf-profile-image': profileImageUrl
+              ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
+              : 'none',
+            '--sf-page': previewTheme.recommendationsBackground,
+            '--sf-divider': previewTheme.dividerColor,
+            '--sf-product': previewTheme.productBackground,
+            '--sf-discount': previewTheme.productBackground,
+            '--sf-collection': previewTheme.productBackground,
+            '--sf-accent': previewTheme.accentColor,
+            '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
+            '--sf-text': previewTheme.textColor,
+          } as StorefrontCanvasStyle
+        }
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
         <StorefrontLayout
