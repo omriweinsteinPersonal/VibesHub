@@ -29,7 +29,13 @@ const description =
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
   description,
-  openGraph: { description, title: siteName, url: '/' },
+  openGraph: {
+    description,
+    siteName,
+    title: siteName,
+    type: 'website',
+    url: '/',
+  },
   title: siteName,
   twitter: { description, title: siteName },
 };
