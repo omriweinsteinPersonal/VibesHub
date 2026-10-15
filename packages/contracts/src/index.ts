@@ -573,7 +573,13 @@ export const storefrontThemeSchema = z
     // Optional for existing storefront themes. Missing values render as the
     // original Classic shell until a creator explicitly selects a template.
     templateId: z
-      .enum(['classic', 'editorial-frame', 'citrus-glow', 'midnight-electric', 'clay-editorial'])
+      .enum([
+        'classic',
+        'editorial-frame',
+        'citrus-glow',
+        'midnight-electric',
+        'clay-editorial',
+      ])
       .optional(),
     headerStyle: z.enum(['classic', 'circular']).default('classic'),
     bioAlign: z.enum(['left', 'center', 'right']).default('center'),

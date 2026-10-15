@@ -10327,13 +10327,25 @@ dt {
   background: linear-gradient(145deg, #071426, #0b2a48 58%, #0a416b);
 }
 .creatorStorefrontCanvas[data-template='midnight-electric']
-  :is(.referenceStorefrontName h1, .referenceStorefrontBio, .referenceStorefrontRow h3,
-    .referenceStorefrontRow > header p, .storeProductDetails, .referenceDiscountIdentity,
-    .referenceCollectionFrame h3, .referenceBrandBlock > header h3) {
+  :is(
+    .referenceStorefrontName h1,
+    .referenceStorefrontBio,
+    .referenceStorefrontRow h3,
+    .referenceStorefrontRow > header p,
+    .storeProductDetails,
+    .referenceDiscountIdentity,
+    .referenceCollectionFrame h3,
+    .referenceBrandBlock > header h3
+  ) {
   color: #eef8ff;
 }
 .creatorStorefrontCanvas[data-template='midnight-electric']
-  :is(.referenceBrandBlock, .referenceCollectionFrame, .storeProductCard, .referenceStorefrontRow) {
+  :is(
+    .referenceBrandBlock,
+    .referenceCollectionFrame,
+    .storeProductCard,
+    .referenceStorefrontRow
+  ) {
   background: rgb(12 35 59 / 88%);
   border-color: #2b5a79;
 }
@@ -10355,7 +10367,12 @@ dt {
   color: #3a2118;
 }
 .creatorStorefrontCanvas[data-template='clay-editorial']
-  :is(.referenceBrandBlock, .referenceCollectionFrame, .storeProductCard, .referenceStorefrontRow) {
+  :is(
+    .referenceBrandBlock,
+    .referenceCollectionFrame,
+    .storeProductCard,
+    .referenceStorefrontRow
+  ) {
   background: #fff7ef;
   border-color: #d8a98b;
 }
