@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 
 import { publicApiCollectionRequest, publicApiRequest } from '../../../../lib/api';
 import { loadStorefrontRecommendations } from '../../../../lib/storefront-recommendations';
+import { CopyDiscountCodeButton } from '../../../_components/analytics-events';
 import { RecommendationCardView } from '../../../_components/recommendation-card';
 
 export const dynamic = 'force-dynamic';
@@ -84,7 +85,15 @@ export default async function StorefrontPageRoute({
                     : collectionDiscount.label}
               </span>
               {collectionDiscount.code ? (
-                <strong>{collectionDiscount.code}</strong>
+                <div className="creatorProductPageOfferCode">
+                  <strong>{collectionDiscount.code}</strong>
+                  <CopyDiscountCodeButton
+                    code={collectionDiscount.code}
+                    creatorId={storefront.id}
+                    discountCodeId={collectionDiscount.id}
+                    recommendationId={null}
+                  />
+                </div>
               ) : null}
               {collectionDiscount.expiresAt ? (
                 <small>

@@ -8509,7 +8509,13 @@ dt {
   line-height: 1;
   white-space: nowrap;
 }
-.creatorProductPageOffer > strong {
+.creatorProductPageOfferCode {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.creatorProductPageOfferCode > strong {
   background: rgb(255 255 255 / 48%);
   border: 1px dashed color-mix(in srgb, currentColor 48%, transparent);
   border-radius: 6px;
@@ -8519,6 +8525,12 @@ dt {
   letter-spacing: 0.06em;
   line-height: 1;
   padding: 5px 8px;
+}
+.creatorProductPageOfferCode .copyDiscountCodeButton {
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  font-size: 0.66rem;
+  min-height: 26px;
+  padding: 0 7px;
 }
 .creatorProductPageOffer small {
   color: #75695f;
