@@ -682,7 +682,18 @@ export function CreatorStorefrontView({
           <StorefrontRegion>
             <StorefrontSlot id="profile" label="Profile" kind="profile">
               <div className="referenceStorefrontInner">
-                <span className="referenceStorefrontAvatar">
+                <span
+                  className="referenceStorefrontAvatar"
+                  style={
+                    profileImageUrl
+                      ? {
+                          backgroundImage: `url("${profileImageUrl.replace(/["\\)]/g, '')}")`,
+                          backgroundPosition: 'center',
+                          backgroundSize: 'cover',
+                        }
+                      : undefined
+                  }
+                >
                   {storefront.avatarUrl ? (
                     <Image
                       alt={`${storefront.displayName} profile photo`}
