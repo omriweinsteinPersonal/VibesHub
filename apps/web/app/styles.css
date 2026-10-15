@@ -10309,18 +10309,29 @@ dt {
   background-image:
     radial-gradient(circle at 18% 10%, rgb(255 255 255 / 22%), transparent 27%),
     radial-gradient(circle at 85% 70%, rgb(137 169 34 / 16%), transparent 30%),
-    repeating-radial-gradient(ellipse at 35% 40%, transparent 0 28px, rgb(105 132 26 / 7%) 29px 31px);
+    repeating-radial-gradient(
+      ellipse at 35% 40%,
+      transparent 0 28px,
+      rgb(105 132 26 / 7%) 29px 31px
+    );
 }
 .creatorStorefrontCanvas[data-template='clay-editorial'] {
   background-color: #d99a78;
   background-image:
     radial-gradient(circle at 20% 15%, rgb(255 245 233 / 20%), transparent 28%),
     radial-gradient(circle at 82% 72%, rgb(122 62 40 / 12%), transparent 34%),
-    repeating-radial-gradient(ellipse at 60% 45%, transparent 0 34px, rgb(122 62 40 / 6%) 35px 37px);
+    repeating-radial-gradient(
+      ellipse at 60% 45%,
+      transparent 0 34px,
+      rgb(122 62 40 / 6%) 35px 37px
+    );
 }
 /* Templates style only the outer chrome. Recommendation cards keep their
    existing structure, media treatment, and controls. */
-.creatorStorefrontCanvas:is([data-template='citrus-glow'], [data-template='clay-editorial'])
+.creatorStorefrontCanvas:is(
+    [data-template='citrus-glow'],
+    [data-template='clay-editorial']
+  )
   .referenceStorefrontLabels {
   background: color-mix(in srgb, var(--sf-page) 78%, white);
   border: 1px solid color-mix(in srgb, var(--sf-page) 62%, var(--sf-text));
@@ -10329,13 +10340,19 @@ dt {
   margin-inline: 12px;
   padding: 5px;
 }
-.creatorStorefrontCanvas:is([data-template='citrus-glow'], [data-template='clay-editorial'])
-  .referenceStorefrontLabels button {
+.creatorStorefrontCanvas:is(
+    [data-template='citrus-glow'],
+    [data-template='clay-editorial']
+  )
+  .referenceStorefrontLabels
+  button {
   border-radius: 999px;
 }
-.creatorStorefrontCanvas[data-template='citrus-glow'] .referenceStorefrontLabels
+.creatorStorefrontCanvas[data-template='citrus-glow']
+  .referenceStorefrontLabels
   button[aria-pressed='true'],
-.creatorStorefrontCanvas[data-template='clay-editorial'] .referenceStorefrontLabels
+.creatorStorefrontCanvas[data-template='clay-editorial']
+  .referenceStorefrontLabels
   button[aria-pressed='true'] {
   background: color-mix(in srgb, var(--sf-page) 58%, white);
   color: var(--sf-text);
