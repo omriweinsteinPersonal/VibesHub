@@ -10487,6 +10487,14 @@ dt {
   margin: 0 0 14px;
 }
 
+.productDetailStoryQuickAction {
+  margin: -2px 0 18px;
+}
+
+.productDetailStoryQuickAction .productDetailStoryButton {
+  min-height: 42px;
+}
+
 .productDetailCreator {
   align-items: center;
   color: var(--vh-muted);
