@@ -2,6 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 
 const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).expo;
 const mobilePackage = JSON.parse(await readFile('apps/mobile/package.json', 'utf8'));
+const supabaseConfig = await readFile('supabase/config.toml', 'utf8');
 const loginSource = await readFile('apps/mobile/app/login.tsx', 'utf8');
 const accountSource = await readFile('apps/mobile/app/account.tsx', 'utf8');
 const studioSource = await readFile('apps/mobile/app/studio.tsx', 'utf8');
@@ -32,6 +33,10 @@ function requireValue(condition, message) {
 requireValue(appConfig.name === 'Swavii', 'The native app name must be Swavii.');
 requireValue(appConfig.slug === 'swavii', 'The Expo slug must be swavii.');
 requireValue(appConfig.scheme === 'swavii', 'The auth/deep-link scheme must be swavii.');
+requireValue(
+  supabaseConfig.includes('"swavii://**"'),
+  'Supabase redirect URLs must allow the native swavii:// scheme.',
+);
 requireValue(/^\d+\.\d+\.\d+$/.test(appConfig.version), 'App version must use x.y.z.');
 requireValue(
   appConfig.ios?.bundleIdentifier === 'com.swavii.app',
