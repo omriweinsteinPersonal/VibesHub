@@ -10419,6 +10419,36 @@ dt {
     radial-gradient(circle at 20% 30%, rgb(165 218 184 / 35%), transparent 34%),
     linear-gradient(135deg, #123f3b, #1d6258 48%, #0a2d2d);
 }
+.storefrontTemplateSwatch-aurora-veil {
+  background:
+    repeating-radial-gradient(
+      ellipse at 8% 50%,
+      transparent 0 8px,
+      #c9abe5 9px 10px,
+      transparent 11px 18px
+    ),
+    linear-gradient(140deg, #281a34, #654d79);
+}
+.storefrontTemplateSwatch-desert-rose {
+  background:
+    repeating-radial-gradient(
+      ellipse at 85% 12%,
+      transparent 0 8px,
+      #e6a082 9px 10px,
+      transparent 11px 19px
+    ),
+    linear-gradient(140deg, #643a32, #b86c53);
+}
+.storefrontTemplateSwatch-glacier-current {
+  background:
+    repeating-radial-gradient(
+      ellipse at 15% 75%,
+      transparent 0 8px,
+      #76b5c4 9px 10px,
+      transparent 11px 18px
+    ),
+    linear-gradient(140deg, #102f43, #28627a);
+}
 .storefrontTemplateCard > span:last-child {
   display: grid;
   gap: 4px;
@@ -10470,7 +10500,10 @@ dt {
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
     [data-template='clay-editorial'],
-    [data-template='forest-glass']
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
   )
   .referenceStorefrontLabels {
   background: color-mix(in srgb, var(--sf-page) 78%, white);
@@ -10483,7 +10516,10 @@ dt {
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
     [data-template='clay-editorial'],
-    [data-template='forest-glass']
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
   )
   .referenceStorefrontLabels
   button {
@@ -10547,6 +10583,27 @@ dt {
   background-color: var(--sf-product);
   background-repeat: no-repeat;
   isolation: isolate;
+}
+
+/* Keep plain creator titles legible on the dark background templates without
+   changing the colors of offer or recommendation cards. */
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .storefrontContentBlock:not([style])
+  .storefrontContentTitle,
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontProducts
+  .storefrontMediaHeading {
+  color: #f5f2eb;
 }
 .creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar img {
   display: block;

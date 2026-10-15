@@ -444,6 +444,342 @@
   }
 }
 
+/* New background-only template directions. A masked image layer lets the
+   Full-bleed portrait dissolve into each page texture without a hard seam. */
+.layout[data-template='aurora-veil'] {
+  background-color: #281a34;
+  background-image:
+    radial-gradient(ellipse at 53% 8%, rgb(196 164 221 / 21%), transparent 34%),
+    radial-gradient(ellipse at 6% 43%, rgb(106 68 132 / 30%), transparent 38%),
+    radial-gradient(ellipse at 92% 72%, rgb(16 10 26 / 74%), transparent 44%),
+    repeating-radial-gradient(
+      ellipse 82% 47% at 7% 37%,
+      transparent 0 30px,
+      rgb(224 205 239 / 12%) 31px 32px,
+      transparent 33px 60px
+    ),
+    repeating-radial-gradient(
+      ellipse 72% 43% at 97% 68%,
+      transparent 0 42px,
+      rgb(166 124 193 / 13%) 43px 44px,
+      transparent 45px 82px
+    ),
+    linear-gradient(148deg, #281a34 0%, #422b50 48%, #21152d 100%);
+}
+.layout[data-template='desert-rose'] {
+  background-color: #643a32;
+  background-image:
+    radial-gradient(ellipse at 64% 4%, rgb(236 164 129 / 22%), transparent 35%),
+    radial-gradient(ellipse at 2% 70%, rgb(153 78 61 / 34%), transparent 39%),
+    radial-gradient(ellipse at 100% 56%, rgb(48 25 26 / 42%), transparent 44%),
+    repeating-radial-gradient(
+      ellipse 92% 44% at 88% 12%,
+      transparent 0 28px,
+      rgb(255 220 193 / 12%) 29px 30px,
+      transparent 31px 56px
+    ),
+    repeating-radial-gradient(
+      ellipse 84% 50% at 7% 70%,
+      transparent 0 38px,
+      rgb(231 153 121 / 13%) 39px 40px,
+      transparent 41px 74px
+    ),
+    linear-gradient(154deg, #75443a 0%, #63382f 54%, #512e2c 100%);
+}
+.layout[data-template='glacier-current'] {
+  background-color: #102f43;
+  background-image:
+    radial-gradient(ellipse at 53% 7%, rgb(124 190 207 / 21%), transparent 34%),
+    radial-gradient(ellipse at 0% 62%, rgb(43 111 133 / 30%), transparent 40%),
+    radial-gradient(ellipse at 97% 48%, rgb(5 22 37 / 62%), transparent 42%),
+    repeating-radial-gradient(
+      ellipse 82% 45% at 8% 76%,
+      transparent 0 27px,
+      rgb(165 214 221 / 13%) 28px 29px,
+      transparent 30px 55px
+    ),
+    repeating-radial-gradient(
+      ellipse 92% 50% at 97% 22%,
+      transparent 0 39px,
+      rgb(91 161 180 / 14%) 40px 41px,
+      transparent 42px 76px
+    ),
+    linear-gradient(145deg, #102f43 0%, #19485d 49%, #0a2639 100%);
+}
+
+.layout:is(
+  [data-template='forest-glass'],
+  [data-template='aurora-veil'],
+  [data-template='desert-rose'],
+  [data-template='glacier-current']
+) {
+  position: relative;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile,
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials,
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .content:global(.referenceStorefrontProducts) {
+  background-color: transparent;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile.hero {
+  background-color: transparent;
+  background-image: none;
+  overflow: hidden;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile.hero::before {
+  content: none;
+  display: none;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile.hero
+  :global(.referenceStorefrontHeroImage) {
+  background-image:
+    linear-gradient(180deg, rgb(4 19 22 / 5%) 30%, rgb(4 19 22 / 15%) 70%),
+    var(--sf-profile-image, none);
+  background-position:
+    center,
+    center 42%;
+  background-size: cover;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 48%,
+    rgb(0 0 0 / 78%) 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 48%,
+    rgb(0 0 0 / 78%) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )[data-header-style='circular']
+  .profile.hero
+  :global(.referenceStorefrontHeroImage) {
+  display: none;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )[data-header-style='circular']
+  .profile.hero {
+  min-height: 0;
+  padding: 38px 5vw 14px;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile.hero
+  :global(.referenceStorefrontInner) {
+  position: relative;
+  z-index: 1;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile.hero
+  :global(.referenceStorefrontName h1),
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile
+  :global(.referenceStorefrontBio) {
+  color: #f5f2eb;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 30%);
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .profile
+  :global(.referenceStorefrontAvatar) {
+  border-color: rgb(242 245 232 / 92%);
+  box-shadow:
+    0 0 0 5px rgb(245 245 236 / 22%),
+    0 0 28px 11px rgb(226 213 190 / 34%),
+    0 0 58px 21px rgb(198 183 170 / 18%),
+    0 14px 30px rgb(0 16 17 / 42%);
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )[data-header-style='circular']
+  .profile.hero
+  :global(.referenceStorefrontAvatar) {
+  height: 108px;
+  width: 108px;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials {
+  gap: 10px;
+  padding: 8px 5vw 22px;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials
+  :global(.referenceConnectorLink) {
+  background: rgb(241 245 235 / 13%);
+  border: 1px solid rgb(241 245 235 / 21%);
+  border-radius: 50%;
+  color: #fff;
+  height: 40px;
+  width: 40px;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials
+  :global(.referenceConnectorLink:hover),
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials
+  :global(.referenceConnectorLink:focus-visible) {
+  background: rgb(250 252 246 / 24%);
+  border-color: rgb(250 252 246 / 48%);
+  color: #fff;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .labels {
+  background: rgb(239 245 236 / 12%);
+  border: 1px solid rgb(239 245 236 / 25%);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 13%),
+    0 10px 28px rgb(0 12 18 / 20%);
+  margin-inline: 16px;
+  padding: 5px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .labels
+  :global(button[aria-pressed]) {
+  border-radius: 999px;
+  color: #f2f4ed;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .labels
+  :global(button[aria-pressed='true']) {
+  background: #f4f0e5;
+  color: #263934;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .firstContent:global(.referenceStorefrontProducts) {
+  background: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0%) 0,
+    rgb(0 0 0 / 3%) 20px,
+    transparent 54px
+  );
+}
+@media (max-width: 620px) {
+  .layout:is(
+      [data-template='forest-glass'],
+      [data-template='aurora-veil'],
+      [data-template='desert-rose'],
+      [data-template='glacier-current']
+    )[data-header-style='circular']
+    .profile.hero {
+    padding-top: 34px;
+  }
+}
+
 /* Forest Glass follows the deep, mineral teal atmosphere from the approved
    mockup. These rules only style the page chrome; recommendation cards retain
    their own surfaces and component styling. */
@@ -477,14 +813,11 @@
 .layout[data-template='forest-glass'] .profile.hero {
   background-color: #0b302e;
   background-image:
-    linear-gradient(
-      180deg,
-      rgb(5 30 30 / 3%) 0%,
-      rgb(5 30 30 / 9%) 54%,
-      #0b302e 100%
-    ),
+    linear-gradient(180deg, rgb(5 30 30 / 3%) 0%, rgb(5 30 30 / 9%) 54%, #0b302e 100%),
     var(--sf-profile-image, none);
-  background-position: center, center 42%;
+  background-position:
+    center,
+    center 42%;
   background-size: cover;
   min-height: 340px;
 }
@@ -524,9 +857,7 @@
   height: 38px;
   width: 38px;
 }
-.layout[data-template='forest-glass']
-  .socials
-  :global(.referenceConnectorLink:hover),
+.layout[data-template='forest-glass'] .socials :global(.referenceConnectorLink:hover),
 .layout[data-template='forest-glass']
   .socials
   :global(.referenceConnectorLink:focus-visible) {
@@ -549,9 +880,7 @@
   border-radius: 999px;
   color: #eef5ea;
 }
-.layout[data-template='forest-glass']
-  .labels
-  :global(button[aria-pressed='true']) {
+.layout[data-template='forest-glass'] .labels :global(button[aria-pressed='true']) {
   background: #f3f1e7;
   color: #173b37;
 }
@@ -635,4 +964,14 @@
   .handleLabel {
     display: none;
   }
+}
+
+/* Keep the Forest Glass legacy rules from restoring the unmasked hero photo. */
+.layout[data-template='forest-glass'] .profile.hero {
+  background-color: transparent;
+  background-image: none;
+}
+.layout[data-template='forest-glass'][data-header-style='circular'] .profile.hero {
+  background-color: transparent;
+  background-image: none;
 }

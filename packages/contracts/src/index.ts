@@ -580,6 +580,9 @@ export const storefrontThemeSchema = z
         'midnight-electric',
         'clay-editorial',
         'forest-glass',
+        'aurora-veil',
+        'desert-rose',
+        'glacier-current',
       ])
       .optional(),
     headerStyle: z.enum(['classic', 'circular']).default('classic'),
