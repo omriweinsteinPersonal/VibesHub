@@ -15957,8 +15957,24 @@ dt {
 }
 .creatorStorefrontCanvas[data-template='forest-glass']::before {
   background:
-    radial-gradient(circle at 50% 18%, transparent 0 94px, rgb(210 237 213 / 10%) 95px 97px, transparent 98px 154px, rgb(210 237 213 / 7%) 155px 157px, transparent 158px 226px, rgb(210 237 213 / 5%) 227px 229px, transparent 230px),
-    radial-gradient(circle at 4% 84%, transparent 0 112px, rgb(79 155 137 / 11%) 113px 115px, transparent 116px 180px, rgb(79 155 137 / 7%) 181px 183px, transparent 184px);
+    radial-gradient(
+      circle at 50% 18%,
+      transparent 0 94px,
+      rgb(210 237 213 / 10%) 95px 97px,
+      transparent 98px 154px,
+      rgb(210 237 213 / 7%) 155px 157px,
+      transparent 158px 226px,
+      rgb(210 237 213 / 5%) 227px 229px,
+      transparent 230px
+    ),
+    radial-gradient(
+      circle at 4% 84%,
+      transparent 0 112px,
+      rgb(79 155 137 / 11%) 113px 115px,
+      transparent 116px 180px,
+      rgb(79 155 137 / 7%) 181px 183px,
+      transparent 184px
+    );
   content: '';
   inset: -22%;
   opacity: 0.78;
