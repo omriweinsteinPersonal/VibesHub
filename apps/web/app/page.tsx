@@ -10,6 +10,7 @@ import {
   Link as LinkIcon,
   MapPinned,
   Play,
+  Tag,
   UserRound,
 } from 'lucide-react';
 import { HomeGallery, HomeStudio } from './_components/home-experience';
