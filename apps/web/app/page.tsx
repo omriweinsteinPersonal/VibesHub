@@ -68,7 +68,7 @@ export default function HomePage() {
           <a href="#pricing">Pricing</a>
         </nav>
         <div className={styles.headerActions}>
-          <Link href="/auth?mode=login">Creator log in</Link>
+          <Link href="/auth?mode=login">Log in</Link>
         </div>
       </header>
       <main id="main">

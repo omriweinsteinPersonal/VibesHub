@@ -72,7 +72,7 @@ const creators: CreatorExample[] = [
     name: 'Rotem Cohen',
     handle: 'rotemcohen',
     details: 'Style · Everyday · Finds',
-    bio: 'A personal edit of pieces I reach for every day.',
+    bio: '',
     image: '/images/home/rotem-profile-v3.png',
     theme: 'rotem',
     background: '#d99a78',
@@ -110,7 +110,7 @@ const creators: CreatorExample[] = [
   {
     name: 'Mia Chen',
     handle: 'miachen',
-    details: 'Home · Coffee · Slow living',
+    details: '',
     bio: 'Small rituals and thoughtful pieces for home.',
     image: '/images/home/miya.jpg',
     theme: 'mia',
@@ -149,7 +149,7 @@ const creators: CreatorExample[] = [
   {
     name: 'Noah Carter',
     handle: 'noahcarter',
-    details: 'Outdoors · Trails · Travel',
+    details: '',
     bio: 'Places worth the walk, and the gear I take along.',
     image: '/images/home/noah-trail-demo.png',
     theme: 'noah',
@@ -328,9 +328,9 @@ function CreatorCard({ index }: { index: number }) {
       </div>
       <div className={styles.identity}>
         <strong>{creator.name}</strong>
-        <span>{creator.details}</span>
+        {creator.details ? <span>{creator.details}</span> : null}
       </div>
-      <p className={styles.creatorBio}>{creator.bio}</p>
+      {creator.bio ? <p className={styles.creatorBio}>{creator.bio}</p> : null}
       <div className={styles.socialIcons} aria-label="Social platforms preview">
         <Image src="/connectors/youtube.svg" alt="" width={16} height={16} />
         <Image src="/connectors/pinterest.svg" alt="" width={16} height={16} />

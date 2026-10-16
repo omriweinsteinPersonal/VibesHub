@@ -2701,6 +2701,43 @@
     color: #bd5835;
   }
 }
+
+/* Final homepage polish for the creator examples and signup affordance. */
+.creatorRail > .creatorCard[data-theme='mia'],
+.creatorRail > .creatorCard[data-theme='noah'] {
+  display: flex;
+  flex-direction: column;
+}
+.creatorRail > .creatorCard[data-theme='mia'] .creatorBio,
+.creatorRail > .creatorCard[data-theme='noah'] .creatorBio {
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  font-size: 8px;
+}
+.creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
+  flex: 1;
+}
+.creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
+  min-height: 132px;
+  height: 100%;
+}
+.creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
+  width: 92px !important;
+  height: 92px !important;
+}
+.nameField span {
+  font-size: 16px;
+}
+@media (max-width: 760px) {
+  .nameField span {
+    font-size: 13px;
+  }
+}
+@media (max-width: 390px) {
+  .nameField span {
+    font-size: 11px;
+  }
+}
 @media (max-width: 390px) {
   .hero h1 {
     font-size: 42px;
