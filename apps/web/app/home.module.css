@@ -3410,6 +3410,9 @@
 .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
   object-position: center 30%;
 }
+.creatorRail > .creatorCard[data-theme='rotem'] .productPhoto {
+  background: #d9d4ca;
+}
 .creatorRail > .creatorCard[data-theme='mia'] .cover img {
   object-position: center 42%;
 }

@@ -18,4 +18,7 @@ Other product illustrations reuse existing Swavii demo assets. Creator, brand, p
 
 - noah-trail-demo.png: AI-generated fictional creator portrait for homepage demo use; no real person or brand depicted.
 - rotem-dress.png, rotem-jeans.png, rotem-bag.png, rotem-sunglasses.png: AI-generated fictional, unbranded product demo images.
+- rotem-profile-v2.png, rotem-style-notes-v2.png: AI-generated fictional creator lifestyle photography for the Rotem Cohen homepage demo.
+- rotem-profile-v3.png, rotem-style-notes-v3.png: AI-edited fictional creator lifestyle photography with straight-to-softly-wavy hair.
+- rotem-dress-v2.png, rotem-jeans-v2.png, rotem-bag-v2.png, rotem-sunglasses-v2.png: AI-edited fictional, unbranded product demo images with neutral stone backgrounds.
 - noah-boots.png, noah-pack.png, noah-tote.png, noah-mug.png: AI-generated fictional, unbranded outdoor product demo images.
