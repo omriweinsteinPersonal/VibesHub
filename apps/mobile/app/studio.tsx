@@ -1252,6 +1252,11 @@ function StorefrontEditor({
   const [configuration, setConfiguration] = useState(bundle.configuration);
   const [themeConfiguration, setThemeConfiguration] = useState(bundle.theme);
   const [labelTitle, setLabelTitle] = useState('');
+  const [editingLabelId, setEditingLabelId] = useState<string | null | undefined>();
+  const [labelBrandIds, setLabelBrandIds] = useState<string[]>([]);
+  const [labelCollectionIds, setLabelCollectionIds] = useState<string[]>([]);
+  const [labelRecommendationIds, setLabelRecommendationIds] = useState<string[]>([]);
+  const [labelLayout, setLabelLayout] = useState<'cards' | 'grid'>('grid');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaTitle, setMediaTitle] = useState('');
   const [saving, setSaving] = useState(false);
@@ -1321,25 +1326,74 @@ function StorefrontEditor({
     [onBundle, onError, onNotice],
   );
 
-  function addLabel() {
+  function openLabel(id?: string) {
+    const label = id ? configuration.labels.find((item) => item.id === id) : undefined;
+    setEditingLabelId(id ?? null);
+    setLabelTitle(label?.title ?? '');
+    setLabelBrandIds(label?.brandIds ?? []);
+    setLabelCollectionIds(label?.collectionIds ?? []);
+    setLabelRecommendationIds(label?.recommendationIds ?? []);
+    setLabelLayout(label?.layout ?? 'grid');
+  }
+
+  function toggleLabelValue(
+    id: string,
+    values: string[],
+    setValues: React.Dispatch<React.SetStateAction<string[]>>,
+  ) {
+    setValues(
+      values.includes(id) ? values.filter((value) => value !== id) : [...values, id],
+    );
+  }
+
+  function saveLabel() {
     const title = labelTitle.trim();
     if (!title) return;
+    const id = editingLabelId ?? newStudioId();
+    const label = {
+      brandIds: labelBrandIds,
+      categorySlug: null,
+      collectionIds: labelCollectionIds,
+      id,
+      layout: labelLayout,
+      recommendationIds: labelRecommendationIds,
+      title,
+    };
     const next = {
       ...configuration,
-      labels: [
-        ...configuration.labels,
-        {
-          brandIds: [],
-          categorySlug: null,
-          collectionIds: [],
-          id: newStudioId(),
-          layout: 'grid' as const,
-          recommendationIds: [],
-          title,
-        },
-      ],
+      labels:
+        editingLabelId === null
+          ? [...configuration.labels, label]
+          : configuration.labels.map((item) => (item.id === id ? label : item)),
     };
+    setEditingLabelId(undefined);
     setLabelTitle('');
+    setConfiguration(next);
+    void save(next);
+  }
+
+  function toggleCategory(category: CategoryCard) {
+    const selected = configuration.sections.some(
+      ({ category: sectionCategory }) => sectionCategory.id === category.id,
+    );
+    const next = {
+      ...configuration,
+      sections: selected
+        ? configuration.sections.filter(
+            ({ category: sectionCategory }) => sectionCategory.id !== category.id,
+          )
+        : [
+            ...configuration.sections,
+            {
+              category: {
+                id: category.id,
+                name: category.name,
+                slug: category.slug,
+              },
+              position: configuration.sections.length,
+            },
+          ],
+    };
     setConfiguration(next);
     void save(next);
   }
@@ -1379,6 +1433,7 @@ function StorefrontEditor({
             ...configuration,
             labels: configuration.labels.filter((item) => item.id !== id),
           };
+          if (editingLabelId === id) setEditingLabelId(undefined);
           setConfiguration(next);
           void save(next);
         },
@@ -1474,17 +1529,108 @@ function StorefrontEditor({
         />
       </View>
 
+      <Text style={styles.sectionTitle}>Storefront categories</Text>
+      <Text style={styles.cardMeta}>
+        Choose the category sections visitors can browse on your page.
+      </Text>
+      <View style={styles.wrappedChoices}>
+        {bundle.categories.map((category) => (
+          <ChoicePill
+            key={category.id}
+            label={category.name}
+            onPress={() => toggleCategory(category)}
+            selected={configuration.sections.some(
+              ({ category: selected }) => selected.id === category.id,
+            )}
+          />
+        ))}
+      </View>
+
       <View style={styles.editorCard}>
-        <Text style={styles.cardTitle}>Add label</Text>
-        <Text style={styles.cardMeta}>Create a filter such as “My favorites”.</Text>
-        <Field label="Label name" onChangeText={setLabelTitle} value={labelTitle} />
-        <Pressable
-          disabled={saving || !labelTitle.trim()}
-          onPress={addLabel}
-          style={styles.primarySmall}
-        >
-          <Text style={styles.primaryButtonText}>Add label</Text>
-        </Pressable>
+        <View style={styles.labelHeadingRow}>
+          <View style={styles.listCopy}>
+            <Text style={styles.cardTitle}>Storefront labels</Text>
+            <Text style={styles.cardMeta}>
+              Create filters such as “My favorites” and choose exactly what they show.
+            </Text>
+          </View>
+          {editingLabelId === undefined ? (
+            <Pressable onPress={() => openLabel()} style={styles.compactButton}>
+              <Text style={styles.compactButtonText}>+ Label</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {editingLabelId !== undefined ? (
+          <>
+            <Field label="Label name" onChangeText={setLabelTitle} value={labelTitle} />
+            <Text style={styles.fieldLabelStandalone}>Layout</Text>
+            <View style={styles.inlineChoices}>
+              <ChoicePill
+                label="Grid"
+                onPress={() => setLabelLayout('grid')}
+                selected={labelLayout === 'grid'}
+              />
+              <ChoicePill
+                label="Cards"
+                onPress={() => setLabelLayout('cards')}
+                selected={labelLayout === 'cards'}
+              />
+            </View>
+            {bundle.brands.length ? (
+              <LabelChoices
+                label="Brands"
+                onToggle={(id) => toggleLabelValue(id, labelBrandIds, setLabelBrandIds)}
+                options={bundle.brands.map((brand) => ({
+                  id: brand.brandId,
+                  label: brand.name,
+                }))}
+                selectedIds={labelBrandIds}
+              />
+            ) : null}
+            {configuration.curatedSections.some(({ kind }) => kind === 'collection') ? (
+              <LabelChoices
+                label="Collections"
+                onToggle={(id) =>
+                  toggleLabelValue(id, labelCollectionIds, setLabelCollectionIds)
+                }
+                options={configuration.curatedSections
+                  .filter(({ kind }) => kind === 'collection')
+                  .map((collection) => ({
+                    id: collection.id,
+                    label: collection.title,
+                  }))}
+                selectedIds={labelCollectionIds}
+              />
+            ) : null}
+            {bundle.recommendations.some(({ lifecycle }) => lifecycle !== 'archived') ? (
+              <LabelChoices
+                label="Items"
+                onToggle={(id) =>
+                  toggleLabelValue(id, labelRecommendationIds, setLabelRecommendationIds)
+                }
+                options={bundle.recommendations
+                  .filter(({ lifecycle }) => lifecycle !== 'archived')
+                  .map((item) => ({ id: item.id, label: item.productName }))}
+                selectedIds={labelRecommendationIds}
+              />
+            ) : null}
+            <View style={styles.buttonRow}>
+              <Pressable
+                disabled={saving || !labelTitle.trim()}
+                onPress={saveLabel}
+                style={styles.primarySmall}
+              >
+                <Text style={styles.primaryButtonText}>Save label</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setEditingLabelId(undefined)}
+                style={styles.secondarySmall}
+              >
+                <Text style={styles.secondaryButtonText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </>
+        ) : null}
       </View>
       {configuration.labels.map((label) => (
         <View key={label.id} style={styles.listCard}>
@@ -1495,9 +1641,14 @@ function StorefrontEditor({
               collections
             </Text>
           </View>
-          <Pressable onPress={() => removeLabel(label.id)}>
-            <Text style={styles.removeText}>Remove</Text>
-          </Pressable>
+          <View style={styles.itemActions}>
+            <Pressable onPress={() => openLabel(label.id)}>
+              <Text style={styles.editLabel}>Edit</Text>
+            </Pressable>
+            <Pressable onPress={() => removeLabel(label.id)}>
+              <Text style={styles.removeText}>Remove</Text>
+            </Pressable>
+          </View>
         </View>
       ))}
 
@@ -1534,6 +1685,45 @@ function StorefrontEditor({
         </View>
       ))}
       {saving ? <ActivityIndicator color={colors.accent} style={styles.saving} /> : null}
+    </>
+  );
+}
+
+function LabelChoices({
+  label,
+  onToggle,
+  options,
+  selectedIds,
+}: {
+  label: string;
+  onToggle: (id: string) => void;
+  options: { id: string; label: string }[];
+  selectedIds: string[];
+}) {
+  return (
+    <>
+      <Text style={styles.fieldLabelStandalone}>{label}</Text>
+      {options.map((option) => (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: selectedIds.includes(option.id) }}
+          key={option.id}
+          onPress={() => onToggle(option.id)}
+          style={styles.checkboxRow}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              selectedIds.includes(option.id) && styles.checkboxSelected,
+            ]}
+          >
+            {selectedIds.includes(option.id) ? (
+              <Text style={styles.checkboxMark}>✓</Text>
+            ) : null}
+          </View>
+          <Text style={styles.choiceListLabel}>{option.label}</Text>
+        </Pressable>
+      ))}
     </>
   );
 }
@@ -2017,6 +2207,15 @@ const styles = StyleSheet.create({
   choicePillSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   choicePillText: { color: colors.ink, fontSize: 13, fontWeight: '600' },
   choicePillTextSelected: { color: colors.white },
+  wrappedChoices: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: spacing.sm,
+  },
+  inlineChoices: { flexDirection: 'row', gap: 8, marginTop: spacing.sm },
+  labelHeadingRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
+  choiceListLabel: { color: colors.ink, flex: 1, fontSize: 14, fontWeight: '600' },
   checkboxRow: {
     alignItems: 'center',
     borderBottomColor: colors.border,
