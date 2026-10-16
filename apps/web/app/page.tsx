@@ -7,12 +7,10 @@ import {
   Check,
   Grid2X2,
   Home,
-  Image as ImageIcon,
   Link as LinkIcon,
+  MapPinned,
   Play,
-  Tag,
   UserRound,
-  Video,
 } from 'lucide-react';
 import { HomeGallery, HomeStudio } from './_components/home-experience';
 import {
@@ -112,10 +110,10 @@ export default function HomePage() {
         >
           <div className={styles.contentHeading}>
             <div>
-              <h2 id="content-title">More than a list of things you love.</h2>
+              <span className={styles.contentEyebrow}>BUILD YOUR PAGE</span>
+              <h2 id="content-title">Everything you love, in one place.</h2>
               <p>
-                Share your links, photos, videos, collections, Instagram and more — all in
-                one beautiful page.
+                Choose the pieces that make your page feel like you.
               </p>
             </div>
             <a href="#how-it-works">
@@ -124,107 +122,63 @@ export default function HomePage() {
           </div>
           <div className={styles.contentGrid}>
             <article className={`${styles.contentBlock} ${styles.linkBlock}`}>
-              <h3>
-                <LinkIcon size={18} aria-hidden="true" /> Custom link
-              </h3>
-              <div className={styles.sampleLink}>
-                <LinkIcon size={18} aria-hidden="true" /> My camera gear{' '}
-                <ArrowRight size={16} aria-hidden="true" />
+              <div className={styles.featureVisual}><LinkIcon aria-hidden="true" /></div>
+              <div className={styles.featureCopy}>
+                <h3>Custom link</h3>
+                <p>Share anything with a link made for you.</p>
               </div>
             </article>
-            <article className={`${styles.contentBlock} ${styles.galleryBlock}`}>
-              <h3>
-                <ImageIcon size={18} aria-hidden="true" /> Photo gallery
-              </h3>
-              <div className={styles.samplePhotos}>
-                {[
-                  '/images/home/daniel.jpg',
-                  '/images/home/chair-final.jpg',
-                  '/images/home/coffee.jpg',
-                  '/images/home/miya.jpg',
-                ].map((src, i) => (
-                  <Image
-                    key={src}
-                    src={src}
-                    alt={
-                      [
-                        'Photographer outdoors',
-                        'Design chair',
-                        'Coffee detail',
-                        'Creator in her kitchen',
-                      ][i] ?? 'Creator gallery photo'
-                    }
-                    width={124}
-                    height={104}
-                  />
+            <article className={`${styles.contentBlock} ${styles.mediaBlock}`}>
+              <div className={styles.featureMediaPreview} aria-hidden="true">
+                <Image src="/images/home/kitchen-collection.jpg" alt="" fill sizes="96px" />
+                <Image src="/images/home/coffee.jpg" alt="" width={58} height={46} />
+                <span><Play size={12} fill="currentColor" /></span>
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Media</h3>
+                <p>Showcase your photos and videos.</p>
+              </div>
+            </article>
+            <article className={`${styles.contentBlock} ${styles.socialBlock}`}>
+              <div className={styles.featureSocialPreview} aria-hidden="true">
+                {['instagram', 'tiktok', 'youtube'].map((name) => (
+                  <span key={name}><Image src={`/connectors/${name}.svg`} alt="" width={17} height={17} /></span>
                 ))}
+                <span className={styles.socialPlus}>+</span>
               </div>
-            </article>
-            <article className={`${styles.contentBlock} ${styles.videoBlock}`}>
-              <h3>
-                <Video size={18} aria-hidden="true" /> Video
-              </h3>
-              <div className={styles.sampleVideo}>
-                <Image
-                  src="/images/home/kitchen-collection.jpg"
-                  alt="Editorial kitchen scene"
-                  fill
-                  sizes="400px"
-                />
-                <Play size={29} fill="currentColor" aria-hidden="true" />
-                <span>A day in the studio</span>
-              </div>
-            </article>
-            <article className={`${styles.contentBlock} ${styles.postBlock}`}>
-              <h3>
-                <Camera size={18} aria-hidden="true" /> Instagram post
-              </h3>
-              <div className={styles.samplePost}>
-                <Image
-                  src="/images/home/fashion-collection.jpg"
-                  alt="Wardrobe editorial"
-                  width={160}
-                  height={126}
-                />
-                <p>
-                  A few good pieces, on repeat.<small>Like · Comment · Share</small>
-                </p>
+              <div className={styles.featureCopy}>
+                <h3>Social links</h3>
+                <p>Bring all your social profiles together.</p>
               </div>
             </article>
             <article className={`${styles.contentBlock} ${styles.collectionBlock}`}>
-              <h3>
-                <Grid2X2 size={18} aria-hidden="true" /> Collection
-              </h3>
-              <div className={styles.sampleCollection}>
-                <strong>
-                  The Everyday Edit <ArrowRight size={16} aria-hidden="true" />
-                </strong>
-                <div>
-                  {[
-                    '/images/creator-demo-shoulder-bag.png',
-                    '/images/creator-demo-sneakers.png',
-                    '/images/home/tote.jpg',
-                  ].map((src) => (
-                    <Image key={src} src={src} alt="" width={90} height={76} />
-                  ))}
-                </div>
+              <div className={styles.featureCollectionPreview} aria-hidden="true">
+                <Image src="/images/home/tote.jpg" alt="" fill sizes="92px" />
+                <Image src="/images/creator-demo-shoulder-bag.png" alt="" width={62} height={52} />
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Collection</h3>
+                <p>Group your links, media and more.</p>
               </div>
             </article>
-            <article className={`${styles.contentBlock} ${styles.recommendationBlock}`}>
-              <h3>
-                <Tag size={18} aria-hidden="true" /> Recommendation
-              </h3>
-              <div className={styles.sampleRecommendation}>
-                <Image
-                  src="/images/home/camera-v2.jpg"
-                  alt="Recommended camera"
-                  width={105}
-                  height={122}
-                />
-                <p>
-                  <strong>A camera to take everywhere.</strong>
-                  <span>One of Daniel’s everyday favorites.</span>
-                </p>
+            <article className={`${styles.contentBlock} ${styles.designBlock}`}>
+              <div className={styles.featureDesignPreview} aria-hidden="true">
+                <div><i /><i /><i /></div>
+                <Image src="/images/home/miya.jpg" alt="" fill sizes="92px" />
+                <span><b /><b /><b /></span>
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Personal design</h3>
+                <p>Make it yours with custom styles.</p>
+              </div>
+            </article>
+            <article className={`${styles.contentBlock} ${styles.mapsBlock}`}>
+              <div className={styles.featureMapPreview} aria-hidden="true">
+                <i /><i /><i /><MapPinned size={27} />
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Maps</h3>
+                <p>Share your location with ease.</p>
               </div>
             </article>
           </div>

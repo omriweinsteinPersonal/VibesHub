@@ -3974,3 +3974,284 @@
     width: 70px;
   }
 }
+
+/* Feature cards: editorial previews make each capability recognizable at a glance. */
+.contentHeading {
+  align-items: flex-end;
+}
+.contentEyebrow {
+  display: block;
+  margin-bottom: 9px;
+  color: #7d8c68;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.contentGrid {
+  gap: 16px;
+}
+.contentBlock {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  min-height: 172px;
+  height: auto;
+  padding: 18px;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid #e5ded5;
+  border-top: 1px solid #e5ded5;
+  border-radius: 18px;
+  background: #fffdfa;
+  box-shadow: 0 10px 26px #33271d0b;
+}
+.contentBlock h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  line-height: 1.12;
+}
+.contentBlock h3::before,
+.contentBlock h3 svg {
+  display: none;
+}
+.featureCopy {
+  min-width: 0;
+}
+.featureCopy p {
+  max-width: 190px;
+  margin: 0;
+  color: #6d6b68;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.featureVisual,
+.featureMediaPreview,
+.featureSocialPreview,
+.featureCollectionPreview,
+.featureDesignPreview,
+.featureMapPreview {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  overflow: hidden;
+  border-radius: 18px;
+  flex-shrink: 0;
+}
+.featureVisual {
+  display: grid;
+  place-items: center;
+  background: #f4d4c0;
+  color: #9d572d;
+}
+.featureVisual svg {
+  width: 42px;
+  height: 42px;
+  stroke-width: 1.7;
+}
+.mediaBlock { background: #f4f7f1; }
+.featureMediaPreview {
+  border: 4px solid #fff;
+  background: #c8d8c0;
+  box-shadow: 0 5px 14px #344d3a1c;
+}
+.featureMediaPreview > img:first-child {
+  object-fit: cover;
+  filter: saturate(.86);
+}
+.featureMediaPreview > img:nth-child(2) {
+  position: absolute !important;
+  right: -2px;
+  bottom: 5px;
+  width: 56px !important;
+  height: 45px !important;
+  border: 3px solid #fff;
+  border-radius: 9px;
+  object-fit: cover;
+  z-index: 1;
+}
+.featureMediaPreview > span {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #55705a;
+}
+.socialBlock { background: #f4f5f7; }
+.featureSocialPreview {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: #dbe7f4;
+}
+.featureSocialPreview span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 7px #263b4e18;
+}
+.featureSocialPreview img { width: 17px; height: 17px; }
+.featureSocialPreview .socialPlus {
+  color: #66819a;
+  font-size: 20px;
+  font-weight: 600;
+}
+.collectionBlock { background: #f5f0fb; }
+.featureCollectionPreview {
+  overflow: visible;
+  background: #e4d8f2;
+}
+.featureCollectionPreview > img:first-child {
+  position: absolute !important;
+  inset: 9px 0 0 8px;
+  width: 88px !important;
+  height: 88px !important;
+  border-radius: 10px;
+  object-fit: cover;
+  opacity: .52;
+}
+.featureCollectionPreview > img:nth-child(2) {
+  position: absolute !important;
+  top: 18px;
+  left: 21px;
+  width: 62px !important;
+  height: 60px !important;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 7px 12px #4a355d25;
+}
+.designBlock { background: #fff5df; }
+.featureDesignPreview {
+  border: 1px solid #eadac0;
+  background: #fff;
+  box-shadow: 0 5px 12px #8d6b3d18;
+}
+.featureDesignPreview > div {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  height: 18px;
+  padding: 5px 7px;
+  background: #fff;
+}
+.featureDesignPreview > div i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: #ddd4c7;
+}
+.featureDesignPreview > img {
+  object-fit: cover;
+  object-position: center;
+}
+.featureDesignPreview > span {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border-radius: 6px;
+}
+.featureDesignPreview > span b {
+  width: 14px;
+  height: 8px;
+  border-radius: 3px;
+  background: #b9c7b4;
+}
+.featureDesignPreview > span b:nth-child(2) { background: #e7d8bd; }
+.featureDesignPreview > span b:nth-child(3) { background: #dca17c; }
+.mapsBlock { background: #eef7f2; }
+.featureMapPreview {
+  display: grid;
+  place-items: center;
+  background: #d7ebdf;
+}
+.featureMapPreview::before,
+.featureMapPreview::after {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 1px;
+  background: #fff;
+  transform: rotate(-27deg);
+}
+.featureMapPreview::after { transform: rotate(34deg); }
+.featureMapPreview i {
+  position: absolute;
+  width: 1px;
+  height: 130%;
+  background: #fff;
+  transform: rotate(56deg);
+}
+.featureMapPreview i:nth-child(2) { transform: rotate(-58deg); }
+.featureMapPreview i:nth-child(3) { transform: rotate(78deg); }
+.featureMapPreview svg {
+  position: relative;
+  z-index: 1;
+  color: #28735d;
+  fill: #28735d;
+  stroke: #fff;
+  stroke-width: 1.4;
+}
+@media (max-width: 760px) {
+  .contentHeading {
+    display: block;
+    margin-bottom: 18px;
+  }
+  .contentHeading > a { display: none; }
+  .contentEyebrow { font-size: 9px; }
+  .contentHeading h2 { font-size: 31px; }
+  .contentHeading p { margin-top: 8px; font-size: 13px; }
+  .contentGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .contentBlock {
+    display: flex;
+    min-height: 166px;
+    padding: 11px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+    border-radius: 15px;
+  }
+  .featureVisual,
+  .featureMediaPreview,
+  .featureSocialPreview,
+  .featureCollectionPreview,
+  .featureDesignPreview,
+  .featureMapPreview {
+    width: 100%;
+    height: 78px;
+    border-radius: 12px;
+  }
+  .featureVisual { min-height: 78px; }
+  .featureVisual svg { width: 31px; height: 31px; }
+  .featureCopy h3 { margin-bottom: 4px; font-size: 14px; }
+  .featureCopy p { max-width: none; font-size: 10px; line-height: 1.25; }
+  .featureSocialPreview { gap: 5px; padding: 7px; }
+  .featureSocialPreview span { width: 24px; height: 24px; }
+  .featureSocialPreview img { width: 14px; height: 14px; }
+  .featureSocialPreview .socialPlus { font-size: 16px; }
+  .featureCollectionPreview > img:first-child { inset: 6px 0 0 10px; width: calc(100% - 16px) !important; height: calc(100% - 8px) !important; }
+  .featureCollectionPreview > img:nth-child(2) { top: 11px; left: 26%; width: 50% !important; height: 55px !important; }
+  .featureDesignPreview > span { right: 5px; bottom: 5px; left: 5px; }
+}
