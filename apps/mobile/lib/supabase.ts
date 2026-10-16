@@ -4,66 +4,12 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { AppState, Platform } from 'react-native';
 
-const CHUNK_SIZE = 1_800;
-const developmentStorage = new Map<string, string>();
+import { createSecureAuthStorage } from './secure-auth-storage';
 
-function chunkKey(key: string, suffix: string | number): string {
-  return `${key}.${suffix}`;
-}
-
-const secureStorage = {
-  async getItem(key: string): Promise<string | null> {
-    try {
-      const countValue = await SecureStore.getItemAsync(chunkKey(key, 'count'));
-      if (!countValue) return SecureStore.getItemAsync(key);
-      const count = Number(countValue);
-      const chunks = await Promise.all(
-        Array.from({ length: count }, (_, index) =>
-          SecureStore.getItemAsync(chunkKey(key, index)),
-        ),
-      );
-      return chunks.every((chunk) => chunk !== null) ? chunks.join('') : null;
-    } catch (cause) {
-      if (__DEV__) return developmentStorage.get(key) ?? null;
-      throw cause;
-    }
-  },
-  async removeItem(key: string): Promise<void> {
-    try {
-      const countValue = await SecureStore.getItemAsync(chunkKey(key, 'count'));
-      const count = Number(countValue ?? 0);
-      await Promise.all([
-        SecureStore.deleteItemAsync(key),
-        SecureStore.deleteItemAsync(chunkKey(key, 'count')),
-        ...Array.from({ length: count }, (_, index) =>
-          SecureStore.deleteItemAsync(chunkKey(key, index)),
-        ),
-      ]);
-    } catch (cause) {
-      if (!__DEV__) throw cause;
-    } finally {
-      if (__DEV__) developmentStorage.delete(key);
-    }
-  },
-  async setItem(key: string, value: string): Promise<void> {
-    try {
-      await this.removeItem(key);
-      const chunks = Array.from(
-        { length: Math.ceil(value.length / CHUNK_SIZE) },
-        (_, index) => value.slice(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE),
-      );
-      await Promise.all(
-        chunks.map((chunk, index) =>
-          SecureStore.setItemAsync(chunkKey(key, index), chunk),
-        ),
-      );
-      await SecureStore.setItemAsync(chunkKey(key, 'count'), String(chunks.length));
-    } catch (cause) {
-      if (!__DEV__) throw cause;
-      developmentStorage.set(key, value);
-    }
-  },
-};
+const secureStorage = createSecureAuthStorage(
+  SecureStore,
+  __DEV__ ? new Map<string, string>() : undefined,
+);
 
 let client: SupabaseClient | undefined;
 

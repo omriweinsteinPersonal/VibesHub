@@ -35,10 +35,12 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
+    let active = true;
     const supabase = getSupabaseClient();
     void supabase.auth
       .getSession()
       .then(({ data }) => {
+        if (!active) return;
         const hasSession = Boolean(data.session);
         setSignedIn(hasSession);
         if (initialSessionRedirectGate.consume(hasSession)) {
@@ -48,13 +50,17 @@ export default function HomeScreen() {
         setRestoringSession(false);
       })
       .catch(() => {
+        if (!active) return;
         initialSessionRedirectGate.consume(false);
         setRestoringSession(false);
       });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedIn(Boolean(session));
+      if (active) setSignedIn(Boolean(session));
     });
-    return () => subscription.subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
   }, [router]);
 
   useEffect(() => {
