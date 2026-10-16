@@ -28,7 +28,7 @@ describe('Swavii homepage', () => {
       'Dune Sunglasses',
     ])
       expect(rotem).toContain(item);
-    expect(rotem).toContain("Rotem Cohen&#x27;s Style Notes");
+    expect(rotem).toContain('Rotem Cohen&#x27;s Style Notes');
     expect(html).toContain('Examples of pages you can make your own.');
   });
 
@@ -36,7 +36,7 @@ describe('Swavii homepage', () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain('action="/auth"');
     expect(html).toContain('name="mode" value="signup"');
-    expect(html).toContain("Show Rotem Cohen&#x27;s page");
+    expect(html).toContain('Show Rotem Cohen&#x27;s page');
     expect(html).toContain('Next walkthrough step');
     expect(html).toContain('Previous walkthrough step');
     expect(html).toContain('/auth?mode=signup');
