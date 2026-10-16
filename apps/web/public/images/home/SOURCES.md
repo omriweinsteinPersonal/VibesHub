@@ -14,4 +14,6 @@ Downloaded from Pexels for the Swavii homepage. Profile names and handles are fi
 - tote.jpg: https://www.pexels.com/photo/plain-tote-bag-9869067/
 
 License: https://www.pexels.com/license/
-Other product illustrations reuse existing Swavii demo assets. Orrivelle Studio is a made-up placeholder, not a trademark-clearance claim.
+Other product illustrations reuse existing Swavii demo assets. Creator, brand, product, discount, and coupon names in the homepage showcase are fictional demo content, not endorsements or trademark-clearance claims.
+
+- noah-trail-demo.png: AI-generated fictional creator portrait for homepage demo use; no real person or brand depicted.

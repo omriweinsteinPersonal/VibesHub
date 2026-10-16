@@ -3369,6 +3369,527 @@
   border-top: 1px solid #d9d2c9;
   background: #f2eee9;
 }
+
+/* Real storefront previews for the hero carousel. */
+.creatorRail > .creatorCard {
+  min-height: 0;
+  height: 100%;
+  padding: 0 0 12px;
+  border: 1px solid color-mix(in srgb, var(--creator-ink) 20%, transparent);
+  border-radius: 20px;
+  background: var(--creator-background);
+  color: var(--creator-ink);
+  box-shadow: 0 16px 34px #20251e1a;
+  isolation: isolate;
+}
+.creatorRail > .creatorCard::before {
+  display: none;
+}
+.cover {
+  height: 164px;
+  margin: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 52%,
+    #000000d9 72%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, #000 52%, #000000d9 72%, transparent 100%);
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  inset: 42% 0 0;
+  background: linear-gradient(to bottom, transparent, var(--creator-background));
+}
+.cover img {
+  object-fit: cover;
+  object-position: center 38%;
+}
+.creatorRail > .creatorCard[data-theme='rotem'] .cover img {
+  object-position: center 30%;
+}
+.creatorRail > .creatorCard[data-theme='mia'] .cover img {
+  object-position: center 42%;
+}
+.creatorRail > .creatorCard[data-theme='noah'] .cover img {
+  object-position: center 48%;
+}
+.identity,
+.miya .identity {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 0;
+  margin-top: -42px;
+  padding: 0 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  color: var(--creator-ink);
+  background: transparent;
+}
+.identity strong {
+  font-size: clamp(15px, 1.2vw, 19px);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.identity span {
+  margin: 0;
+  font-size: 10px;
+  opacity: 0.78;
+}
+.creatorBio {
+  display: block;
+  max-width: 230px;
+  margin: 7px auto 0;
+  padding: 0 12px;
+  color: var(--creator-ink);
+  font-size: 9px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.84;
+}
+.socialIcons,
+.miya .socialIcons {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px auto 11px;
+  color: var(--creator-ink);
+}
+.socialIcons img {
+  width: 25px;
+  height: 25px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--creator-ink) 24%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--creator-ink) 10%, transparent);
+  filter: none;
+}
+.socialIcons svg {
+  width: 25px;
+  height: 25px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--creator-ink) 24%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--creator-ink) 10%, transparent);
+}
+.creatorRail > .creatorCard[data-theme='noah'] .socialIcons img {
+  filter: brightness(0) invert(1);
+}
+.cardTabs,
+.miya .cardTabs {
+  display: flex;
+  width: calc(100% - 24px);
+  height: 31px;
+  margin: 0 auto;
+  padding: 0 8px;
+  justify-content: flex-start;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--creator-ink) 26%, transparent);
+  border-radius: 18px;
+  color: var(--creator-ink);
+  font-size: 8px;
+  background: color-mix(in srgb, var(--creator-ink) 8%, transparent);
+}
+.cardTabs span,
+.cardTabs span:first-child {
+  display: inline-flex;
+  height: 23px;
+  margin: auto 0;
+  padding: 0 8px;
+  align-items: center;
+  border: 0;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.cardTabs .activeLabel {
+  color: var(--creator-background);
+  background: var(--creator-ink);
+}
+.cardFeed {
+  display: flex;
+  padding: 12px 11px 0;
+  flex-direction: column;
+  gap: 10px;
+  background: transparent;
+}
+.brandRecommendation,
+.mapRecommendation,
+.podcastPreview,
+.creatorVideoPreview {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e9e3d9;
+  border-radius: 13px;
+  background: #f8f5ed;
+  color: #273d38;
+}
+.brandRecommendation {
+  padding: 10px;
+}
+.brandRecommendationHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.brandRecommendationHeader > strong {
+  font-size: 12px;
+  line-height: 1.2;
+}
+.brandRecommendationHeader > div {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 8px;
+}
+.brandRecommendationHeader small {
+  padding: 2px 6px;
+  border: 1px dashed #a9a298;
+  border-radius: 6px;
+  font-size: 7px;
+}
+.brandRecommendation > p {
+  margin: 4px 0 7px;
+  color: #77766f;
+  font-size: 7px;
+}
+.productGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.productGrid span {
+  display: block;
+  margin-top: 4px;
+  color: #34423e;
+  font-size: 8px;
+  line-height: 1.2;
+}
+.productPhoto {
+  aspect-ratio: 1.22;
+  border-radius: 8px;
+  background: #e5e1d8;
+}
+.productPhoto img {
+  object-fit: cover;
+}
+.creatorVideoPreview {
+  height: 125px;
+  background: #202b2a;
+  color: white;
+}
+.creatorVideoPreview > img {
+  object-fit: cover;
+  object-position: center 43%;
+  opacity: 0.8;
+}
+.videoScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #111b1bd9, transparent 80%);
+}
+.mediaPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  border: 1px solid #ffffffad;
+  border-radius: 50%;
+  background: #ffffff3d;
+  color: white;
+}
+.creatorVideoCopy {
+  position: absolute;
+  right: 10px;
+  bottom: 9px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.creatorVideoCopy strong {
+  font-size: 10px;
+}
+.creatorVideoCopy small {
+  font-size: 8px;
+  opacity: 0.82;
+}
+.podcastPreview {
+  display: flex;
+  min-height: 82px;
+  padding: 9px 34px 9px 9px;
+  align-items: center;
+  gap: 10px;
+}
+.podcastPreview > img {
+  position: relative !important;
+  width: 60px !important;
+  height: 60px !important;
+  flex: 0 0 60px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+.podcastCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.podcastCopy small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #9b7157;
+  font-size: 6px;
+  letter-spacing: 0.07em;
+}
+.podcastCopy strong {
+  font-size: 10px;
+}
+.podcastCopy > span {
+  color: #78786f;
+  font-size: 8px;
+}
+.audioProgress {
+  height: 3px;
+  margin-top: 3px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #ded9cf;
+}
+.audioProgress i {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: #9b7157;
+}
+.podcastPreview .mediaPlay {
+  top: 50%;
+  right: 10px;
+  left: auto;
+  width: 25px;
+  height: 25px;
+  border-color: #d5cec2;
+  background: transparent;
+  color: #54625a;
+}
+.mapRecommendation {
+  padding: 10px;
+}
+.mapRecommendationHeading,
+.mapRecommendationHeading > div,
+.mapRecommendationFooter,
+.mapRecommendationFooter > a {
+  display: flex;
+  align-items: center;
+}
+.mapRecommendationHeading,
+.mapRecommendationFooter {
+  justify-content: space-between;
+  gap: 8px;
+}
+.mapRecommendationHeading > div {
+  gap: 5px;
+}
+.mapRecommendationHeading strong {
+  font-size: 10px;
+}
+.mapRecommendationHeading > span,
+.mapRecommendationFooter small {
+  color: #77766f;
+  font-size: 7px;
+}
+.mapArtwork {
+  position: relative;
+  height: 76px;
+  margin: 8px 0 7px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e6e8dc;
+  color: #bac4ae;
+}
+.mapArtwork svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.mapArtwork .mapRoute {
+  stroke: #d98258;
+  stroke-width: 3;
+  stroke-dasharray: 4 3;
+}
+.mapMarker {
+  position: absolute;
+  top: 36%;
+  left: 53%;
+  color: #c47454;
+}
+.mapRecommendationFooter > a {
+  gap: 3px;
+  color: #506860;
+  font-size: 7px;
+  font-weight: 600;
+}
+.mapRecommendationFooter > a {
+  display: inline-flex;
+  text-decoration: none;
+}
+.mapRecommendationFooter > a:hover {
+  text-decoration: underline;
+}
+.galleryBottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+}
+.galleryControls {
+  display: none;
+  gap: 5px;
+}
+.galleryControls button {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.galleryControls button span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c5c2ba;
+}
+.galleryControls button[aria-pressed='true'] span {
+  width: 17px;
+  border-radius: 8px;
+  background: #bf7654;
+}
+.nameField span {
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .creatorRail > .creatorCard {
+    flex: 0 0 min(88%, 390px);
+    height: auto;
+    min-height: 0;
+  }
+  .creatorRail {
+    padding-inline: 1px;
+  }
+  .cover {
+    height: 185px;
+  }
+  .identity strong {
+    font-size: 19px;
+  }
+  .identity span {
+    font-size: 10px;
+  }
+  .creatorBio {
+    font-size: 10px;
+  }
+  .cardTabs {
+    width: calc(100% - 30px);
+    height: 34px;
+    font-size: 9px;
+  }
+  .cardTabs span,
+  .cardTabs span:first-child {
+    height: 25px;
+    padding-inline: 10px;
+  }
+  .cardFeed {
+    padding: 12px 13px 0;
+    gap: 11px;
+  }
+  .brandRecommendation {
+    padding: 12px;
+  }
+  .brandRecommendationHeader > strong {
+    font-size: 14px;
+  }
+  .brandRecommendationHeader > div,
+  .brandRecommendation > p {
+    font-size: 8px;
+  }
+  .brandRecommendationHeader small {
+    font-size: 8px;
+  }
+  .productGrid span {
+    font-size: 9px;
+  }
+  .productPhoto {
+    aspect-ratio: 1.14;
+  }
+  .creatorVideoPreview {
+    height: 150px;
+  }
+  .mapArtwork {
+    height: 92px;
+  }
+  .nameField span {
+    display: inline;
+    font-size: 12px;
+  }
+  .nameField {
+    padding-left: 8px;
+  }
+  .page .signupRow > .button {
+    min-width: 116px;
+  }
+  .galleryBottom {
+    justify-content: center;
+  }
+  .galleryControls {
+    display: flex;
+  }
+  .galleryBottom small {
+    display: none;
+  }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .heroCopy {
+    padding-bottom: 14px;
+  }
+}
+@media (max-width: 390px) {
+  .creatorRail > .creatorCard {
+    flex-basis: 88%;
+  }
+  .cover {
+    height: 170px;
+  }
+  .nameField span {
+    font-size: 10px;
+  }
+  .page .signupRow > .button {
+    min-width: 104px;
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+}
 .contentTypes::before {
   content: '';
   position: absolute;
