@@ -21,6 +21,7 @@ import {
   ScrollView,
   Share,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -698,6 +699,31 @@ function StorefrontEditor({
     }
   }
 
+  async function setLabelsFrame(labelsFrame: boolean) {
+    if (saving) return;
+    setSaving(true);
+    onError('');
+    try {
+      const theme: StorefrontTheme = {
+        ...defaultStorefrontTheme,
+        ...themeConfiguration.theme,
+        labelsFrame,
+      };
+      const saved = await saveStorefrontTheme(themeConfiguration, theme);
+      setThemeConfiguration(saved);
+      onBundle((current) => (current ? { ...current, theme: saved } : current));
+      onNotice(
+        labelsFrame
+          ? 'Storefront label frames are visible.'
+          : 'Storefront label frames are hidden.',
+      );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const save = useCallback(
     async (next: CreatorStorefrontConfiguration) => {
       setSaving(true);
@@ -851,6 +877,22 @@ function StorefrontEditor({
           );
         })}
       </ScrollView>
+
+      <View style={styles.toggleCard}>
+        <View style={styles.toggleCopy}>
+          <Text style={styles.cardTitle}>Show a frame around labels</Text>
+          <Text style={styles.cardMeta}>
+            Add or remove the outline around All, Fashion and other storefront filters.
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel="Show a frame around storefront labels"
+          disabled={saving}
+          onValueChange={(value) => void setLabelsFrame(value)}
+          trackColor={{ false: '#d8d0c7', true: colors.accent }}
+          value={themeConfiguration.theme.labelsFrame ?? true}
+        />
+      </View>
 
       <View style={styles.editorCard}>
         <Text style={styles.cardTitle}>Add label</Text>
@@ -1396,6 +1438,18 @@ const styles = StyleSheet.create({
   templateSwatch: { borderRadius: 10, height: 72, marginBottom: 10 },
   templateTitle: { color: colors.ink, fontSize: 14, fontWeight: '700' },
   templateState: { color: colors.muted, fontSize: 12, marginTop: 3 },
+  toggleCard: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+    padding: spacing.md,
+  },
+  toggleCopy: { flex: 1 },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: spacing.xl },
   metricCard: {
     backgroundColor: colors.white,
