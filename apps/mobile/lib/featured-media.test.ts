@@ -16,6 +16,8 @@ describe('featured media provider', () => {
   });
 
   it('does not classify unrelated Google links as maps', () => {
-    expect(featuredMediaProvider('https://drive.google.com/file/example')).toBe('youtube');
+    expect(featuredMediaProvider('https://drive.google.com/file/example')).toBe(
+      'youtube',
+    );
   });
 });
