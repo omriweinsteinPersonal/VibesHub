@@ -112,9 +112,7 @@ export default function HomePage() {
             <div>
               <span className={styles.contentEyebrow}>BUILD YOUR PAGE</span>
               <h2 id="content-title">Everything you love, in one place.</h2>
-              <p>
-                Choose the pieces that make your page feel like you.
-              </p>
+              <p>Choose the pieces that make your page feel like you.</p>
             </div>
             <a href="#how-it-works">
               See how it works <ArrowRight size={17} aria-hidden="true" />
@@ -122,7 +120,9 @@ export default function HomePage() {
           </div>
           <div className={styles.contentGrid}>
             <article className={`${styles.contentBlock} ${styles.linkBlock}`}>
-              <div className={styles.featureVisual}><LinkIcon aria-hidden="true" /></div>
+              <div className={styles.featureVisual}>
+                <LinkIcon aria-hidden="true" />
+              </div>
               <div className={styles.featureCopy}>
                 <h3>Custom link</h3>
                 <p>Share anything with a link made for you.</p>
@@ -130,9 +130,16 @@ export default function HomePage() {
             </article>
             <article className={`${styles.contentBlock} ${styles.mediaBlock}`}>
               <div className={styles.featureMediaPreview} aria-hidden="true">
-                <Image src="/images/home/kitchen-collection.jpg" alt="" fill sizes="96px" />
+                <Image
+                  src="/images/home/kitchen-collection.jpg"
+                  alt=""
+                  fill
+                  sizes="96px"
+                />
                 <Image src="/images/home/coffee.jpg" alt="" width={58} height={46} />
-                <span><Play size={12} fill="currentColor" /></span>
+                <span>
+                  <Play size={12} fill="currentColor" />
+                </span>
               </div>
               <div className={styles.featureCopy}>
                 <h3>Media</h3>
@@ -142,7 +149,14 @@ export default function HomePage() {
             <article className={`${styles.contentBlock} ${styles.socialBlock}`}>
               <div className={styles.featureSocialPreview} aria-hidden="true">
                 {['instagram', 'tiktok', 'youtube'].map((name) => (
-                  <span key={name}><Image src={`/connectors/${name}.svg`} alt="" width={17} height={17} /></span>
+                  <span key={name}>
+                    <Image
+                      src={`/connectors/${name}.svg`}
+                      alt=""
+                      width={17}
+                      height={17}
+                    />
+                  </span>
                 ))}
                 <span className={styles.socialPlus}>+</span>
               </div>
@@ -154,7 +168,12 @@ export default function HomePage() {
             <article className={`${styles.contentBlock} ${styles.collectionBlock}`}>
               <div className={styles.featureCollectionPreview} aria-hidden="true">
                 <Image src="/images/home/tote.jpg" alt="" fill sizes="92px" />
-                <Image src="/images/creator-demo-shoulder-bag.png" alt="" width={62} height={52} />
+                <Image
+                  src="/images/creator-demo-shoulder-bag.png"
+                  alt=""
+                  width={62}
+                  height={52}
+                />
               </div>
               <div className={styles.featureCopy}>
                 <h3>Collection</h3>
@@ -163,9 +182,17 @@ export default function HomePage() {
             </article>
             <article className={`${styles.contentBlock} ${styles.designBlock}`}>
               <div className={styles.featureDesignPreview} aria-hidden="true">
-                <div><i /><i /><i /></div>
+                <div>
+                  <i />
+                  <i />
+                  <i />
+                </div>
                 <Image src="/images/home/miya.jpg" alt="" fill sizes="92px" />
-                <span><b /><b /><b /></span>
+                <span>
+                  <b />
+                  <b />
+                  <b />
+                </span>
               </div>
               <div className={styles.featureCopy}>
                 <h3>Personal design</h3>
@@ -174,7 +201,10 @@ export default function HomePage() {
             </article>
             <article className={`${styles.contentBlock} ${styles.mapsBlock}`}>
               <div className={styles.featureMapPreview} aria-hidden="true">
-                <i /><i /><i /><MapPinned size={27} />
+                <i />
+                <i />
+                <i />
+                <MapPinned size={27} />
               </div>
               <div className={styles.featureCopy}>
                 <h3>Maps</h3>
