@@ -197,7 +197,7 @@ export function saveCreatorBrand(
 
 export function transitionCreatorRecommendation(
   recommendation: CreatorRecommendation,
-  command: 'publish' | 'unpublish' | 'restore',
+  command: 'archive' | 'publish' | 'unpublish' | 'restore',
 ): Promise<CreatorRecommendation> {
   return creatorRequest(
     `/v1/creator/recommendations/${recommendation.id}/${command}`,

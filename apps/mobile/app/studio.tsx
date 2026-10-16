@@ -478,9 +478,17 @@ function Recommendations({
   const [brandUrl, setBrandUrl] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<
+    CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
+  >();
+  const [collectionTitle, setCollectionTitle] = useState('');
+  const [collectionDescription, setCollectionDescription] = useState('');
+  const [collectionBrandId, setCollectionBrandId] = useState<string | null>(null);
+  const [collectionItemIds, setCollectionItemIds] = useState<string[]>([]);
 
   function openBrand(brand?: CreatorBrand) {
     setEditingItem(undefined);
+    setEditingCollection(undefined);
     setEditingBrand(brand ?? null);
     setBrandName(brand?.name ?? '');
     setBrandUrl(brand?.websiteUrl ?? '');
@@ -488,8 +496,139 @@ function Recommendations({
 
   function openItem(item?: CreatorRecommendation) {
     setEditingBrand(undefined);
+    setEditingCollection(undefined);
     setEditingItem(item ?? null);
     setItemDraft(item ? recommendationDraftFromItem(item) : emptyRecommendationDraft);
+  }
+
+  function openCollection(
+    collection?: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    setEditingBrand(undefined);
+    setEditingItem(undefined);
+    setEditingCollection(collection ?? null);
+    setCollectionTitle(collection?.title ?? '');
+    setCollectionDescription(collection?.description ?? '');
+    setCollectionBrandId(collection?.brandId ?? null);
+    setCollectionItemIds(collection?.recommendationIds ?? []);
+  }
+
+  function toggleCollectionItem(id: string) {
+    setCollectionItemIds((current) =>
+      current.includes(id)
+        ? current.filter((itemId) => itemId !== id)
+        : current.length < 20
+          ? [...current, id]
+          : current,
+    );
+  }
+
+  async function persistCollection() {
+    const title = collectionTitle.trim();
+    if (!title) {
+      onError('Add a collection name.');
+      return;
+    }
+    if (!collectionItemIds.length) {
+      onError('Choose at least one item for this collection.');
+      return;
+    }
+
+    setBusyId(editingCollection?.id ?? 'new-collection');
+    onError('');
+    try {
+      const id = editingCollection?.id ?? newStudioId();
+      const collection = {
+        brandId: collectionBrandId,
+        contentItems: collectionItemIds.map((itemId) => ({
+          id: itemId,
+          kind: 'recommendation' as const,
+        })),
+        description: collectionDescription.trim(),
+        displayStyle: editingCollection?.displayStyle ?? ('horizontal' as const),
+        id,
+        imageUrl: editingCollection?.imageUrl ?? null,
+        kind: 'collection' as const,
+        parentCollectionId: editingCollection?.parentCollectionId ?? null,
+        recommendationIds: collectionItemIds,
+        showItemsIndividually: editingCollection?.showItemsIndividually ?? false,
+        title,
+      };
+      const next = {
+        ...configuration,
+        contentOrder: editingCollection
+          ? configuration.contentOrder
+          : [...configuration.contentOrder, { id, kind: 'collection' as const }],
+        curatedSections: editingCollection
+          ? configuration.curatedSections.map((item) =>
+              item.id === id ? collection : item,
+            )
+          : [...configuration.curatedSections, collection],
+      };
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      setEditingCollection(undefined);
+      onNotice(editingCollection ? 'Collection updated.' : 'Collection added.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function removeCollection(
+    collection: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    Alert.alert(
+      `Remove ${collection.title}?`,
+      'Its items will stay in your recommendations.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => void confirmRemoveCollection(collection),
+          style: 'destructive',
+          text: 'Remove',
+        },
+      ],
+    );
+  }
+
+  async function confirmRemoveCollection(
+    collection: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    setBusyId(collection.id);
+    onError('');
+    try {
+      const next = {
+        ...configuration,
+        contentOrder: configuration.contentOrder.filter(
+          ({ id, kind }) => !(kind === 'collection' && id === collection.id),
+        ),
+        curatedSections: configuration.curatedSections.filter(
+          ({ id }) => id !== collection.id,
+        ),
+        hiddenCollectionIds: configuration.hiddenCollectionIds.filter(
+          (id) => id !== collection.id,
+        ),
+        labels: configuration.labels.map((label) => ({
+          ...label,
+          collectionIds: label.collectionIds.filter((id) => id !== collection.id),
+        })),
+      };
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      onNotice('Collection removed. Its items are still available.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
   }
 
   function updateItem(patch: Partial<RecommendationDraft>) {
@@ -624,10 +763,30 @@ function Recommendations({
     onError('');
     try {
       const updated = await transitionCreatorRecommendation(item, command);
+      let savedConfiguration = configuration;
+      if (
+        command === 'restore' &&
+        !configuration.contentOrder.some(
+          ({ id, kind }) => kind === 'recommendation' && id === item.id,
+        )
+      ) {
+        const next = {
+          ...configuration,
+          contentOrder: [
+            ...configuration.contentOrder,
+            { id: item.id, kind: 'recommendation' as const },
+          ],
+        };
+        savedConfiguration = await saveStorefrontConfiguration(
+          configuration,
+          configurationInput(next),
+        );
+      }
       onBundle((current) =>
         current
           ? {
               ...current,
+              configuration: savedConfiguration,
               recommendations: current.recommendations.map((value) =>
                 value.id === updated.id ? updated : value,
               ),
@@ -637,6 +796,69 @@ function Recommendations({
       onNotice(
         command === 'publish' ? 'Recommendation is live.' : 'Recommendation updated.',
       );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function archiveItem(item: CreatorRecommendation) {
+    Alert.alert(
+      `Remove ${item.productName}?`,
+      'The item will be archived and removed from your storefront. You can restore it later.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => void confirmArchiveItem(item),
+          style: 'destructive',
+          text: 'Remove',
+        },
+      ],
+    );
+  }
+
+  async function confirmArchiveItem(item: CreatorRecommendation) {
+    setBusyId(item.id);
+    onError('');
+    try {
+      const archived = await transitionCreatorRecommendation(item, 'archive');
+      const next = {
+        ...configuration,
+        contentOrder: configuration.contentOrder.filter(
+          ({ id, kind }) => !(kind === 'recommendation' && id === item.id),
+        ),
+        curatedSections: configuration.curatedSections.map((section) => ({
+          ...section,
+          contentItems: section.contentItems.filter(
+            ({ id, kind }) => !(kind === 'recommendation' && id === item.id),
+          ),
+          recommendationIds: section.recommendationIds.filter((id) => id !== item.id),
+        })),
+        hiddenRecommendationIds: configuration.hiddenRecommendationIds.filter(
+          (id) => id !== item.id,
+        ),
+        labels: configuration.labels.map((label) => ({
+          ...label,
+          recommendationIds: label.recommendationIds.filter((id) => id !== item.id),
+        })),
+      };
+      const savedConfiguration = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              configuration: savedConfiguration,
+              recommendations: current.recommendations.map((value) =>
+                value.id === archived.id ? archived : value,
+              ),
+            }
+          : current,
+      );
+      onNotice('Item archived.');
     } catch (cause) {
       onError(messageFor(cause));
     } finally {
@@ -661,8 +883,103 @@ function Recommendations({
           <Pressable onPress={() => openBrand()} style={styles.compactButtonSecondary}>
             <Text style={styles.compactButtonSecondaryText}>+ Brand</Text>
           </Pressable>
+          <Pressable
+            onPress={() => openCollection()}
+            style={styles.compactButtonSecondary}
+          >
+            <Text style={styles.compactButtonSecondaryText}>+ Collection</Text>
+          </Pressable>
         </View>
       </View>
+
+      {editingCollection !== undefined ? (
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>
+            {editingCollection ? 'Edit collection' : 'Add collection'}
+          </Text>
+          <Field
+            label="Collection name"
+            onChangeText={setCollectionTitle}
+            value={collectionTitle}
+          />
+          <Field
+            label="Description (optional)"
+            multiline
+            onChangeText={setCollectionDescription}
+            value={collectionDescription}
+          />
+          <Text style={styles.fieldLabelStandalone}>Brand (optional)</Text>
+          <ScrollView
+            contentContainerStyle={styles.choiceRail}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            <ChoicePill
+              label="Any brand"
+              onPress={() => setCollectionBrandId(null)}
+              selected={collectionBrandId === null}
+            />
+            {brands.map((brand) => (
+              <ChoicePill
+                key={brand.id}
+                label={brand.name}
+                onPress={() => setCollectionBrandId(brand.brandId)}
+                selected={collectionBrandId === brand.brandId}
+              />
+            ))}
+          </ScrollView>
+          <Text style={styles.fieldLabelStandalone}>Items</Text>
+          {recommendations.filter(({ lifecycle }) => lifecycle !== 'archived').length ? (
+            recommendations
+              .filter(({ lifecycle }) => lifecycle !== 'archived')
+              .map((item) => (
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: collectionItemIds.includes(item.id) }}
+                  key={item.id}
+                  onPress={() => toggleCollectionItem(item.id)}
+                  style={styles.checkboxRow}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      collectionItemIds.includes(item.id) && styles.checkboxSelected,
+                    ]}
+                  >
+                    {collectionItemIds.includes(item.id) ? (
+                      <Text style={styles.checkboxMark}>✓</Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.listCopy}>
+                    <Text style={styles.cardTitle}>{item.productName}</Text>
+                    <Text style={styles.cardMeta}>{item.brandName}</Text>
+                  </View>
+                </Pressable>
+              ))
+          ) : (
+            <Empty text="Add an item before creating a collection." />
+          )}
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId) || !collectionItemIds.length}
+              onPress={() => void persistCollection()}
+              style={styles.primarySmall}
+            >
+              {busyId === (editingCollection?.id ?? 'new-collection') ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save collection</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setEditingCollection(undefined)}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {editingItem !== undefined ? (
         <View style={styles.editorCard}>
@@ -823,6 +1140,32 @@ function Recommendations({
         </Pressable>
       ))}
 
+      {configuration.curatedSections.filter(({ kind }) => kind === 'collection')
+        .length ? (
+        <>
+          <Text style={styles.sectionTitle}>Collections</Text>
+          {configuration.curatedSections
+            .filter(({ kind }) => kind === 'collection')
+            .map((collection) => (
+              <View key={collection.id} style={styles.listCard}>
+                <View style={styles.listCopy}>
+                  <Text style={styles.cardTitle}>{collection.title}</Text>
+                  <Text style={styles.cardMeta}>
+                    {collection.recommendationIds.length} items
+                  </Text>
+                </View>
+                <View style={styles.itemActions}>
+                  <Pressable onPress={() => openCollection(collection)}>
+                    <Text style={styles.editLabel}>Edit</Text>
+                  </Pressable>
+                  <Pressable onPress={() => removeCollection(collection)}>
+                    <Text style={styles.removeText}>Remove</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+        </>
+      ) : null}
       <Text style={styles.sectionTitle}>Items</Text>
       {recommendations.length ? (
         recommendations.map((item) => (
@@ -836,9 +1179,14 @@ function Recommendations({
             </View>
             <View style={styles.itemActions}>
               {item.lifecycle !== 'archived' ? (
-                <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
-                  <Text style={styles.editLabel}>Edit</Text>
-                </Pressable>
+                <>
+                  <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
+                    <Text style={styles.editLabel}>Edit</Text>
+                  </Pressable>
+                  <Pressable onPress={() => archiveItem(item)}>
+                    <Text style={styles.removeText}>Remove</Text>
+                  </Pressable>
+                </>
               ) : null}
               <Pressable
                 disabled={busyId === item.id}
@@ -1669,6 +2017,26 @@ const styles = StyleSheet.create({
   choicePillSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   choicePillText: { color: colors.ink, fontSize: 13, fontWeight: '600' },
   choicePillTextSelected: { color: colors.white },
+  checkboxRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 58,
+    paddingVertical: spacing.sm,
+  },
+  checkbox: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: 6,
+    borderWidth: 1,
+    height: 24,
+    justifyContent: 'center',
+    width: 24,
+  },
+  checkboxSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  checkboxMark: { color: colors.white, fontSize: 15, fontWeight: '800' },
   rangeControl: {
     alignSelf: 'flex-start',
     backgroundColor: '#eee6dc',
