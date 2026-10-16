@@ -449,26 +449,26 @@
 .layout[data-template='aurora-veil'] {
   background-color: #281a34;
   background-image:
-    radial-gradient(circle at 50% 18%, rgb(196 164 221 / 22%), transparent 22%),
-    radial-gradient(circle at 8% 46%, rgb(106 68 132 / 30%), transparent 34%),
-    radial-gradient(circle at 92% 76%, rgb(16 10 26 / 74%), transparent 39%),
-    linear-gradient(148deg, #281a34 0%, #422b50 48%, #21152d 100%);
+    radial-gradient(ellipse at 50% 12%, rgb(146 101 171 / 24%), transparent 36%),
+    radial-gradient(ellipse at 2% 43%, rgb(94 61 118 / 24%), transparent 38%),
+    linear-gradient(160deg, #24152f 0%, #382144 42%, #21142c 100%);
+  color: #f7effa;
 }
 .layout[data-template='desert-rose'] {
-  background-color: #643a32;
+  background-color: #693f36;
   background-image:
-    radial-gradient(circle at 64% 4%, rgb(236 164 129 / 22%), transparent 30%),
-    radial-gradient(circle at 2% 70%, rgb(153 78 61 / 34%), transparent 34%),
-    radial-gradient(circle at 100% 56%, rgb(48 25 26 / 42%), transparent 38%),
-    linear-gradient(154deg, #75443a 0%, #63382f 54%, #512e2c 100%);
+    radial-gradient(ellipse at 58% 8%, rgb(255 191 157 / 25%), transparent 36%),
+    radial-gradient(ellipse at 0% 62%, rgb(177 98 74 / 25%), transparent 42%),
+    linear-gradient(158deg, #75483d 0%, #653c34 48%, #4b2b2d 100%);
+  color: #fff4ec;
 }
 .layout[data-template='glacier-current'] {
   background-color: #102f43;
   background-image:
-    radial-gradient(circle at 53% 7%, rgb(124 190 207 / 21%), transparent 29%),
-    radial-gradient(circle at 0% 62%, rgb(43 111 133 / 30%), transparent 35%),
-    radial-gradient(circle at 97% 48%, rgb(5 22 37 / 62%), transparent 37%),
-    linear-gradient(145deg, #102f43 0%, #19485d 49%, #0a2639 100%);
+    radial-gradient(ellipse at 51% 12%, rgb(116 190 207 / 24%), transparent 36%),
+    radial-gradient(ellipse at 0% 54%, rgb(36 104 130 / 25%), transparent 39%),
+    linear-gradient(158deg, #0e2e42 0%, #16445a 46%, #092638 100%);
+  color: #effaff;
 }
 
 .layout:is(
@@ -485,16 +485,28 @@
     [data-template='desert-rose'],
     [data-template='glacier-current']
   )::before {
-  background: url('/images/storefront/organic-waves.svg') center top / 420px 520px repeat;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  aspect-ratio: 5 / 7;
   content: '';
-  inset: 0;
-  opacity: 0.72;
+  inset: 0 0 auto;
+  opacity: 0.96;
   pointer-events: none;
   position: absolute;
   z-index: 0;
 }
 .layout[data-template='forest-glass']::before {
-  display: none;
+  background-image: url('/images/storefront/forest-glass-waves.svg');
+}
+.layout[data-template='aurora-veil']::before {
+  background-image: url('/images/storefront/aurora-veil.svg');
+}
+.layout[data-template='desert-rose']::before {
+  background-image: url('/images/storefront/desert-rose.svg');
+}
+.layout[data-template='glacier-current']::before {
+  background-image: url('/images/storefront/glacier-current.svg');
 }
 .layout:is(
     [data-template='forest-glass'],
@@ -641,6 +653,38 @@
     0 0 58px 21px rgb(198 183 170 / 18%),
     0 14px 30px rgb(0 16 17 / 42%);
 }
+.layout[data-template='forest-glass'] .profile :global(.referenceStorefrontAvatar) {
+  border-color: #e5f5e9;
+  box-shadow:
+    0 0 0 5px rgb(221 242 222 / 25%),
+    0 0 26px 11px rgb(151 220 190 / 43%),
+    0 0 58px 22px rgb(100 186 164 / 24%),
+    0 14px 30px rgb(0 16 17 / 42%);
+}
+.layout[data-template='aurora-veil'] .profile :global(.referenceStorefrontAvatar) {
+  border-color: #f4e1ff;
+  box-shadow:
+    0 0 0 5px rgb(246 224 255 / 25%),
+    0 0 26px 11px rgb(211 151 244 / 43%),
+    0 0 62px 24px rgb(164 108 199 / 25%),
+    0 14px 30px rgb(16 8 26 / 48%);
+}
+.layout[data-template='desert-rose'] .profile :global(.referenceStorefrontAvatar) {
+  border-color: #fff0e1;
+  box-shadow:
+    0 0 0 5px rgb(255 229 208 / 25%),
+    0 0 26px 11px rgb(248 177 141 / 42%),
+    0 0 62px 24px rgb(211 124 97 / 24%),
+    0 14px 30px rgb(40 17 20 / 42%);
+}
+.layout[data-template='glacier-current'] .profile :global(.referenceStorefrontAvatar) {
+  border-color: #e0faff;
+  box-shadow:
+    0 0 0 5px rgb(220 248 249 / 24%),
+    0 0 26px 11px rgb(114 212 224 / 42%),
+    0 0 62px 24px rgb(62 159 190 / 24%),
+    0 14px 30px rgb(0 16 25 / 46%);
+}
 .layout:is(
     [data-template='forest-glass'],
     [data-template='aurora-veil'],
@@ -747,6 +791,15 @@
   background: #f4f0e5;
   color: #263934;
 }
+.layout[data-template='aurora-veil'] .labels :global(button[aria-pressed='true']) {
+  color: #392342;
+}
+.layout[data-template='desert-rose'] .labels :global(button[aria-pressed='true']) {
+  color: #704237;
+}
+.layout[data-template='glacier-current'] .labels :global(button[aria-pressed='true']) {
+  color: #173c4e;
+}
 .layout:is(
     [data-template='forest-glass'],
     [data-template='aurora-veil'],
@@ -792,20 +845,17 @@
   background-color: transparent;
 }
 .layout[data-template='forest-glass'] .profile.hero {
-  background-color: #0b302e;
-  background-image:
-    linear-gradient(180deg, rgb(5 30 30 / 3%) 0%, rgb(5 30 30 / 9%) 54%, #0b302e 100%),
-    var(--sf-profile-image, none);
-  background-position:
-    center,
-    center 42%;
-  background-size: cover;
+  background-color: transparent;
+  background-image: none;
   min-height: 340px;
 }
 .layout[data-template='forest-glass'][data-header-style='circular'] .profile.hero {
-  background-image:
-    radial-gradient(ellipse at 50% 26%, rgb(145 203 178 / 16%), transparent 42%),
-    linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
+  background-color: transparent;
+  background-image: radial-gradient(
+    ellipse at 50% 26%,
+    rgb(145 203 178 / 16%),
+    transparent 48%
+  );
   min-height: 0;
   padding: 38px 5vw 14px;
 }
