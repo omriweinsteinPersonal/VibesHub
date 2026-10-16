@@ -235,25 +235,33 @@ export default function AccountScreen() {
           <Text style={styles.signOutText}>Sign out</Text>
         </Pressable>
 
-        <View style={styles.dangerZone}>
-          <Text style={styles.dangerTitle}>Delete account</Text>
-          <Text style={styles.dangerCopy}>
-            Permanently remove your creator account, public storefront and all content
-            associated with it.
-          </Text>
+        <View style={styles.accountManagement}>
+          <Text style={styles.accountManagementTitle}>Account management</Text>
           <Pressable
+            accessibilityHint="Permanently removes your account and associated data after confirmation"
+            accessibilityLabel="Delete account"
             accessibilityRole="button"
             disabled={deleting}
             onPress={confirmDeletion}
             style={({ pressed }) => [
-              styles.deleteButton,
+              styles.deleteRow,
               (deleting || pressed) && styles.deleteButtonDisabled,
             ]}
           >
             {deleting ? (
               <ActivityIndicator color="#9b2c24" />
             ) : (
-              <Text style={styles.deleteButtonText}>Delete account</Text>
+              <>
+                <View style={styles.deleteCopy}>
+                  <Text style={styles.deleteButtonText}>Delete account</Text>
+                  <Text style={styles.deleteHint}>
+                    Permanently remove your account and storefront
+                  </Text>
+                </View>
+                <Text accessibilityElementsHidden style={styles.deleteArrow}>
+                  ›
+                </Text>
+              </>
             )}
           </Pressable>
         </View>
@@ -328,19 +336,16 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   signOutText: { color: colors.ink, fontSize: 16, fontWeight: '600' },
-  dangerZone: {
-    borderColor: '#dfb4ae',
-    borderRadius: radii.card,
-    borderWidth: 1,
+  accountManagement: {
     marginTop: spacing.xxl,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.sm,
   },
-  dangerTitle: { color: '#8a3028', fontSize: 20, fontWeight: '700' },
-  dangerCopy: {
+  accountManagementTitle: {
     color: colors.muted,
-    fontSize: 15,
-    lineHeight: 23,
-    marginTop: spacing.sm,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   error: {
     backgroundColor: '#fff0ed',
@@ -348,16 +353,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: 12,
   },
-  deleteButton: {
+  deleteRow: {
     alignItems: 'center',
-    borderColor: '#b43a31',
-    borderRadius: radii.control,
-    borderWidth: 1,
-    marginTop: spacing.lg,
-    minHeight: 50,
-    justifyContent: 'center',
-    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+    minHeight: 54,
+    paddingVertical: spacing.sm,
   },
   deleteButtonDisabled: { opacity: 0.55 },
-  deleteButtonText: { color: '#9b2c24', fontSize: 16, fontWeight: '700' },
+  deleteCopy: { flex: 1 },
+  deleteButtonText: { color: '#7e4f49', fontSize: 15, fontWeight: '600' },
+  deleteHint: { color: colors.muted, fontSize: 13, marginTop: 3 },
+  deleteArrow: { color: colors.muted, fontSize: 22, marginLeft: spacing.md },
 });

@@ -1188,7 +1188,7 @@ function ProfileEditor({
         <View style={styles.actionCopy}>
           <Text style={styles.actionTitle}>Account settings</Text>
           <Text style={styles.actionDescription}>
-            Purchases, support, legal information, sign out and account deletion.
+            Purchases, support, legal information, sign out and privacy controls.
           </Text>
         </View>
         <Text style={styles.chevron}>›</Text>
