@@ -85,37 +85,6 @@ const templatePresets = [
     description: 'Warm terracotta, soft cream, and an editorial feel.',
     colors: { recommendationsBackground: '#d99a78' },
   },
-  {
-    id: 'forest-glass',
-    title: 'Forest Glass',
-    description: 'Deep teal texture, soft ivory cards, and a gallery-like profile.',
-    colors: {
-      recommendationsBackground: '#123f3b',
-      productBackground: '#f4efe3',
-      collectionBackground: '#f4efe3',
-      discountBackground: '#f4efe3',
-      accentColor: '#d6e8d1',
-      textColor: '#173c38',
-    },
-  },
-  {
-    id: 'aurora-veil',
-    title: 'Aurora Veil',
-    description: 'Violet aurora arcs and a soft luminous profile halo.',
-    colors: { recommendationsBackground: '#281a34' },
-  },
-  {
-    id: 'desert-rose',
-    title: 'Desert Rose',
-    description: 'Warm rose clay shaped by flowing dune lines.',
-    colors: { recommendationsBackground: '#643a32' },
-  },
-  {
-    id: 'glacier-current',
-    title: 'Glacier Current',
-    description: 'Deep blue water with fine icy contour lines.',
-    colors: { recommendationsBackground: '#102f43' },
-  },
 ] as const;
 
 function subscribe(callback: () => void) {
