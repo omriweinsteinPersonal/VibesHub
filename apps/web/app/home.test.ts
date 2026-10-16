@@ -42,7 +42,7 @@ describe('Swavii homepage', () => {
     expect(html).toContain('/auth?mode=signup');
     expect(html).toContain('Mobile navigation');
     expect(html).toContain('Photo gallery');
-    expect(html).toContain('Instagram post');
+    expect(html).toContain('Social links');
     expect(html).toContain('Arrange sections');
     expect(html).toContain('Things worth sharing.');
     expect(html).toContain('A slow morning at home');
