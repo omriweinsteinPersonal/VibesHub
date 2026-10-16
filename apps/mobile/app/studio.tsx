@@ -1,6 +1,7 @@
 import type {
   CategoryCard,
   CreatorBrand,
+  CreatorDiscountCode,
   CreatorProfileSocialLink,
   CreatorRecommendation,
   CreatorStorefrontConfiguration,
@@ -39,10 +40,12 @@ import {
   getCachedCreatorStudioBundle,
   newStudioId,
   saveCreatorBrand,
+  saveCreatorDiscount,
   saveCreatorRecommendation,
   saveStorefrontConfiguration,
   saveStorefrontTheme,
   transitionCreatorRecommendation,
+  transitionCreatorDiscount,
   updateCreatorProfile,
   type CreatorStudioBundle,
 } from '../lib/creator-api';
@@ -238,6 +241,7 @@ export default function CreatorStudioScreen() {
               brands={bundle.brands}
               categories={bundle.categories ?? []}
               configuration={bundle.configuration}
+              discounts={bundle.discounts ?? []}
               recommendations={bundle.recommendations}
               onBundle={updateBundle}
               onError={setError}
@@ -454,6 +458,7 @@ function Recommendations({
   brands,
   categories,
   configuration,
+  discounts,
   recommendations,
   onBundle,
   onError,
@@ -462,6 +467,7 @@ function Recommendations({
   brands: CreatorBrand[];
   categories: CategoryCard[];
   configuration: CreatorStorefrontConfiguration;
+  discounts: CreatorDiscountCode[];
   recommendations: CreatorRecommendation[];
   onBundle: React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>;
   onError: (message: string) => void;
@@ -485,10 +491,21 @@ function Recommendations({
   const [collectionDescription, setCollectionDescription] = useState('');
   const [collectionBrandId, setCollectionBrandId] = useState<string | null>(null);
   const [collectionItemIds, setCollectionItemIds] = useState<string[]>([]);
+  const [editingDiscount, setEditingDiscount] = useState<
+    CreatorDiscountCode | null | undefined
+  >();
+  const [discountBrandId, setDiscountBrandId] = useState<string | null>(null);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountDetails, setDiscountDetails] = useState('');
+  const [discountExpiresAt, setDiscountExpiresAt] = useState('');
+  const [discountLabel, setDiscountLabel] = useState('');
+  const [discountMerchantUrl, setDiscountMerchantUrl] = useState('');
+  const [discountPercent, setDiscountPercent] = useState('');
 
   function openBrand(brand?: CreatorBrand) {
     setEditingItem(undefined);
     setEditingCollection(undefined);
+    setEditingDiscount(undefined);
     setEditingBrand(brand ?? null);
     setBrandName(brand?.name ?? '');
     setBrandUrl(brand?.websiteUrl ?? '');
@@ -497,6 +514,7 @@ function Recommendations({
   function openItem(item?: CreatorRecommendation) {
     setEditingBrand(undefined);
     setEditingCollection(undefined);
+    setEditingDiscount(undefined);
     setEditingItem(item ?? null);
     setItemDraft(item ? recommendationDraftFromItem(item) : emptyRecommendationDraft);
   }
@@ -506,11 +524,116 @@ function Recommendations({
   ) {
     setEditingBrand(undefined);
     setEditingItem(undefined);
+    setEditingDiscount(undefined);
     setEditingCollection(collection ?? null);
     setCollectionTitle(collection?.title ?? '');
     setCollectionDescription(collection?.description ?? '');
     setCollectionBrandId(collection?.brandId ?? null);
     setCollectionItemIds(collection?.recommendationIds ?? []);
+  }
+
+  function openDiscount(discount?: CreatorDiscountCode) {
+    setEditingBrand(undefined);
+    setEditingCollection(undefined);
+    setEditingItem(undefined);
+    setEditingDiscount(discount ?? null);
+    setDiscountBrandId(discount?.brandId ?? null);
+    setDiscountCode(discount?.code ?? '');
+    setDiscountDetails(discount?.details?.value ?? '');
+    setDiscountExpiresAt(discount?.expiresAt?.slice(0, 10) ?? '');
+    setDiscountLabel(discount?.label ?? '');
+    setDiscountMerchantUrl(discount?.merchantUrl ?? '');
+    setDiscountPercent(discount?.discountPercent ? String(discount.discountPercent) : '');
+  }
+
+  async function persistDiscount() {
+    const code = discountCode.trim();
+    const merchantUrl = discountMerchantUrl.trim();
+    const percent = Number(discountPercent);
+    if (!code) {
+      onError('Add the discount code.');
+      return;
+    }
+    if (!merchantUrl) {
+      onError('Add the merchant website.');
+      return;
+    }
+    if (!Number.isInteger(percent) || percent < 1 || percent > 100) {
+      onError('Enter a whole-number discount from 1 to 100%.');
+      return;
+    }
+    setBusyId(editingDiscount?.id ?? 'new-discount');
+    onError('');
+    try {
+      const brand = brands.find(({ brandId }) => brandId === discountBrandId);
+      let saved = await saveCreatorDiscount(
+        {
+          brandId: discountBrandId,
+          code,
+          detailsHe: discountDetails.trim() || null,
+          discountAmountMinor: null,
+          discountPercent: percent,
+          expiresAt: discountExpiresAt
+            ? new Date(`${discountExpiresAt}T23:59:59.000Z`).toISOString()
+            : null,
+          label: discountLabel.trim() || `${percent}% off`,
+          merchantUrl: normalizeUrl(merchantUrl),
+          offerType: 'creator_code',
+          priority: editingDiscount?.priority ?? 0,
+          recurrenceRule: 'none',
+          scopeId: discountBrandId,
+          scopeKind: 'brand',
+          source: 'manual',
+          stackable: editingDiscount?.stackable ?? false,
+          startsAt: editingDiscount?.startsAt ?? null,
+          storyClips: [],
+        },
+        editingDiscount ?? undefined,
+      );
+      if (saved.lifecycle !== 'published') {
+        saved = await transitionCreatorDiscount(saved, 'confirm');
+      }
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              discounts: editingDiscount
+                ? current.discounts.map((item) => (item.id === saved.id ? saved : item))
+                : [...current.discounts, saved],
+            }
+          : current,
+      );
+      setEditingDiscount(undefined);
+      onNotice(`${brand?.name ?? 'Discount'} offer is live.`);
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function toggleDiscount(discount: CreatorDiscountCode) {
+    const command = discount.lifecycle === 'published' ? 'hide' : 'confirm';
+    setBusyId(discount.id);
+    onError('');
+    try {
+      const saved = await transitionCreatorDiscount(discount, command);
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              discounts: current.discounts.map((item) =>
+                item.id === saved.id ? saved : item,
+              ),
+            }
+          : current,
+      );
+      onNotice(command === 'confirm' ? 'Discount is live.' : 'Discount hidden.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
   }
 
   function toggleCollectionItem(id: string) {
@@ -889,8 +1012,92 @@ function Recommendations({
           >
             <Text style={styles.compactButtonSecondaryText}>+ Collection</Text>
           </Pressable>
+          <Pressable onPress={() => openDiscount()} style={styles.compactButtonSecondary}>
+            <Text style={styles.compactButtonSecondaryText}>+ Discount</Text>
+          </Pressable>
         </View>
       </View>
+
+      {editingDiscount !== undefined ? (
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>
+            {editingDiscount ? 'Edit discount' : 'Add discount'}
+          </Text>
+          <Text style={styles.fieldLabelStandalone}>Brand (optional)</Text>
+          <ScrollView
+            contentContainerStyle={styles.choiceRail}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            <ChoicePill
+              label="Any brand"
+              onPress={() => setDiscountBrandId(null)}
+              selected={discountBrandId === null}
+            />
+            {brands.map((brand) => (
+              <ChoicePill
+                key={brand.id}
+                label={brand.name}
+                onPress={() => {
+                  setDiscountBrandId(brand.brandId);
+                  if (!discountMerchantUrl) setDiscountMerchantUrl(brand.websiteUrl);
+                }}
+                selected={discountBrandId === brand.brandId}
+              />
+            ))}
+          </ScrollView>
+          <Field label="Code" onChangeText={setDiscountCode} value={discountCode} />
+          <Field
+            keyboardType="number-pad"
+            label="Percent off"
+            onChangeText={setDiscountPercent}
+            value={discountPercent}
+          />
+          <Field
+            autoCapitalize="none"
+            keyboardType="url"
+            label="Merchant website"
+            onChangeText={setDiscountMerchantUrl}
+            value={discountMerchantUrl}
+          />
+          <Field
+            label="Public label (optional)"
+            onChangeText={setDiscountLabel}
+            value={discountLabel}
+          />
+          <Field
+            autoCapitalize="none"
+            label="Expires (YYYY-MM-DD, optional)"
+            onChangeText={setDiscountExpiresAt}
+            value={discountExpiresAt}
+          />
+          <Field
+            label="Details (optional)"
+            multiline
+            onChangeText={setDiscountDetails}
+            value={discountDetails}
+          />
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId)}
+              onPress={() => void persistDiscount()}
+              style={styles.primarySmall}
+            >
+              {busyId === (editingDiscount?.id ?? 'new-discount') ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save discount</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setEditingDiscount(undefined)}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {editingCollection !== undefined ? (
         <View style={styles.editorCard}>
@@ -1210,6 +1417,48 @@ function Recommendations({
         ))
       ) : (
         <Empty text="No recommendations yet." />
+      )}
+
+      <Text style={styles.sectionTitle}>Discounts</Text>
+      {discounts.filter(({ lifecycle }) => lifecycle !== 'archived').length ? (
+        discounts
+          .filter(({ lifecycle }) => lifecycle !== 'archived')
+          .map((discount) => (
+            <View key={discount.id} style={styles.listCard}>
+              <View style={styles.listCopy}>
+                <Text style={styles.cardEyebrow}>{discount.code}</Text>
+                <Text style={styles.cardTitle}>
+                  {discount.label ??
+                    (discount.discountPercent
+                      ? `${discount.discountPercent}% off`
+                      : 'Creator offer')}
+                </Text>
+                <Text style={styles.cardMeta}>
+                  {discount.lifecycle === 'published' ? 'Live' : 'Hidden'}
+                </Text>
+              </View>
+              <View style={styles.itemActions}>
+                <Pressable onPress={() => openDiscount(discount)}>
+                  <Text style={styles.editLabel}>Edit</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === discount.id}
+                  onPress={() => void toggleDiscount(discount)}
+                  style={styles.statusButton}
+                >
+                  {busyId === discount.id ? (
+                    <ActivityIndicator color={colors.accent} />
+                  ) : (
+                    <Text style={styles.statusButtonText}>
+                      {discount.lifecycle === 'published' ? 'Hide' : 'Publish'}
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          ))
+      ) : (
+        <Empty text="No discounts yet." />
       )}
     </>
   );

@@ -2,6 +2,7 @@ import {
   categoryCardSchema,
   creatorAnalyticsDashboardSchema,
   creatorBrandSchema,
+  creatorDiscountCodeSchema,
   creatorHandleAvailabilitySchema,
   creatorProfileSettingsSchema,
   creatorProductMetadataSchema,
@@ -15,6 +16,8 @@ import type {
   CreatorAnalyticsDashboard,
   CreatorBrand,
   CreatorBrandInput,
+  CreatorDiscountCode,
+  CreatorDiscountCodeInput,
   CreatorProfilePatch,
   CreatorProfileSettings,
   CreatorProductMetadata,
@@ -43,6 +46,7 @@ export interface CreatorStudioBundle {
   brands: CreatorBrand[];
   categories: CategoryCard[];
   configuration: CreatorStorefrontConfiguration;
+  discounts: CreatorDiscountCode[];
   profile: CreatorProfileSettings;
   recommendations: CreatorRecommendation[];
   summary: CreatorStudioSummary;
@@ -92,6 +96,7 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     profile,
     brands,
     categories,
+    discounts,
     recommendations,
     configuration,
     analytics,
@@ -104,6 +109,9 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     ),
     creatorRequest('/v1/creator/categories', (value) =>
       categoryCardSchema.array().parse(value),
+    ),
+    creatorRequest('/v1/creator/discount-codes', (value) =>
+      creatorDiscountCodeSchema.array().parse(value),
     ),
     creatorCollectionRequest('/v1/creator/recommendations?limit=48', (value) =>
       creatorRecommendationSchema.array().parse(value),
@@ -127,11 +135,46 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     brands,
     categories,
     configuration,
+    discounts,
     profile,
     recommendations,
     summary,
     theme,
   };
+}
+
+export function saveCreatorDiscount(
+  input: CreatorDiscountCodeInput,
+  discount?: CreatorDiscountCode,
+): Promise<CreatorDiscountCode> {
+  return creatorRequest(
+    discount ? `/v1/creator/discount-codes/${discount.id}` : '/v1/creator/discount-codes',
+    creatorDiscountCodeSchema.parse,
+    {
+      body: JSON.stringify(input),
+      headers: discount
+        ? { 'if-match': `"${discount.version}"` }
+        : { 'idempotency-key': Crypto.randomUUID() },
+      method: discount ? 'PATCH' : 'POST',
+    },
+  );
+}
+
+export function transitionCreatorDiscount(
+  discount: CreatorDiscountCode,
+  command: 'archive' | 'confirm' | 'hide',
+): Promise<CreatorDiscountCode> {
+  return creatorRequest(
+    `/v1/creator/discount-codes/${discount.id}/${command}`,
+    creatorDiscountCodeSchema.parse,
+    {
+      headers: {
+        'idempotency-key': Crypto.randomUUID(),
+        'if-match': `"${discount.version}"`,
+      },
+      method: 'POST',
+    },
+  );
 }
 
 export function fetchCreatorProductDetails(url: string): Promise<CreatorProductMetadata> {
