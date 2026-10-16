@@ -17,12 +17,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getSupabaseClient } from '../lib/supabase';
 import { getCreators, prefetchPublicStorefront } from '../lib/api';
 import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
+import { initialSessionRedirectGate } from '../lib/initial-session-routing';
 
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
 export default function HomeScreen() {
   const router = useRouter();
   const [signedIn, setSignedIn] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(() =>
+    initialSessionRedirectGate.isPending(),
+  );
   const [featuredCreators, setFeaturedCreators] = useState<CreatorCard[]>([]);
   const [creatorsLoading, setCreatorsLoading] = useState(true);
   const hiddenCreatorIds = useHiddenCreatorIds();
@@ -34,12 +38,24 @@ export default function HomeScreen() {
     const supabase = getSupabaseClient();
     void supabase.auth
       .getSession()
-      .then(({ data }) => setSignedIn(Boolean(data.session)));
+      .then(({ data }) => {
+        const hasSession = Boolean(data.session);
+        setSignedIn(hasSession);
+        if (initialSessionRedirectGate.consume(hasSession)) {
+          router.replace('/studio');
+          return;
+        }
+        setRestoringSession(false);
+      })
+      .catch(() => {
+        initialSessionRedirectGate.consume(false);
+        setRestoringSession(false);
+      });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setSignedIn(Boolean(session));
     });
     return () => subscription.subscription.unsubscribe();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     let active = true;
@@ -58,6 +74,17 @@ export default function HomeScreen() {
       active = false;
     };
   }, []);
+
+  if (restoringSession) {
+    return (
+      <SafeAreaView style={styles.launchScreen}>
+        <StatusBar style="dark" />
+        <Text style={styles.launchWordmark}>swavii</Text>
+        <ActivityIndicator color={colors.accent} />
+        <Text style={styles.launchCopy}>Opening your creator workspace…</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -174,6 +201,21 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
+  launchScreen: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    gap: spacing.md,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  launchWordmark: {
+    color: colors.ink,
+    fontFamily: 'Georgia',
+    fontSize: 46,
+    marginBottom: spacing.md,
+  },
+  launchCopy: { color: colors.muted, fontSize: 14 },
   content: { paddingBottom: spacing.xxl },
   header: {
     alignItems: 'center',
