@@ -1024,6 +1024,37 @@ function Recommendations({
     }
   }
 
+  async function moveDashboardContent(
+    id: string,
+    kind: 'collection' | 'recommendation',
+    direction: -1 | 1,
+  ) {
+    const index = configuration.contentOrder.findIndex(
+      (entry) => entry.id === id && entry.kind === kind,
+    );
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= configuration.contentOrder.length) return;
+    const contentOrder = [...configuration.contentOrder];
+    [contentOrder[index], contentOrder[target]] = [
+      contentOrder[target]!,
+      contentOrder[index]!,
+    ];
+    setBusyId(`move-${kind}-${id}`);
+    onError('');
+    try {
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput({ ...configuration, contentOrder }),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      onNotice('Storefront order updated.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / DASHBOARD</Text>
@@ -1416,6 +1447,15 @@ function Recommendations({
                   </Text>
                 </View>
                 <View style={styles.itemActions}>
+                  <MoveButtons
+                    disabled={Boolean(busyId)}
+                    onDown={() =>
+                      void moveDashboardContent(collection.id, 'collection', 1)
+                    }
+                    onUp={() =>
+                      void moveDashboardContent(collection.id, 'collection', -1)
+                    }
+                  />
                   <Pressable onPress={() => openCollection(collection)}>
                     <Text style={styles.editLabel}>Edit</Text>
                   </Pressable>
@@ -1439,6 +1479,15 @@ function Recommendations({
               <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
             </View>
             <View style={styles.itemActions}>
+              {configuration.contentOrder.some(
+                ({ id, kind }) => kind === 'recommendation' && id === item.id,
+              ) ? (
+                <MoveButtons
+                  disabled={Boolean(busyId)}
+                  onDown={() => void moveDashboardContent(item.id, 'recommendation', 1)}
+                  onUp={() => void moveDashboardContent(item.id, 'recommendation', -1)}
+                />
+              ) : null}
               {item.lifecycle !== 'archived' ? (
                 <>
                   <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
@@ -1771,6 +1820,44 @@ function StorefrontEditor({
     );
   }
 
+  async function moveContent(id: string, kind: 'media', direction: -1 | 1) {
+    const index = configuration.contentOrder.findIndex(
+      (entry) => entry.kind === kind && entry.id === id,
+    );
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= configuration.contentOrder.length) return;
+    const contentOrder = [...configuration.contentOrder];
+    [contentOrder[index], contentOrder[target]] = [
+      contentOrder[target]!,
+      contentOrder[index]!,
+    ];
+    const next = { ...configuration, contentOrder };
+    setConfiguration(next);
+    await save(next);
+  }
+
+  async function toggleMediaVisibility(id: string) {
+    const next = {
+      ...configuration,
+      featuredMedia: configuration.featuredMedia.map((item) =>
+        item.id === id ? { ...item, visible: !item.visible } : item,
+      ),
+    };
+    setConfiguration(next);
+    await save(next);
+  }
+
+  async function moveLabel(id: string, direction: -1 | 1) {
+    const index = configuration.labels.findIndex((label) => label.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= configuration.labels.length) return;
+    const labels = [...configuration.labels];
+    [labels[index], labels[target]] = [labels[target]!, labels[index]!];
+    const next = { ...configuration, labels };
+    setConfiguration(next);
+    await save(next);
+  }
+
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / STOREFRONT</Text>
@@ -1945,6 +2032,11 @@ function StorefrontEditor({
             </Text>
           </View>
           <View style={styles.itemActions}>
+            <MoveButtons
+              disabled={saving}
+              onDown={() => void moveLabel(label.id, 1)}
+              onUp={() => void moveLabel(label.id, -1)}
+            />
             <Pressable onPress={() => openLabel(label.id)}>
               <Text style={styles.editLabel}>Edit</Text>
             </Pressable>
@@ -1982,9 +2074,19 @@ function StorefrontEditor({
             <Text style={styles.cardEyebrow}>{item.provider.replace('_', ' ')}</Text>
             <Text style={styles.cardTitle}>{item.title}</Text>
           </View>
-          <Pressable onPress={() => removeMedia(item.id)}>
-            <Text style={styles.removeText}>Remove</Text>
-          </Pressable>
+          <View style={styles.itemActions}>
+            <MoveButtons
+              disabled={saving}
+              onDown={() => void moveContent(item.id, 'media', 1)}
+              onUp={() => void moveContent(item.id, 'media', -1)}
+            />
+            <Pressable onPress={() => void toggleMediaVisibility(item.id)}>
+              <Text style={styles.editLabel}>{item.visible ? 'Hide' : 'Show'}</Text>
+            </Pressable>
+            <Pressable onPress={() => removeMedia(item.id)}>
+              <Text style={styles.removeText}>Remove</Text>
+            </Pressable>
+          </View>
         </View>
       ))}
       {saving ? <ActivityIndicator color={colors.accent} style={styles.saving} /> : null}
@@ -2028,6 +2130,37 @@ function LabelChoices({
         </Pressable>
       ))}
     </>
+  );
+}
+
+function MoveButtons({
+  disabled,
+  onDown,
+  onUp,
+}: {
+  disabled: boolean;
+  onDown: () => void;
+  onUp: () => void;
+}) {
+  return (
+    <View accessibilityLabel="Reorder content" style={styles.moveButtons}>
+      <Pressable
+        accessibilityLabel="Move up"
+        disabled={disabled}
+        onPress={onUp}
+        style={styles.moveButton}
+      >
+        <Text style={styles.moveButtonText}>↑</Text>
+      </Pressable>
+      <Pressable
+        accessibilityLabel="Move down"
+        disabled={disabled}
+        onPress={onDown}
+        style={styles.moveButton}
+      >
+        <Text style={styles.moveButtonText}>↓</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -2810,6 +2943,17 @@ const styles = StyleSheet.create({
   cardMeta: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 4 },
   editLabel: { color: colors.accent, fontWeight: '700' },
   itemActions: { alignItems: 'flex-end', gap: 7 },
+  moveButtons: { flexDirection: 'row', gap: 5 },
+  moveButton: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 32,
+  },
+  moveButtonText: { color: colors.ink, fontSize: 17, fontWeight: '700' },
   editItemButton: { paddingHorizontal: 10, paddingVertical: 5 },
   removeText: { color: '#9b2c24', fontSize: 13, fontWeight: '700' },
   statusButton: {
