@@ -7,6 +7,7 @@ import type {
 export interface RecommendationDraft {
   brandName: string;
   categoryId: string;
+  imageAssetId: string;
   imageUrl: string;
   priceIls: string;
   productName: string;
@@ -17,6 +18,7 @@ export interface RecommendationDraft {
 export const emptyRecommendationDraft: RecommendationDraft = {
   brandName: '',
   categoryId: '',
+  imageAssetId: '',
   imageUrl: '',
   priceIls: '',
   productName: '',
@@ -30,6 +32,7 @@ export function recommendationDraftFromItem(
   return {
     brandName: item.brandName,
     categoryId: item.categoryId,
+    imageAssetId: item.imageAssetId ?? '',
     imageUrl: item.imageAssetId ? '' : item.imageUrl,
     priceIls: item.price.amountMinor ? String(item.price.amountMinor / 100) : '',
     productName: item.productName,
@@ -47,7 +50,7 @@ export function recommendationDraftWithMetadata(
     ...draft,
     brandName: metadata.brandName || draft.brandName,
     categoryId: categoryId || draft.categoryId,
-    imageUrl: metadata.imageUrl || draft.imageUrl,
+    imageUrl: draft.imageAssetId ? draft.imageUrl : metadata.imageUrl || draft.imageUrl,
     priceIls:
       metadata.priceAmountMinor === null
         ? draft.priceIls
@@ -82,8 +85,8 @@ export function recommendationInput(
     categoryIds: [categoryId],
     commercialRelationship: 'organic',
     contentKind: 'product',
-    imageAssetId: null,
-    imageUrl,
+    imageAssetId: draft.imageAssetId || null,
+    imageUrl: draft.imageAssetId ? null : imageUrl,
     priceAmountMinor: Math.round(price * 100),
     productName,
     productUrl: productUrl || `https://swavii.com/manual-recommendation/${manualId}`,

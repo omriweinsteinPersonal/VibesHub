@@ -90,7 +90,13 @@
         }
       ],
       "expo-web-browser",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Swavii uses your photo only when you choose it for your storefront."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

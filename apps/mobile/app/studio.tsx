@@ -12,12 +12,14 @@ import { defaultStorefrontTheme } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
 import { ChartColumn, House, LayoutDashboard, Store, User } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   Alert,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -50,6 +52,7 @@ import {
   type CreatorStudioBundle,
 } from '../lib/creator-api';
 import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
+import { uploadCreatorImage } from '../lib/creator-media';
 import { featuredMediaProvider } from '../lib/featured-media';
 import {
   emptyRecommendationDraft,
@@ -484,6 +487,7 @@ function Recommendations({
   const [brandUrl, setBrandUrl] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [editingCollection, setEditingCollection] = useState<
     CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
   >();
@@ -780,6 +784,37 @@ function Recommendations({
       onError(messageFor(cause));
     } finally {
       setFetchingDetails(false);
+    }
+  }
+
+  async function chooseItemImage() {
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose an image for this item.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      mediaTypes: ['images'],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    if (!asset) return;
+    setUploadingImage(true);
+    try {
+      const uploaded = await uploadCreatorImage({
+        fileSize: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        uri: asset.uri,
+      });
+      updateItem({ imageAssetId: uploaded.id, imageUrl: uploaded.publicUrl });
+      onNotice('Image uploaded. Save the item to keep it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingImage(false);
     }
   }
 
@@ -1264,9 +1299,28 @@ function Recommendations({
             autoCapitalize="none"
             keyboardType="url"
             label="Image link (optional)"
-            onChangeText={(imageUrl) => updateItem({ imageUrl })}
+            onChangeText={(imageUrl) => updateItem({ imageAssetId: '', imageUrl })}
             value={itemDraft.imageUrl}
           />
+          {itemDraft.imageUrl ? (
+            <Image
+              accessibilityLabel="Selected item image preview"
+              resizeMode="contain"
+              source={{ uri: itemDraft.imageUrl }}
+              style={styles.itemImagePreview}
+            />
+          ) : null}
+          <Pressable
+            disabled={uploadingImage}
+            onPress={() => void chooseItemImage()}
+            style={styles.fetchButton}
+          >
+            {uploadingImage ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.fetchButtonText}>Choose image from phone</Text>
+            )}
+          </Pressable>
           <Field
             label="Your recommendation (optional)"
             multiline
@@ -2439,6 +2493,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   fetchButtonText: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+  itemImagePreview: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: radii.control,
+    height: 180,
+    marginTop: spacing.sm,
+    width: '100%',
+  },
   fieldLabelStandalone: {
     color: colors.ink,
     fontSize: 13,
