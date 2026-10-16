@@ -1,4 +1,5 @@
 import type {
+  CategoryCard,
   CreatorBrand,
   CreatorProfileSocialLink,
   CreatorRecommendation,
@@ -31,12 +32,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/api';
 import {
   cacheCreatorStudioBundle,
+  fetchCreatorProductDetails,
   getCreatorAnalytics,
   getCreatorHandleAvailability,
   getCreatorStudioBundle,
   getCachedCreatorStudioBundle,
   newStudioId,
   saveCreatorBrand,
+  saveCreatorRecommendation,
   saveStorefrontConfiguration,
   saveStorefrontTheme,
   transitionCreatorRecommendation,
@@ -45,6 +48,13 @@ import {
 } from '../lib/creator-api';
 import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
 import { featuredMediaProvider } from '../lib/featured-media';
+import {
+  emptyRecommendationDraft,
+  recommendationDraftFromItem,
+  recommendationDraftWithMetadata,
+  recommendationInput,
+  type RecommendationDraft,
+} from '../lib/recommendation-editor';
 import {
   creatorWorkspaceTabs,
   type CreatorWorkspaceView,
@@ -226,6 +236,8 @@ export default function CreatorStudioScreen() {
           ) : view === 'recommendations' ? (
             <Recommendations
               brands={bundle.brands}
+              categories={bundle.categories ?? []}
+              configuration={bundle.configuration}
               recommendations={bundle.recommendations}
               onBundle={updateBundle}
               onError={setError}
@@ -440,26 +452,129 @@ function Overview({
 
 function Recommendations({
   brands,
+  categories,
+  configuration,
   recommendations,
   onBundle,
   onError,
   onNotice,
 }: {
   brands: CreatorBrand[];
+  categories: CategoryCard[];
+  configuration: CreatorStorefrontConfiguration;
   recommendations: CreatorRecommendation[];
   onBundle: React.Dispatch<React.SetStateAction<CreatorStudioBundle | null>>;
   onError: (message: string) => void;
   onNotice: (message: string) => void;
 }) {
   const [editingBrand, setEditingBrand] = useState<CreatorBrand | null | undefined>();
+  const [editingItem, setEditingItem] = useState<
+    CreatorRecommendation | null | undefined
+  >();
+  const [itemDraft, setItemDraft] = useState<RecommendationDraft>(
+    emptyRecommendationDraft,
+  );
   const [brandName, setBrandName] = useState('');
   const [brandUrl, setBrandUrl] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [fetchingDetails, setFetchingDetails] = useState(false);
 
   function openBrand(brand?: CreatorBrand) {
+    setEditingItem(undefined);
     setEditingBrand(brand ?? null);
     setBrandName(brand?.name ?? '');
     setBrandUrl(brand?.websiteUrl ?? '');
+  }
+
+  function openItem(item?: CreatorRecommendation) {
+    setEditingBrand(undefined);
+    setEditingItem(item ?? null);
+    setItemDraft(item ? recommendationDraftFromItem(item) : emptyRecommendationDraft);
+  }
+
+  function updateItem(patch: Partial<RecommendationDraft>) {
+    setItemDraft((current) => ({ ...current, ...patch }));
+  }
+
+  async function fetchDetails() {
+    const rawUrl = itemDraft.productUrl.trim();
+    if (!rawUrl) {
+      onError('Add an item link first.');
+      return;
+    }
+    setFetchingDetails(true);
+    onError('');
+    try {
+      const url = normalizeUrl(rawUrl);
+      const metadata = await fetchCreatorProductDetails(url);
+      const detectedCategory = categories.find(
+        ({ slug }) => slug === metadata.categorySlug,
+      );
+      setItemDraft((current) =>
+        recommendationDraftWithMetadata(current, metadata, detectedCategory?.id),
+      );
+      onNotice('Item details fetched. Review them before saving.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setFetchingDetails(false);
+    }
+  }
+
+  async function persistItem() {
+    let input;
+    try {
+      input = recommendationInput(itemDraft, newStudioId());
+    } catch (cause) {
+      onError(messageFor(cause));
+      return;
+    }
+
+    const busyKey = editingItem?.id ?? 'new-item';
+    setBusyId(busyKey);
+    onError('');
+    try {
+      const saved = await saveCreatorRecommendation(input, editingItem ?? undefined);
+      let savedConfiguration = configuration;
+      if (
+        !editingItem &&
+        !configuration.contentOrder.some(
+          ({ id, kind }) => kind === 'recommendation' && id === saved.id,
+        )
+      ) {
+        const next = {
+          ...configuration,
+          contentOrder: [
+            ...configuration.contentOrder,
+            { id: saved.id, kind: 'recommendation' as const },
+          ],
+        };
+        savedConfiguration = await saveStorefrontConfiguration(
+          configuration,
+          configurationInput(next),
+        );
+      }
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              configuration: savedConfiguration,
+              recommendations: editingItem
+                ? current.recommendations.map((item) =>
+                    item.id === saved.id ? saved : item,
+                  )
+                : [...current.recommendations, saved],
+            }
+          : current,
+      );
+      setEditingItem(undefined);
+      setItemDraft(emptyRecommendationDraft);
+      onNotice(editingItem ? 'Item updated.' : 'Item added. Publish it when ready.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function persistBrand() {
@@ -539,10 +654,122 @@ function Recommendations({
             Keep your brands, collections and individual picks beautifully organized.
           </Text>
         </View>
-        <Pressable onPress={() => openBrand()} style={styles.compactButton}>
-          <Text style={styles.compactButtonText}>+ Brand</Text>
-        </Pressable>
+        <View style={styles.headingActions}>
+          <Pressable onPress={() => openItem()} style={styles.compactButton}>
+            <Text style={styles.compactButtonText}>+ Item</Text>
+          </Pressable>
+          <Pressable onPress={() => openBrand()} style={styles.compactButtonSecondary}>
+            <Text style={styles.compactButtonSecondaryText}>+ Brand</Text>
+          </Pressable>
+        </View>
       </View>
+
+      {editingItem !== undefined ? (
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>{editingItem ? 'Edit item' : 'Add item'}</Text>
+          <Text style={styles.cardMeta}>
+            Paste a product link to fetch its details, or fill the fields manually.
+          </Text>
+          <Field
+            autoCapitalize="none"
+            keyboardType="url"
+            label="Item link (optional)"
+            onChangeText={(productUrl) => updateItem({ productUrl })}
+            value={itemDraft.productUrl}
+          />
+          <Pressable
+            disabled={fetchingDetails || !itemDraft.productUrl.trim()}
+            onPress={() => void fetchDetails()}
+            style={styles.fetchButton}
+          >
+            {fetchingDetails ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.fetchButtonText}>Fetch name, image and price</Text>
+            )}
+          </Pressable>
+          <Field
+            label="Item name"
+            onChangeText={(productName) => updateItem({ productName })}
+            value={itemDraft.productName}
+          />
+          <Text style={styles.fieldLabelStandalone}>Brand</Text>
+          {brands.length ? (
+            <ScrollView
+              contentContainerStyle={styles.choiceRail}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
+              {brands.map((brand) => (
+                <ChoicePill
+                  key={brand.id}
+                  label={brand.name}
+                  onPress={() => updateItem({ brandName: brand.name })}
+                  selected={itemDraft.brandName === brand.name}
+                />
+              ))}
+            </ScrollView>
+          ) : null}
+          <Field
+            label="Brand name"
+            onChangeText={(nextBrandName) => updateItem({ brandName: nextBrandName })}
+            value={itemDraft.brandName}
+          />
+          <Text style={styles.fieldLabelStandalone}>Category</Text>
+          <ScrollView
+            contentContainerStyle={styles.choiceRail}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {categories.map((category) => (
+              <ChoicePill
+                key={category.id}
+                label={category.name}
+                onPress={() => updateItem({ categoryId: category.id })}
+                selected={itemDraft.categoryId === category.id}
+              />
+            ))}
+          </ScrollView>
+          <Field
+            keyboardType="decimal-pad"
+            label="Price in ILS (optional)"
+            onChangeText={(priceIls) => updateItem({ priceIls })}
+            value={itemDraft.priceIls}
+          />
+          <Field
+            autoCapitalize="none"
+            keyboardType="url"
+            label="Image link (optional)"
+            onChangeText={(imageUrl) => updateItem({ imageUrl })}
+            value={itemDraft.imageUrl}
+          />
+          <Field
+            label="Your recommendation (optional)"
+            multiline
+            onChangeText={(review) => updateItem({ review })}
+            value={itemDraft.review}
+          />
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId) || !categories.length}
+              onPress={() => void persistItem()}
+              style={styles.primarySmall}
+            >
+              {busyId === (editingItem?.id ?? 'new-item') ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save item</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setEditingItem(undefined)}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {editingBrand !== undefined ? (
         <View style={styles.editorCard}>
@@ -607,29 +834,59 @@ function Recommendations({
               </Text>
               <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
             </View>
-            <Pressable
-              disabled={busyId === item.id}
-              onPress={() => void transition(item)}
-              style={styles.statusButton}
-            >
-              {busyId === item.id ? (
-                <ActivityIndicator color={colors.accent} />
-              ) : (
-                <Text style={styles.statusButtonText}>
-                  {item.lifecycle === 'published'
-                    ? 'Hide'
-                    : item.lifecycle === 'archived'
-                      ? 'Restore'
-                      : 'Publish'}
-                </Text>
-              )}
-            </Pressable>
+            <View style={styles.itemActions}>
+              {item.lifecycle !== 'archived' ? (
+                <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
+                  <Text style={styles.editLabel}>Edit</Text>
+                </Pressable>
+              ) : null}
+              <Pressable
+                disabled={busyId === item.id}
+                onPress={() => void transition(item)}
+                style={styles.statusButton}
+              >
+                {busyId === item.id ? (
+                  <ActivityIndicator color={colors.accent} />
+                ) : (
+                  <Text style={styles.statusButtonText}>
+                    {item.lifecycle === 'published'
+                      ? 'Hide'
+                      : item.lifecycle === 'archived'
+                        ? 'Restore'
+                        : 'Publish'}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
           </View>
         ))
       ) : (
         <Empty text="No recommendations yet." />
       )}
     </>
+  );
+}
+
+function ChoicePill({
+  label,
+  onPress,
+  selected,
+}: {
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      onPress={onPress}
+      style={[styles.choicePill, selected && styles.choicePillSelected]}
+    >
+      <Text style={[styles.choicePillText, selected && styles.choicePillTextSelected]}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -1368,14 +1625,50 @@ const styles = StyleSheet.create({
   lede: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: spacing.sm },
   headingRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   headingCopy: { flex: 1 },
+  headingActions: { gap: 8, marginTop: spacing.lg },
   compactButton: {
     backgroundColor: colors.accent,
     borderRadius: radii.control,
-    marginTop: spacing.lg,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   compactButtonText: { color: colors.white, fontWeight: '700' },
+  compactButtonSecondary: {
+    borderColor: colors.accent,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  compactButtonSecondaryText: { color: colors.accent, fontWeight: '700' },
+  fetchButton: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+  },
+  fetchButtonText: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+  fieldLabelStandalone: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: spacing.md,
+  },
+  choiceRail: { gap: 8, paddingVertical: spacing.sm },
+  choicePill: {
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+  },
+  choicePillSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  choicePillText: { color: colors.ink, fontSize: 13, fontWeight: '600' },
+  choicePillTextSelected: { color: colors.white },
   rangeControl: {
     alignSelf: 'flex-start',
     backgroundColor: '#eee6dc',
@@ -1515,6 +1808,8 @@ const styles = StyleSheet.create({
   cardTitle: { color: colors.ink, fontSize: 16, fontWeight: '700' },
   cardMeta: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 4 },
   editLabel: { color: colors.accent, fontWeight: '700' },
+  itemActions: { alignItems: 'flex-end', gap: 7 },
+  editItemButton: { paddingHorizontal: 10, paddingVertical: 5 },
   removeText: { color: '#9b2c24', fontSize: 13, fontWeight: '700' },
   statusButton: {
     borderColor: colors.border,

@@ -1,20 +1,25 @@
 import {
+  categoryCardSchema,
   creatorAnalyticsDashboardSchema,
   creatorBrandSchema,
   creatorHandleAvailabilitySchema,
   creatorProfileSettingsSchema,
+  creatorProductMetadataSchema,
   creatorRecommendationSchema,
   creatorStorefrontConfigurationSchema,
   creatorStudioSummarySchema,
   storefrontThemeConfigurationSchema,
 } from '@vibeshub/contracts';
 import type {
+  CategoryCard,
   CreatorAnalyticsDashboard,
   CreatorBrand,
   CreatorBrandInput,
   CreatorProfilePatch,
   CreatorProfileSettings,
+  CreatorProductMetadata,
   CreatorRecommendation,
+  CreatorRecommendationInput,
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
   CreatorStudioSummary,
@@ -36,6 +41,7 @@ interface Envelope<T> {
 export interface CreatorStudioBundle {
   analytics: CreatorAnalyticsDashboard;
   brands: CreatorBrand[];
+  categories: CategoryCard[];
   configuration: CreatorStorefrontConfiguration;
   profile: CreatorProfileSettings;
   recommendations: CreatorRecommendation[];
@@ -81,31 +87,78 @@ export async function getCreatorStudioBundle(
 }
 
 async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundle> {
-  const [summary, profile, brands, recommendations, configuration, analytics, theme] =
-    await Promise.all([
-      creatorRequest('/v1/creator/studio', creatorStudioSummarySchema.parse),
-      creatorRequest('/v1/creator/profile', creatorProfileSettingsSchema.parse),
-      creatorRequest('/v1/creator/brands', (value) =>
-        creatorBrandSchema.array().parse(value),
-      ),
-      creatorCollectionRequest('/v1/creator/recommendations?limit=48', (value) =>
-        creatorRecommendationSchema.array().parse(value),
-      ),
-      creatorRequest(
-        '/v1/creator/studio/storefront-sections',
-        creatorStorefrontConfigurationSchema.parse,
-      ),
-      creatorRequest(
-        `/v1/creator/analytics?days=${days}`,
-        creatorAnalyticsDashboardSchema.parse,
-      ),
-      creatorRequest(
-        '/v1/creator/studio/storefront-theme',
-        storefrontThemeConfigurationSchema.parse,
-      ),
-    ]);
+  const [
+    summary,
+    profile,
+    brands,
+    categories,
+    recommendations,
+    configuration,
+    analytics,
+    theme,
+  ] = await Promise.all([
+    creatorRequest('/v1/creator/studio', creatorStudioSummarySchema.parse),
+    creatorRequest('/v1/creator/profile', creatorProfileSettingsSchema.parse),
+    creatorRequest('/v1/creator/brands', (value) =>
+      creatorBrandSchema.array().parse(value),
+    ),
+    creatorRequest('/v1/creator/categories', (value) =>
+      categoryCardSchema.array().parse(value),
+    ),
+    creatorCollectionRequest('/v1/creator/recommendations?limit=48', (value) =>
+      creatorRecommendationSchema.array().parse(value),
+    ),
+    creatorRequest(
+      '/v1/creator/studio/storefront-sections',
+      creatorStorefrontConfigurationSchema.parse,
+    ),
+    creatorRequest(
+      `/v1/creator/analytics?days=${days}`,
+      creatorAnalyticsDashboardSchema.parse,
+    ),
+    creatorRequest(
+      '/v1/creator/studio/storefront-theme',
+      storefrontThemeConfigurationSchema.parse,
+    ),
+  ]);
 
-  return { analytics, brands, configuration, profile, recommendations, summary, theme };
+  return {
+    analytics,
+    brands,
+    categories,
+    configuration,
+    profile,
+    recommendations,
+    summary,
+    theme,
+  };
+}
+
+export function fetchCreatorProductDetails(url: string): Promise<CreatorProductMetadata> {
+  return creatorRequest(
+    '/v1/creator/recommendations/fetch-details',
+    creatorProductMetadataSchema.parse,
+    { body: JSON.stringify({ url }), method: 'POST' },
+  );
+}
+
+export function saveCreatorRecommendation(
+  input: CreatorRecommendationInput,
+  recommendation?: CreatorRecommendation,
+): Promise<CreatorRecommendation> {
+  return creatorRequest(
+    recommendation
+      ? `/v1/creator/recommendations/${recommendation.id}`
+      : '/v1/creator/recommendations',
+    creatorRecommendationSchema.parse,
+    {
+      body: JSON.stringify(input),
+      headers: recommendation
+        ? { 'if-match': `"${recommendation.version}"` }
+        : { 'idempotency-key': Crypto.randomUUID() },
+      method: recommendation ? 'PATCH' : 'POST',
+    },
+  );
 }
 
 export function updateCreatorProfile(
