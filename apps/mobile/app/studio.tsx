@@ -208,7 +208,11 @@ export default function CreatorStudioScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/account')}>
+        <Pressable
+          accessibilityLabel="Account settings"
+          accessibilityRole="button"
+          onPress={() => router.push('/account')}
+        >
           <Text style={styles.back}>Account</Text>
         </Pressable>
         <Text style={styles.wordmark}>swavii</Text>
@@ -278,6 +282,7 @@ export default function CreatorStudioScreen() {
           const Icon = tabIcons[item.key];
           return (
             <Pressable
+              accessibilityLabel={`${item.label} tab`}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
               key={item.key}
