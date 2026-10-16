@@ -44,6 +44,7 @@ import {
   type CreatorStudioBundle,
 } from '../lib/creator-api';
 import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
+import { featuredMediaProvider } from '../lib/featured-media';
 import {
   creatorWorkspaceTabs,
   type CreatorWorkspaceView,
@@ -767,10 +768,11 @@ function StorefrontEditor({
 
   function addMedia() {
     if (!mediaTitle.trim() || !mediaUrl.trim()) return;
+    const provider = featuredMediaProvider(mediaUrl);
     const media: FeaturedMedia = {
-      displayMode: 'embed',
+      displayMode: provider === 'maps' ? 'link' : 'embed',
       id: newStudioId(),
-      provider: mediaProvider(mediaUrl),
+      provider,
       thumbnailUrl: null,
       title: mediaTitle.trim(),
       url: normalizeUrl(mediaUrl),
@@ -923,7 +925,9 @@ function StorefrontEditor({
 
       <View style={styles.editorCard}>
         <Text style={styles.cardTitle}>Add media</Text>
-        <Text style={styles.cardMeta}>YouTube, Instagram, Spotify or Apple Music.</Text>
+        <Text style={styles.cardMeta}>
+          YouTube, Instagram, TikTok, Spotify, Apple Music or Google Maps.
+        </Text>
         <Field
           autoCapitalize="none"
           keyboardType="url"
@@ -1299,20 +1303,6 @@ function normalizeUrl(value: string): string {
   return /^https:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed.replace(/^\/+/, '')}`;
-}
-
-function mediaProvider(value: string): FeaturedMedia['provider'] {
-  const hostname = (() => {
-    try {
-      return new URL(normalizeUrl(value)).hostname.toLowerCase();
-    } catch {
-      return '';
-    }
-  })();
-  if (hostname.includes('instagram')) return 'instagram';
-  if (hostname.includes('spotify')) return 'spotify';
-  if (hostname.includes('music.apple')) return 'apple_music';
-  return 'youtube';
 }
 
 function lifecycleLabel(value: CreatorRecommendation['lifecycle']): string {
