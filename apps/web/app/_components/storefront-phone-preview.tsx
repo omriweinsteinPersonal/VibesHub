@@ -21,11 +21,12 @@ type ThemeKey = Exclude<
   | 'profileImageUrl'
   | 'templateId'
   | 'headerStyle'
+  | 'labelsFrame'
   | 'bioAlign'
   | 'headingFont'
   | 'bodyFont'
 >;
-type ThemeSection = 'theme' | 'header' | 'templates' | 'typography' | 'titles';
+type ThemeSection = 'theme' | 'header' | 'labels' | 'templates' | 'typography' | 'titles';
 const desktopQuery = '(min-width: 901px)';
 const groups: Array<{
   id: ThemeSection;
@@ -45,6 +46,11 @@ const groups: Array<{
   {
     id: 'header',
     title: 'Header',
+    fields: [],
+  },
+  {
+    id: 'labels',
+    title: 'Storefront labels',
     fields: [],
   },
   {
@@ -579,6 +585,27 @@ export function StorefrontPhonePreview({
                               </button>
                             ))}
                           </div>
+                        ) : group.id === 'labels' ? (
+                          <label className="storefrontFrameToggle">
+                            <input
+                              checked={draft.labelsFrame ?? true}
+                              onChange={(event) => {
+                                setDraft((current) => ({
+                                  ...current,
+                                  labelsFrame: event.target.checked,
+                                }));
+                                setNotice('');
+                              }}
+                              type="checkbox"
+                            />
+                            <span>
+                              <strong>Show a frame around labels</strong>
+                              <small>
+                                Add or remove the outline around All, Fashion and other
+                                storefront filters.
+                              </small>
+                            </span>
+                          </label>
                         ) : group.id === 'templates' ? (
                           <div
                             aria-label="Storefront templates"

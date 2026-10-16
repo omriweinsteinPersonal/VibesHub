@@ -461,7 +461,7 @@
   }
 
   .root :global(.creatorDashboardSidebar .eyebrow),
-  .root :global(.creatorDashboardSidebar button > svg) {
+  .root :global(.creatorDashboardSidebar button > .creatorDashboardNavArrow) {
     display: none;
   }
 
@@ -563,7 +563,7 @@
   color: #1b2528;
   display: grid;
   gap: 11px;
-  grid-template-columns: minmax(0, 1fr) 18px;
+  grid-template-columns: 26px minmax(0, 1fr) 18px;
   min-height: 72px;
   padding: 12px 13px;
   text-align: left;
@@ -583,6 +583,21 @@
   flex: 0 0 auto;
   height: 19px;
   width: 19px;
+}
+.root :global(.creatorDashboardNavIconRecommendations) {
+  color: #bc7654;
+}
+.root :global(.creatorDashboardNavIconLabels) {
+  color: #8c6db0;
+}
+.root :global(.creatorDashboardNavIconMedia) {
+  color: #c36a73;
+}
+.root :global(.creatorDashboardNavIconMaps) {
+  color: #528d70;
+}
+.root :global(.creatorDashboardNavIconSocial) {
+  color: #577da4;
 }
 
 .root :global(.creatorDashboardSidebar button > svg:last-child) {

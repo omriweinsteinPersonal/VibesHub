@@ -554,6 +554,7 @@ const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const defaultStorefrontTheme = {
   templateId: 'classic',
   headerStyle: 'classic',
+  labelsFrame: true,
   bioAlign: 'center',
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
@@ -586,6 +587,7 @@ export const storefrontThemeSchema = z
       ])
       .optional(),
     headerStyle: z.enum(['classic', 'circular']).default('classic'),
+    labelsFrame: z.boolean().default(true),
     bioAlign: z.enum(['left', 'center', 'right']).default('center'),
     profileBackground: storefrontColorSchema,
     // Optional so existing storefront themes remain valid when the Hero image

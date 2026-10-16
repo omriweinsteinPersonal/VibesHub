@@ -348,6 +348,7 @@ export function StorefrontLayout({
       className={styles.layout}
       data-template={theme.templateId ?? 'classic'}
       data-header-style={theme.headerStyle ?? 'classic'}
+      data-label-frame={theme.labelsFrame ?? true}
       data-compact-preview={compactPreview}
       data-sort-region="page"
       data-layout-editable={editable}

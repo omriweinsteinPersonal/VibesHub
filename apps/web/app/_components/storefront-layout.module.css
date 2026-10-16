@@ -452,24 +452,6 @@
     radial-gradient(circle at 50% 18%, rgb(196 164 221 / 22%), transparent 22%),
     radial-gradient(circle at 8% 46%, rgb(106 68 132 / 30%), transparent 34%),
     radial-gradient(circle at 92% 76%, rgb(16 10 26 / 74%), transparent 39%),
-    radial-gradient(
-      circle at 50% 18%,
-      transparent 0 82px,
-      rgb(224 205 239 / 11%) 83px 84px,
-      transparent 85px 132px,
-      rgb(224 205 239 / 8%) 133px 134px,
-      transparent 135px 194px,
-      rgb(224 205 239 / 6%) 195px 196px,
-      transparent 197px
-    ),
-    radial-gradient(
-      circle at 4% 83%,
-      transparent 0 92px,
-      rgb(166 124 193 / 10%) 93px 94px,
-      transparent 95px 148px,
-      rgb(166 124 193 / 7%) 149px 150px,
-      transparent 151px
-    ),
     linear-gradient(148deg, #281a34 0%, #422b50 48%, #21152d 100%);
 }
 .layout[data-template='desert-rose'] {
@@ -478,24 +460,6 @@
     radial-gradient(circle at 64% 4%, rgb(236 164 129 / 22%), transparent 30%),
     radial-gradient(circle at 2% 70%, rgb(153 78 61 / 34%), transparent 34%),
     radial-gradient(circle at 100% 56%, rgb(48 25 26 / 42%), transparent 38%),
-    radial-gradient(
-      circle at 88% 12%,
-      transparent 0 86px,
-      rgb(255 220 193 / 12%) 87px 88px,
-      transparent 89px 140px,
-      rgb(255 220 193 / 8%) 141px 142px,
-      transparent 143px 208px,
-      rgb(255 220 193 / 5%) 209px 210px,
-      transparent 211px
-    ),
-    radial-gradient(
-      circle at 5% 76%,
-      transparent 0 102px,
-      rgb(231 153 121 / 10%) 103px 104px,
-      transparent 105px 166px,
-      rgb(231 153 121 / 6%) 167px 168px,
-      transparent 169px
-    ),
     linear-gradient(154deg, #75443a 0%, #63382f 54%, #512e2c 100%);
 }
 .layout[data-template='glacier-current'] {
@@ -504,24 +468,6 @@
     radial-gradient(circle at 53% 7%, rgb(124 190 207 / 21%), transparent 29%),
     radial-gradient(circle at 0% 62%, rgb(43 111 133 / 30%), transparent 35%),
     radial-gradient(circle at 97% 48%, rgb(5 22 37 / 62%), transparent 37%),
-    radial-gradient(
-      circle at 8% 76%,
-      transparent 0 82px,
-      rgb(165 214 221 / 13%) 83px 84px,
-      transparent 85px 134px,
-      rgb(165 214 221 / 8%) 135px 136px,
-      transparent 137px 198px,
-      rgb(165 214 221 / 5%) 199px 200px,
-      transparent 201px
-    ),
-    radial-gradient(
-      circle at 97% 22%,
-      transparent 0 104px,
-      rgb(91 161 180 / 11%) 105px 106px,
-      transparent 107px 168px,
-      rgb(91 161 180 / 7%) 169px 170px,
-      transparent 171px
-    ),
     linear-gradient(145deg, #102f43 0%, #19485d 49%, #0a2639 100%);
 }
 
@@ -532,6 +478,33 @@
   [data-template='glacier-current']
 ) {
   position: relative;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )::before {
+  background: url('/images/storefront/organic-waves.svg') center top / 420px 520px repeat;
+  content: '';
+  inset: 0;
+  opacity: 0.72;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+.layout[data-template='forest-glass']::before {
+  display: none;
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  > * {
+  position: relative;
+  z-index: 1;
 }
 .layout:is(
     [data-template='forest-glass'],
@@ -586,27 +559,19 @@
   .profile.hero
   :global(.referenceStorefrontHeroImage) {
   background-image:
-    linear-gradient(180deg, rgb(4 19 22 / 5%) 30%, rgb(4 19 22 / 15%) 70%),
+    linear-gradient(
+      180deg,
+      transparent 38%,
+      color-mix(in srgb, var(--sf-page) 14%, transparent) 57%,
+      color-mix(in srgb, var(--sf-page) 62%, transparent) 79%,
+      var(--sf-page) 100%
+    ),
     var(--sf-profile-image, none);
   background-position:
     center,
     center 42%;
   background-size: cover;
   inset: 0;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 78%) 65%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 78%) 65%,
-    transparent 100%
-  );
   pointer-events: none;
   position: absolute;
   z-index: 0;
@@ -719,6 +684,16 @@
     [data-template='glacier-current']
   )
   .socials
+  :global(.referenceConnectorLink img) {
+  filter: brightness(0) invert(1);
+}
+.layout:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .socials
   :global(.referenceConnectorLink:hover),
 .layout:is(
     [data-template='forest-glass'],
@@ -807,24 +782,6 @@
     radial-gradient(circle at 50% 16%, rgb(112 174 151 / 20%), transparent 28%),
     radial-gradient(circle at 0% 42%, rgb(138 192 166 / 12%), transparent 31%),
     radial-gradient(circle at 96% 72%, rgb(2 24 25 / 52%), transparent 37%),
-    radial-gradient(
-      circle at 50% 17%,
-      transparent 0 76px,
-      rgb(190 224 202 / 9%) 77px 78px,
-      transparent 79px 126px,
-      rgb(190 224 202 / 7%) 127px 128px,
-      transparent 129px 187px,
-      rgb(190 224 202 / 5%) 188px 189px,
-      transparent 190px
-    ),
-    radial-gradient(
-      circle at 100% 92%,
-      transparent 0 82px,
-      rgb(112 177 153 / 9%) 83px 84px,
-      transparent 85px 136px,
-      rgb(112 177 153 / 6%) 137px 138px,
-      transparent 139px
-    ),
     linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
   color: #f3f2e9;
   position: relative;

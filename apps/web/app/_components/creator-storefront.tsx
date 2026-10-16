@@ -614,6 +614,7 @@ export function CreatorStorefrontView({
         data-mobile-preview={isMobilePreview}
         data-template={previewTheme.templateId ?? 'classic'}
         data-header-style={previewTheme.headerStyle ?? 'classic'}
+        data-label-frame={previewTheme.labelsFrame ?? true}
         data-heading-font={previewTheme.headingFont ?? 'display'}
         data-body-font={previewTheme.bodyFont ?? 'aptos'}
         data-bio-align={previewTheme.bioAlign ?? 'center'}

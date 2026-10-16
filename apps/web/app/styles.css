@@ -10416,37 +10416,22 @@ dt {
 }
 .storefrontTemplateSwatch-forest-glass {
   background:
-    radial-gradient(circle at 20% 30%, rgb(165 218 184 / 35%), transparent 34%),
+    url('/images/storefront/organic-waves.svg') center / 42px 52px repeat,
     linear-gradient(135deg, #123f3b, #1d6258 48%, #0a2d2d);
 }
 .storefrontTemplateSwatch-aurora-veil {
   background:
-    repeating-radial-gradient(
-      ellipse at 8% 50%,
-      transparent 0 8px,
-      #c9abe5 9px 10px,
-      transparent 11px 18px
-    ),
+    url('/images/storefront/organic-waves.svg') center / 42px 52px repeat,
     linear-gradient(140deg, #281a34, #654d79);
 }
 .storefrontTemplateSwatch-desert-rose {
   background:
-    repeating-radial-gradient(
-      ellipse at 85% 12%,
-      transparent 0 8px,
-      #e6a082 9px 10px,
-      transparent 11px 19px
-    ),
+    url('/images/storefront/organic-waves.svg') center / 42px 52px repeat,
     linear-gradient(140deg, #643a32, #b86c53);
 }
 .storefrontTemplateSwatch-glacier-current {
   background:
-    repeating-radial-gradient(
-      ellipse at 15% 75%,
-      transparent 0 8px,
-      #76b5c4 9px 10px,
-      transparent 11px 18px
-    ),
+    url('/images/storefront/organic-waves.svg') center / 42px 52px repeat,
     linear-gradient(140deg, #102f43, #28627a);
 }
 .storefrontTemplateCard > span:last-child {
@@ -10486,12 +10471,6 @@ dt {
   background-image:
     radial-gradient(ellipse at 18% 12%, rgb(155 211 182 / 22%) 0 18%, transparent 48%),
     radial-gradient(ellipse at 84% 78%, rgb(7 48 47 / 58%) 0 17%, transparent 56%),
-    repeating-radial-gradient(
-      ellipse at 40% 38%,
-      transparent 0 32px,
-      rgb(202 232 209 / 8%) 33px 35px,
-      transparent 36px 74px
-    ),
     linear-gradient(140deg, #0c302f 0%, #16534b 48%, #0b302f 100%);
   background-attachment: fixed;
 }
@@ -15956,31 +15935,13 @@ dt {
   position: relative;
 }
 .creatorStorefrontCanvas[data-template='forest-glass']::before {
-  background:
-    radial-gradient(
-      circle at 50% 18%,
-      transparent 0 94px,
-      rgb(210 237 213 / 10%) 95px 97px,
-      transparent 98px 154px,
-      rgb(210 237 213 / 7%) 155px 157px,
-      transparent 158px 226px,
-      rgb(210 237 213 / 5%) 227px 229px,
-      transparent 230px
-    ),
-    radial-gradient(
-      circle at 4% 84%,
-      transparent 0 112px,
-      rgb(79 155 137 / 11%) 113px 115px,
-      transparent 116px 180px,
-      rgb(79 155 137 / 7%) 181px 183px,
-      transparent 184px
-    );
+  background: url('/images/storefront/organic-waves.svg') center top / 420px 520px repeat;
   content: '';
   inset: -22%;
   opacity: 0.78;
   pointer-events: none;
   position: absolute;
-  transform: scale(1.02);
+  transform: none;
   z-index: 0;
 }
 .creatorStorefrontCanvas[data-template='forest-glass']::after {
@@ -16078,6 +16039,75 @@ dt {
   .referenceStorefrontHero {
   background-color: transparent;
   background-image: none;
+}
+
+/* Store filters can be framed on every theme, including Classic, or left as
+   a simple text rail. */
+.creatorStorefrontCanvas[data-label-frame='true'] .referenceStorefrontLabels {
+  background: color-mix(in srgb, var(--sf-page) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sf-text) 24%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 7%);
+  padding: 5px;
+}
+.creatorStorefrontCanvas[data-label-frame='false'] .referenceStorefrontLabels {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  padding: 2px 2px 8px;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontHero {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+.creatorStorefrontCanvas .referenceConnectorLink img {
+  filter: brightness(0) saturate(100%);
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceConnectorLink
+  img {
+  filter: brightness(0) invert(1);
+}
+.storefrontFrameToggle {
+  align-items: flex-start;
+  background: #fffdfa;
+  border: 1px solid #e6ddd4;
+  border-radius: 12px;
+  color: #30251f;
+  display: flex;
+  gap: 11px;
+  padding: 12px;
+}
+.storefrontFrameToggle input {
+  accent-color: #b77856;
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+}
+.storefrontFrameToggle > span {
+  display: grid;
+  gap: 4px;
+}
+.storefrontFrameToggle strong {
+  font-size: 0.82rem;
+}
+.storefrontFrameToggle small {
+  color: #766b63;
+  font-size: 0.73rem;
+  line-height: 1.4;
 }
 
 /* Every mixed storefront row uses one shared rhythm, regardless of whether

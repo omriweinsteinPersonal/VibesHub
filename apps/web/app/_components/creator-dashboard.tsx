@@ -17,6 +17,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Clapperboard,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -2118,6 +2119,11 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
+            <Sparkles
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconRecommendations"
+              size={19}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Recommendations</strong>
               <small>Manage brands, items and collections.</small>
@@ -2133,6 +2139,11 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('labels')}
             type="button"
           >
+            <Tag
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconLabels"
+              size={19}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Storefront labels</strong>
               <small>Customize the labels on your page.</small>
@@ -2148,6 +2159,11 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('media')}
             type="button"
           >
+            <Clapperboard
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconMedia"
+              size={19}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Media</strong>
               <small>Add and organize your photos and videos.</small>
@@ -2163,6 +2179,11 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('maps')}
             type="button"
           >
+            <MapPinned
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconMaps"
+              size={19}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Maps</strong>
               <small>Add places and recommendations from Google Maps.</small>
@@ -2178,6 +2199,11 @@ export function CreatorDashboard() {
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
+            <Link2
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconSocial"
+              size={19}
+            />
             <span className="creatorDashboardNavCopy">
               <strong>Social links</strong>
               <small>Connect your platforms in one place.</small>
