@@ -520,7 +520,20 @@ function Recommendations({
     setEditingCollection(undefined);
     setEditingDiscount(undefined);
     setEditingItem(item ?? null);
-    setItemDraft(item ? recommendationDraftFromItem(item) : emptyRecommendationDraft);
+    setItemDraft(
+      item
+        ? {
+            ...recommendationDraftFromItem(item),
+            collectionIds: configuration.curatedSections
+              .filter(
+                (section) =>
+                  section.kind === 'collection' &&
+                  section.recommendationIds.includes(item.id),
+              )
+              .map(({ id }) => id),
+          }
+        : emptyRecommendationDraft,
+    );
   }
 
   function openCollection(
@@ -762,6 +775,26 @@ function Recommendations({
     setItemDraft((current) => ({ ...current, ...patch }));
   }
 
+  function toggleItemCategory(id: string) {
+    setItemDraft((current) => {
+      const categoryIds = current.categoryIds.includes(id)
+        ? current.categoryIds.filter((categoryId) => categoryId !== id)
+        : current.categoryIds.length < 8
+          ? [...current.categoryIds, id]
+          : current.categoryIds;
+      return { ...current, categoryId: categoryIds[0] ?? '', categoryIds };
+    });
+  }
+
+  function toggleItemCollection(id: string) {
+    setItemDraft((current) => ({
+      ...current,
+      collectionIds: current.collectionIds.includes(id)
+        ? current.collectionIds.filter((collectionId) => collectionId !== id)
+        : [...current.collectionIds, id],
+    }));
+  }
+
   async function fetchDetails() {
     const rawUrl = itemDraft.productUrl.trim();
     if (!rawUrl) {
@@ -833,19 +866,35 @@ function Recommendations({
     try {
       const saved = await saveCreatorRecommendation(input, editingItem ?? undefined);
       let savedConfiguration = configuration;
-      if (
-        !editingItem &&
-        !configuration.contentOrder.some(
-          ({ id, kind }) => kind === 'recommendation' && id === saved.id,
-        )
-      ) {
-        const next = {
-          ...configuration,
-          contentOrder: [
-            ...configuration.contentOrder,
-            { id: saved.id, kind: 'recommendation' as const },
-          ],
+      const curatedSections = configuration.curatedSections.map((section) => {
+        if (section.kind !== 'collection') return section;
+        const recommendationIds = section.recommendationIds.filter(
+          (id) => id !== saved.id,
+        );
+        const nextRecommendationIds = itemDraft.collectionIds.includes(section.id)
+          ? [...recommendationIds, saved.id]
+          : recommendationIds;
+        return {
+          ...section,
+          contentItems: nextRecommendationIds.map((id) => ({
+            id,
+            kind: 'recommendation' as const,
+          })),
+          recommendationIds: nextRecommendationIds,
         };
+      });
+      const withoutStandalone = configuration.contentOrder.filter(
+        ({ id, kind }) => !(kind === 'recommendation' && id === saved.id),
+      );
+      const contentOrder = itemDraft.collectionIds.length
+        ? withoutStandalone
+        : [...withoutStandalone, { id: saved.id, kind: 'recommendation' as const }];
+      if (
+        JSON.stringify(curatedSections) !==
+          JSON.stringify(configuration.curatedSections) ||
+        JSON.stringify(contentOrder) !== JSON.stringify(configuration.contentOrder)
+      ) {
+        const next = { ...configuration, contentOrder, curatedSections };
         savedConfiguration = await saveStorefrontConfiguration(
           configuration,
           configurationInput(next),
@@ -1306,20 +1355,33 @@ function Recommendations({
             value={itemDraft.brandName}
           />
           <Text style={styles.fieldLabelStandalone}>Category</Text>
-          <ScrollView
-            contentContainerStyle={styles.choiceRail}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
+          <View style={styles.wrappedChoices}>
             {categories.map((category) => (
               <ChoicePill
                 key={category.id}
                 label={category.name}
-                onPress={() => updateItem({ categoryId: category.id })}
-                selected={itemDraft.categoryId === category.id}
+                onPress={() => toggleItemCategory(category.id)}
+                selected={itemDraft.categoryIds.includes(category.id)}
               />
             ))}
-          </ScrollView>
+          </View>
+          {configuration.curatedSections.some(({ kind }) => kind === 'collection') ? (
+            <>
+              <Text style={styles.fieldLabelStandalone}>Collections (optional)</Text>
+              <View style={styles.wrappedChoices}>
+                {configuration.curatedSections
+                  .filter(({ kind }) => kind === 'collection')
+                  .map((collection) => (
+                    <ChoicePill
+                      key={collection.id}
+                      label={collection.title}
+                      onPress={() => toggleItemCollection(collection.id)}
+                      selected={itemDraft.collectionIds.includes(collection.id)}
+                    />
+                  ))}
+              </View>
+            </>
+          ) : null}
           <Field
             keyboardType="decimal-pad"
             label="Price in ILS (optional)"

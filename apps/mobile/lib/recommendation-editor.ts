@@ -7,6 +7,8 @@ import type {
 export interface RecommendationDraft {
   brandName: string;
   categoryId: string;
+  categoryIds: string[];
+  collectionIds: string[];
   imageAssetId: string;
   imageUrl: string;
   priceIls: string;
@@ -18,6 +20,8 @@ export interface RecommendationDraft {
 export const emptyRecommendationDraft: RecommendationDraft = {
   brandName: '',
   categoryId: '',
+  categoryIds: [],
+  collectionIds: [],
   imageAssetId: '',
   imageUrl: '',
   priceIls: '',
@@ -32,6 +36,8 @@ export function recommendationDraftFromItem(
   return {
     brandName: item.brandName,
     categoryId: item.categoryId,
+    categoryIds: item.categoryIds,
+    collectionIds: [],
     imageAssetId: item.imageAssetId ?? '',
     imageUrl: item.imageAssetId ? '' : item.imageUrl,
     priceIls: item.price.amountMinor ? String(item.price.amountMinor / 100) : '',
@@ -50,6 +56,7 @@ export function recommendationDraftWithMetadata(
     ...draft,
     brandName: metadata.brandName || draft.brandName,
     categoryId: categoryId || draft.categoryId,
+    categoryIds: categoryId ? [categoryId] : draft.categoryIds,
     imageUrl: draft.imageAssetId ? draft.imageUrl : metadata.imageUrl || draft.imageUrl,
     priceIls:
       metadata.priceAmountMinor === null
@@ -67,7 +74,12 @@ export function recommendationInput(
 ): CreatorRecommendationInput {
   const productName = draft.productName.trim();
   const brandName = draft.brandName.trim();
-  const categoryId = draft.categoryId.trim();
+  const categoryIds = draft.categoryIds.length
+    ? draft.categoryIds
+    : draft.categoryId
+      ? [draft.categoryId]
+      : [];
+  const categoryId = categoryIds[0]?.trim() ?? '';
   if (!productName) throw new Error('Add an item name.');
   if (!brandName) throw new Error('Choose or enter a brand.');
   if (!categoryId) throw new Error('Choose a category.');
@@ -82,7 +94,7 @@ export function recommendationInput(
   return {
     brandName,
     categoryId,
-    categoryIds: [categoryId],
+    categoryIds,
     commercialRelationship: 'organic',
     contentKind: 'product',
     imageAssetId: draft.imageAssetId || null,
