@@ -32,6 +32,14 @@ const assets = {
   bowl: '/images/home/bowl.jpg',
   fashionCollection: '/images/home/fashion-collection.jpg',
   kitchenCollection: '/images/home/kitchen-collection.jpg',
+  rotemDress: '/images/home/rotem-dress.png',
+  rotemJeans: '/images/home/rotem-jeans.png',
+  rotemBag: '/images/home/rotem-bag.png',
+  rotemSunglasses: '/images/home/rotem-sunglasses.png',
+  noahBoots: '/images/home/noah-boots.png',
+  noahPack: '/images/home/noah-pack.png',
+  noahTote: '/images/home/noah-tote.png',
+  noahMug: '/images/home/noah-mug.png',
 };
 type Product = { name: string; image: string };
 type BrandRecommendation = {
@@ -77,8 +85,8 @@ const creators: CreatorExample[] = [
         code: 'Rotem20',
         expires: '17/10/2026',
         products: [
-          { name: 'Softline Shoulder Bag', image: assets.bag },
-          { name: 'Daylight Sneakers', image: assets.shoes },
+          { name: 'Softline Dress', image: assets.rotemDress },
+          { name: 'Daylight Denim', image: assets.rotemJeans },
         ],
       },
       {
@@ -87,8 +95,8 @@ const creators: CreatorExample[] = [
         code: 'Morrow15',
         expires: '24/10/2026',
         products: [
-          { name: 'Luna Shoulder Bag', image: assets.bag },
-          { name: 'Canvas Day Tote', image: assets.tote },
+          { name: 'Luna Structured Bag', image: assets.rotemBag },
+          { name: 'Dune Sunglasses', image: assets.rotemSunglasses },
         ],
       },
     ],
@@ -155,8 +163,8 @@ const creators: CreatorExample[] = [
         code: 'Noah25',
         expires: '31/12/2026',
         products: [
-          { name: 'Ridge Hiker', image: assets.shoes },
-          { name: 'Waypoint Pack', image: assets.bag },
+          { name: 'Ridge Hiker', image: assets.noahBoots },
+          { name: 'Waypoint Pack', image: assets.noahPack },
         ],
       },
       {
@@ -165,8 +173,8 @@ const creators: CreatorExample[] = [
         code: 'Summit20',
         expires: '10/01/2027',
         products: [
-          { name: 'Trail Tote', image: assets.tote },
-          { name: 'Camp Cup Set', image: assets.mug },
+          { name: 'Trail Tote', image: assets.noahTote },
+          { name: 'Camp Mug', image: assets.noahMug },
         ],
       },
     ],
@@ -293,6 +301,7 @@ function CreatorMediaPreview({ media }: { media: CreatorMedia }) {
         <Play size={17} fill="currentColor" />
       </span>
       <div className={styles.creatorVideoCopy}>
+        <small className={styles.youtubeBadge}>YouTube</small>
         <strong>{media.title}</strong>
         <small>{media.detail}</small>
       </div>

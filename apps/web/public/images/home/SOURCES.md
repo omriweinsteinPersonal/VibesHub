@@ -17,3 +17,5 @@ License: https://www.pexels.com/license/
 Other product illustrations reuse existing Swavii demo assets. Creator, brand, product, discount, and coupon names in the homepage showcase are fictional demo content, not endorsements or trademark-clearance claims.
 
 - noah-trail-demo.png: AI-generated fictional creator portrait for homepage demo use; no real person or brand depicted.
+- rotem-dress.png, rotem-jeans.png, rotem-bag.png, rotem-sunglasses.png: AI-generated fictional, unbranded product demo images.
+- noah-boots.png, noah-pack.png, noah-tote.png, noah-mug.png: AI-generated fictional, unbranded outdoor product demo images.
