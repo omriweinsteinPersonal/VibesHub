@@ -85,6 +85,21 @@ const storefrontTemplates: readonly {
     id: 'forest-glass',
     title: 'Forest Glass',
   },
+  {
+    colors: { recommendationsBackground: '#281a34' },
+    id: 'aurora-veil',
+    title: 'Aurora Veil',
+  },
+  {
+    colors: { recommendationsBackground: '#643a32' },
+    id: 'desert-rose',
+    title: 'Desert Rose',
+  },
+  {
+    colors: { recommendationsBackground: '#102f43' },
+    id: 'glacier-current',
+    title: 'Glacier Current',
+  },
 ];
 
 export default function CreatorStudioScreen() {
