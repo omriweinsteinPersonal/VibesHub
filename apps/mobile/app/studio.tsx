@@ -75,33 +75,6 @@ const storefrontTemplates: readonly {
     id: 'clay-editorial',
     title: 'Clay Editorial',
   },
-  {
-    colors: {
-      accentColor: '#d6e8d1',
-      collectionBackground: '#f4efe3',
-      discountBackground: '#f4efe3',
-      productBackground: '#f4efe3',
-      recommendationsBackground: '#123f3b',
-      textColor: '#173c38',
-    },
-    id: 'forest-glass',
-    title: 'Forest Glass',
-  },
-  {
-    colors: { recommendationsBackground: '#281a34' },
-    id: 'aurora-veil',
-    title: 'Aurora Veil',
-  },
-  {
-    colors: { recommendationsBackground: '#643a32' },
-    id: 'desert-rose',
-    title: 'Desert Rose',
-  },
-  {
-    colors: { recommendationsBackground: '#102f43' },
-    id: 'glacier-current',
-    title: 'Glacier Current',
-  },
 ];
 
 export default function CreatorStudioScreen() {
