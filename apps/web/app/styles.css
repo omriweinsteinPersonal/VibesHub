@@ -16064,11 +16064,11 @@ dt {
     linear-gradient(158deg, #0e2e42 0%, #16445a 46%, #092638 100%);
 }
 .creatorStorefrontCanvas:is(
-    [data-template='forest-glass'],
-    [data-template='aurora-veil'],
-    [data-template='desert-rose'],
-    [data-template='glacier-current']
-  ) {
+  [data-template='forest-glass'],
+  [data-template='aurora-veil'],
+  [data-template='desert-rose'],
+  [data-template='glacier-current']
+) {
   position: relative;
 }
 .creatorStorefrontCanvas:is(
@@ -16171,7 +16171,8 @@ dt {
     [data-template='desert-rose'],
     [data-template='glacier-current']
   )
-  .referenceStorefrontName h1,
+  .referenceStorefrontName
+  h1,
 .creatorStorefrontCanvas:is(
     [data-template='forest-glass'],
     [data-template='aurora-veil'],
