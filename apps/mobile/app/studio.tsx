@@ -2140,11 +2140,24 @@ function ProfileEditor({
   const [displayName, setDisplayName] = useState(bundle.profile.displayName);
   const [handle, setHandle] = useState(bundle.profile.handle);
   const [bio, setBio] = useState(bundle.profile.bioHe);
-  const [instagram, setInstagram] = useState(
-    linkFor(bundle.profile.socialLinks, 'instagram'),
+  const [avatarAssetId, setAvatarAssetId] = useState(
+    bundle.profile.avatar?.assetId ?? '',
   );
-  const [website, setWebsite] = useState(linkFor(bundle.profile.socialLinks, 'website'));
+  const [avatarUrl, setAvatarUrl] = useState(bundle.profile.avatar?.url ?? '');
+  const [primaryCategoryId, setPrimaryCategoryId] = useState(
+    bundle.profile.primaryCategory?.id ?? bundle.categories[0]?.id ?? '',
+  );
+  const [socialValues, setSocialValues] = useState(
+    () =>
+      Object.fromEntries(
+        profileSocialFields.map(({ platform }) => [
+          platform,
+          linkFor(bundle.profile.socialLinks, platform),
+        ]),
+      ) as Record<CreatorProfileSocialLink['platform'], string>,
+  );
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [handleResult, setHandleResult] = useState<{
     handle: string;
     status: 'available' | 'unavailable' | 'idle';
@@ -2198,20 +2211,18 @@ function ProfileEditor({
     setSaving(true);
     onError('');
     try {
-      const otherLinks = bundle.profile.socialLinks.filter(
-        ({ platform }) => platform !== 'instagram' && platform !== 'website',
+      const socialLinks: CreatorProfileSocialLink[] = profileSocialFields.flatMap(
+        ({ platform }) => {
+          const value = socialValues[platform].trim();
+          return value ? [{ platform, url: normalizeUrl(value) }] : [];
+        },
       );
-      const socialLinks: CreatorProfileSocialLink[] = [...otherLinks];
-      if (instagram.trim()) {
-        socialLinks.push({ platform: 'instagram', url: normalizeUrl(instagram) });
-      }
-      if (website.trim()) {
-        socialLinks.push({ platform: 'website', url: normalizeUrl(website) });
-      }
       const profile = await updateCreatorProfile(bundle.profile, {
+        avatarAssetId: avatarAssetId || null,
         bioHe: bio,
         displayName: displayName.trim(),
         handle: handle.trim(),
+        ...(primaryCategoryId ? { primaryCategoryId } : {}),
         socialLinks,
       });
       onBundle((current) =>
@@ -2221,6 +2232,7 @@ function ProfileEditor({
               profile,
               summary: {
                 ...current.summary,
+                avatarUrl: profile.avatar?.url ?? null,
                 displayName: profile.displayName,
                 handle: profile.handle,
               },
@@ -2236,12 +2248,71 @@ function ProfileEditor({
     }
   }
 
+  async function chooseAvatar() {
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose a profile image.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      mediaTypes: ['images'],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    if (!asset) return;
+    setUploadingAvatar(true);
+    try {
+      const uploaded = await uploadCreatorImage({
+        fileSize: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        uri: asset.uri,
+      });
+      setAvatarAssetId(uploaded.id);
+      setAvatarUrl(uploaded.publicUrl);
+      onNotice('Profile image uploaded. Save your profile to publish it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / ACCOUNT</Text>
       <Text style={styles.title}>Profile & links</Text>
       <Text style={styles.lede}>These details appear at the top of your storefront.</Text>
       <View style={styles.editorCard}>
+        <View style={styles.avatarEditorRow}>
+          {avatarUrl ? (
+            <Image
+              accessibilityLabel="Profile image preview"
+              source={{ uri: avatarUrl }}
+              style={styles.avatarPreview}
+            />
+          ) : (
+            <View style={[styles.avatarPreview, styles.avatarPlaceholder]}>
+              <Text style={styles.avatarPlaceholderText}>
+                {displayName.trim().slice(0, 1).toUpperCase() || 'S'}
+              </Text>
+            </View>
+          )}
+          <Pressable
+            disabled={uploadingAvatar}
+            onPress={() => void chooseAvatar()}
+            style={styles.avatarButton}
+          >
+            {uploadingAvatar ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.fetchButtonText}>Choose profile image</Text>
+            )}
+          </Pressable>
+        </View>
         <Field label="Display name" onChangeText={setDisplayName} value={displayName} />
         <Field
           autoCapitalize="none"
@@ -2252,20 +2323,34 @@ function ProfileEditor({
         />
         <Text style={styles.cardMeta}>{handleStatusMessage(handleStatus)}</Text>
         <Field label="Bio" multiline onChangeText={setBio} value={bio} />
-        <Field
-          autoCapitalize="none"
-          keyboardType="url"
-          label="Instagram"
-          onChangeText={setInstagram}
-          value={instagram}
-        />
-        <Field
-          autoCapitalize="none"
-          keyboardType="url"
-          label="Website"
-          onChangeText={setWebsite}
-          value={website}
-        />
+        <Text style={styles.fieldLabelStandalone}>Primary category</Text>
+        <ScrollView
+          contentContainerStyle={styles.choiceRail}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {bundle.categories.map((category) => (
+            <ChoicePill
+              key={category.id}
+              label={category.name}
+              onPress={() => setPrimaryCategoryId(category.id)}
+              selected={primaryCategoryId === category.id}
+            />
+          ))}
+        </ScrollView>
+        <Text style={styles.sectionTitle}>Social links</Text>
+        {profileSocialFields.map(({ label, platform }) => (
+          <Field
+            autoCapitalize="none"
+            key={platform}
+            keyboardType="url"
+            label={label}
+            onChangeText={(value) =>
+              setSocialValues((current) => ({ ...current, [platform]: value }))
+            }
+            value={socialValues[platform]}
+          />
+        ))}
         <Pressable
           disabled={saving || handleStatus !== 'available'}
           onPress={() => void save()}
@@ -2294,6 +2379,22 @@ function ProfileEditor({
     </>
   );
 }
+
+const profileSocialFields: readonly {
+  label: string;
+  platform: CreatorProfileSocialLink['platform'];
+}[] = [
+  { label: 'Instagram', platform: 'instagram' },
+  { label: 'TikTok', platform: 'tiktok' },
+  { label: 'YouTube', platform: 'youtube' },
+  { label: 'Facebook', platform: 'facebook' },
+  { label: 'LinkedIn', platform: 'linkedin' },
+  { label: 'X', platform: 'x' },
+  { label: 'Pinterest', platform: 'pinterest' },
+  { label: 'Spotify', platform: 'spotify' },
+  { label: 'Apple Music', platform: 'apple_music' },
+  { label: 'Website', platform: 'website' },
+];
 
 function handleStatusMessage(status: CreatorHandleStatus): string {
   if (status === 'checking') return 'Checking availability…';
@@ -2499,6 +2600,29 @@ const styles = StyleSheet.create({
     height: 180,
     marginTop: spacing.sm,
     width: '100%',
+  },
+  avatarEditorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
+  avatarPreview: { borderRadius: 44, height: 88, width: 88 },
+  avatarPlaceholder: {
+    alignItems: 'center',
+    backgroundColor: '#efe5d9',
+    justifyContent: 'center',
+  },
+  avatarPlaceholderText: {
+    color: colors.accent,
+    fontFamily: 'Georgia',
+    fontSize: 36,
+    fontWeight: '700',
+  },
+  avatarButton: {
+    alignItems: 'center',
+    borderColor: colors.accent,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 46,
+    paddingHorizontal: spacing.md,
   },
   fieldLabelStandalone: {
     color: colors.ink,
