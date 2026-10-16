@@ -9850,6 +9850,35 @@ dt {
 .creatorStorefrontCanvas[data-mobile-preview='true'] {
   min-height: 100vh;
 }
+
+/* Public creator pages stay phone-sized on desktop, matching the real visitor experience. */
+@media (min-width: 901px) {
+  body:has(.storefrontPage:not(:has(.storefrontDesignWorkspace))) {
+    background: #f2eee9;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) {
+    width: min(430px, calc(100vw - 48px));
+    min-height: 100dvh;
+    margin: 24px auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+    border: 1px solid #d9d1c8;
+    border-radius: 34px;
+    background: #fffdfa;
+    box-shadow:
+      0 26px 70px rgb(54 43 35 / 16%),
+      0 0 0 8px rgb(255 255 255 / 78%);
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) > main {
+    min-height: calc(100dvh - 48px);
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .creatorStorefrontCanvas {
+    min-height: calc(100dvh - 48px);
+  }
+}
 .creatorStorefrontCanvas[data-template='editorial-frame'] {
   background: #17204a;
   isolation: isolate;

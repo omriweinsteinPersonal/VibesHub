@@ -149,7 +149,7 @@ export default function HomePage() {
             </article>
             <article className={`${styles.contentBlock} ${styles.socialBlock}`}>
               <div className={styles.featureSocialPreview} aria-hidden="true">
-                {['instagram', 'tiktok', 'youtube'].map((name) => (
+                {['instagram', 'tiktok', 'youtube', 'spotify'].map((name) => (
                   <span key={name}>
                     <Image
                       src={`/connectors/${name}.svg`}
@@ -159,7 +159,6 @@ export default function HomePage() {
                     />
                   </span>
                 ))}
-                <span className={styles.socialPlus}>+</span>
               </div>
               <div className={styles.featureCopy}>
                 <h3>Social links</h3>
@@ -175,6 +174,7 @@ export default function HomePage() {
                   width={62}
                   height={52}
                 />
+                <Image src="/images/home/noah-boots.png" alt="" width={55} height={48} />
               </div>
               <div className={styles.featureCopy}>
                 <h3>Collection</h3>

@@ -4083,6 +4083,20 @@
   background: #fff;
   color: #55705a;
 }
+.featureMediaPreview::after {
+  content: 'IG  ·  TikTok  ·  ▶';
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 2;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: #1d2d2aD9;
+  color: #fff;
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
 .socialBlock {
   background: #f4f5f7;
 }
@@ -4138,6 +4152,17 @@
   height: 60px !important;
   border: 3px solid #fff;
   border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 7px 12px #4a355d25;
+}
+.featureCollectionPreview > img:nth-child(3) {
+  position: absolute !important;
+  right: 5px;
+  bottom: 8px;
+  width: 45px !important;
+  height: 42px !important;
+  border: 3px solid #fff;
+  border-radius: 9px;
   object-fit: cover;
   box-shadow: 0 7px 12px #4a355d25;
 }
@@ -4317,9 +4342,44 @@
     width: 50% !important;
     height: 55px !important;
   }
+  .featureCollectionPreview > img:nth-child(3) {
+    right: 4px;
+    bottom: 5px;
+    width: 33% !important;
+    height: 43px !important;
+  }
   .featureDesignPreview > span {
     right: 5px;
     bottom: 5px;
     left: 5px;
+  }
+}
+
+/* Keep the desktop previews compact while preserving the full mobile composition. */
+@media (min-width: 761px) {
+  .creatorRail {
+    align-items: flex-start;
+  }
+  .creatorRail > .creatorCard {
+    height: auto;
+    min-height: 0;
+  }
+  .creatorRail > .creatorCard .cover {
+    height: 142px;
+  }
+  .creatorRail > .creatorCard .cardFeed {
+    gap: 8px;
+    padding-top: 10px;
+  }
+  .creatorRail > .creatorCard .creatorVideoPreview {
+    height: 108px;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
+    flex: initial;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
+    min-height: 118px;
+    height: auto;
+    flex: none;
   }
 }
