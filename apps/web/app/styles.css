@@ -9901,6 +9901,33 @@ dt {
   .storefrontPage:not(:has(.storefrontDesignWorkspace)) .creatorStorefrontCanvas {
     min-height: 100%;
   }
+
+  /* Match the creator Storefront proportions inside the public phone frame. */
+  .storefrontPage:not(:has(.storefrontDesignWorkspace))
+    .referenceStorefrontProducts,
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontCodes {
+    padding-inline: 14px;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontName {
+    width: 100%;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontName h1 {
+    font-size: clamp(1.65rem, 7vw, 2.35rem);
+    white-space: nowrap;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceBrandShelf {
+    grid-auto-columns: minmax(0, calc((100% - 12px) / 2));
+    overflow-x: visible;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace))
+    .referenceBrandShelf
+    .compactProductCard {
+    width: 100%;
+  }
 }
 .creatorStorefrontCanvas[data-template='editorial-frame'] {
   background: #17204a;
