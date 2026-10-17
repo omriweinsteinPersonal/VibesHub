@@ -12515,6 +12515,161 @@ dt {
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
+/* Legal pages share the same warm brand frame as the homepage. */
+.legalPage {
+  background: #fff;
+  color: var(--vh-ink);
+}
+
+.legalPage .creatorMarketingHeader {
+  background: #cd7853;
+  border-bottom: 0;
+  color: #fff;
+}
+
+.legalPage .creatorMarketingHeader .siteHeaderInner {
+  max-width: none;
+  padding-inline: max(5.2vw, calc((100vw - 1480px) / 2));
+}
+
+.legalPage .creatorMarketingHeader .logoWordmarkHome {
+  display: block;
+  height: 43px;
+  overflow: hidden;
+  position: relative;
+  width: 117px;
+}
+
+.legalPage .creatorMarketingHeader .logoWordmarkHome img {
+  display: block;
+  height: auto;
+  left: 50%;
+  max-width: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 154px;
+}
+
+.legalPage .creatorMarketingHeader nav a,
+.legalPage .creatorMarketingHeader .loginLink {
+  color: #fff;
+}
+
+.legalPage .creatorMarketingHeader nav a:hover,
+.legalPage .creatorMarketingHeader nav a:focus-visible,
+.legalPage .creatorMarketingHeader .loginLink:hover,
+.legalPage .creatorMarketingHeader .loginLink:focus-visible {
+  color: #fff3ed;
+}
+
+.legalPage .creatorMarketingHeader .loginLink {
+  border: 1px solid rgb(255 255 255 / 66%);
+  border-radius: 9px;
+  padding: 9px 15px;
+}
+
+.legalPage .creatorMarketingMobileNav {
+  display: none;
+}
+
+.legalPage .legalMain {
+  max-width: 100%;
+  padding: 0 32px 72px;
+}
+
+.legalPage .legalHero {
+  border-bottom: 0;
+  margin: 0 auto 56px;
+  max-width: 1216px;
+  padding: 88px 0 52px;
+  position: relative;
+}
+
+.legalPage .legalHero::after {
+  background: #cd7853;
+  bottom: 0;
+  content: '';
+  height: 4px;
+  left: 0;
+  position: absolute;
+  width: 76px;
+}
+
+.legalPage .legalHero h1 {
+  color: var(--vh-ink);
+  font-size: clamp(3.4rem, 6vw, 5.7rem);
+  letter-spacing: -0.06em;
+  margin: 18px 0 24px;
+}
+
+.legalPage .legalSummary {
+  color: var(--vh-muted);
+  font-size: 1.08rem;
+  max-width: 680px;
+}
+
+.legalPage .legalContent {
+  gap: 0;
+  margin: 0 auto;
+  max-width: 920px;
+}
+
+.legalPage .legalContent section {
+  border-bottom: 1px solid var(--vh-border);
+  padding: 34px 0;
+}
+
+.legalPage .legalContent section:first-child {
+  border: 1px solid #e7c4b4;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  padding: 26px 28px;
+  background: #fff6f1;
+}
+
+.legalPage .legalContent h2 {
+  font-size: clamp(1.55rem, 2.5vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.legalPage .legalContent a {
+  color: #a65336;
+  text-decoration-color: #e7b4a0;
+}
+
+.legalPage .legalContent a:hover {
+  color: #7f3c28;
+}
+
+@media (max-width: 900px) {
+  .legalPage .legalMain {
+    padding-inline: 20px;
+  }
+
+  .legalPage .creatorMarketingHeader .siteHeaderInner {
+    padding-inline: 20px;
+  }
+
+  .legalPage .legalHero {
+    padding: 56px 0 40px;
+  }
+}
+
+@media (max-width: 520px) {
+  .legalPage .legalHero h1 {
+    font-size: clamp(3rem, 16vw, 4.3rem);
+  }
+
+  .legalPage .legalContent section:first-child {
+    padding: 22px 20px;
+  }
+
+  .legalPage .legalContent section {
+    padding: 28px 0;
+  }
+}
+
 @media (max-width: 900px) {
   .creatorHero {
     grid-template-columns: 1fr;

@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="editorialPage">
-      <SiteHeader />
+    <div className="editorialPage legalPage">
+      <SiteHeader homeLogo />
       <main className="legalMain">
         <header className="legalHero">
           <p className="eyebrow">LEGAL</p>
