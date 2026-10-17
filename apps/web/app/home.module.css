@@ -2666,39 +2666,36 @@
     height: 85px;
   }
   .instagram > a {
+    right: 20px;
+    bottom: 22px;
     left: 20px;
-    right: auto;
-    bottom: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    line-height: 1.35;
   }
   .footer {
-    display: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 28px 20px 32px;
+    text-align: center;
+  }
+  .footer .wordmark {
+    margin-inline: auto;
+  }
+  .footer nav {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    font-size: 12px;
+  }
+  .footer small {
+    font-size: 11px;
   }
   .mobileFooter {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    position: fixed;
-    z-index: 60;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    min-height: calc(66px + env(safe-area-inset-bottom));
-    padding: 5px 4px env(safe-area-inset-bottom);
-    border-top: 1px solid #e4e1dd;
-    background: #fff;
-    box-shadow: 0 -5px 20px #1717170d;
-  }
-  .mobileFooter a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-height: 56px;
-    font-size: 10px;
-    color: #454545;
-  }
-  .mobileFooter a[aria-current] {
-    color: #bd5835;
+    display: none;
   }
 }
 
@@ -3955,6 +3952,12 @@
   border-radius: 0 0 3px 3px;
   background: #ca7953;
 }
+.heroAccent {
+  color: #ca7953;
+}
+.creatorRail > .creatorCard::before {
+  display: none;
+}
 @media (max-width: 1100px) {
   .contentTypes {
     width: 100%;
@@ -4083,8 +4086,12 @@
   background: #fff;
   color: #55705a;
 }
+.featureMediaPreview > span {
+  background: #ff0033;
+  color: #fff;
+}
 .featureMediaPreview::after {
-  content: 'IG  ·  TikTok  ·  ▶';
+  content: 'YOUTUBE  ·  08:42';
   position: absolute;
   right: 6px;
   bottom: 6px;
@@ -4123,6 +4130,13 @@
   width: 17px;
   height: 17px;
 }
+.featureSocialPreview span:first-child {
+  border-color: transparent;
+  background: linear-gradient(135deg, #f9ce34 0%, #ee2a7b 56%, #6228d7 100%);
+}
+.featureSocialPreview span:first-child img {
+  filter: brightness(0) invert(1);
+}
 .featureSocialPreview .socialPlus {
   color: #66819a;
   font-size: 20px;
@@ -4137,19 +4151,22 @@
 }
 .featureCollectionPreview > img:first-child {
   position: absolute !important;
-  inset: 9px 0 0 8px;
-  width: 88px !important;
-  height: 88px !important;
+  top: 18px;
+  left: 9px;
+  width: 48px !important;
+  height: 64px !important;
+  border: 3px solid #fff;
   border-radius: 10px;
   object-fit: cover;
-  opacity: 0.52;
+  opacity: 1;
+  box-shadow: 0 7px 12px #4a355d25;
 }
 .featureCollectionPreview > img:nth-child(2) {
   position: absolute !important;
-  top: 18px;
-  left: 21px;
-  width: 62px !important;
-  height: 60px !important;
+  top: 9px;
+  left: 29px;
+  width: 48px !important;
+  height: 64px !important;
   border: 3px solid #fff;
   border-radius: 10px;
   object-fit: cover;
@@ -4157,10 +4174,10 @@
 }
 .featureCollectionPreview > img:nth-child(3) {
   position: absolute !important;
-  right: 5px;
-  bottom: 8px;
-  width: 45px !important;
-  height: 42px !important;
+  right: 8px;
+  bottom: 13px;
+  width: 48px !important;
+  height: 64px !important;
   border: 3px solid #fff;
   border-radius: 9px;
   object-fit: cover;
@@ -4218,6 +4235,20 @@
 .featureDesignPreview > span b:nth-child(3) {
   background: #dca17c;
 }
+.featureDesignPreview::after {
+  content: 'PERSONAL LOOK';
+  position: absolute;
+  top: 25px;
+  left: 7px;
+  z-index: 2;
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: #fffdf8dd;
+  color: #5e544c;
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
 .mapsBlock {
   background: #eef7f2;
 }
@@ -4259,7 +4290,38 @@
   stroke: #fff;
   stroke-width: 1.4;
 }
+.featureMapPreview b {
+  position: absolute;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: #e47f56;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 4px #3d6b5b33;
+}
+.featureMapPreview b:nth-of-type(1) {
+  top: 27px;
+  left: 23px;
+}
+.featureMapPreview b:nth-of-type(2) {
+  top: 61px;
+  left: 70px;
+}
+.featureMapPreview b:nth-of-type(3) {
+  top: 43px;
+  left: 82px;
+  background: #28735d;
+}
 @media (max-width: 760px) {
+  .creatorRail > .creatorCard {
+    border: 6px solid #202827;
+    border-radius: 27px;
+    box-shadow:
+      0 14px 28px #2028272e,
+      inset 0 0 0 1px #ffffff33;
+  }
   .contentHeading {
     display: block;
     margin-bottom: 18px;
@@ -4332,21 +4394,22 @@
     font-size: 16px;
   }
   .featureCollectionPreview > img:first-child {
-    inset: 6px 0 0 10px;
-    width: calc(100% - 16px) !important;
-    height: calc(100% - 8px) !important;
+    top: 12px;
+    left: 8%;
+    width: 38% !important;
+    height: 56px !important;
   }
   .featureCollectionPreview > img:nth-child(2) {
-    top: 11px;
-    left: 26%;
-    width: 50% !important;
+    top: 7px;
+    left: 31%;
+    width: 38% !important;
     height: 55px !important;
   }
   .featureCollectionPreview > img:nth-child(3) {
-    right: 4px;
-    bottom: 5px;
-    width: 33% !important;
-    height: 43px !important;
+    right: 7%;
+    bottom: 8px;
+    width: 38% !important;
+    height: 52px !important;
   }
   .featureDesignPreview > span {
     right: 5px;
@@ -4361,18 +4424,31 @@
     align-items: flex-start;
   }
   .creatorRail > .creatorCard {
-    height: auto;
+    height: 700px;
+    max-height: 700px;
     min-height: 0;
+    overflow: hidden;
+    border: 8px solid #202827;
+    border-radius: 30px;
+    box-shadow:
+      0 18px 34px #2028272e,
+      inset 0 0 0 1px #ffffff33;
+  }
+  .creatorRail > .creatorCard::before {
+    display: none;
   }
   .creatorRail > .creatorCard .cover {
-    height: 142px;
+    height: 136px;
   }
   .creatorRail > .creatorCard .cardFeed {
-    gap: 8px;
+    gap: 7px;
     padding-top: 10px;
   }
   .creatorRail > .creatorCard .creatorVideoPreview {
-    height: 108px;
+    height: 102px;
+  }
+  .creatorRail > .creatorCard .mapArtwork {
+    height: 68px;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
     flex: initial;

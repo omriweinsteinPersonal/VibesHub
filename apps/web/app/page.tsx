@@ -78,7 +78,10 @@ export default function HomePage() {
               <br />
               curated in one place.
             </h1>
-            <p>One link-in-bio for everything you want to share.</p>
+            <p>
+              One <span className={styles.heroAccent}>link-in-bio</span> for everything you
+              want to share.
+            </p>
             <form action="/auth" className={styles.signup}>
               <input type="hidden" name="mode" value="signup" />
               <label className={styles.srOnly} htmlFor="creator-name">
@@ -205,6 +208,9 @@ export default function HomePage() {
                 <i />
                 <i />
                 <i />
+                <b />
+                <b />
+                <b />
                 <MapPinned size={27} />
               </div>
               <div className={styles.featureCopy}>
