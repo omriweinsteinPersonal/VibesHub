@@ -519,6 +519,18 @@ function Recommendations({
   const [discountLabel, setDiscountLabel] = useState('');
   const [discountMerchantUrl, setDiscountMerchantUrl] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
+  const [discountAmount, setDiscountAmount] = useState('');
+  const [discountType, setDiscountType] = useState<'amount' | 'percent'>('percent');
+  const [discountOfferType, setDiscountOfferType] = useState<
+    'brand_promotion' | 'creator_code'
+  >('creator_code');
+  const [discountPriority, setDiscountPriority] = useState('0');
+  const [discountRecurrence, setDiscountRecurrence] = useState<'month_end_week' | 'none'>(
+    'none',
+  );
+  const [discountScopeTarget, setDiscountScopeTarget] = useState('brand');
+  const [discountStackable, setDiscountStackable] = useState(false);
+  const [discountStartsAt, setDiscountStartsAt] = useState('');
 
   function openBrand(brand?: CreatorBrand) {
     setEditingItem(undefined);
@@ -587,22 +599,55 @@ function Recommendations({
     setDiscountLabel(discount?.label ?? '');
     setDiscountMerchantUrl(discount?.merchantUrl ?? '');
     setDiscountPercent(discount?.discountPercent ? String(discount.discountPercent) : '');
+    setDiscountAmount(
+      discount?.discountAmountMinor ? String(discount.discountAmountMinor / 100) : '',
+    );
+    setDiscountType(discount?.discountAmountMinor ? 'amount' : 'percent');
+    setDiscountOfferType(discount?.offerType ?? 'creator_code');
+    setDiscountPriority(String(discount?.priority ?? 0));
+    setDiscountRecurrence(discount?.recurrenceRule ?? 'none');
+    setDiscountScopeTarget(
+      discount && discount.scopeKind !== 'brand' && discount.scopeId
+        ? `${discount.scopeKind}:${discount.scopeId}`
+        : 'brand',
+    );
+    setDiscountStackable(discount?.stackable ?? false);
+    setDiscountStartsAt(discount?.startsAt?.slice(0, 10) ?? '');
   }
 
   async function persistDiscount() {
     const code = discountCode.trim();
     const merchantUrl = discountMerchantUrl.trim();
     const percent = Number(discountPercent);
-    if (!code) {
-      onError('Add the discount code.');
-      return;
-    }
+    const amount = Number(discountAmount);
+    const priority = Number(discountPriority);
     if (!merchantUrl) {
       onError('Add the merchant website.');
       return;
     }
-    if (!Number.isInteger(percent) || percent < 1 || percent > 100) {
+    if (
+      discountType === 'percent' &&
+      (!Number.isInteger(percent) || percent < 1 || percent > 100)
+    ) {
       onError('Enter a whole-number discount from 1 to 100%.');
+      return;
+    }
+    if (
+      discountType === 'amount' &&
+      (!Number.isFinite(amount) || amount < 0.01 || !Number.isInteger(amount * 100))
+    ) {
+      onError('Enter a valid fixed amount in ILS, for example 25 or 25.50.');
+      return;
+    }
+    if (!Number.isInteger(priority) || priority < -1000 || priority > 1000) {
+      onError('Priority must be a whole number from -1000 to 1000.');
+      return;
+    }
+    const [scopeKind, scopeId = null] = discountScopeTarget.includes(':')
+      ? discountScopeTarget.split(':')
+      : ['brand', discountBrandId];
+    if (!['brand', 'collection', 'item'].includes(scopeKind)) {
+      onError('Choose where this discount applies.');
       return;
     }
     setBusyId(editingDiscount?.id ?? 'new-discount');
@@ -612,23 +657,28 @@ function Recommendations({
       let saved = await saveCreatorDiscount(
         {
           brandId: discountBrandId,
-          code,
+          code: code || null,
           detailsHe: discountDetails.trim() || null,
-          discountAmountMinor: null,
-          discountPercent: percent,
+          discountAmountMinor:
+            discountType === 'amount' ? Math.round(amount * 100) : null,
+          discountPercent: discountType === 'percent' ? percent : null,
           expiresAt: discountExpiresAt
             ? new Date(`${discountExpiresAt}T23:59:59.000Z`).toISOString()
             : null,
-          label: discountLabel.trim() || `${percent}% off`,
+          label:
+            discountLabel.trim() ||
+            (discountType === 'amount' ? `₪${discountAmount} off` : `${percent}% off`),
           merchantUrl: normalizeUrl(merchantUrl),
-          offerType: 'creator_code',
-          priority: editingDiscount?.priority ?? 0,
-          recurrenceRule: 'none',
-          scopeId: discountBrandId,
-          scopeKind: 'brand',
+          offerType: discountOfferType,
+          priority,
+          recurrenceRule: discountRecurrence,
+          scopeId,
+          scopeKind: scopeKind as 'brand' | 'collection' | 'item',
           source: 'manual',
-          stackable: editingDiscount?.stackable ?? false,
-          startsAt: editingDiscount?.startsAt ?? null,
+          stackable: discountStackable,
+          startsAt: discountStartsAt
+            ? new Date(`${discountStartsAt}T00:00:00.000Z`).toISOString()
+            : null,
           storyClips: [],
         },
         editingDiscount ?? undefined,
@@ -1368,13 +1418,80 @@ function Recommendations({
               />
             ))}
           </ScrollView>
-          <Field label="Code" onChangeText={setDiscountCode} value={discountCode} />
+          <Text style={styles.fieldLabelStandalone}>Offer type</Text>
+          <View style={styles.inlineChoices}>
+            <ChoicePill
+              label="Creator discount"
+              onPress={() => setDiscountOfferType('creator_code')}
+              selected={discountOfferType === 'creator_code'}
+            />
+            <ChoicePill
+              label="Brand promotion"
+              onPress={() => setDiscountOfferType('brand_promotion')}
+              selected={discountOfferType === 'brand_promotion'}
+            />
+          </View>
+          <Text style={styles.fieldLabelStandalone}>Applies to</Text>
+          <View style={styles.wrappedChoices}>
+            <ChoicePill
+              label="Entire brand"
+              onPress={() => setDiscountScopeTarget('brand')}
+              selected={discountScopeTarget === 'brand'}
+            />
+            {configuration.curatedSections
+              .filter(({ kind }) => kind === 'collection')
+              .map((collection) => (
+                <ChoicePill
+                  key={collection.id}
+                  label={`Collection · ${collection.title}`}
+                  onPress={() => setDiscountScopeTarget(`collection:${collection.id}`)}
+                  selected={discountScopeTarget === `collection:${collection.id}`}
+                />
+              ))}
+            {recommendations
+              .filter(({ lifecycle }) => lifecycle !== 'archived')
+              .map((item) => (
+                <ChoicePill
+                  key={item.id}
+                  label={`Item · ${item.productName}`}
+                  onPress={() => setDiscountScopeTarget(`item:${item.id}`)}
+                  selected={discountScopeTarget === `item:${item.id}`}
+                />
+              ))}
+          </View>
           <Field
-            keyboardType="number-pad"
-            label="Percent off"
-            onChangeText={setDiscountPercent}
-            value={discountPercent}
+            label="Code (optional)"
+            onChangeText={setDiscountCode}
+            value={discountCode}
           />
+          <Text style={styles.fieldLabelStandalone}>Discount type</Text>
+          <View style={styles.inlineChoices}>
+            <ChoicePill
+              label="Percent off"
+              onPress={() => setDiscountType('percent')}
+              selected={discountType === 'percent'}
+            />
+            <ChoicePill
+              label="Fixed ₪ amount"
+              onPress={() => setDiscountType('amount')}
+              selected={discountType === 'amount'}
+            />
+          </View>
+          {discountType === 'amount' ? (
+            <Field
+              keyboardType="decimal-pad"
+              label="Amount off (ILS)"
+              onChangeText={setDiscountAmount}
+              value={discountAmount}
+            />
+          ) : (
+            <Field
+              keyboardType="number-pad"
+              label="Percent off"
+              onChangeText={setDiscountPercent}
+              value={discountPercent}
+            />
+          )}
           <Field
             autoCapitalize="none"
             keyboardType="url"
@@ -1389,10 +1506,49 @@ function Recommendations({
           />
           <Field
             autoCapitalize="none"
+            label="Starts (YYYY-MM-DD, optional)"
+            onChangeText={setDiscountStartsAt}
+            value={discountStartsAt}
+          />
+          <Field
+            autoCapitalize="none"
             label="Expires (YYYY-MM-DD, optional)"
             onChangeText={setDiscountExpiresAt}
             value={discountExpiresAt}
           />
+          <Text style={styles.fieldLabelStandalone}>Schedule</Text>
+          <View style={styles.inlineChoices}>
+            <ChoicePill
+              label="Always / date window"
+              onPress={() => setDiscountRecurrence('none')}
+              selected={discountRecurrence === 'none'}
+            />
+            <ChoicePill
+              label="Last 7 days monthly"
+              onPress={() => setDiscountRecurrence('month_end_week')}
+              selected={discountRecurrence === 'month_end_week'}
+            />
+          </View>
+          <Field
+            keyboardType="numbers-and-punctuation"
+            label="Priority (-1000 to 1000)"
+            onChangeText={setDiscountPriority}
+            value={discountPriority}
+          />
+          <View style={styles.toggleCardInset}>
+            <View style={styles.toggleCopy}>
+              <Text style={styles.cardTitle}>Can be combined</Text>
+              <Text style={styles.cardMeta}>
+                Allow stacking with another active offer.
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel="Allow stacking with another offer"
+              onValueChange={setDiscountStackable}
+              trackColor={{ false: '#d8d0c7', true: colors.accent }}
+              value={discountStackable}
+            />
+          </View>
           <Field
             label="Details (optional)"
             multiline
