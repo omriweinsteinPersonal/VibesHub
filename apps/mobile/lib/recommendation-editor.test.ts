@@ -65,4 +65,56 @@ describe('native recommendation editor', () => {
       ),
     ).toThrow('price');
   });
+
+  it('creates native link cards without product-only fields', () => {
+    const input = recommendationInput(
+      {
+        ...emptyRecommendationDraft,
+        categoryId,
+        contentKind: 'link',
+        productName: 'My travel guide',
+        productUrl: 'https://example.com/guide',
+      },
+      'manual',
+    );
+
+    expect(input).toMatchObject({
+      additionalImages: [],
+      brandName: 'Links',
+      contentKind: 'link',
+      priceAmountMinor: 0,
+      reviewHe: 'Link card',
+      storyClips: [],
+    });
+  });
+
+  it('keeps advanced product media, disclosure, and discount fields', () => {
+    const input = recommendationInput(
+      {
+        ...emptyRecommendationDraft,
+        additionalImages: [{ imageAssetId: '', url: 'https://example.com/second.jpg' }],
+        brandName: 'Bosch',
+        categoryId,
+        commercialRelationship: 'affiliate',
+        discountCode: 'OMRI15',
+        discountType: 'percent',
+        discountValue: '15',
+        instagramStoryUrl: 'https://www.instagram.com/stories/omri/123/',
+        productName: 'Mixer',
+        storyClips: [{ mediaAssetId: '', url: 'https://example.com/story.mp4' }],
+      },
+      'manual',
+    );
+
+    expect(input).toMatchObject({
+      commercialRelationship: 'affiliate',
+      discountCode: 'OMRI15',
+      discountPercent: 15,
+      instagramStoryUrl: 'https://www.instagram.com/stories/omri/123/',
+    });
+    expect(input.additionalImages).toEqual([
+      { imageUrl: 'https://example.com/second.jpg' },
+    ]);
+    expect(input.storyClips).toEqual([{ videoUrl: 'https://example.com/story.mp4' }]);
+  });
 });

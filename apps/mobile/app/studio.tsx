@@ -529,6 +529,13 @@ function Recommendations({
       item
         ? {
             ...recommendationDraftFromItem(item),
+            brandDiscountCodeId:
+              discounts.find(
+                (discount) =>
+                  discount.id === item.discount?.id &&
+                  discount.scopeKind === 'brand' &&
+                  discount.lifecycle === 'published',
+              )?.id ?? '',
             collectionIds: configuration.curatedSections
               .filter(
                 (section) =>
@@ -833,27 +840,78 @@ function Recommendations({
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
+      allowsMultipleSelection: true,
       mediaTypes: ['images'],
       quality: 0.9,
+      selectionLimit: Math.max(
+        1,
+        10 - itemDraft.additionalImages.length - (itemDraft.imageUrl ? 1 : 0),
+      ),
     });
     if (result.canceled) return;
-    const asset = result.assets[0];
-    if (!asset) return;
+    if (!result.assets.length) return;
     setUploadingImage(true);
     try {
-      const uploaded = await uploadCreatorImage({
-        fileSize: asset.fileSize ?? 0,
-        mimeType: asset.mimeType ?? 'image/jpeg',
-        uri: asset.uri,
+      const uploaded = await Promise.all(
+        result.assets.map((asset) =>
+          uploadCreatorImage({
+            fileSize: asset.fileSize ?? 0,
+            mimeType: asset.mimeType ?? 'image/jpeg',
+            uri: asset.uri,
+          }),
+        ),
+      );
+      setItemDraft((current) => {
+        const images = [
+          ...(current.imageUrl
+            ? [{ imageAssetId: current.imageAssetId, url: current.imageUrl }]
+            : []),
+          ...current.additionalImages,
+          ...uploaded.map((asset) => ({ imageAssetId: asset.id, url: asset.publicUrl })),
+        ].slice(0, 10);
+        const [primary, ...additionalImages] = images;
+        return {
+          ...current,
+          additionalImages,
+          imageAssetId: primary?.imageAssetId ?? '',
+          imageUrl: primary?.url ?? '',
+        };
       });
-      updateItem({ imageAssetId: uploaded.id, imageUrl: uploaded.publicUrl });
-      onNotice('Image uploaded. Save the item to keep it.');
+      onNotice(
+        `${uploaded.length} image${uploaded.length === 1 ? '' : 's'} uploaded. Save the item to keep them.`,
+      );
     } catch (cause) {
       onError(messageFor(cause));
     } finally {
       setUploadingImage(false);
     }
+  }
+
+  function removeItemImage(index: number) {
+    setItemDraft((current) => {
+      const images = [
+        ...(current.imageUrl
+          ? [{ imageAssetId: current.imageAssetId, url: current.imageUrl }]
+          : []),
+        ...current.additionalImages,
+      ].filter((_, imageIndex) => imageIndex !== index);
+      const [primary, ...additionalImages] = images;
+      return {
+        ...current,
+        additionalImages,
+        imageAssetId: primary?.imageAssetId ?? '',
+        imageUrl: primary?.url ?? '',
+      };
+    });
+  }
+
+  function addStoryLink() {
+    const url = itemDraft.storyLink.trim();
+    if (!url || itemDraft.storyClips.length >= 10) return;
+    updateItem({
+      storyClips: [...itemDraft.storyClips, { mediaAssetId: '', url }],
+      storyLink: '',
+    });
   }
 
   async function chooseBrandLogo() {
@@ -914,10 +972,13 @@ function Recommendations({
           : recommendationIds;
         return {
           ...section,
-          contentItems: nextRecommendationIds.map((id) => ({
-            id,
-            kind: 'recommendation' as const,
-          })),
+          contentItems: [
+            ...section.contentItems.filter(({ kind }) => kind !== 'recommendation'),
+            ...nextRecommendationIds.map((id) => ({
+              id,
+              kind: 'recommendation' as const,
+            })),
+          ],
           recommendationIds: nextRecommendationIds,
         };
       });
@@ -1142,6 +1203,18 @@ function Recommendations({
     }
   }
 
+  const matchingItemBrand = brands.find(
+    (brand) =>
+      brand.name.toLocaleLowerCase() === itemDraft.brandName.trim().toLocaleLowerCase(),
+  );
+  const matchingBrandDiscount = discounts.find(
+    (discount) =>
+      discount.brandId === matchingItemBrand?.id &&
+      discount.scopeKind === 'brand' &&
+      discount.lifecycle === 'published' &&
+      discount.code,
+  );
+
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / DASHBOARD</Text>
@@ -1347,51 +1420,87 @@ function Recommendations({
           <Text style={styles.cardMeta}>
             Paste a product link to fetch its details, or fill the fields manually.
           </Text>
+          <Text style={styles.fieldLabelStandalone}>Card type</Text>
+          <View style={styles.inlineChoices}>
+            <ChoicePill
+              label="Product"
+              onPress={() => updateItem({ contentKind: 'product' })}
+              selected={itemDraft.contentKind === 'product'}
+            />
+            <ChoicePill
+              label="Link"
+              onPress={() =>
+                updateItem({
+                  additionalImages: [],
+                  contentKind: 'link',
+                  storyClips: [],
+                })
+              }
+              selected={itemDraft.contentKind === 'link'}
+            />
+          </View>
           <Field
             autoCapitalize="none"
             keyboardType="url"
-            label="Item link (optional)"
+            label={
+              itemDraft.contentKind === 'link'
+                ? 'Destination link'
+                : 'Item link (optional)'
+            }
             onChangeText={(productUrl) => updateItem({ productUrl })}
             value={itemDraft.productUrl}
           />
-          <Pressable
-            disabled={fetchingDetails || !itemDraft.productUrl.trim()}
-            onPress={() => void fetchDetails()}
-            style={styles.fetchButton}
-          >
-            {fetchingDetails ? (
-              <ActivityIndicator color={colors.accent} />
-            ) : (
-              <Text style={styles.fetchButtonText}>Fetch name, image and price</Text>
-            )}
-          </Pressable>
+          {itemDraft.contentKind === 'product' ? (
+            <Pressable
+              disabled={fetchingDetails || !itemDraft.productUrl.trim()}
+              onPress={() => void fetchDetails()}
+              style={styles.fetchButton}
+            >
+              {fetchingDetails ? (
+                <ActivityIndicator color={colors.accent} />
+              ) : (
+                <Text style={styles.fetchButtonText}>Fetch name, image and price</Text>
+              )}
+            </Pressable>
+          ) : null}
           <Field
-            label="Item name"
+            label={itemDraft.contentKind === 'link' ? 'Link title' : 'Item name'}
             onChangeText={(productName) => updateItem({ productName })}
             value={itemDraft.productName}
           />
-          <Text style={styles.fieldLabelStandalone}>Brand</Text>
-          {brands.length ? (
-            <ScrollView
-              contentContainerStyle={styles.choiceRail}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            >
-              {brands.map((brand) => (
-                <ChoicePill
-                  key={brand.id}
-                  label={brand.name}
-                  onPress={() => updateItem({ brandName: brand.name })}
-                  selected={itemDraft.brandName === brand.name}
-                />
-              ))}
-            </ScrollView>
+          {itemDraft.contentKind === 'product' ? (
+            <>
+              <Text style={styles.fieldLabelStandalone}>Brand</Text>
+              {brands.length ? (
+                <ScrollView
+                  contentContainerStyle={styles.choiceRail}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {brands.map((brand) => (
+                    <ChoicePill
+                      key={brand.id}
+                      label={brand.name}
+                      onPress={() =>
+                        updateItem({
+                          brandDiscountCodeId: '',
+                          brandName: brand.name,
+                        })
+                      }
+                      selected={itemDraft.brandName === brand.name}
+                    />
+                  ))}
+                </ScrollView>
+              ) : null}
+              <Field
+                label="Brand name"
+                onChangeText={(nextBrandName) =>
+                  updateItem({ brandDiscountCodeId: '', brandName: nextBrandName })
+                }
+                value={itemDraft.brandName}
+              />
+            </>
           ) : null}
-          <Field
-            label="Brand name"
-            onChangeText={(nextBrandName) => updateItem({ brandName: nextBrandName })}
-            value={itemDraft.brandName}
-          />
           <Text style={styles.fieldLabelStandalone}>Category</Text>
           <View style={styles.wrappedChoices}>
             {categories.map((category) => (
@@ -1420,12 +1529,14 @@ function Recommendations({
               </View>
             </>
           ) : null}
-          <Field
-            keyboardType="decimal-pad"
-            label="Price in ILS (optional)"
-            onChangeText={(priceIls) => updateItem({ priceIls })}
-            value={itemDraft.priceIls}
-          />
+          {itemDraft.contentKind === 'product' ? (
+            <Field
+              keyboardType="decimal-pad"
+              label="Price in ILS (optional)"
+              onChangeText={(priceIls) => updateItem({ priceIls })}
+              value={itemDraft.priceIls}
+            />
+          ) : null}
           <Field
             autoCapitalize="none"
             keyboardType="url"
@@ -1434,12 +1545,31 @@ function Recommendations({
             value={itemDraft.imageUrl}
           />
           {itemDraft.imageUrl ? (
-            <Image
-              accessibilityLabel="Selected item image preview"
-              resizeMode="contain"
-              source={{ uri: itemDraft.imageUrl }}
-              style={styles.itemImagePreview}
-            />
+            <ScrollView
+              contentContainerStyle={styles.itemImageRail}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
+              {[
+                { imageAssetId: itemDraft.imageAssetId, url: itemDraft.imageUrl },
+                ...itemDraft.additionalImages,
+              ].map((image, index) => (
+                <View key={`${image.url}-${index}`} style={styles.itemImageTile}>
+                  <Image
+                    accessibilityLabel={`Item image ${index + 1}`}
+                    resizeMode="contain"
+                    source={{ uri: image.url }}
+                    style={styles.itemImagePreview}
+                  />
+                  <Text style={styles.itemImageCaption}>
+                    {index === 0 ? 'Primary' : `Photo ${index + 1}`}
+                  </Text>
+                  <Pressable onPress={() => removeItemImage(index)}>
+                    <Text style={styles.removeText}>Remove</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
           ) : null}
           <Pressable
             disabled={uploadingImage}
@@ -1449,18 +1579,160 @@ function Recommendations({
             {uploadingImage ? (
               <ActivityIndicator color={colors.accent} />
             ) : (
-              <Text style={styles.fetchButtonText}>Choose image from phone</Text>
+              <Text style={styles.fetchButtonText}>Add photos from phone</Text>
             )}
           </Pressable>
-          <Field
-            label="Your recommendation (optional)"
-            multiline
-            onChangeText={(review) => updateItem({ review })}
-            value={itemDraft.review}
-          />
+          {itemDraft.contentKind === 'product' ? (
+            <>
+              <Field
+                label="Your recommendation (optional)"
+                multiline
+                onChangeText={(review) => updateItem({ review })}
+                value={itemDraft.review}
+              />
+              <Text style={styles.fieldLabelStandalone}>Commercial relationship</Text>
+              <View style={styles.wrappedChoices}>
+                {(
+                  [
+                    ['organic', 'Organic'],
+                    ['affiliate', 'Affiliate'],
+                    ['gifted', 'Gifted'],
+                    ['sponsored', 'Sponsored'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <ChoicePill
+                    key={value}
+                    label={label}
+                    onPress={() => updateItem({ commercialRelationship: value })}
+                    selected={itemDraft.commercialRelationship === value}
+                  />
+                ))}
+              </View>
+              {matchingBrandDiscount ? (
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{
+                    checked: itemDraft.brandDiscountCodeId === matchingBrandDiscount.id,
+                  }}
+                  onPress={() =>
+                    updateItem({
+                      brandDiscountCodeId:
+                        itemDraft.brandDiscountCodeId === matchingBrandDiscount.id
+                          ? ''
+                          : matchingBrandDiscount.id,
+                    })
+                  }
+                  style={styles.checkboxRow}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      itemDraft.brandDiscountCodeId === matchingBrandDiscount.id &&
+                        styles.checkboxSelected,
+                    ]}
+                  >
+                    {itemDraft.brandDiscountCodeId === matchingBrandDiscount.id ? (
+                      <Text style={styles.checkboxMark}>✓</Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.listCopy}>
+                    <Text style={styles.cardTitle}>
+                      Use {matchingItemBrand?.name} brand discount
+                    </Text>
+                    <Text style={styles.cardMeta}>{matchingBrandDiscount.code}</Text>
+                  </View>
+                </Pressable>
+              ) : null}
+              {!itemDraft.brandDiscountCodeId ? (
+                <>
+                  <Field
+                    label="Discount code (optional)"
+                    onChangeText={(discountCode) => updateItem({ discountCode })}
+                    value={itemDraft.discountCode}
+                  />
+                  <Text style={styles.fieldLabelStandalone}>Discount type</Text>
+                  <View style={styles.inlineChoices}>
+                    <ChoicePill
+                      label="Percent"
+                      onPress={() => updateItem({ discountType: 'percent' })}
+                      selected={itemDraft.discountType === 'percent'}
+                    />
+                    <ChoicePill
+                      label="Fixed amount"
+                      onPress={() => updateItem({ discountType: 'amount' })}
+                      selected={itemDraft.discountType === 'amount'}
+                    />
+                  </View>
+                  <Field
+                    keyboardType="decimal-pad"
+                    label="Discount value (optional)"
+                    onChangeText={(discountValue) => updateItem({ discountValue })}
+                    value={itemDraft.discountValue}
+                  />
+                  <Field
+                    label="Discount expires (YYYY-MM-DD, optional)"
+                    onChangeText={(discountExpiresAt) =>
+                      updateItem({ discountExpiresAt })
+                    }
+                    value={itemDraft.discountExpiresAt}
+                  />
+                </>
+              ) : null}
+              <Field
+                autoCapitalize="none"
+                keyboardType="url"
+                label="Instagram story or Highlight link (optional)"
+                onChangeText={(instagramStoryUrl) => updateItem({ instagramStoryUrl })}
+                value={itemDraft.instagramStoryUrl}
+              />
+              <Field
+                autoCapitalize="none"
+                keyboardType="url"
+                label="Video preview URL (optional)"
+                onChangeText={(videoUrl) => updateItem({ videoUrl })}
+                value={itemDraft.videoUrl}
+              />
+              <Field
+                autoCapitalize="none"
+                keyboardType="url"
+                label="Story clip URL (optional)"
+                onChangeText={(storyLink) => updateItem({ storyLink })}
+                value={itemDraft.storyLink}
+              />
+              <Pressable
+                disabled={
+                  !itemDraft.storyLink.trim() || itemDraft.storyClips.length >= 10
+                }
+                onPress={addStoryLink}
+                style={styles.fetchButton}
+              >
+                <Text style={styles.fetchButtonText}>Add story clip link</Text>
+              </Pressable>
+              {itemDraft.storyClips.map((clip, index) => (
+                <View key={`${clip.url}-${index}`} style={styles.storyClipRow}>
+                  <Text numberOfLines={1} style={styles.storyClipUrl}>
+                    {clip.url}
+                  </Text>
+                  <Pressable
+                    onPress={() =>
+                      updateItem({
+                        storyClips: itemDraft.storyClips.filter(
+                          (_, clipIndex) => clipIndex !== index,
+                        ),
+                      })
+                    }
+                  >
+                    <Text style={styles.removeText}>Remove</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          ) : null}
           <View style={styles.buttonRow}>
             <Pressable
-              disabled={Boolean(busyId) || !categories.length}
+              disabled={
+                Boolean(busyId) || uploadingImage || fetchingDetails || !categories.length
+              }
               onPress={() => void persistItem()}
               style={styles.primarySmall}
             >
@@ -3133,10 +3405,30 @@ const styles = StyleSheet.create({
   itemImagePreview: {
     backgroundColor: '#f5f1eb',
     borderRadius: radii.control,
-    height: 180,
-    marginTop: spacing.sm,
-    width: '100%',
+    height: 140,
+    width: 156,
   },
+  itemImageRail: { gap: 10, paddingVertical: spacing.sm },
+  itemImageTile: {
+    alignItems: 'flex-start',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    gap: 6,
+    padding: 8,
+    width: 174,
+  },
+  itemImageCaption: { color: colors.muted, fontSize: 12, fontWeight: '700' },
+  storyClipRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: spacing.md,
+    minHeight: 48,
+  },
+  storyClipUrl: { color: colors.muted, flex: 1, fontSize: 13 },
   brandLogoPreview: {
     backgroundColor: '#f5f1eb',
     borderRadius: radii.card,
