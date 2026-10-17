@@ -1,5 +1,6 @@
 import type {
   CategoryCard,
+  CreatorAnalyticsDashboard,
   CreatorBrand,
   CreatorDiscountCode,
   CreatorProfileSocialLink,
@@ -2232,6 +2233,11 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
   const [range, setRange] = useState<7 | 30>(initialRange);
   const [loading, setLoading] = useState(false);
   const [rangeError, setRangeError] = useState('');
+  const [explorerView, setExplorerView] = useState<'brands' | 'categories' | 'products'>(
+    'brands',
+  );
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const metrics = [
     ['Page views', analytics.summary.storefrontViews],
     ['Unique visitors', analytics.summary.uniqueVisitors],
@@ -2245,6 +2251,19 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
         .slice(0, 5),
     [analytics.recommendations],
   );
+  const selectedProduct =
+    analytics.recommendations.find((item) => item.id === selectedProductId) ?? null;
+  const groups = useMemo(
+    () => groupAnalyticsRecommendations(analytics, explorerView),
+    [analytics, explorerView],
+  );
+  const activeGroup = groups.find((group) => group.name === selectedGroup) ?? null;
+  const detailMetrics = [
+    ['Recommendation views', analytics.summary.recommendationViews],
+    ['Story opens', analytics.summary.storyOpens],
+    ['Story completions', analytics.summary.storyCompletions],
+    ['Code copies', analytics.summary.codeCopies],
+  ] as const;
 
   async function selectRange(nextRange: 7 | 30) {
     if (nextRange === range || loading) return;
@@ -2295,6 +2314,15 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
           </View>
         ))}
       </View>
+      <Text style={styles.sectionTitle}>Engagement</Text>
+      <View style={styles.metricGrid}>
+        {detailMetrics.map(([label, value]) => (
+          <View key={label} style={styles.metricCardCompact}>
+            <Text style={styles.metricValueCompact}>{value.toLocaleString()}</Text>
+            <Text style={styles.metricLabel}>{label}</Text>
+          </View>
+        ))}
+      </View>
       {loading ? <ActivityIndicator color={colors.accent} style={styles.saving} /> : null}
       <Text style={styles.sectionTitle}>Most explored</Text>
       {top.length ? (
@@ -2316,8 +2344,250 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
       ) : (
         <Empty text="Your activity will appear here as people visit your page." />
       )}
+      <Text style={styles.sectionTitle}>Activity over time</Text>
+      <Text style={styles.sectionDescription}>
+        Daily page views and product clicks for this period.
+      </Text>
+      <View style={styles.analyticsTable}>
+        {[...analytics.series].reverse().map((day) => (
+          <View key={day.date} style={styles.analyticsTableRow}>
+            <Text style={styles.analyticsDate}>{formatAnalyticsDate(day.date)}</Text>
+            <View style={styles.analyticsDailyValue}>
+              <Text style={styles.analyticsDailyNumber}>{day.storefrontViews}</Text>
+              <Text style={styles.analyticsDailyLabel}>views</Text>
+            </View>
+            <View style={styles.analyticsDailyValue}>
+              <Text style={styles.analyticsDailyNumber}>{day.shopClicks}</Text>
+              <Text style={styles.analyticsDailyLabel}>clicks</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+      <Text style={styles.sectionTitle}>Explore your content</Text>
+      <Text style={styles.sectionDescription}>
+        See performance by brand, category, or recommendation.
+      </Text>
+      <View accessibilityRole="tablist" style={styles.analyticsTabs}>
+        {(
+          [
+            ['brands', 'Brands'],
+            ['categories', 'Categories'],
+            ['products', 'All products'],
+          ] as const
+        ).map(([key, label]) => {
+          const selected = explorerView === key;
+          return (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              key={key}
+              onPress={() => {
+                setExplorerView(key);
+                setSelectedGroup(null);
+                setSelectedProductId(null);
+              }}
+              style={[styles.analyticsTab, selected && styles.analyticsTabActive]}
+            >
+              <Text
+                style={[
+                  styles.analyticsTabText,
+                  selected && styles.analyticsTabTextActive,
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {selectedProduct ? (
+        <AnalyticsProductDetail
+          onBack={() => setSelectedProductId(null)}
+          product={selectedProduct}
+        />
+      ) : activeGroup ? (
+        <AnalyticsGroupDetail
+          group={activeGroup}
+          onBack={() => setSelectedGroup(null)}
+          onProduct={setSelectedProductId}
+        />
+      ) : explorerView === 'products' ? (
+        <AnalyticsProductRows
+          items={analytics.recommendations}
+          onProduct={setSelectedProductId}
+        />
+      ) : groups.length ? (
+        groups.map((group) => (
+          <Pressable
+            accessibilityRole="button"
+            key={group.name}
+            onPress={() => setSelectedGroup(group.name)}
+            style={styles.analyticsGroupRow}
+          >
+            <View style={styles.listCopy}>
+              <Text style={styles.cardTitle}>{group.name}</Text>
+              <Text style={styles.cardMeta}>
+                {group.items.length} recommendation{group.items.length === 1 ? '' : 's'}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.clickValue}>{group.clicks}</Text>
+              <Text style={styles.clickLabel}>clicks</Text>
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+        ))
+      ) : (
+        <Empty text="No recommendation activity yet." />
+      )}
     </>
   );
+}
+
+type AnalyticsRecommendation = CreatorAnalyticsDashboard['recommendations'][number];
+type AnalyticsGroup = {
+  clicks: number;
+  codeCopies: number;
+  items: AnalyticsRecommendation[];
+  name: string;
+  storyOpens: number;
+  views: number;
+};
+
+function groupAnalyticsRecommendations(
+  analytics: CreatorAnalyticsDashboard,
+  view: 'brands' | 'categories' | 'products',
+): AnalyticsGroup[] {
+  if (view === 'products') return [];
+  const grouped = new Map<string, AnalyticsRecommendation[]>();
+  analytics.recommendations.forEach((item) => {
+    const name = view === 'brands' ? item.brandName : item.categoryName;
+    grouped.set(name, [...(grouped.get(name) ?? []), item]);
+  });
+  return [...grouped.entries()]
+    .map(([name, items]) => ({
+      clicks: items.reduce((sum, item) => sum + item.shopClicks, 0),
+      codeCopies: items.reduce((sum, item) => sum + item.codeCopies, 0),
+      items,
+      name,
+      storyOpens: items.reduce((sum, item) => sum + item.storyOpens, 0),
+      views: items.reduce((sum, item) => sum + item.views, 0),
+    }))
+    .sort((a, b) => b.clicks - a.clicks || a.name.localeCompare(b.name));
+}
+
+function AnalyticsGroupDetail({
+  group,
+  onBack,
+  onProduct,
+}: {
+  group: AnalyticsGroup;
+  onBack: () => void;
+  onProduct: (id: string) => void;
+}) {
+  return (
+    <View style={styles.analyticsDetail}>
+      <Pressable accessibilityRole="button" onPress={onBack}>
+        <Text style={styles.analyticsBack}>← All groups</Text>
+      </Pressable>
+      <Text style={styles.analyticsDetailTitle}>{group.name}</Text>
+      <AnalyticsDetailMetrics
+        values={[
+          ['Views', group.views],
+          ['Product clicks', group.clicks],
+          ['Story opens', group.storyOpens],
+          ['Code copies', group.codeCopies],
+        ]}
+      />
+      <AnalyticsProductRows items={group.items} onProduct={onProduct} />
+    </View>
+  );
+}
+
+function AnalyticsProductDetail({
+  onBack,
+  product,
+}: {
+  onBack: () => void;
+  product: AnalyticsRecommendation;
+}) {
+  return (
+    <View style={styles.analyticsDetail}>
+      <Pressable accessibilityRole="button" onPress={onBack}>
+        <Text style={styles.analyticsBack}>← Back to explorer</Text>
+      </Pressable>
+      <Text style={styles.analyticsDetailTitle}>{product.productName}</Text>
+      <Text style={styles.cardMeta}>
+        {product.brandName} · {product.categoryName}
+      </Text>
+      <AnalyticsDetailMetrics
+        values={[
+          ['Views', product.views],
+          ['Product clicks', product.shopClicks],
+          ['Story opens', product.storyOpens],
+          ['Code copies', product.codeCopies],
+        ]}
+      />
+    </View>
+  );
+}
+
+function AnalyticsDetailMetrics({
+  values,
+}: {
+  values: readonly (readonly [string, number])[];
+}) {
+  return (
+    <View style={styles.analyticsDetailMetrics}>
+      {values.map(([label, value]) => (
+        <View key={label} style={styles.analyticsDetailMetric}>
+          <Text style={styles.analyticsDailyNumber}>{value.toLocaleString()}</Text>
+          <Text style={styles.analyticsDailyLabel}>{label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function AnalyticsProductRows({
+  items,
+  onProduct,
+}: {
+  items: AnalyticsRecommendation[];
+  onProduct: (id: string) => void;
+}) {
+  if (!items.length) return <Empty text="No recommendation activity yet." />;
+  return items.map((product) => (
+    <Pressable
+      accessibilityRole="button"
+      key={product.id}
+      onPress={() => onProduct(product.id)}
+      style={styles.analyticsGroupRow}
+    >
+      {product.imageUrl ? (
+        <Image source={{ uri: product.imageUrl }} style={styles.analyticsThumbnail} />
+      ) : null}
+      <View style={styles.listCopy}>
+        <Text style={styles.cardTitle}>{product.productName}</Text>
+        <Text style={styles.cardMeta}>
+          {product.brandName} · {product.categoryName}
+        </Text>
+      </View>
+      <View>
+        <Text style={styles.clickValue}>{product.shopClicks}</Text>
+        <Text style={styles.clickLabel}>clicks</Text>
+      </View>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
+  ));
+}
+
+function formatAnalyticsDate(value: string) {
+  return new Date(`${value}T00:00:00Z`).toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
 }
 
 function ProfileEditor({
@@ -2914,6 +3184,93 @@ const styles = StyleSheet.create({
   },
   metricValue: { color: colors.ink, fontFamily: 'Georgia', fontSize: 34 },
   metricLabel: { color: colors.muted, fontSize: 13, marginTop: 4 },
+  metricCardCompact: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    minHeight: 90,
+    padding: spacing.md,
+    width: '48%',
+  },
+  metricValueCompact: { color: colors.ink, fontFamily: 'Georgia', fontSize: 27 },
+  sectionDescription: { color: colors.muted, lineHeight: 20, marginBottom: spacing.sm },
+  analyticsTable: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  analyticsTableRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    minHeight: 58,
+    paddingHorizontal: spacing.md,
+  },
+  analyticsDate: { color: colors.ink, flex: 1, fontSize: 14, fontWeight: '700' },
+  analyticsDailyValue: { alignItems: 'flex-end', marginLeft: spacing.lg, minWidth: 54 },
+  analyticsDailyNumber: { color: colors.ink, fontSize: 16, fontWeight: '800' },
+  analyticsDailyLabel: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  analyticsTabs: { flexDirection: 'row', gap: 7, marginBottom: spacing.md },
+  analyticsTab: {
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+  },
+  analyticsTabActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  analyticsTabText: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  analyticsTabTextActive: { color: colors.white },
+  analyticsGroupRow: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: 9,
+    minHeight: 72,
+    padding: spacing.md,
+  },
+  analyticsDetail: {
+    backgroundColor: '#f7f1ea',
+    borderColor: colors.border,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  analyticsBack: { color: colors.accent, fontSize: 14, fontWeight: '700' },
+  analyticsDetailTitle: {
+    color: colors.ink,
+    fontFamily: 'Georgia',
+    fontSize: 26,
+    marginTop: spacing.md,
+  },
+  analyticsDetailMetrics: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: spacing.md,
+    marginTop: spacing.md,
+  },
+  analyticsDetailMetric: {
+    backgroundColor: colors.white,
+    borderRadius: radii.control,
+    padding: 12,
+    width: '48%',
+  },
+  analyticsThumbnail: { borderRadius: 10, height: 48, width: 48 },
   pagePanel: {
     backgroundColor: '#f4eadf',
     borderColor: colors.border,
