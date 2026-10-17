@@ -2538,9 +2538,20 @@ export function CreatorDashboard() {
                   .filter((item) => item.provider === 'maps')
                   .map((item) => (
                     <article className="creatorMediaManageCard" key={item.id}>
-                      <span className="creatorMapManageIcon" aria-hidden="true">
-                        <MapPinned size={20} />
-                      </span>
+                      {item.thumbnailUrl ? (
+                        <Image
+                          alt=""
+                          height={72}
+                          sizes="96px"
+                          src={item.thumbnailUrl}
+                          unoptimized
+                          width={96}
+                        />
+                      ) : (
+                        <span className="creatorMapManageIcon" aria-hidden="true">
+                          <MapPinned size={20} />
+                        </span>
+                      )}
                       <div>
                         <small>Maps</small>
                         <h3>{item.title}</h3>

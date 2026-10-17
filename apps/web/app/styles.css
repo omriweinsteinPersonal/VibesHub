@@ -1502,21 +1502,21 @@ svg.lucide {
   padding: 14px 16px 16px;
 }
 .featuredMapCard {
-  align-items: center;
   background: var(--sf-product, #fff);
   border: 1px solid #e2d5c8;
   border-radius: 18px;
   display: grid;
-  gap: 12px;
-  grid-template-columns: minmax(0, 1fr) 64px;
-  padding: 14px;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  padding: 0;
 }
 .featuredMapArtwork {
   align-items: center;
   background: color-mix(in srgb, var(--sf-accent, #b77856) 16%, white);
-  border: 1px solid color-mix(in srgb, var(--sf-accent, #b77856) 30%, white);
-  border-radius: 15px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sf-accent, #b77856) 18%, white);
   color: var(--sf-accent, #b77856);
+  aspect-ratio: 4 / 3;
   display: flex;
   height: 52px;
   justify-content: center;
@@ -1529,15 +1529,15 @@ svg.lucide {
   object-fit: cover;
   width: 100%;
 }
+.featuredMapArtwork:has(img) {
+  height: auto;
+  width: 100%;
+}
 .featuredMapCopy {
   display: grid;
   gap: 3px;
   min-width: 0;
-}
-.featuredMapCopy small {
-  color: var(--vh-muted);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  padding: 14px 14px 0;
 }
 .featuredMapCopy strong,
 .featuredMapCopy span {
@@ -1556,9 +1556,9 @@ svg.lucide {
   align-items: center;
   color: var(--vh-accent-strong);
   display: inline-flex;
-  font-size: 0.72rem;
   gap: 5px;
-  grid-column: 1 / -1;
+  justify-self: end;
+  padding: 10px 14px 14px;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -1574,14 +1574,14 @@ svg.lucide {
 }
 @media (max-width: 620px) {
   .featuredMapCard {
-    grid-template-columns: minmax(0, 1fr) 56px;
+    grid-template-columns: minmax(0, 1fr);
   }
   .featuredMapArtwork {
-    height: 44px;
-    width: 44px;
+    height: auto;
+    width: 100%;
   }
   .featuredMapLink {
-    grid-column: 1 / -1;
+    justify-self: end;
   }
   .referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard,
   .referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard {

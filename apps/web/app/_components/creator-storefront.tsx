@@ -1160,17 +1160,16 @@ function FeaturedMediaBlock({
 function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
   return (
     <article className="featuredMapCard">
-      <div className="featuredMapCopy" dir="auto">
-        <small>MAP RECOMMENDATION</small>
-        <strong>{media.title}</strong>
-        {media.location ? <span>{media.location}</span> : null}
-      </div>
       <div className="featuredMapArtwork" aria-hidden="true">
         {media.thumbnailUrl ? (
-          <Image alt="" fill sizes="64px" src={media.thumbnailUrl} unoptimized />
+          <Image alt="" fill sizes="(max-width: 700px) 100vw, 320px" src={media.thumbnailUrl} unoptimized />
         ) : (
           <MapPinned size={28} />
         )}
+      </div>
+      <div className="featuredMapCopy" dir="auto">
+        <strong>{media.title}</strong>
+        {media.location ? <span>{media.location}</span> : null}
       </div>
       <a
         aria-label={`Open ${media.title} in Google Maps`}
@@ -1178,8 +1177,8 @@ function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
         href={media.url}
         rel="noopener noreferrer"
         target="_blank"
+        title="Open in Google Maps"
       >
-        <span>Open in Google Maps</span>
         <ExternalLink aria-hidden="true" size={16} />
       </a>
     </article>
