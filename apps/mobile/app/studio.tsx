@@ -2663,6 +2663,7 @@ function StorefrontEditor({
   const [mediaThumbnailUrl, setMediaThumbnailUrl] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaTitle, setMediaTitle] = useState('');
+  const [uploadingMediaImage, setUploadingMediaImage] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function selectTemplate(template: (typeof storefrontTemplates)[number]) {
@@ -2946,6 +2947,38 @@ function StorefrontEditor({
     setMediaUrl('');
     setConfiguration(next);
     void save(next);
+  }
+
+  async function chooseMediaThumbnail() {
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose a media thumbnail.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      mediaTypes: ['images'],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    if (!asset) return;
+    setUploadingMediaImage(true);
+    try {
+      const uploaded = await uploadCreatorImage({
+        fileSize: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        uri: asset.uri,
+      });
+      setMediaThumbnailUrl(uploaded.publicUrl);
+      onNotice('Media image uploaded. Save the item to keep it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingMediaImage(false);
+    }
   }
 
   function removeLabel(id: string) {
@@ -3503,6 +3536,30 @@ function StorefrontEditor({
             style={styles.mediaThumbnailPreview}
           />
         ) : null}
+        <View style={styles.buttonRow}>
+          <Pressable
+            disabled={uploadingMediaImage}
+            onPress={() => void chooseMediaThumbnail()}
+            style={styles.secondarySmall}
+          >
+            {uploadingMediaImage ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.secondaryButtonText}>
+                {mediaThumbnailUrl ? 'Replace image' : 'Choose image'}
+              </Text>
+            )}
+          </Pressable>
+          {mediaThumbnailUrl ? (
+            <Pressable
+              disabled={uploadingMediaImage}
+              onPress={() => setMediaThumbnailUrl('')}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.removeText}>Remove image</Text>
+            </Pressable>
+          ) : null}
+        </View>
         <Text style={styles.fieldLabelStandalone}>Open as</Text>
         <View style={styles.inlineChoices}>
           <ChoicePill
@@ -3518,7 +3575,9 @@ function StorefrontEditor({
         </View>
         <View style={styles.buttonRow}>
           <Pressable
-            disabled={saving || !mediaTitle.trim() || !mediaUrl.trim()}
+            disabled={
+              saving || uploadingMediaImage || !mediaTitle.trim() || !mediaUrl.trim()
+            }
             onPress={saveMedia}
             style={styles.primarySmall}
           >
