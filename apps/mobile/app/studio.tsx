@@ -2158,6 +2158,7 @@ function StorefrontEditor({
 }) {
   const [configuration, setConfiguration] = useState(bundle.configuration);
   const [themeConfiguration, setThemeConfiguration] = useState(bundle.theme);
+  const [themeDraft, setThemeDraft] = useState(bundle.theme.theme);
   const [labelTitle, setLabelTitle] = useState('');
   const [editingLabelId, setEditingLabelId] = useState<string | null | undefined>();
   const [labelBrandIds, setLabelBrandIds] = useState<string[]>([]);
@@ -2172,18 +2173,19 @@ function StorefrontEditor({
   const [saving, setSaving] = useState(false);
 
   async function selectTemplate(template: (typeof storefrontTemplates)[number]) {
-    if (saving || themeConfiguration.theme.templateId === template.id) return;
+    if (saving || themeDraft.templateId === template.id) return;
     setSaving(true);
     onError('');
     try {
       const theme: StorefrontTheme = {
         ...defaultStorefrontTheme,
-        ...themeConfiguration.theme,
+        ...themeDraft,
         ...template.colors,
         templateId: template.id,
       };
       const saved = await saveStorefrontTheme(themeConfiguration, theme);
       setThemeConfiguration(saved);
+      setThemeDraft(saved.theme);
       onBundle((current) => (current ? { ...current, theme: saved } : current));
       onNotice(`${template.title} is live on your storefront.`);
     } catch (cause) {
@@ -2200,11 +2202,12 @@ function StorefrontEditor({
     try {
       const theme: StorefrontTheme = {
         ...defaultStorefrontTheme,
-        ...themeConfiguration.theme,
+        ...themeDraft,
         labelsFrame,
       };
       const saved = await saveStorefrontTheme(themeConfiguration, theme);
       setThemeConfiguration(saved);
+      setThemeDraft(saved.theme);
       onBundle((current) => (current ? { ...current, theme: saved } : current));
       onNotice(
         labelsFrame
@@ -2216,6 +2219,49 @@ function StorefrontEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function saveThemeChanges() {
+    if (saving) return;
+    const colorValues = [
+      themeDraft.recommendationsBackground,
+      themeDraft.productBackground,
+      themeDraft.accentColor,
+      themeDraft.textColor,
+    ];
+    if (colorValues.some((value) => !/^#[0-9a-f]{6}$/iu.test(value))) {
+      onError('Use six-digit hex colors, for example #D8EF66.');
+      return;
+    }
+    setSaving(true);
+    onError('');
+    try {
+      const saved = await saveStorefrontTheme(themeConfiguration, themeDraft);
+      setThemeConfiguration(saved);
+      setThemeDraft(saved.theme);
+      onBundle((current) => (current ? { ...current, theme: saved } : current));
+      onNotice('Storefront design saved.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function setSearchVisible(visible: boolean) {
+    setThemeDraft((current) => {
+      const hiddenBlocks = current.layout?.hiddenBlocks ?? [];
+      return {
+        ...current,
+        layout: {
+          blocks: current.layout?.blocks ?? [],
+          labels: current.layout?.labels ?? [],
+          hiddenBlocks: visible
+            ? hiddenBlocks.filter((block) => block !== 'search')
+            : [...new Set([...hiddenBlocks, 'search'])],
+        },
+      };
+    });
   }
 
   const save = useCallback(
@@ -2463,7 +2509,7 @@ function StorefrontEditor({
         showsHorizontalScrollIndicator={false}
       >
         {storefrontTemplates.map((template) => {
-          const selected = themeConfiguration.theme.templateId === template.id;
+          const selected = themeDraft.templateId === template.id;
           return (
             <Pressable
               accessibilityRole="radio"
@@ -2490,6 +2536,143 @@ function StorefrontEditor({
         })}
       </ScrollView>
 
+      <View style={styles.editorCard}>
+        <Text style={styles.cardTitle}>Design details</Text>
+        <Text style={styles.cardMeta}>
+          Match the same colors, header and typography controls available on the web.
+        </Text>
+        <Text style={styles.fieldLabelStandalone}>Header style</Text>
+        <View style={styles.inlineChoices}>
+          <ChoicePill
+            label="Full-bleed"
+            onPress={() =>
+              setThemeDraft((current) => ({ ...current, headerStyle: 'classic' }))
+            }
+            selected={themeDraft.headerStyle === 'classic'}
+          />
+          <ChoicePill
+            label="Circular"
+            onPress={() =>
+              setThemeDraft((current) => ({ ...current, headerStyle: 'circular' }))
+            }
+            selected={themeDraft.headerStyle === 'circular'}
+          />
+        </View>
+        <Text style={styles.fieldLabelStandalone}>Bio alignment</Text>
+        <View style={styles.wrappedChoices}>
+          {(['left', 'center', 'right'] as const).map((alignment) => (
+            <ChoicePill
+              key={alignment}
+              label={`${alignment.slice(0, 1).toUpperCase()}${alignment.slice(1)}`}
+              onPress={() =>
+                setThemeDraft((current) => ({ ...current, bioAlign: alignment }))
+              }
+              selected={themeDraft.bioAlign === alignment}
+            />
+          ))}
+        </View>
+        <Text style={styles.fieldLabelStandalone}>Heading font</Text>
+        <View style={styles.wrappedChoices}>
+          {(
+            [
+              ['display', 'Display serif'],
+              ['sans', 'Clean sans'],
+              ['editorial', 'Editorial serif'],
+            ] as const
+          ).map(([value, label]) => (
+            <ChoicePill
+              key={value}
+              label={label}
+              onPress={() =>
+                setThemeDraft((current) => ({ ...current, headingFont: value }))
+              }
+              selected={themeDraft.headingFont === value}
+            />
+          ))}
+        </View>
+        <Text style={styles.fieldLabelStandalone}>Body font</Text>
+        <View style={styles.wrappedChoices}>
+          {(
+            [
+              ['aptos', 'Aptos'],
+              ['sans', 'Modern sans'],
+              ['serif', 'Soft serif'],
+            ] as const
+          ).map(([value, label]) => (
+            <ChoicePill
+              key={value}
+              label={label}
+              onPress={() =>
+                setThemeDraft((current) => ({ ...current, bodyFont: value }))
+              }
+              selected={themeDraft.bodyFont === value}
+            />
+          ))}
+        </View>
+        <Field
+          autoCapitalize="characters"
+          label="Page background (hex)"
+          onChangeText={(recommendationsBackground) =>
+            setThemeDraft((current) => ({
+              ...current,
+              recommendationsBackground,
+            }))
+          }
+          value={themeDraft.recommendationsBackground}
+        />
+        <Field
+          autoCapitalize="characters"
+          label="Section / card background (hex)"
+          onChangeText={(productBackground) =>
+            setThemeDraft((current) => ({
+              ...current,
+              collectionBackground: productBackground,
+              discountBackground: productBackground,
+              productBackground,
+            }))
+          }
+          value={themeDraft.productBackground}
+        />
+        <Field
+          autoCapitalize="characters"
+          label="Accent color (hex)"
+          onChangeText={(accentColor) =>
+            setThemeDraft((current) => ({ ...current, accentColor }))
+          }
+          value={themeDraft.accentColor}
+        />
+        <Field
+          autoCapitalize="characters"
+          label="Text color (hex)"
+          onChangeText={(textColor) =>
+            setThemeDraft((current) => ({ ...current, textColor }))
+          }
+          value={themeDraft.textColor}
+        />
+        <View style={styles.toggleCardInset}>
+          <View style={styles.toggleCopy}>
+            <Text style={styles.cardTitle}>Store search</Text>
+            <Text style={styles.cardMeta}>Let visitors search your recommendations.</Text>
+          </View>
+          <Switch
+            accessibilityLabel="Show storefront search"
+            onValueChange={setSearchVisible}
+            trackColor={{ false: '#d8d0c7', true: colors.accent }}
+            value={!(themeDraft.layout?.hiddenBlocks ?? []).includes('search')}
+          />
+        </View>
+        <Pressable
+          disabled={
+            saving ||
+            JSON.stringify(themeDraft) === JSON.stringify(themeConfiguration.theme)
+          }
+          onPress={() => void saveThemeChanges()}
+          style={styles.primaryButton}
+        >
+          <Text style={styles.primaryButtonText}>Save design</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.toggleCard}>
         <View style={styles.toggleCopy}>
           <Text style={styles.cardTitle}>Show a frame around labels</Text>
@@ -2502,7 +2685,7 @@ function StorefrontEditor({
           disabled={saving}
           onValueChange={(value) => void setLabelsFrame(value)}
           trackColor={{ false: '#d8d0c7', true: colors.accent }}
-          value={themeConfiguration.theme.labelsFrame ?? true}
+          value={themeDraft.labelsFrame ?? true}
         />
       </View>
 
@@ -3801,6 +3984,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.sm,
+    padding: spacing.md,
+  },
+  toggleCardInset: {
+    alignItems: 'center',
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
     padding: spacing.md,
   },
   toggleCopy: { flex: 1 },
