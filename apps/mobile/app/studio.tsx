@@ -70,6 +70,8 @@ import {
 } from '../lib/creator-workspace';
 
 type StudioView = CreatorWorkspaceView;
+type CuratedContentItem =
+  CreatorStorefrontConfiguration['curatedSections'][number]['contentItems'][number];
 
 const tabIcons = {
   analytics: ChartColumn,
@@ -498,6 +500,11 @@ function Recommendations({
   const [editingCollection, setEditingCollection] = useState<
     CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
   >();
+  const [editingCarousel, setEditingCarousel] = useState<
+    CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
+  >();
+  const [carouselTitle, setCarouselTitle] = useState('');
+  const [carouselItems, setCarouselItems] = useState<CuratedContentItem[]>([]);
   const [collectionTitle, setCollectionTitle] = useState('');
   const [collectionDescription, setCollectionDescription] = useState('');
   const [collectionDisplayStyle, setCollectionDisplayStyle] = useState<
@@ -535,6 +542,7 @@ function Recommendations({
   function openBrand(brand?: CreatorBrand) {
     setEditingItem(undefined);
     setEditingCollection(undefined);
+    setEditingCarousel(undefined);
     setEditingDiscount(undefined);
     setEditingBrand(brand ?? null);
     setBrandName(brand?.name ?? '');
@@ -546,6 +554,7 @@ function Recommendations({
   function openItem(item?: CreatorRecommendation) {
     setEditingBrand(undefined);
     setEditingCollection(undefined);
+    setEditingCarousel(undefined);
     setEditingDiscount(undefined);
     setEditingItem(item ?? null);
     setItemDraft(
@@ -576,6 +585,7 @@ function Recommendations({
   ) {
     setEditingBrand(undefined);
     setEditingItem(undefined);
+    setEditingCarousel(undefined);
     setEditingDiscount(undefined);
     setEditingCollection(collection ?? null);
     setCollectionTitle(collection?.title ?? '');
@@ -587,9 +597,22 @@ function Recommendations({
     setCollectionShowItemsIndividually(collection?.showItemsIndividually ?? false);
   }
 
+  function openCarousel(
+    carousel?: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    setEditingBrand(undefined);
+    setEditingCollection(undefined);
+    setEditingDiscount(undefined);
+    setEditingItem(undefined);
+    setEditingCarousel(carousel ?? null);
+    setCarouselTitle(carousel?.title ?? '');
+    setCarouselItems(carousel?.contentItems ?? []);
+  }
+
   function openDiscount(discount?: CreatorDiscountCode) {
     setEditingBrand(undefined);
     setEditingCollection(undefined);
+    setEditingCarousel(undefined);
     setEditingItem(undefined);
     setEditingDiscount(discount ?? null);
     setDiscountBrandId(discount?.brandId ?? null);
@@ -737,6 +760,120 @@ function Recommendations({
           ? [...current, id]
           : current,
     );
+  }
+
+  function toggleCarouselItem(item: CuratedContentItem) {
+    setCarouselItems((current) => {
+      const selected = current.some(
+        ({ id, kind }) => id === item.id && kind === item.kind,
+      );
+      if (selected) {
+        return current.filter(({ id, kind }) => id !== item.id || kind !== item.kind);
+      }
+      return current.length < 40 ? [...current, item] : current;
+    });
+  }
+
+  function moveCarouselItem(index: number, direction: -1 | 1) {
+    setCarouselItems((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target]!, next[index]!];
+      return next;
+    });
+  }
+
+  async function persistCarousel() {
+    const title = carouselTitle.trim();
+    if (!title || busyId) return;
+    const id = editingCarousel?.id ?? newStudioId();
+    setBusyId(editingCarousel?.id ?? 'new-carousel');
+    onError('');
+    try {
+      const carousel = {
+        brandId: null,
+        contentItems: carouselItems,
+        description: editingCarousel?.description ?? '',
+        displayStyle: 'horizontal' as const,
+        id,
+        imageUrl: null,
+        kind: 'section' as const,
+        parentCollectionId: null,
+        recommendationIds: carouselItems
+          .filter(({ kind }) => kind === 'recommendation')
+          .map(({ id: recommendationId }) => recommendationId),
+        showItemsIndividually: false,
+        title,
+      };
+      const next = {
+        ...configuration,
+        contentOrder: editingCarousel
+          ? configuration.contentOrder
+          : [...configuration.contentOrder, { id, kind: 'section' as const }],
+        curatedSections: editingCarousel
+          ? configuration.curatedSections.map((section) =>
+              section.id === id ? carousel : section,
+            )
+          : [...configuration.curatedSections, carousel],
+      };
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      setEditingCarousel(undefined);
+      onNotice(editingCarousel ? 'Carousel updated.' : 'Carousel added.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function removeCarousel(
+    carousel: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    Alert.alert(
+      `Remove ${carousel.title}?`,
+      'The content inside it will stay available.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => void confirmRemoveCarousel(carousel),
+          style: 'destructive',
+          text: 'Remove',
+        },
+      ],
+    );
+  }
+
+  async function confirmRemoveCarousel(
+    carousel: CreatorStorefrontConfiguration['curatedSections'][number],
+  ) {
+    setBusyId(carousel.id);
+    onError('');
+    try {
+      const next = {
+        ...configuration,
+        contentOrder: configuration.contentOrder.filter(
+          ({ id, kind }) => !(kind === 'section' && id === carousel.id),
+        ),
+        curatedSections: configuration.curatedSections.filter(
+          ({ id }) => id !== carousel.id,
+        ),
+      };
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      onNotice('Carousel removed. Its content is still available.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function addCustomCategory() {
@@ -1320,7 +1457,7 @@ function Recommendations({
 
   async function moveDashboardContent(
     id: string,
-    kind: 'collection' | 'recommendation',
+    kind: 'collection' | 'recommendation' | 'section',
     direction: -1 | 1,
   ) {
     const index = configuration.contentOrder.findIndex(
@@ -1383,6 +1520,9 @@ function Recommendations({
             style={styles.compactButtonSecondary}
           >
             <Text style={styles.compactButtonSecondaryText}>+ Collection</Text>
+          </Pressable>
+          <Pressable onPress={() => openCarousel()} style={styles.compactButtonSecondary}>
+            <Text style={styles.compactButtonSecondaryText}>+ Carousel</Text>
           </Pressable>
           <Pressable onPress={() => openDiscount()} style={styles.compactButtonSecondary}>
             <Text style={styles.compactButtonSecondaryText}>+ Discount</Text>
@@ -1569,6 +1709,115 @@ function Recommendations({
             </Pressable>
             <Pressable
               onPress={() => setEditingDiscount(undefined)}
+              style={styles.secondarySmall}
+            >
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+      {editingCarousel !== undefined ? (
+        <View style={styles.editorCard}>
+          <Text style={styles.cardTitle}>
+            {editingCarousel ? 'Edit carousel' : 'Add carousel'}
+          </Text>
+          <Text style={styles.cardMeta}>
+            Mix brands, collections, products and featured media in one swipeable row.
+          </Text>
+          <Field
+            label="Carousel name"
+            maxLength={80}
+            onChangeText={setCarouselTitle}
+            value={carouselTitle}
+          />
+          <LabelChoices
+            label="Brands"
+            onToggle={(id) => toggleCarouselItem({ id, kind: 'brand' })}
+            options={brands.map((brand) => ({ id: brand.id, label: brand.name }))}
+            selectedIds={carouselItems
+              .filter(({ kind }) => kind === 'brand')
+              .map(({ id }) => id)}
+          />
+          <LabelChoices
+            label="Collections"
+            onToggle={(id) => toggleCarouselItem({ id, kind: 'collection' })}
+            options={configuration.curatedSections
+              .filter(({ kind }) => kind === 'collection')
+              .map((collection) => ({ id: collection.id, label: collection.title }))}
+            selectedIds={carouselItems
+              .filter(({ kind }) => kind === 'collection')
+              .map(({ id }) => id)}
+          />
+          <LabelChoices
+            label="Recommendations"
+            onToggle={(id) => toggleCarouselItem({ id, kind: 'recommendation' })}
+            options={recommendations
+              .filter(({ lifecycle }) => lifecycle !== 'archived')
+              .map((item) => ({ id: item.id, label: item.productName }))}
+            selectedIds={carouselItems
+              .filter(({ kind }) => kind === 'recommendation')
+              .map(({ id }) => id)}
+          />
+          <LabelChoices
+            label="Featured content"
+            onToggle={(id) => toggleCarouselItem({ id, kind: 'media' })}
+            options={configuration.featuredMedia.map((media) => ({
+              id: media.id,
+              label: media.title,
+            }))}
+            selectedIds={carouselItems
+              .filter(({ kind }) => kind === 'media')
+              .map(({ id }) => id)}
+          />
+          {carouselItems.length ? (
+            <>
+              <Text style={styles.fieldLabelStandalone}>Carousel order</Text>
+              {carouselItems.map((content, index) => (
+                <View key={`${content.kind}:${content.id}`} style={styles.listCard}>
+                  <View style={styles.listCopy}>
+                    <Text style={styles.cardEyebrow}>
+                      {content.kind.replace('_', ' ')}
+                    </Text>
+                    <Text style={styles.cardTitle}>
+                      {content.kind === 'media'
+                        ? (configuration.featuredMedia.find(({ id }) => id === content.id)
+                            ?.title ?? 'Media')
+                        : content.kind === 'brand'
+                          ? (brands.find(({ id }) => id === content.id)?.name ?? 'Brand')
+                          : content.kind === 'collection'
+                            ? (configuration.curatedSections.find(
+                                ({ id }) => id === content.id,
+                              )?.title ?? 'Collection')
+                            : (recommendations.find(({ id }) => id === content.id)
+                                ?.productName ?? 'Recommendation')}
+                    </Text>
+                  </View>
+                  <MoveButtons
+                    disabled={Boolean(busyId)}
+                    onDown={() => moveCarouselItem(index, 1)}
+                    onUp={() => moveCarouselItem(index, -1)}
+                  />
+                </View>
+              ))}
+            </>
+          ) : (
+            <Empty text="Choose content now, or create an empty carousel and fill it later." />
+          )}
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId) || !carouselTitle.trim()}
+              onPress={() => void persistCarousel()}
+              style={styles.primarySmall}
+            >
+              {busyId === (editingCarousel?.id ?? 'new-carousel') ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save carousel</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setEditingCarousel(undefined)}
               style={styles.secondarySmall}
             >
               <Text style={styles.secondaryButtonText}>Cancel</Text>
@@ -2224,6 +2473,37 @@ function Recommendations({
                     <Text style={styles.editLabel}>Edit</Text>
                   </Pressable>
                   <Pressable onPress={() => removeCollection(collection)}>
+                    <Text style={styles.removeText}>Remove</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+        </>
+      ) : null}
+
+      {configuration.curatedSections.filter(({ kind }) => kind === 'section').length ? (
+        <>
+          <Text style={styles.sectionTitle}>Carousels</Text>
+          {configuration.curatedSections
+            .filter(({ kind }) => kind === 'section')
+            .map((carousel) => (
+              <View key={carousel.id} style={styles.listCard}>
+                <View style={styles.listCopy}>
+                  <Text style={styles.cardTitle}>{carousel.title}</Text>
+                  <Text style={styles.cardMeta}>
+                    {carousel.contentItems.length} content items
+                  </Text>
+                </View>
+                <View style={styles.itemActions}>
+                  <MoveButtons
+                    disabled={Boolean(busyId)}
+                    onDown={() => void moveDashboardContent(carousel.id, 'section', 1)}
+                    onUp={() => void moveDashboardContent(carousel.id, 'section', -1)}
+                  />
+                  <Pressable onPress={() => openCarousel(carousel)}>
+                    <Text style={styles.editLabel}>Edit</Text>
+                  </Pressable>
+                  <Pressable onPress={() => removeCarousel(carousel)}>
                     <Text style={styles.removeText}>Remove</Text>
                   </Pressable>
                 </View>
