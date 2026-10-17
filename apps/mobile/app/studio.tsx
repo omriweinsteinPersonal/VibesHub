@@ -496,8 +496,15 @@ function Recommendations({
   >();
   const [collectionTitle, setCollectionTitle] = useState('');
   const [collectionDescription, setCollectionDescription] = useState('');
+  const [collectionDisplayStyle, setCollectionDisplayStyle] = useState<
+    'horizontal' | 'vertical'
+  >('horizontal');
+  const [collectionImageUrl, setCollectionImageUrl] = useState<string | null>(null);
   const [collectionBrandId, setCollectionBrandId] = useState<string | null>(null);
   const [collectionItemIds, setCollectionItemIds] = useState<string[]>([]);
+  const [collectionShowItemsIndividually, setCollectionShowItemsIndividually] =
+    useState(false);
+  const [uploadingCollectionImage, setUploadingCollectionImage] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState<
     CreatorDiscountCode | null | undefined
   >();
@@ -557,8 +564,11 @@ function Recommendations({
     setEditingCollection(collection ?? null);
     setCollectionTitle(collection?.title ?? '');
     setCollectionDescription(collection?.description ?? '');
+    setCollectionDisplayStyle(collection?.displayStyle ?? 'horizontal');
+    setCollectionImageUrl(collection?.imageUrl ?? null);
     setCollectionBrandId(collection?.brandId ?? null);
     setCollectionItemIds(collection?.recommendationIds ?? []);
+    setCollectionShowItemsIndividually(collection?.showItemsIndividually ?? false);
   }
 
   function openDiscount(discount?: CreatorDiscountCode) {
@@ -675,14 +685,59 @@ function Recommendations({
     );
   }
 
+  async function chooseCollectionImage() {
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose a collection cover.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      mediaTypes: ['images'],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    if (!asset) return;
+    setUploadingCollectionImage(true);
+    try {
+      const uploaded = await uploadCreatorImage({
+        fileSize: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        uri: asset.uri,
+      });
+      setCollectionImageUrl(uploaded.publicUrl);
+      onNotice('Collection cover uploaded. Save the collection to keep it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingCollectionImage(false);
+    }
+  }
+
   async function persistCollection() {
     const title = collectionTitle.trim();
     if (!title) {
       onError('Add a collection name.');
       return;
     }
+    if (!collectionBrandId) {
+      onError('Choose a brand for this collection.');
+      return;
+    }
     if (!collectionItemIds.length) {
       onError('Choose at least one item for this collection.');
+      return;
+    }
+    if (
+      collectionItemIds.some(
+        (id) =>
+          recommendations.find((item) => item.id === id)?.brandId !== collectionBrandId,
+      )
+    ) {
+      onError('Every item in a collection must belong to its selected brand.');
       return;
     }
 
@@ -692,18 +747,23 @@ function Recommendations({
       const id = editingCollection?.id ?? newStudioId();
       const collection = {
         brandId: collectionBrandId,
-        contentItems: collectionItemIds.map((itemId) => ({
-          id: itemId,
-          kind: 'recommendation' as const,
-        })),
+        contentItems: [
+          ...(editingCollection?.contentItems.filter(
+            ({ kind }) => kind !== 'recommendation',
+          ) ?? []),
+          ...collectionItemIds.map((itemId) => ({
+            id: itemId,
+            kind: 'recommendation' as const,
+          })),
+        ],
         description: collectionDescription.trim(),
-        displayStyle: editingCollection?.displayStyle ?? ('horizontal' as const),
+        displayStyle: collectionDisplayStyle,
         id,
-        imageUrl: editingCollection?.imageUrl ?? null,
+        imageUrl: collectionImageUrl,
         kind: 'collection' as const,
         parentCollectionId: editingCollection?.parentCollectionId ?? null,
         recommendationIds: collectionItemIds,
-        showItemsIndividually: editingCollection?.showItemsIndividually ?? false,
+        showItemsIndividually: collectionShowItemsIndividually,
         title,
       };
       const next = {
@@ -1341,30 +1401,88 @@ function Recommendations({
             onChangeText={setCollectionDescription}
             value={collectionDescription}
           />
-          <Text style={styles.fieldLabelStandalone}>Brand (optional)</Text>
+          <Text style={styles.fieldLabelStandalone}>Collection cover</Text>
+          {collectionImageUrl ? (
+            <Image
+              accessibilityLabel="Collection cover preview"
+              resizeMode="cover"
+              source={{ uri: collectionImageUrl }}
+              style={styles.collectionCoverPreview}
+            />
+          ) : null}
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={uploadingCollectionImage}
+              onPress={() => void chooseCollectionImage()}
+              style={styles.secondarySmall}
+            >
+              {uploadingCollectionImage ? (
+                <ActivityIndicator color={colors.accent} />
+              ) : (
+                <Text style={styles.secondaryButtonText}>
+                  {collectionImageUrl ? 'Replace cover' : 'Choose cover'}
+                </Text>
+              )}
+            </Pressable>
+            {collectionImageUrl ? (
+              <Pressable
+                disabled={uploadingCollectionImage}
+                onPress={() => setCollectionImageUrl(null)}
+                style={styles.secondarySmall}
+              >
+                <Text style={styles.removeText}>Remove cover</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <Text style={styles.fieldLabelStandalone}>Layout</Text>
+          <View style={styles.inlineChoices}>
+            <ChoicePill
+              label="Horizontal"
+              onPress={() => setCollectionDisplayStyle('horizontal')}
+              selected={collectionDisplayStyle === 'horizontal'}
+            />
+            <ChoicePill
+              label="Vertical"
+              onPress={() => setCollectionDisplayStyle('vertical')}
+              selected={collectionDisplayStyle === 'vertical'}
+            />
+          </View>
+          <Text style={styles.fieldLabelStandalone}>Brand</Text>
           <ScrollView
             contentContainerStyle={styles.choiceRail}
             horizontal
             showsHorizontalScrollIndicator={false}
           >
-            <ChoicePill
-              label="Any brand"
-              onPress={() => setCollectionBrandId(null)}
-              selected={collectionBrandId === null}
-            />
             {brands.map((brand) => (
               <ChoicePill
                 key={brand.id}
                 label={brand.name}
-                onPress={() => setCollectionBrandId(brand.brandId)}
+                onPress={() => {
+                  setCollectionBrandId(brand.brandId);
+                  setCollectionItemIds((ids) =>
+                    ids.filter(
+                      (id) =>
+                        recommendations.find((item) => item.id === id)?.brandId ===
+                        brand.brandId,
+                    ),
+                  );
+                }}
                 selected={collectionBrandId === brand.brandId}
               />
             ))}
           </ScrollView>
           <Text style={styles.fieldLabelStandalone}>Items</Text>
-          {recommendations.filter(({ lifecycle }) => lifecycle !== 'archived').length ? (
+          {!collectionBrandId ? (
+            <Empty text="Choose a brand before selecting items." />
+          ) : recommendations.filter(
+              (item) =>
+                item.lifecycle !== 'archived' && item.brandId === collectionBrandId,
+            ).length ? (
             recommendations
-              .filter(({ lifecycle }) => lifecycle !== 'archived')
+              .filter(
+                (item) =>
+                  item.lifecycle !== 'archived' && item.brandId === collectionBrandId,
+              )
               .map((item) => (
                 <Pressable
                   accessibilityRole="checkbox"
@@ -1390,11 +1508,36 @@ function Recommendations({
                 </Pressable>
               ))
           ) : (
-            <Empty text="Add an item before creating a collection." />
+            <Empty text="Add an item for this brand before creating a collection." />
           )}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: collectionShowItemsIndividually }}
+            onPress={() => setCollectionShowItemsIndividually((current) => !current)}
+            style={styles.checkboxRow}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                collectionShowItemsIndividually && styles.checkboxSelected,
+              ]}
+            >
+              {collectionShowItemsIndividually ? (
+                <Text style={styles.checkboxMark}>✓</Text>
+              ) : null}
+            </View>
+            <Text style={styles.choiceListLabel}>
+              Also show these items as individual recommendations
+            </Text>
+          </Pressable>
           <View style={styles.buttonRow}>
             <Pressable
-              disabled={Boolean(busyId) || !collectionItemIds.length}
+              disabled={
+                Boolean(busyId) ||
+                uploadingCollectionImage ||
+                !collectionBrandId ||
+                !collectionItemIds.length
+              }
               onPress={() => void persistCollection()}
               style={styles.primarySmall}
             >
@@ -1846,6 +1989,12 @@ function Recommendations({
             .filter(({ kind }) => kind === 'collection')
             .map((collection) => (
               <View key={collection.id} style={styles.listCard}>
+                {collection.imageUrl ? (
+                  <Image
+                    source={{ uri: collection.imageUrl }}
+                    style={styles.collectionCoverThumbnail}
+                  />
+                ) : null}
                 <View style={styles.listCopy}>
                   <Text style={styles.cardTitle}>{collection.title}</Text>
                   <Text style={styles.cardMeta}>
@@ -3443,6 +3592,19 @@ const styles = StyleSheet.create({
     height: 48,
     resizeMode: 'contain',
     width: 48,
+  },
+  collectionCoverPreview: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: radii.card,
+    height: 144,
+    marginTop: spacing.sm,
+    width: '100%',
+  },
+  collectionCoverThumbnail: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: 10,
+    height: 54,
+    width: 68,
   },
   avatarEditorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   avatarPreview: { borderRadius: 44, height: 88, width: 88 },
