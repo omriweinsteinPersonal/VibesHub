@@ -2659,6 +2659,7 @@ function StorefrontEditor({
   const [labelLayout, setLabelLayout] = useState<'cards' | 'grid'>('grid');
   const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
   const [mediaDisplayMode, setMediaDisplayMode] = useState<'embed' | 'link'>('embed');
+  const [mediaLocation, setMediaLocation] = useState('');
   const [mediaThumbnailUrl, setMediaThumbnailUrl] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaTitle, setMediaTitle] = useState('');
@@ -2892,6 +2893,7 @@ function StorefrontEditor({
   function openMedia(media?: FeaturedMedia) {
     setEditingMediaId(media?.id ?? null);
     setMediaDisplayMode(media?.displayMode ?? 'embed');
+    setMediaLocation(media?.location ?? '');
     setMediaThumbnailUrl(media?.thumbnailUrl ?? '');
     setMediaTitle(media?.title ?? '');
     setMediaUrl(media?.url ?? '');
@@ -2914,6 +2916,9 @@ function StorefrontEditor({
     const media: FeaturedMedia = {
       displayMode: provider === 'maps' ? 'link' : mediaDisplayMode,
       id: editingMediaId ?? newStudioId(),
+      ...(provider === 'maps' && mediaLocation.trim()
+        ? { location: mediaLocation.trim() }
+        : {}),
       provider,
       thumbnailUrl: normalizedThumbnailUrl,
       title: mediaTitle.trim(),
@@ -2935,6 +2940,7 @@ function StorefrontEditor({
     };
     setEditingMediaId(null);
     setMediaDisplayMode('embed');
+    setMediaLocation('');
     setMediaThumbnailUrl('');
     setMediaTitle('');
     setMediaUrl('');
@@ -3475,6 +3481,14 @@ function StorefrontEditor({
           value={mediaUrl}
         />
         <Field label="Title" onChangeText={setMediaTitle} value={mediaTitle} />
+        {featuredMediaProvider(mediaUrl) === 'maps' ? (
+          <Field
+            label="Location (optional)"
+            maxLength={160}
+            onChangeText={setMediaLocation}
+            value={mediaLocation}
+          />
+        ) : null}
         <Field
           autoCapitalize="none"
           keyboardType="url"
