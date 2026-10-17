@@ -7,6 +7,7 @@ import type {
   CreatorRecommendation,
   CreatorStorefrontConfiguration,
   FeaturedMedia,
+  StorefrontTitle,
   StorefrontTheme,
 } from '@vibeshub/contracts';
 import { defaultStorefrontTheme } from '@vibeshub/contracts';
@@ -2159,6 +2160,9 @@ function StorefrontEditor({
   const [configuration, setConfiguration] = useState(bundle.configuration);
   const [themeConfiguration, setThemeConfiguration] = useState(bundle.theme);
   const [themeDraft, setThemeDraft] = useState(bundle.theme.theme);
+  const [titleDraft, setTitleDraft] = useState<StorefrontTitle[]>(
+    bundle.configuration.titles ?? [],
+  );
   const [labelTitle, setLabelTitle] = useState('');
   const [editingLabelId, setEditingLabelId] = useState<string | null | undefined>();
   const [labelBrandIds, setLabelBrandIds] = useState<string[]>([]);
@@ -2262,6 +2266,48 @@ function StorefrontEditor({
         },
       };
     });
+  }
+
+  function addTitleBlock() {
+    setTitleDraft((current) => [
+      ...current,
+      {
+        align: 'center',
+        beforeId: null,
+        format: 'heading',
+        id: newStudioId(),
+        size: 'medium',
+        text: '',
+      },
+    ]);
+  }
+
+  function updateTitleBlock(id: string, patch: Partial<StorefrontTitle>) {
+    setTitleDraft((current) =>
+      current.map((title) => (title.id === id ? { ...title, ...patch } : title)),
+    );
+  }
+
+  function moveTitleBlock(id: string, direction: -1 | 1) {
+    setTitleDraft((current) => {
+      const index = current.findIndex((title) => title.id === id);
+      const target = index + direction;
+      if (index < 0 || target < 0 || target >= current.length) return current;
+      const titles = [...current];
+      [titles[index], titles[target]] = [titles[target]!, titles[index]!];
+      return titles;
+    });
+  }
+
+  async function saveTitleBlocks() {
+    if (saving || titleDraft.some((title) => !title.text.trim())) return;
+    const next = {
+      ...configuration,
+      titles: titleDraft.map((title) => ({ ...title, text: title.text.trim() })),
+    };
+    setConfiguration(next);
+    setTitleDraft(next.titles);
+    await save(next);
   }
 
   const save = useCallback(
@@ -2687,6 +2733,115 @@ function StorefrontEditor({
           trackColor={{ false: '#d8d0c7', true: colors.accent }}
           value={themeDraft.labelsFrame ?? true}
         />
+      </View>
+
+      <View style={styles.editorCard}>
+        <View style={styles.labelHeadingRow}>
+          <View style={styles.listCopy}>
+            <Text style={styles.cardTitle}>Custom title and text blocks</Text>
+            <Text style={styles.cardMeta}>
+              Add headings or supporting text between the content on your storefront.
+            </Text>
+          </View>
+          <Pressable
+            disabled={saving || titleDraft.length >= 24}
+            onPress={addTitleBlock}
+            style={styles.compactButton}
+          >
+            <Text style={styles.compactButtonText}>+ Text</Text>
+          </Pressable>
+        </View>
+        {titleDraft.map((title) => (
+          <View key={title.id} style={styles.insetEditor}>
+            <Field
+              label={title.format === 'paragraph' ? 'Text' : 'Title'}
+              multiline={title.format === 'paragraph'}
+              onChangeText={(text) => updateTitleBlock(title.id, { text })}
+              value={title.text}
+            />
+            <Text style={styles.fieldLabelStandalone}>Type</Text>
+            <View style={styles.inlineChoices}>
+              <ChoicePill
+                label="Heading"
+                onPress={() => updateTitleBlock(title.id, { format: 'heading' })}
+                selected={(title.format ?? 'heading') === 'heading'}
+              />
+              <ChoicePill
+                label="Paragraph"
+                onPress={() => updateTitleBlock(title.id, { format: 'paragraph' })}
+                selected={title.format === 'paragraph'}
+              />
+            </View>
+            <Text style={styles.fieldLabelStandalone}>Alignment</Text>
+            <View style={styles.wrappedChoices}>
+              {(['start', 'center', 'end'] as const).map((alignment) => (
+                <ChoicePill
+                  key={alignment}
+                  label={
+                    alignment === 'start'
+                      ? 'Left'
+                      : alignment === 'end'
+                        ? 'Right'
+                        : 'Center'
+                  }
+                  onPress={() => updateTitleBlock(title.id, { align: alignment })}
+                  selected={title.align === alignment}
+                />
+              ))}
+            </View>
+            <Text style={styles.fieldLabelStandalone}>Size</Text>
+            <View style={styles.wrappedChoices}>
+              {(['small', 'medium', 'large'] as const).map((size) => (
+                <ChoicePill
+                  key={size}
+                  label={`${size.slice(0, 1).toUpperCase()}${size.slice(1)}`}
+                  onPress={() => updateTitleBlock(title.id, { size })}
+                  selected={title.size === size}
+                />
+              ))}
+            </View>
+            <View style={styles.itemActions}>
+              <MoveButtons
+                disabled={saving}
+                onDown={() => moveTitleBlock(title.id, 1)}
+                onUp={() => moveTitleBlock(title.id, -1)}
+              />
+              <Pressable
+                disabled={saving}
+                onPress={() =>
+                  setTitleDraft((current) =>
+                    current.filter((item) => item.id !== title.id),
+                  )
+                }
+              >
+                <Text style={styles.removeText}>Remove</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
+        {titleDraft.length ? (
+          <Pressable
+            disabled={
+              saving ||
+              titleDraft.some((title) => !title.text.trim()) ||
+              JSON.stringify(titleDraft) === JSON.stringify(configuration.titles ?? [])
+            }
+            onPress={() => void saveTitleBlocks()}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Save text blocks</Text>
+          </Pressable>
+        ) : configuration.titles?.length ? (
+          <Pressable
+            disabled={saving}
+            onPress={() => void saveTitleBlocks()}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Remove all text blocks</Text>
+          </Pressable>
+        ) : (
+          <Text style={styles.cardMeta}>No custom text blocks yet.</Text>
+        )}
       </View>
 
       <Text style={styles.sectionTitle}>Storefront categories</Text>
@@ -4163,6 +4318,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: spacing.xl,
     padding: spacing.lg,
+  },
+  insetEditor: {
+    borderColor: colors.border,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    padding: spacing.md,
   },
   listCard: {
     alignItems: 'center',
