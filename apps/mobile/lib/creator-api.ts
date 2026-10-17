@@ -160,6 +160,13 @@ export function saveCreatorDiscount(
   );
 }
 
+export function createCreatorCategory(name: string): Promise<CategoryCard> {
+  return creatorRequest('/v1/creator/categories', categoryCardSchema.parse, {
+    body: JSON.stringify({ name }),
+    method: 'POST',
+  });
+}
+
 export function transitionCreatorDiscount(
   discount: CreatorDiscountCode,
   command: 'archive' | 'confirm' | 'hide',

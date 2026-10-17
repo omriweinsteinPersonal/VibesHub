@@ -37,6 +37,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/api';
 import {
   cacheCreatorStudioBundle,
+  createCreatorCategory,
   fetchCreatorProductDetails,
   getCreatorAnalytics,
   getCreatorHandleAvailability,
@@ -491,6 +492,8 @@ function Recommendations({
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editingCollection, setEditingCollection] = useState<
     CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
@@ -684,6 +687,38 @@ function Recommendations({
           ? [...current, id]
           : current,
     );
+  }
+
+  async function addCustomCategory() {
+    const name = customCategoryName.trim();
+    if (!name || creatingCategory) return;
+    setCreatingCategory(true);
+    onError('');
+    try {
+      const category = await createCreatorCategory(name);
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              categories: current.categories.some(({ id }) => id === category.id)
+                ? current.categories
+                : [...current.categories, category],
+            }
+          : current,
+      );
+      setItemDraft((current) => {
+        const categoryIds = current.categoryIds.includes(category.id)
+          ? current.categoryIds
+          : [...current.categoryIds, category.id].slice(0, 8);
+        return { ...current, categoryId: categoryIds[0] ?? category.id, categoryIds };
+      });
+      setCustomCategoryName('');
+      onNotice(`${category.name} was added and selected.`);
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setCreatingCategory(false);
+    }
   }
 
   async function chooseCollectionImage() {
@@ -1656,6 +1691,23 @@ function Recommendations({
               />
             ))}
           </View>
+          <Field
+            label="Add your own category"
+            maxLength={100}
+            onChangeText={setCustomCategoryName}
+            value={customCategoryName}
+          />
+          <Pressable
+            disabled={creatingCategory || !customCategoryName.trim()}
+            onPress={() => void addCustomCategory()}
+            style={styles.secondarySmall}
+          >
+            {creatingCategory ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.secondaryButtonText}>Add and select category</Text>
+            )}
+          </Pressable>
           {configuration.curatedSections.some(({ kind }) => kind === 'collection') ? (
             <>
               <Text style={styles.fieldLabelStandalone}>Collections (optional)</Text>
