@@ -486,6 +486,8 @@ function Recommendations({
   );
   const [brandName, setBrandName] = useState('');
   const [brandUrl, setBrandUrl] = useState('');
+  const [brandLogoAssetId, setBrandLogoAssetId] = useState<string | null>(null);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -514,6 +516,8 @@ function Recommendations({
     setEditingBrand(brand ?? null);
     setBrandName(brand?.name ?? '');
     setBrandUrl(brand?.websiteUrl ?? '');
+    setBrandLogoAssetId(brand?.logoAssetId ?? null);
+    setBrandLogoUrl(brand?.logoUrl ?? null);
   }
 
   function openItem(item?: CreatorRecommendation) {
@@ -852,6 +856,39 @@ function Recommendations({
     }
   }
 
+  async function chooseBrandLogo() {
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose a logo for this brand.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      mediaTypes: ['images'],
+      quality: 0.9,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    if (!asset) return;
+    setUploadingImage(true);
+    try {
+      const uploaded = await uploadCreatorImage({
+        fileSize: asset.fileSize ?? 0,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+        uri: asset.uri,
+      });
+      setBrandLogoAssetId(uploaded.id);
+      setBrandLogoUrl(uploaded.publicUrl);
+      onNotice('Brand logo uploaded. Save the brand to keep it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
   async function persistItem() {
     let input;
     try {
@@ -934,8 +971,8 @@ function Recommendations({
     try {
       const saved = await saveCreatorBrand(
         {
-          logoAssetId: editingBrand?.logoAssetId ?? null,
-          logoUrl: editingBrand?.logoUrl ?? null,
+          logoAssetId: brandLogoAssetId,
+          logoUrl: brandLogoUrl,
           name: brandName.trim(),
           websiteUrl: normalizeUrl(brandUrl),
         },
@@ -1456,9 +1493,40 @@ function Recommendations({
             onChangeText={setBrandUrl}
             value={brandUrl}
           />
+          <Text style={styles.fieldLabelStandalone}>Brand logo</Text>
+          {brandLogoUrl ? (
+            <Image source={{ uri: brandLogoUrl }} style={styles.brandLogoPreview} />
+          ) : null}
           <View style={styles.buttonRow}>
             <Pressable
-              disabled={Boolean(busyId)}
+              disabled={uploadingImage}
+              onPress={() => void chooseBrandLogo()}
+              style={styles.secondarySmall}
+            >
+              {uploadingImage ? (
+                <ActivityIndicator color={colors.accent} />
+              ) : (
+                <Text style={styles.secondaryButtonText}>
+                  {brandLogoUrl ? 'Replace logo' : 'Choose logo'}
+                </Text>
+              )}
+            </Pressable>
+            {brandLogoUrl ? (
+              <Pressable
+                disabled={uploadingImage}
+                onPress={() => {
+                  setBrandLogoAssetId(null);
+                  setBrandLogoUrl(null);
+                }}
+                style={styles.secondarySmall}
+              >
+                <Text style={styles.removeText}>Remove logo</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={styles.buttonRow}>
+            <Pressable
+              disabled={Boolean(busyId) || uploadingImage}
               onPress={() => void persistBrand()}
               style={styles.primarySmall}
             >
@@ -1485,6 +1553,9 @@ function Recommendations({
           onPress={() => openBrand(brand)}
           style={styles.listCard}
         >
+          {brand.logoUrl ? (
+            <Image source={{ uri: brand.logoUrl }} style={styles.brandLogoThumbnail} />
+          ) : null}
           <View style={styles.listCopy}>
             <Text style={styles.cardTitle}>{brand.name}</Text>
             <Text style={styles.cardMeta}>
@@ -3065,6 +3136,21 @@ const styles = StyleSheet.create({
     height: 180,
     marginTop: spacing.sm,
     width: '100%',
+  },
+  brandLogoPreview: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: radii.card,
+    height: 144,
+    marginTop: spacing.sm,
+    resizeMode: 'contain',
+    width: 144,
+  },
+  brandLogoThumbnail: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: 10,
+    height: 48,
+    resizeMode: 'contain',
+    width: 48,
   },
   avatarEditorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   avatarPreview: { borderRadius: 44, height: 88, width: 88 },
