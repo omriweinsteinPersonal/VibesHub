@@ -68,6 +68,7 @@ type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
 type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
 type MapDraft = {
+  thumbnailAssetId: string;
   location: string;
   thumbnailUrl: string;
   title: string;
@@ -314,6 +315,7 @@ export function CreatorDashboard() {
   const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
   const [mapDraft, setMapDraft] = useState<MapDraft>({
     location: '',
+    thumbnailAssetId: '',
     thumbnailUrl: '',
     title: '',
     url: '',
@@ -1855,6 +1857,7 @@ export function CreatorDashboard() {
     setEditingMapId(item?.id ?? null);
     setMapDraft({
       location: item?.location ?? '',
+      thumbnailAssetId: '',
       thumbnailUrl: item?.thumbnailUrl ?? '',
       title: item?.title ?? '',
       url: item?.url ?? '',
@@ -1875,21 +1878,12 @@ export function CreatorDashboard() {
       setError('Add a name for this map recommendation.');
       return;
     }
-    const thumbnailUrl = mapDraft.thumbnailUrl.trim();
-    if (thumbnailUrl) {
-      try {
-        if (new URL(thumbnailUrl).protocol !== 'https:') throw new Error('invalid');
-      } catch {
-        setError('Paste a valid HTTPS image link or leave it empty.');
-        return;
-      }
-    }
     const item: FeaturedMedia = {
       displayMode: 'link',
       id: editingMapId ?? randomUuid(),
       location: mapDraft.location.trim() || undefined,
       provider: 'maps',
-      thumbnailUrl: thumbnailUrl || null,
+      thumbnailUrl: mapDraft.thumbnailUrl.trim() || null,
       title,
       url,
       visible: editingMapId
@@ -1916,9 +1910,49 @@ export function CreatorDashboard() {
         nextMedia,
       )
     ) {
-      setMapDraft({ location: '', thumbnailUrl: '', title: '', url: '' });
+      setMapDraft({
+        location: '',
+        thumbnailAssetId: '',
+        thumbnailUrl: '',
+        title: '',
+        url: '',
+      });
       setEditingMapId(null);
       setMapEditorOpen(false);
+    }
+  }
+
+  async function selectMapImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const previous = {
+      thumbnailAssetId: mapDraft.thumbnailAssetId,
+      thumbnailUrl: mapDraft.thumbnailUrl,
+    };
+    const previewUrl = URL.createObjectURL(file);
+    setMapDraft((current) => ({
+      ...current,
+      thumbnailAssetId: '',
+      thumbnailUrl: previewUrl,
+    }));
+    setUploading(true);
+    setError('');
+    setNotice('');
+    try {
+      const asset = await uploadRecommendationImage(file, () => undefined);
+      setMapDraft((current) => ({
+        ...current,
+        thumbnailAssetId: asset.id,
+        thumbnailUrl: asset.publicUrl,
+      }));
+      setNotice('Map image uploaded and verified.');
+    } catch (cause) {
+      setMapDraft((current) => ({ ...current, ...previous }));
+      setError(messageFor(cause));
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      setUploading(false);
+      event.target.value = '';
     }
   }
 
@@ -2444,21 +2478,40 @@ export function CreatorDashboard() {
                   </label>
                   <label>
                     Place image <span className="fieldOptional">(optional)</span>
-                    <input
-                      type="url"
-                      value={mapDraft.thumbnailUrl}
-                      onChange={(event) =>
-                        setMapDraft((current) => ({
-                          ...current,
-                          thumbnailUrl: event.target.value,
-                        }))
-                      }
-                      placeholder="https://…/budapest.jpg"
-                    />
-                    <small>This image appears on the right side of the map card.</small>
+                    <span className="creatorPhotoControls">
+                      <span className="button secondary">
+                        <Upload aria-hidden="true" size={16} />
+                        {uploading ? 'Uploading…' : 'Upload image'}
+                        <input
+                          accept={recommendationImageAccept}
+                          disabled={saving || uploading}
+                          onChange={selectMapImage}
+                          type="file"
+                        />
+                      </span>
+                      {mapDraft.thumbnailUrl ? (
+                        <span className="creatorCollectionCoverInput">
+                          <Image
+                            alt="Map recommendation preview"
+                            height={72}
+                            src={mapDraft.thumbnailUrl}
+                            unoptimized
+                            width={96}
+                          />
+                        </span>
+                      ) : null}
+                    </span>
+                    <small>
+                      JPEG, PNG or WebP up to 5 MB. This image appears on the right side
+                      of the map card.
+                    </small>
                   </label>
                   <div className="creatorFormActions creatorFullField">
-                    <button className="button primary" disabled={saving} type="submit">
+                    <button
+                      className="button primary"
+                      disabled={saving || uploading}
+                      type="submit"
+                    >
                       {saving ? 'Saving…' : editingMapId ? 'Save map' : 'Add map'}
                     </button>
                     <button
@@ -2467,6 +2520,7 @@ export function CreatorDashboard() {
                         setMapEditorOpen(false);
                         setMapDraft({
                           location: '',
+                          thumbnailAssetId: '',
                           thumbnailUrl: '',
                           title: '',
                           url: '',
