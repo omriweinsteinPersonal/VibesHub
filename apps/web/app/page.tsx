@@ -79,8 +79,8 @@ export default function HomePage() {
               curated in one place.
             </h1>
             <p>
-              One <span className={styles.heroAccent}>link-in-bio</span> for everything you
-              want to share.
+              One <span className={styles.heroAccent}>link-in-bio</span> for everything
+              you want to share.
             </p>
             <form action="/auth" className={styles.signup}>
               <input type="hidden" name="mode" value="signup" />

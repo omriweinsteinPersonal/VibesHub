@@ -9905,8 +9905,7 @@ dt {
   }
 
   /* Match the creator Storefront proportions inside the public phone frame. */
-  .storefrontPage:not(:has(.storefrontDesignWorkspace))
-    .referenceStorefrontProducts,
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontProducts,
   .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontCodes {
     padding-inline: 14px;
   }

@@ -29,11 +29,11 @@ export default function PrivacyPage() {
           <section className="legalCallout">
             <h2>The short version</h2>
             <p>
-              Anyone may browse public storefronts, and shoppers do not need an account
-              to view them. People of any age may use the Service, subject to applicable
-              law. We use account data to operate creator pages and privacy-conscious
-              analytics to show creators how their public content performs. We do not
-              sell personal data.
+              Anyone may browse public storefronts, and shoppers do not need an account to
+              view them. People of any age may use the Service, subject to applicable law.
+              We use account data to operate creator pages and privacy-conscious analytics
+              to show creators how their public content performs. We do not sell personal
+              data.
             </p>
           </section>
 
@@ -43,8 +43,8 @@ export default function PrivacyPage() {
               This Privacy Policy applies to swavii&apos;s website, creator tools, public
               storefronts and related mobile applications and services (together, the
               “Service”). In this policy, “swavii,” “we,” “us” and “our” refer to the
-              operator of the Service. We will publish the operator&apos;s formal legal name
-              and registered contact details when they are finalized.
+              operator of the Service. We will publish the operator&apos;s formal legal
+              name and registered contact details when they are finalized.
             </p>
             <p>
               Creators control the content they publish on their storefronts. Merchants
@@ -72,8 +72,8 @@ export default function PrivacyPage() {
                 Storefront content, including recommendations, reviews, product and brand
                 details, images, videos, discount codes, social links, external links and
                 other text or information you choose to publish. Do not publish passwords,
-                financial information, medical information or another person&apos;s personal
-                information without authorization.
+                financial information, medical information or another person&apos;s
+                personal information without authorization.
               </li>
               <li>
                 Communications, support requests, security records and actions taken in
@@ -98,8 +98,8 @@ export default function PrivacyPage() {
                 Random anonymous and session identifiers stored in browser storage. Before
                 analytics records are stored, these identifiers are transformed into keyed
                 hashes. Raw IP addresses may be processed transiently for rate limiting,
-                abuse prevention and service security; they are not written to creator-facing
-                analytics event records.
+                abuse prevention and service security; they are not written to
+                creator-facing analytics event records.
               </li>
             </ul>
             <p>
@@ -204,8 +204,8 @@ export default function PrivacyPage() {
               <Link href="/account-deletion">account deletion process</Link>. Deletion
               removes the authentication account and associated creator-owned profile,
               storefront, recommendations, videos, discount codes and other account data.
-              Unreferenced creator uploads are removed from storage as part of the deletion
-              process.
+              Unreferenced creator uploads are removed from storage as part of the
+              deletion process.
             </p>
             <p>
               Limited records may remain in analytics records, backups, security logs or
