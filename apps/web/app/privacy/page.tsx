@@ -22,17 +22,18 @@ export default function PrivacyPage() {
             This policy explains what information swavii handles when creators build a
             public recommendation page and when visitors browse those pages.
           </p>
-          <p className="legalUpdated">Effective and last updated: September 30, 2026</p>
+          <p className="legalUpdated">Effective and last updated: October 17, 2026</p>
         </header>
 
         <div className="legalContent">
           <section className="legalCallout">
             <h2>The short version</h2>
             <p>
-              Swavii accounts are for creators and platform operators. Shoppers do not
-              need an account to view a creator&apos;s storefront. We use account data to
-              operate creator pages and limited, privacy-conscious analytics to show
-              creators how their public content performs. We do not sell personal data.
+              Anyone may browse public storefronts, and shoppers do not need an account
+              to view them. People of any age may use the Service, subject to applicable
+              law. We use account data to operate creator pages and privacy-conscious
+              analytics to show creators how their public content performs. We do not
+              sell personal data.
             </p>
           </section>
 
@@ -42,7 +43,8 @@ export default function PrivacyPage() {
               This Privacy Policy applies to swavii&apos;s website, creator tools, public
               storefronts and related mobile applications and services (together, the
               “Service”). In this policy, “swavii,” “we,” “us” and “our” refer to the
-              operator of the Service in Israel.
+              operator of the Service. We will publish the operator&apos;s formal legal name
+              and registered contact details when they are finalized.
             </p>
             <p>
               Creators control the content they publish on their storefronts. Merchants
@@ -57,8 +59,10 @@ export default function PrivacyPage() {
             <ul>
               <li>
                 Identity and sign-in data, such as name, email address, account ID and
-                authentication provider. If you use Google sign-in, we receive the basic
-                profile information you authorize Google to share for authentication.
+                authentication provider. If you use Google or Apple sign-in, we receive
+                the basic profile and account information made available by that provider
+                for authentication, which may include your name, email address, provider
+                user ID and profile image.
               </li>
               <li>
                 Creator application and profile data, including your chosen handle,
@@ -66,7 +70,10 @@ export default function PrivacyPage() {
               </li>
               <li>
                 Storefront content, including recommendations, reviews, product and brand
-                details, images, videos, discount codes and related links.
+                details, images, videos, discount codes, social links, external links and
+                other text or information you choose to publish. Do not publish passwords,
+                financial information, medical information or another person&apos;s personal
+                information without authorization.
               </li>
               <li>
                 Communications, support requests, security records and actions taken in
@@ -78,8 +85,9 @@ export default function PrivacyPage() {
             <ul>
               <li>
                 Basic request and device information needed to deliver and protect the
-                Service, such as browser type, approximate region, request time and
-                network information processed in security and server logs.
+                Service, such as browser type, device information, approximate region,
+                request time, referrer information and network information processed in
+                security and server logs.
               </li>
               <li>
                 Storefront activity, such as page and recommendation views, story opens
@@ -87,16 +95,18 @@ export default function PrivacyPage() {
                 clicks.
               </li>
               <li>
-                Random session identifiers stored in the browser. Before analytics records
-                are stored, these identifiers are transformed into keyed hashes. Raw IP
-                addresses are used transiently for abuse prevention and are not written to
+                Random anonymous and session identifiers stored in browser storage. Before
+                analytics records are stored, these identifiers are transformed into keyed
+                hashes. Raw IP addresses may be processed transiently for rate limiting,
+                abuse prevention and service security; they are not written to creator-facing
                 analytics event records.
               </li>
             </ul>
             <p>
               Shoppers can browse public storefronts without creating an account, and we
-              do not intentionally collect a shopper&apos;s name or email through ordinary
-              storefront browsing.
+              do not intentionally request a shopper&apos;s name or email through ordinary
+              storefront browsing. A visitor may still provide information to a
+              third-party destination after following a link from a storefront.
             </p>
           </section>
 
@@ -113,6 +123,10 @@ export default function PrivacyPage() {
               <li>Prevent fraud, abuse, security incidents and service disruption.</li>
               <li>Provide support, troubleshoot problems and improve the Service.</li>
               <li>Comply with applicable law and enforce our Terms of Service.</li>
+              <li>
+                Send account, verification, password-reset, security and other service
+                messages.
+              </li>
             </ul>
           </section>
 
@@ -120,11 +134,13 @@ export default function PrivacyPage() {
             <h2>4. Public creator content</h2>
             <p>
               A creator&apos;s display name, handle, profile image, biography, social
-              links, recommendations, reviews, media, discount codes and selected
-              storefront design are intended to be public. Do not publish information you
-              do not want visitors to see or share. Creator account credentials, private
-              application details and unpublished dashboard information are not part of
-              the public storefront.
+              links, recommendations, reviews, media, discount codes, external links and
+              selected storefront design are intended to be public. Public content may be
+              viewed, shared, cached or indexed by search engines and may remain in copies
+              made by other people after it is removed from Swavii. Do not publish
+              information you do not want visitors to see or share. Creator account
+              credentials, private application details and unpublished dashboard
+              information are not part of the public storefront.
             </p>
           </section>
 
@@ -135,7 +151,7 @@ export default function PrivacyPage() {
               <li>
                 Infrastructure and service providers that host the Service, database,
                 authentication, storage, security and sign-in functionality, including
-                Vercel, Supabase and Google.
+                Supabase, our hosting provider, Google and Apple where applicable.
               </li>
               <li>
                 Professional advisers or authorities when reasonably necessary to comply
@@ -147,9 +163,9 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p>
-              We do not sell personal data. We do not share Google account data for
-              advertising, and we use it only to authenticate and operate the creator
-              account requested by the user.
+              We do not sell personal data. We do not use Google or Apple account data for
+              advertising, and we use it only to authenticate and operate the account
+              requested by the user.
             </p>
           </section>
 
@@ -157,8 +173,19 @@ export default function PrivacyPage() {
             <h2>6. Storage, cookies and international processing</h2>
             <p>
               We use essential cookies and browser storage to maintain creator sessions,
-              remember security state and create short-lived analytics session
-              identifiers. We do not currently use third-party advertising cookies.
+              remember security state and create analytics identifiers. On the web, the
+              anonymous analytics identifier is stored in local storage and the session
+              identifier is stored in session storage. Authentication may also use cookies
+              managed through Supabase. We do not currently use Google Analytics, Meta
+              Pixel, TikTok Pixel or third-party advertising cookies in the Swavii web
+              application.
+            </p>
+            <p>
+              Creator images and videos are stored using Supabase Storage. Temporary
+              upload authorization may expire after a short period, while published
+              storefront media may remain publicly accessible as long as the related
+              content is published. Public media may also be cached by browsers,
+              content-delivery systems or other services.
             </p>
             <p>
               Our providers may process information in Israel, the European Economic Area,
@@ -172,19 +199,21 @@ export default function PrivacyPage() {
             <h2>7. Retention and account deletion</h2>
             <p>
               We retain creator information while the account is active and as needed to
-              provide the Service. A creator can permanently delete the account from the
-              account settings. A creator who no longer has access to the app can also use
-              our public <Link href="/account-deletion">account deletion page</Link>.
-              Deletion removes the authentication account and associated creator-owned
-              profile and storefront data. Unreferenced creator uploads are also scheduled
-              for removal.
+              provide the Service. Account deletion is available through the mobile
+              application and our public{' '}
+              <Link href="/account-deletion">account deletion process</Link>. Deletion
+              removes the authentication account and associated creator-owned profile,
+              storefront, recommendations, videos, discount codes and other account data.
+              Unreferenced creator uploads are removed from storage as part of the deletion
+              process.
             </p>
             <p>
-              Limited records may remain for a reasonable period in backups, security logs
-              or where retention is required for legal, fraud-prevention, dispute or
+              Limited records may remain in analytics records, backups, security logs or
+              where retention is required for legal, fraud-prevention, dispute or
               accounting purposes. Shared catalog media may remain when it is lawfully
               used by another active record and no longer identifies the deleted account
-              owner.
+              owner. We are reviewing and will publish more specific retention periods as
+              the Service and its operational processes are finalized.
             </p>
           </section>
 
@@ -192,9 +221,11 @@ export default function PrivacyPage() {
             <h2>8. Your choices and rights</h2>
             <p>
               Creators can review and update profile and storefront information from their
-              account, or delete the account from account settings. Depending on
-              applicable law, you may also request access to, correction of or deletion of
-              personal information, or object to certain processing.
+              account. Depending on applicable law, you may also request access to,
+              correction of or deletion of personal information, request a copy of your
+              information, or object to certain processing. To make a privacy request,
+              contact us at the email address below. We may need to verify your identity
+              before completing a request.
             </p>
             <p>
               Storefront visitors can clear browser storage to reset local session
@@ -205,11 +236,19 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2>9. Children</h2>
+            <h2>9. Children and users of all ages</h2>
             <p>
-              Creator accounts are intended for adults aged 18 or older. The Service is
-              not directed to children, and we do not knowingly collect personal
-              information from children through creator registration.
+              Public storefronts and creator accounts are available to users of all ages,
+              subject to applicable law. Swavii does not intentionally request age or date
+              of birth during ordinary registration. Users should not publish passwords,
+              financial information, medical information or other sensitive personal
+              information in public storefront content or free-text fields.
+            </p>
+            <p>
+              If a parent or guardian believes that a child provided personal information
+              to Swavii, they should contact us at the email address below. We will review
+              the request and take steps required by applicable law, including deletion
+              where appropriate.
             </p>
           </section>
 
@@ -220,6 +259,10 @@ export default function PrivacyPage() {
               policy here and update the date above. If a change materially affects how we
               use creator information, we will provide an additional notice where
               appropriate.
+            </p>
+            <p>
+              We aim to respond to privacy requests within 30 days, or within any shorter
+              period required by applicable law.
             </p>
             <p>
               For privacy questions or requests, email{' '}
