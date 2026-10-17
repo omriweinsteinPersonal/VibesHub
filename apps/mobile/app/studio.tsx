@@ -2164,6 +2164,9 @@ function StorefrontEditor({
   const [labelCollectionIds, setLabelCollectionIds] = useState<string[]>([]);
   const [labelRecommendationIds, setLabelRecommendationIds] = useState<string[]>([]);
   const [labelLayout, setLabelLayout] = useState<'cards' | 'grid'>('grid');
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [mediaDisplayMode, setMediaDisplayMode] = useState<'embed' | 'link'>('embed');
+  const [mediaThumbnailUrl, setMediaThumbnailUrl] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaTitle, setMediaTitle] = useState('');
   const [saving, setSaving] = useState(false);
@@ -2280,6 +2283,7 @@ function StorefrontEditor({
   }
 
   function toggleCategory(category: CategoryCard) {
+    if (saving) return;
     const selected = configuration.sections.some(
       ({ category: sectionCategory }) => sectionCategory.id === category.id,
     );
@@ -2305,26 +2309,53 @@ function StorefrontEditor({
     void save(next);
   }
 
-  function addMedia() {
+  function openMedia(media?: FeaturedMedia) {
+    setEditingMediaId(media?.id ?? null);
+    setMediaDisplayMode(media?.displayMode ?? 'embed');
+    setMediaThumbnailUrl(media?.thumbnailUrl ?? '');
+    setMediaTitle(media?.title ?? '');
+    setMediaUrl(media?.url ?? '');
+  }
+
+  function saveMedia() {
     if (!mediaTitle.trim() || !mediaUrl.trim()) return;
-    const provider = featuredMediaProvider(mediaUrl);
+    let normalizedMediaUrl: string;
+    let normalizedThumbnailUrl: string | null;
+    try {
+      normalizedMediaUrl = normalizeUrl(mediaUrl);
+      normalizedThumbnailUrl = mediaThumbnailUrl.trim()
+        ? normalizeUrl(mediaThumbnailUrl)
+        : null;
+    } catch (cause) {
+      onError(messageFor(cause));
+      return;
+    }
+    const provider = featuredMediaProvider(normalizedMediaUrl);
     const media: FeaturedMedia = {
-      displayMode: provider === 'maps' ? 'link' : 'embed',
-      id: newStudioId(),
+      displayMode: provider === 'maps' ? 'link' : mediaDisplayMode,
+      id: editingMediaId ?? newStudioId(),
       provider,
-      thumbnailUrl: null,
+      thumbnailUrl: normalizedThumbnailUrl,
       title: mediaTitle.trim(),
-      url: normalizeUrl(mediaUrl),
-      visible: true,
+      url: normalizedMediaUrl,
+      visible:
+        configuration.featuredMedia.find((item) => item.id === editingMediaId)?.visible ??
+        true,
     };
     const next = {
       ...configuration,
-      contentOrder: [
-        ...configuration.contentOrder,
-        { id: media.id, kind: 'media' as const },
-      ],
-      featuredMedia: [...configuration.featuredMedia, media],
+      contentOrder: editingMediaId
+        ? configuration.contentOrder
+        : [...configuration.contentOrder, { id: media.id, kind: 'media' as const }],
+      featuredMedia: editingMediaId
+        ? configuration.featuredMedia.map((item) =>
+            item.id === editingMediaId ? media : item,
+          )
+        : [...configuration.featuredMedia, media],
     };
+    setEditingMediaId(null);
+    setMediaDisplayMode('embed');
+    setMediaThumbnailUrl('');
     setMediaTitle('');
     setMediaUrl('');
     setConfiguration(next);
@@ -2366,6 +2397,7 @@ function StorefrontEditor({
               featuredMedia: configuration.featuredMedia.filter((item) => item.id !== id),
             };
             setConfiguration(next);
+            if (editingMediaId === id) openMedia();
             void save(next);
           },
           style: 'destructive',
@@ -2603,7 +2635,9 @@ function StorefrontEditor({
       ))}
 
       <View style={styles.editorCard}>
-        <Text style={styles.cardTitle}>Add media</Text>
+        <Text style={styles.cardTitle}>
+          {editingMediaId ? 'Edit media' : 'Add media'}
+        </Text>
         <Text style={styles.cardMeta}>
           YouTube, Instagram, TikTok, Spotify, Apple Music or Google Maps.
         </Text>
@@ -2615,16 +2649,58 @@ function StorefrontEditor({
           value={mediaUrl}
         />
         <Field label="Title" onChangeText={setMediaTitle} value={mediaTitle} />
-        <Pressable
-          disabled={saving || !mediaTitle.trim() || !mediaUrl.trim()}
-          onPress={addMedia}
-          style={styles.primarySmall}
-        >
-          <Text style={styles.primaryButtonText}>Add media</Text>
-        </Pressable>
+        <Field
+          autoCapitalize="none"
+          keyboardType="url"
+          label="Thumbnail image link (optional)"
+          onChangeText={setMediaThumbnailUrl}
+          value={mediaThumbnailUrl}
+        />
+        {mediaThumbnailUrl ? (
+          <Image
+            accessibilityLabel="Featured content thumbnail preview"
+            source={{ uri: mediaThumbnailUrl }}
+            style={styles.mediaThumbnailPreview}
+          />
+        ) : null}
+        <Text style={styles.fieldLabelStandalone}>Open as</Text>
+        <View style={styles.inlineChoices}>
+          <ChoicePill
+            label="Embedded"
+            onPress={() => setMediaDisplayMode('embed')}
+            selected={mediaDisplayMode === 'embed'}
+          />
+          <ChoicePill
+            label="External link"
+            onPress={() => setMediaDisplayMode('link')}
+            selected={mediaDisplayMode === 'link'}
+          />
+        </View>
+        <View style={styles.buttonRow}>
+          <Pressable
+            disabled={saving || !mediaTitle.trim() || !mediaUrl.trim()}
+            onPress={saveMedia}
+            style={styles.primarySmall}
+          >
+            <Text style={styles.primaryButtonText}>
+              {editingMediaId ? 'Save media' : 'Add media'}
+            </Text>
+          </Pressable>
+          {editingMediaId ? (
+            <Pressable onPress={() => openMedia()} style={styles.secondarySmall}>
+              <Text style={styles.secondaryButtonText}>Cancel</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
       {configuration.featuredMedia.map((item) => (
         <View key={item.id} style={styles.listCard}>
+          {item.thumbnailUrl ? (
+            <Image
+              source={{ uri: item.thumbnailUrl }}
+              style={styles.mediaThumbnailSmall}
+            />
+          ) : null}
           <View style={styles.listCopy}>
             <Text style={styles.cardEyebrow}>{item.provider.replace('_', ' ')}</Text>
             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -2637,6 +2713,9 @@ function StorefrontEditor({
             />
             <Pressable onPress={() => void toggleMediaVisibility(item.id)}>
               <Text style={styles.editLabel}>{item.visible ? 'Hide' : 'Show'}</Text>
+            </Pressable>
+            <Pressable onPress={() => openMedia(item)}>
+              <Text style={styles.editLabel}>Edit</Text>
             </Pressable>
             <Pressable onPress={() => removeMedia(item.id)}>
               <Text style={styles.removeText}>Remove</Text>
@@ -3601,6 +3680,19 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   collectionCoverThumbnail: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: 10,
+    height: 54,
+    width: 68,
+  },
+  mediaThumbnailPreview: {
+    backgroundColor: '#f5f1eb',
+    borderRadius: radii.card,
+    height: 150,
+    marginTop: spacing.sm,
+    width: '100%',
+  },
+  mediaThumbnailSmall: {
     backgroundColor: '#f5f1eb',
     borderRadius: 10,
     height: 54,
