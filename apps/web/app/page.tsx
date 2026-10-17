@@ -135,12 +135,11 @@ export default function HomePage() {
             <article className={`${styles.contentBlock} ${styles.mediaBlock}`}>
               <div className={styles.featureMediaPreview} aria-hidden="true">
                 <Image
-                  src="/images/home/kitchen-collection.jpg"
+                  src="/images/home/rotem-style-notes-v3.png"
                   alt=""
                   fill
                   sizes="96px"
                 />
-                <Image src="/images/home/coffee.jpg" alt="" width={58} height={46} />
                 <span>
                   <Play size={12} fill="currentColor" />
                 </span>
@@ -191,7 +190,7 @@ export default function HomePage() {
                   <i />
                   <i />
                 </div>
-                <Image src="/images/home/miya.jpg" alt="" fill sizes="92px" />
+                <Image src="/images/home/rotem-profile-v2.png" alt="" fill sizes="92px" />
                 <span>
                   <b />
                   <b />

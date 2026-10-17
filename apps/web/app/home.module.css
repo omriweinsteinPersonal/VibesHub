@@ -836,6 +836,8 @@
   color: var(--muted);
 }
 .topPicks img {
+  width: 48px;
+  height: 56px;
   border-radius: 2px;
   object-fit: cover;
   flex-shrink: 0;
@@ -1191,6 +1193,11 @@
   }
   .topPicks {
     display: block;
+  }
+  .topPicks img {
+    width: 56px;
+    height: 64px;
+    border-radius: 5px;
   }
   .analyticsSection {
     padding-block: 55px;
@@ -4131,10 +4138,13 @@
   height: 17px;
 }
 .featureSocialPreview span:first-child {
-  border-color: transparent;
+  border-color: #fff;
+  border-radius: 10px;
   background: linear-gradient(135deg, #f9ce34 0%, #ee2a7b 56%, #6228d7 100%);
 }
 .featureSocialPreview span:first-child img {
+  width: 19px;
+  height: 19px;
   filter: brightness(0) invert(1);
 }
 .featureSocialPreview .socialPlus {
@@ -4321,6 +4331,17 @@
     box-shadow:
       0 14px 28px #2028272e,
       inset 0 0 0 1px #ffffff33;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
+    flex: initial;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
+    min-height: 118px;
+    height: auto;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
+    width: 82px !important;
+    height: 82px !important;
   }
   .contentHeading {
     display: block;
