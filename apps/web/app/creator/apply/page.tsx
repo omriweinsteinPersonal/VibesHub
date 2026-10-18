@@ -7,11 +7,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ExternalLink,
   ImagePlus,
   Link2,
   MapPin,
   ShoppingBag,
+  Sparkles,
   Tag,
+  Upload,
+  X,
 } from 'lucide-react';
 import {
   type ChangeEvent,
@@ -971,25 +975,29 @@ function TourStep({
           Skip tour
         </button>
       </div>
-      <div className={`tourIllustration ${slide.kind}`}>
-        <div className="tourScreen">
-          <div className="tourScreenHeader">
-            <span>swavii studio</span>
-            <span className="tourScreenAvatar" />
-          </div>
-          <div className="tourScreenBody">
-            <div className="tourScreenTitle">
-              <strong>{slide.visual}</strong>
-              <span>+</span>
+      {slide.kind === 'recommendations' ? (
+        <RecommendationTourVisual />
+      ) : (
+        <div className={`tourIllustration ${slide.kind}`}>
+          <div className="tourScreen">
+            <div className="tourScreenHeader">
+              <span>swavii studio</span>
+              <span className="tourScreenAvatar" />
             </div>
-            <div className="tourScreenRows">
-              <span />
-              <span />
-              <span />
+            <div className="tourScreenBody">
+              <div className="tourScreenTitle">
+                <strong>{slide.visual}</strong>
+                <span>+</span>
+              </div>
+              <div className="tourScreenRows">
+                <span />
+                <span />
+                <span />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
       <h2 id="onboarding-tour-title">{slide.title}</h2>
       <p className="onboardingLead">{slide.description}</p>
       <div className="tourDots" aria-hidden="true">
@@ -998,6 +1006,159 @@ function TourStep({
         ))}
       </div>
     </section>
+  );
+}
+
+function RecommendationTourVisual() {
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setStage((current) => (current + 1) % 4);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div
+      className="recommendationTourVisual"
+      aria-label="Adding a recommendation walkthrough"
+    >
+      <div className="recommendationTourChrome">
+        <span>MAYA&apos;S CREATOR STUDIO</span>
+        <span className="recommendationTourStep">{stage + 1} / 4</span>
+      </div>
+      <div className="recommendationTourWindow">
+        <div className="recommendationTourHeader">
+          <div>
+            <strong>Add item</strong>
+            <span>
+              Add the details yourself, or paste a link to fill them in automatically.
+            </span>
+          </div>
+          <X aria-hidden="true" size={14} />
+        </div>
+        <div className="recommendationTourBody">
+          {stage === 0 ? (
+            <>
+              <span className="recommendationTourBack">← &nbsp; Change type</span>
+              <label>
+                Item link <small>Optional</small>
+                <span className="recommendationTourInput filled">
+                  https://footlocker.co.il/products/f356680008
+                </span>
+              </label>
+              <div className="recommendationTourFetch">
+                <Sparkles aria-hidden="true" size={13} /> Fetch details
+              </div>
+              <p>Select Fetch details to fill in details from a link.</p>
+            </>
+          ) : null}
+          {stage === 1 ? (
+            <>
+              <div className="recommendationTourSuccess">
+                <Check aria-hidden="true" size={13} /> Product details fetched. Review
+                them, then save.
+              </div>
+              <div className="recommendationTourFields">
+                <label>
+                  Item name
+                  <span className="recommendationTourInput">740 sneakers</span>
+                </label>
+                <label>
+                  Brand
+                  <span className="recommendationTourInput">Footlocker</span>
+                </label>
+              </div>
+              <label>
+                Product photos
+                <div className="recommendationTourPhotos">
+                  <Image
+                    src="/images/creator-demo-sneakers.png"
+                    alt=""
+                    fill
+                    sizes="70px"
+                  />
+                  <Image
+                    src="/images/creator-demo-shoulder-bag.png"
+                    alt=""
+                    fill
+                    sizes="70px"
+                  />
+                  <Image
+                    src="/images/creator-demo-coffee-cup.png"
+                    alt=""
+                    fill
+                    sizes="70px"
+                  />
+                </div>
+              </label>
+              <div className="recommendationTourFields">
+                <label>
+                  Price (₪)
+                  <span className="recommendationTourInput">669</span>
+                </label>
+                <label>
+                  Categories
+                  <span className="recommendationTourInput">Fashion⌄</span>
+                </label>
+              </div>
+            </>
+          ) : null}
+          {stage === 2 ? (
+            <>
+              <label>
+                Review <small>Optional</small>
+                <span className="recommendationTourTextarea">
+                  A clean everyday sneaker with that perfect retro shape.
+                </span>
+              </label>
+              <label>
+                Instagram story or Highlight link <small>Optional</small>
+                <span className="recommendationTourInput filled">
+                  instagram.com/stories/maya
+                </span>
+              </label>
+              <label>
+                Story clips <small>Optional</small>
+                <span className="recommendationTourUpload">
+                  <Upload aria-hidden="true" size={13} /> Upload videos
+                </span>
+              </label>
+            </>
+          ) : null}
+          {stage === 3 ? (
+            <>
+              <div className="recommendationTourSuccess">
+                <Check aria-hidden="true" size={13} /> Recommendation saved to your
+                storefront.
+              </div>
+              <div className="recommendationTourSaved">
+                <Image
+                  src="/images/creator-demo-sneakers.png"
+                  alt="New Balance 740"
+                  width={64}
+                  height={72}
+                />
+                <div>
+                  <small>NEW BALANCE</small>
+                  <strong>740 sneakers</strong>
+                  <span>₪669 · Foot Locker</span>
+                  <em>Live on storefront</em>
+                </div>
+              </div>
+              <div className="recommendationTourStorefront">
+                <ExternalLink aria-hidden="true" size={13} /> View storefront
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+      <div className="recommendationTourProgress" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <span className={index === stage ? 'active' : ''} key={index} />
+        ))}
+      </div>
+    </div>
   );
 }
 
