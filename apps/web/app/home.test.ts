@@ -32,7 +32,7 @@ describe('Swavii homepage', () => {
     expect(html).toContain('Examples of pages you can make your own.');
   });
 
-  it('offers signup, mobile carousel controls and manual walkthrough navigation', () => {
+  it('offers signup and manual recommendation walkthrough navigation', () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain('action="/auth"');
     expect(html).toContain('name="mode" value="signup"');
@@ -41,11 +41,12 @@ describe('Swavii homepage', () => {
     expect(html).toContain('Previous walkthrough step');
     expect(html).toContain('/auth?mode=signup');
     expect(html).toContain('Mobile navigation');
-    expect(html).toContain('Photo gallery');
-    expect(html).toContain('Social links');
+    expect(html).toContain('Add a recommendation');
+    expect(html).toContain('Paste a product link');
+    expect(html).toContain('Fetch the details');
+    expect(html).toContain('Live on storefront');
     expect(html).toContain('Arrange sections');
-    expect(html).toContain('Things worth sharing.');
-    expect(html).toContain('A slow morning at home');
-    expect(html).toContain('Selected favorites');
+    expect(html).toContain('Your colors. Your atmosphere.');
+    expect(html).toContain('Organize picks your way.');
   });
 });
