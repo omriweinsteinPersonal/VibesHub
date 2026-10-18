@@ -45,6 +45,33 @@ type Step = 1 | 2 | 3 | 4 | 5;
 type SocialLink = { followerCount?: number | null; platform: string; url: string };
 type ImageLayout = 'full_bleed' | 'central';
 
+const defaultSocialLinks: SocialLink[] = [
+  { platform: 'instagram', url: '' },
+  { platform: 'tiktok', url: '' },
+  { platform: 'apple_music', url: '' },
+];
+
+const connectorIconSources: Record<string, string> = {
+  apple_music: '/connectors/apple-music.svg',
+  facebook: '/connectors/facebook.svg',
+  instagram: '/connectors/instagram.svg',
+  linkedin: '/connectors/linkedin.svg',
+  pinterest: '/connectors/pinterest.svg',
+  spotify: '/connectors/spotify.svg',
+  tiktok: '/connectors/tiktok.svg',
+  x: '/connectors/x.svg',
+  youtube: '/connectors/youtube.svg',
+};
+
+function ConnectorIcon({ platform, size = 22 }: { platform: string; size?: number }) {
+  const src = connectorIconSources[platform];
+  return src ? (
+    <Image alt="" aria-hidden="true" height={size} src={src} width={size} />
+  ) : (
+    <Link2 aria-hidden="true" size={size - 2} />
+  );
+}
+
 const tourSlides = [
   {
     title: 'Add a recommendation',
@@ -86,7 +113,7 @@ export default function CreatorApplicationPage() {
   const [requestedHandle, setRequestedHandle] = useState('');
   const [handleEdited, setHandleEdited] = useState(false);
   const [bioText, setBioText] = useState('');
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(defaultSocialLinks);
   const [step, setStep] = useState<Step>(1);
   const [tourSlide, setTourSlide] = useState(0);
   const [imageLayout, setImageLayout] = useState<ImageLayout>('full_bleed');
@@ -105,7 +132,9 @@ export default function CreatorApplicationPage() {
         setRequestedHandle(current.requestedHandle ?? '');
         setHandleEdited(Boolean(current.requestedHandle));
         setBioText(current.bioText ?? '');
-        setSocialLinks(current.socialLinks);
+        setSocialLinks(
+          current.socialLinks.length ? current.socialLinks : defaultSocialLinks,
+        );
       })
       .catch((cause: unknown) => setError(messageFor(cause)))
       .finally(() => setLoading(false));
@@ -583,13 +612,28 @@ function SocialStep({
         <div className="onboardingSocialList">
           {socialLinks.map((link) => (
             <div className="onboardingSocialRow" key={link.platform}>
-              <span className="onboardingSocialIcon">
-                <Link2 aria-hidden="true" size={17} />
-              </span>
-              <label>
-                {creatorConnectors.find(
-                  (connector) => connector.platform === link.platform,
-                )?.label ?? link.platform}
+              <div className="onboardingSocialMain">
+                <span className={`onboardingSocialIcon ${link.platform}`}>
+                  <ConnectorIcon platform={link.platform} />
+                </span>
+                <div className="onboardingSocialCopy">
+                  <strong>
+                    {creatorConnectors.find(
+                      (connector) => connector.platform === link.platform,
+                    )?.label ?? link.platform}
+                  </strong>
+                  <span>Paste your profile link</span>
+                </div>
+                <button
+                  aria-label={`Remove ${link.platform}`}
+                  className="onboardingSocialRemove"
+                  onClick={() => onRemove(link.platform)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              <label className="onboardingSocialInput">
                 <input
                   autoComplete="url"
                   onChange={(event) => onUpdate(link.platform, event.target.value)}
@@ -603,14 +647,6 @@ function SocialStep({
                   value={link.url}
                 />
               </label>
-              <button
-                aria-label={`Remove ${link.platform}`}
-                className="textButton"
-                onClick={() => onRemove(link.platform)}
-                type="button"
-              >
-                Remove
-              </button>
             </div>
           ))}
         </div>
@@ -626,7 +662,7 @@ function SocialStep({
           )
           .map(({ label, platform }) => (
             <button key={platform} onClick={() => onAdd(platform)} type="button">
-              <Link2 aria-hidden="true" size={16} />
+              <ConnectorIcon platform={platform} size={18} />
               {label}
             </button>
           ))}

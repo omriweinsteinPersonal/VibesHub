@@ -1393,34 +1393,125 @@ textarea:disabled {
 
 .onboardingSocialList {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   margin-top: 24px;
 }
 
 .onboardingSocialRow {
-  align-items: end;
-  background: #fcf8f3;
-  border: 1px solid #eee3d8;
-  border-radius: 14px;
+  background: linear-gradient(135deg, #fffdf9, #fcf5ee);
+  border: 1px solid #eadbd0;
+  border-radius: 18px;
+  padding: 12px 14px 13px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.onboardingSocialRow:focus-within {
+  border-color: #c97853;
+  box-shadow: 0 8px 24px rgb(126 72 48 / 10%);
+  transform: translateY(-1px);
+}
+
+.onboardingSocialMain {
+  align-items: center;
   display: grid;
-  gap: 12px;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  padding: 12px;
+  gap: 10px;
+  grid-template-columns: 38px minmax(0, 1fr) 28px;
 }
 
 .onboardingSocialIcon {
   align-items: center;
-  background: #f0dfd2;
-  border-radius: 10px;
-  color: #a4583b;
+  background: #f4e6dc;
+  border-radius: 12px;
   display: inline-flex;
-  height: 34px;
+  height: 38px;
   justify-content: center;
-  width: 34px;
+  overflow: hidden;
+  width: 38px;
 }
 
-.onboardingSocialRow .textButton {
+.onboardingSocialIcon img {
+  height: 22px;
+  width: 22px;
+}
+
+.onboardingSocialIcon.instagram {
+  background: linear-gradient(135deg, #f8c6ad, #d86f61);
+}
+
+.onboardingSocialIcon.tiktok {
+  background: #dcece5;
+}
+
+.onboardingSocialIcon.apple_music {
+  background: #e8ddf0;
+}
+
+.onboardingSocialCopy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.onboardingSocialCopy strong {
+  color: #2e211b;
+  font-size: 0.88rem;
+}
+
+.onboardingSocialCopy span {
+  color: #8a776c;
+  font-size: 0.72rem;
+}
+
+.onboardingSocialRemove {
+  align-items: center;
+  background: #f7ebe3;
+  border: 0;
+  border-radius: 999px;
+  color: #9c6b58;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.1rem;
+  height: 26px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+  width: 26px;
+}
+
+.onboardingSocialRemove:hover,
+.onboardingSocialRemove:focus-visible {
+  background: #f1d2c5;
+  color: #7c3824;
+  outline: none;
+}
+
+.onboardingSocialInput {
+  display: block;
+  margin: 10px 0 0 48px;
+}
+
+.onboardingSocialInput input {
+  background: #fff;
+  border: 1px solid #eadbd0;
+  border-radius: 12px;
+  color: #2e211b;
+  font: inherit;
+  font-size: 0.78rem;
   min-height: 42px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.onboardingSocialInput input:focus {
+  border-color: #c97853;
+  box-shadow: 0 0 0 3px rgb(201 120 83 / 14%);
+  outline: none;
 }
 
 .onboardingEmpty {
@@ -1453,6 +1544,11 @@ textarea:disabled {
   gap: 7px;
   min-height: 42px;
   padding: 0 14px;
+}
+
+.onboardingChoices button img {
+  height: 18px;
+  width: 18px;
 }
 
 .onboardingChoices button:hover,
@@ -2124,12 +2220,11 @@ textarea:disabled {
 
   .onboardingSocialRow {
     align-items: center;
-    grid-template-columns: 34px minmax(0, 1fr);
+    padding: 11px;
   }
 
-  .onboardingSocialRow .textButton {
-    grid-column: 2;
-    justify-self: start;
+  .onboardingSocialInput {
+    margin-left: 0;
   }
 
   .onboardingActions .button {
