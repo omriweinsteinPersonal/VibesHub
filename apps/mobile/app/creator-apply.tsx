@@ -25,8 +25,6 @@ import {
   checkCreatorHandle,
   getAccountSummary,
   getCreatorApplication,
-  isCreatorHandle,
-  normalizeCreatorHandle,
   saveAndSubmitCreatorApplication,
   suggestCreatorHandle,
   type CreatorApplication,
@@ -158,8 +156,7 @@ export default function CreatorApplicationScreen() {
   function validateStep() {
     if (step === 0) {
       if (!displayName.trim()) return 'Add your creator display name.';
-      if (!isCreatorHandle(normalizeCreatorHandle(handle)))
-        return 'Use 2–30 lowercase letters, numbers, hyphens or underscores.';
+      if (!handle.trim()) return 'Add a storefront address.';
       if (!bio.trim() || !/[\u0590-\u05ff]/u.test(bio))
         return 'Add a short bio in Hebrew for your storefront.';
     }
@@ -196,9 +193,9 @@ export default function CreatorApplicationScreen() {
     setSubmitting(true);
     setError('');
     try {
-      const normalizedHandle = normalizeCreatorHandle(handle);
-      const available = await checkCreatorHandle(normalizedHandle);
-      if (!available && normalizedHandle !== application?.requestedHandle) {
+      const requestedHandle = handle.trim();
+      const available = await checkCreatorHandle(requestedHandle);
+      if (!available && requestedHandle !== application?.requestedHandle) {
         setError('That storefront address is already taken. Try another one.');
         setStep(0);
         return;
@@ -206,7 +203,7 @@ export default function CreatorApplicationScreen() {
       const input: CreatorApplicationInput = {
         bioText: bio.trim(),
         displayName: displayName.trim(),
-        requestedHandle: normalizedHandle,
+        requestedHandle,
         socialLinks: socialLinks
           .filter((link) => link.url.trim())
           .map((link) => ({
@@ -285,7 +282,7 @@ export default function CreatorApplicationScreen() {
                     }}
                     onHandleChange={(value) => {
                       setHandleEdited(true);
-                      setHandle(normalizeCreatorHandle(value));
+                      setHandle(value);
                     }}
                     submitting={submitting}
                   />
@@ -403,7 +400,7 @@ function ProfileStep({
     <>
       <Text style={styles.sectionTitle}>Tell us about yourself</Text>
       <Text style={styles.sectionCopy}>
-        These details will appear on your public storefront.
+        These details will appear on your public link in bio.
       </Text>
       <FieldLabel text="Creator display name" />
       <TextInput
@@ -474,9 +471,6 @@ function ImageStep({
             <ImagePlus color={colors.accent} size={30} />
           </View>
         )}
-        <View style={styles.imagePickerBadge}>
-          <ImagePlus color={colors.white} size={16} />
-        </View>
       </Pressable>
       <Text style={styles.label}>Image style</Text>
       <View style={styles.layoutRow}>

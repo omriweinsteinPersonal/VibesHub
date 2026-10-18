@@ -1035,8 +1035,12 @@ export const creatorApplicationInputSchema = z
     requestedHandle: z
       .string()
       .trim()
-      .toLowerCase()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/)
+      .min(2)
+      .max(100)
+      .refine(
+        (value) => !/[/?#%\\\p{Cc}]/u.test(value),
+        'Handle cannot contain URL separators or control characters',
+      )
       .nullable()
       .optional(),
     socialLinks: z.array(creatorApplicationSocialLinkSchema).max(10).optional(),

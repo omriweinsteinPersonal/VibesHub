@@ -21,7 +21,7 @@ import {
   uploadCreatorImage,
 } from '../../../lib/recommendation-media';
 import { creatorConnectors } from '../../../lib/creator-connectors';
-import { isCreatorHandle, suggestCreatorHandle } from '../../../lib/creator-handle';
+import { suggestCreatorHandle } from '../../../lib/creator-handle';
 import {
   type CreatorHandleStatus,
   useCreatorHandleAvailability,
@@ -119,6 +119,11 @@ export default function CreatorApplicationPage() {
   const [imageLayout, setImageLayout] = useState<ImageLayout>('full_bleed');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropSource, setCropSource] = useState('');
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropFocusX, setCropFocusX] = useState(50);
+  const [cropFocusY, setCropFocusY] = useState(50);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -167,9 +172,43 @@ export default function CreatorApplicationPage() {
   function chooseAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+    if (cropSource) URL.revokeObjectURL(cropSource);
+    setCropFile(file);
+    setCropSource(URL.createObjectURL(file));
+    setCropZoom(1);
+    setCropFocusX(50);
+    setCropFocusY(50);
     setError('');
+  }
+
+  async function confirmAvatarCrop() {
+    if (!cropFile || !cropSource) return;
+    setSaving(true);
+    try {
+      const cropped = await cropAvatarFile(
+        cropSource,
+        cropFile.type,
+        cropZoom,
+        cropFocusX,
+        cropFocusY,
+      );
+      if (avatarPreview.startsWith('blob:')) URL.revokeObjectURL(avatarPreview);
+      setAvatarFile(cropped);
+      setAvatarPreview(URL.createObjectURL(cropped));
+      URL.revokeObjectURL(cropSource);
+      setCropFile(null);
+      setCropSource('');
+    } catch {
+      setError('We could not crop that image. Please try another photo.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function cancelAvatarCrop() {
+    if (cropSource) URL.revokeObjectURL(cropSource);
+    setCropFile(null);
+    setCropSource('');
   }
 
   function addSocial(platform: string) {
@@ -208,8 +247,8 @@ export default function CreatorApplicationPage() {
 
   async function goNext() {
     setError('');
-    if (step === 1 && (!canContinueProfile || !isCreatorHandle(requestedHandle))) {
-      setError('Add a display name and an available storefront address to continue.');
+    if (step === 1 && !canContinueProfile) {
+      setError('Add a display name and a storefront address to continue.');
       return;
     }
     if (step === 3 && socialLinks.some((link) => !link.url.trim())) {
@@ -230,9 +269,9 @@ export default function CreatorApplicationPage() {
   async function finish(event: FormEvent) {
     event.preventDefault();
     setError('');
-    if (!canContinueProfile || !isCreatorHandle(requestedHandle)) {
+    if (!canContinueProfile) {
       setStep(1);
-      setError('Add a display name and an available storefront address to continue.');
+      setError('Add a display name and a storefront address to continue.');
       return;
     }
     if (socialLinks.some((link) => !link.url.trim())) {
@@ -348,7 +387,6 @@ export default function CreatorApplicationPage() {
                 avatarPreview={avatarPreview}
                 imageLayout={imageLayout}
                 onLayout={setImageLayout}
-                onAvatar={chooseAvatar}
               />
             ) : null}
             {step === 3 ? (
@@ -431,7 +469,144 @@ export default function CreatorApplicationPage() {
           </form>
         ) : null}
       </section>
+      {cropSource ? (
+        <AvatarCropModal
+          focusX={cropFocusX}
+          focusY={cropFocusY}
+          onCancel={cancelAvatarCrop}
+          onConfirm={() => void confirmAvatarCrop()}
+          onFocusX={setCropFocusX}
+          onFocusY={setCropFocusY}
+          onZoom={setCropZoom}
+          source={cropSource}
+          zoom={cropZoom}
+        />
+      ) : null}
     </main>
+  );
+}
+
+async function cropAvatarFile(
+  source: string,
+  mimeType: string,
+  zoom: number,
+  focusX: number,
+  focusY: number,
+): Promise<File> {
+  const image = document.createElement('img');
+  image.src = source;
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error('IMAGE_LOAD_FAILED'));
+  });
+  const cropSize = Math.min(image.naturalWidth, image.naturalHeight) / zoom;
+  const sourceX = (image.naturalWidth - cropSize) * (focusX / 100);
+  const sourceY = (image.naturalHeight - cropSize) * (focusY / 100);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  canvas
+    .getContext('2d')
+    ?.drawImage(image, sourceX, sourceY, cropSize, cropSize, 0, 0, 1024, 1024);
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, mimeType === 'image/png' ? 'image/png' : 'image/jpeg', 0.92),
+  );
+  if (!blob) throw new Error('IMAGE_CROP_FAILED');
+  return new File([blob], 'creator-profile-image.jpg', { type: blob.type });
+}
+
+function AvatarCropModal({
+  focusX,
+  focusY,
+  onCancel,
+  onConfirm,
+  onFocusX,
+  onFocusY,
+  onZoom,
+  source,
+  zoom,
+}: {
+  focusX: number;
+  focusY: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+  onFocusX: (value: number) => void;
+  onFocusY: (value: number) => void;
+  onZoom: (value: number) => void;
+  source: string;
+  zoom: number;
+}) {
+  return (
+    <div aria-label="Crop profile image" className="avatarCropOverlay" role="dialog">
+      <div className="avatarCropDialog">
+        <div className="avatarCropHeader">
+          <div>
+            <p className="eyebrow">PROFILE IMAGE</p>
+            <h2>Frame your photo.</h2>
+          </div>
+          <button
+            aria-label="Close image cropper"
+            className="avatarCropClose"
+            onClick={onCancel}
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+        <div className="avatarCropViewport">
+          <img
+            alt="Crop preview"
+            src={source}
+            style={{
+              objectPosition: `${focusX}% ${focusY}%`,
+              transform: `scale(${zoom})`,
+            }}
+          />
+          <span className="avatarCropGuide" />
+        </div>
+        <label className="avatarCropControl">
+          Zoom
+          <input
+            max="3"
+            min="1"
+            onChange={(event) => onZoom(Number(event.target.value))}
+            step="0.05"
+            type="range"
+            value={zoom}
+          />
+        </label>
+        <div className="avatarCropFocusGrid">
+          <label>
+            Horizontal focus
+            <input
+              max="100"
+              min="0"
+              onChange={(event) => onFocusX(Number(event.target.value))}
+              type="range"
+              value={focusX}
+            />
+          </label>
+          <label>
+            Vertical focus
+            <input
+              max="100"
+              min="0"
+              onChange={(event) => onFocusY(Number(event.target.value))}
+              type="range"
+              value={focusY}
+            />
+          </label>
+        </div>
+        <div className="avatarCropActions">
+          <button className="button secondary" onClick={onCancel} type="button">
+            Cancel
+          </button>
+          <button className="button primary" onClick={onConfirm} type="button">
+            Use this crop
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -463,27 +638,20 @@ function ProfileStep({
       <p className="eyebrow">01 / PROFILE</p>
       <h2 id="onboarding-profile-title">Create your profile</h2>
       <p className="onboardingLead">
-        Share a few details to get started on your Swavii creator page.
+        Share a few details to get started on your Swavii link in bio.
       </p>
       <div className="onboardingAvatarRow">
-        <div className="onboardingAvatar">
+        <label className="onboardingAvatar" aria-label="Upload profile image">
           {avatarPreview ? (
             <img alt="Profile preview" src={avatarPreview} />
           ) : (
             <ImagePlus aria-hidden="true" size={22} />
           )}
-          <label className="avatarCameraButton" aria-label="Upload profile image">
-            <ImagePlus aria-hidden="true" size={16} />
-            <input accept={creatorImageAccept} onChange={onAvatar} type="file" />
-          </label>
-        </div>
-        <div>
-          <label className="button secondary onboardingUpload">
-            {avatarPreview ? 'Change profile image' : 'Upload profile image'}
-            <input accept={creatorImageAccept} onChange={onAvatar} type="file" />
-          </label>
-          <small className="fieldHint">JPEG, PNG or WebP up to 5 MB.</small>
-        </div>
+          <input accept={creatorImageAccept} onChange={onAvatar} type="file" />
+        </label>
+        <small className="fieldHint">
+          Tap the circle to upload · JPEG, PNG or WebP up to 5 MB.
+        </small>
       </div>
       <div className="fieldGrid">
         <label>
@@ -501,7 +669,7 @@ function ProfileStep({
           <input
             aria-describedby="onboarding-handle-status"
             autoComplete="url"
-            maxLength={30}
+            maxLength={100}
             onChange={(event) => onHandle(event.target.value)}
             required
             value={requestedHandle}
@@ -535,12 +703,10 @@ function ImageStyleStep({
   avatarPreview,
   imageLayout,
   onLayout,
-  onAvatar,
 }: {
   avatarPreview: string;
   imageLayout: ImageLayout;
   onLayout: (layout: ImageLayout) => void;
-  onAvatar: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <section aria-labelledby="onboarding-image-title">
@@ -549,16 +715,32 @@ function ImageStyleStep({
       <p className="onboardingLead">
         Choose how your profile image is displayed on your page.
       </p>
-      <div className="imageStyleHero">
-        {avatarPreview ? (
-          <img alt="Uploaded profile preview" src={avatarPreview} />
-        ) : (
-          <label className="imageStyleEmpty">
-            <ImagePlus aria-hidden="true" size={26} />
-            <span>Upload a profile image first</span>
-            <input accept={creatorImageAccept} onChange={onAvatar} type="file" />
-          </label>
-        )}
+      <div className={`imageStyleHero ${imageLayout}`}>
+        <div className="imageStylePagePreview">
+          <div className="imageStylePageImage">
+            {avatarPreview ? (
+              <img alt="Uploaded profile preview" src={avatarPreview} />
+            ) : (
+              <span>S</span>
+            )}
+          </div>
+          <div className="imageStylePageAvatar">
+            {avatarPreview ? <img alt="" src={avatarPreview} /> : <span>S</span>}
+          </div>
+          <strong>Your creator name</strong>
+          <small>Really love sharing finds</small>
+          <div className="imageStylePageSocials">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="imageStylePageTabs">
+            <span>All</span>
+            <span>Fashion</span>
+            <span>Travel</span>
+          </div>
+        </div>
       </div>
       <div className="imageStyleChoices">
         <button
@@ -798,7 +980,7 @@ function handleMessage(status: CreatorHandleStatus, handle: string): string {
   if (status === 'available') return `swavii.com/${handle} is available`;
   if (status === 'unavailable') return 'That address is already taken.';
   if (status === 'invalid')
-    return 'Use 2–30 characters: letters, numbers, underscores or hyphens.';
+    return 'Use your preferred name or handle. Avoid URL separators such as / or ?.';
   return `Your page will live at swavii.com/${handle}`;
 }
 

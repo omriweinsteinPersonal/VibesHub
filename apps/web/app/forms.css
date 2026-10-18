@@ -1347,7 +1347,9 @@ textarea:disabled {
   flex: 0 0 auto;
   height: 92px;
   justify-content: center;
+  cursor: pointer;
   overflow: hidden;
+  position: relative;
   width: 92px;
 }
 
@@ -1355,6 +1357,10 @@ textarea:disabled {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.onboardingAvatar input {
+  display: none;
 }
 
 .onboardingUpload {
@@ -1769,7 +1775,7 @@ textarea:disabled {
 }
 
 .imageStyleHero {
-  background: #f2e7dc;
+  background: #d89573;
   border-radius: 22px;
   height: 230px;
   margin-top: 26px;
@@ -1777,10 +1783,107 @@ textarea:disabled {
   position: relative;
 }
 
-.imageStyleHero > img {
+.imageStylePagePreview {
+  align-items: center;
+  color: #173d38;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.imageStylePageImage {
+  background: linear-gradient(135deg, #e5c2a8, #82756e);
+  color: #fff;
+  display: flex;
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 2.4rem;
+  height: 118px;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+}
+
+.imageStylePageImage img {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.imageStylePageAvatar {
+  align-items: center;
+  background: #c87854;
+  border: 4px solid #fffaf5;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 1.5rem;
+  height: 70px;
+  justify-content: center;
+  margin-top: -34px;
+  overflow: hidden;
+  position: relative;
+  width: 70px;
+  z-index: 1;
+}
+
+.imageStylePageAvatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.imageStyleHero.central .imageStylePageImage {
+  height: 52px;
+  opacity: 0.42;
+}
+
+.imageStyleHero.central .imageStylePageAvatar {
+  height: 78px;
+  margin-top: -2px;
+  width: 78px;
+}
+
+.imageStylePagePreview > strong {
+  font-size: 1.05rem;
+  margin-top: 6px;
+}
+
+.imageStylePagePreview > small {
+  font-size: 0.68rem;
+  margin-top: 3px;
+}
+
+.imageStylePageSocials {
+  display: flex;
+  gap: 13px;
+  margin-top: 10px;
+}
+
+.imageStylePageSocials span {
+  background: #173d38;
+  border-radius: 50%;
+  height: 15px;
+  width: 15px;
+}
+
+.imageStylePageTabs {
+  border: 1px solid rgb(23 61 56 / 34%);
+  border-radius: 999px;
+  display: flex;
+  font-size: 0.65rem;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 6px 12px;
+}
+
+.imageStylePageTabs span:first-child {
+  background: #f8dfd0;
+  border-radius: 999px;
+  padding: 2px 7px;
 }
 
 .imageStyleEmpty {
@@ -1792,6 +1895,108 @@ textarea:disabled {
   gap: 10px;
   height: 100%;
   justify-content: center;
+}
+
+.avatarCropOverlay {
+  align-items: center;
+  background: rgb(43 28 23 / 58%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 30;
+}
+
+.avatarCropDialog {
+  background: #fffaf5;
+  border: 1px solid #e5d6ca;
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgb(46 33 27 / 28%);
+  max-width: 460px;
+  padding: 24px;
+  width: 100%;
+}
+
+.avatarCropHeader {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.avatarCropHeader h2 {
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 2rem;
+  margin: 6px 0 0;
+}
+
+.avatarCropClose {
+  background: #f2e3d8;
+  border: 0;
+  border-radius: 999px;
+  color: #7f4c3a;
+  cursor: pointer;
+  font-size: 1.4rem;
+  height: 34px;
+  line-height: 1;
+  width: 34px;
+}
+
+.avatarCropViewport {
+  background: #e8c7b3;
+  border-radius: 20px;
+  height: 320px;
+  margin: 22px auto;
+  overflow: hidden;
+  position: relative;
+  width: 320px;
+}
+
+.avatarCropViewport img {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 120ms ease;
+  width: 100%;
+}
+
+.avatarCropGuide {
+  border: 2px solid rgb(255 255 255 / 86%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgb(32 22 18 / 20%);
+  inset: 36px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.avatarCropControl,
+.avatarCropFocusGrid label {
+  color: #58483f;
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.avatarCropControl input,
+.avatarCropFocusGrid input {
+  accent-color: #c97853;
+  width: 100%;
+}
+
+.avatarCropFocusGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.avatarCropActions {
+  border-top: 1px solid #eee4dc;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+  padding-top: 18px;
 }
 
 .imageStyleChoices {
