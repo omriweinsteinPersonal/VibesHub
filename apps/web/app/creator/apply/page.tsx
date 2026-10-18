@@ -385,6 +385,7 @@ export default function CreatorApplicationPage() {
             {step === 2 ? (
               <ImageStyleStep
                 avatarPreview={avatarPreview}
+                handle={requestedHandle}
                 imageLayout={imageLayout}
                 onLayout={setImageLayout}
               />
@@ -701,10 +702,12 @@ function ProfileStep({
 
 function ImageStyleStep({
   avatarPreview,
+  handle,
   imageLayout,
   onLayout,
 }: {
   avatarPreview: string;
+  handle: string;
   imageLayout: ImageLayout;
   onLayout: (layout: ImageLayout) => void;
 }) {
@@ -727,13 +730,13 @@ function ImageStyleStep({
           <div className="imageStylePageAvatar">
             {avatarPreview ? <img alt="" src={avatarPreview} /> : <span>S</span>}
           </div>
-          <strong>Your creator name</strong>
+          <strong>@{handle || 'your_handle'}</strong>
           <small>Really love sharing finds</small>
           <div className="imageStylePageSocials">
-            <span />
-            <span />
-            <span />
-            <span />
+            <ConnectorIcon platform="instagram" size={18} />
+            <ConnectorIcon platform="youtube" size={18} />
+            <ConnectorIcon platform="apple_music" size={18} />
+            <ConnectorIcon platform="tiktok" size={18} />
           </div>
           <div className="imageStylePageTabs">
             <span>All</span>
@@ -955,7 +958,7 @@ function PagePreviewStep({
           <div className="creatorPreviewSocials">
             {socialLinks.slice(0, 4).map((link) => (
               <span key={link.platform}>
-                <Link2 aria-hidden="true" size={13} />
+                <ConnectorIcon platform={link.platform} size={16} />
               </span>
             ))}
           </div>

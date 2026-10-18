@@ -1803,6 +1803,7 @@ textarea:disabled {
   height: 132px;
   justify-content: center;
   overflow: hidden;
+  position: relative;
   width: 100%;
 }
 
@@ -1810,7 +1811,7 @@ textarea:disabled {
   height: 100%;
   object-fit: cover;
   object-position: center 42%;
-  transform: scale(0.82);
+  transform: scale(0.72);
   transform-origin: center;
   width: 100%;
 }
@@ -1824,6 +1825,7 @@ textarea:disabled {
   display: flex;
   font-family: var(--font-vh-display), Georgia, serif;
   font-size: 1.5rem;
+  flex: 0 0 auto;
   height: 70px;
   justify-content: center;
   margin-top: -34px;
@@ -1840,19 +1842,40 @@ textarea:disabled {
 }
 
 .imageStyleHero.central .imageStylePageImage {
-  height: 62px;
-  opacity: 0.42;
+  display: none;
 }
 
 .imageStyleHero.central .imageStylePageAvatar {
   height: 78px;
-  margin-top: -2px;
+  margin-top: 24px;
   width: 78px;
+}
+
+.imageStyleHero.full_bleed .imageStylePageImage {
+  height: 150px;
+}
+
+.imageStyleHero.full_bleed .imageStylePageImage::after {
+  background: linear-gradient(180deg, transparent 15%, #d89573 100%);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.imageStyleHero.full_bleed .imageStylePageAvatar {
+  display: none;
 }
 
 .imageStylePagePreview > strong {
   font-size: 1.05rem;
   margin-top: 6px;
+}
+
+.imageStyleHero.full_bleed .imageStylePagePreview > strong {
+  margin-top: -28px;
+  position: relative;
+  z-index: 1;
 }
 
 .imageStylePagePreview > small {
@@ -1866,9 +1889,7 @@ textarea:disabled {
   margin-top: 10px;
 }
 
-.imageStylePageSocials span {
-  background: #173d38;
-  border-radius: 50%;
+.imageStylePageSocials img {
   height: 15px;
   width: 15px;
 }
@@ -2345,6 +2366,10 @@ textarea:disabled {
   height: 25px;
   justify-content: center;
   width: 25px;
+}
+.creatorPreviewSocials img {
+  height: 16px;
+  width: 16px;
 }
 .creatorPreviewBody > p {
   color: #756961;
