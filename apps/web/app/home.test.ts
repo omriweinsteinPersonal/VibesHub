@@ -44,7 +44,7 @@ describe('Swavii homepage', () => {
     expect(html).toContain('Add a recommendation');
     expect(html).toContain('Paste a product link');
     expect(html).toContain('Fetch the details');
-    expect(html).toContain('Live on storefront');
+    expect(html).toContain('See it on your storefront');
     expect(html).toContain('Arrange sections');
     expect(html).toContain('Your colors. Your atmosphere.');
     expect(html).toContain('Organize picks your way.');
