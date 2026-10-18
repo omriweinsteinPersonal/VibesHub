@@ -399,7 +399,7 @@ export function CreatorStudioDemo() {
         </div>
       </div>
       <div className={styles.transport}>
-        <button type="button" onClick={retreat} aria-label="Previous scene">
+        <button type="button" onClick={retreat} aria-label="Previous walkthrough step">
           <ArrowLeft size={17} />
         </button>
         <div className={styles.progress}>
@@ -415,7 +415,7 @@ export function CreatorStudioDemo() {
             />
           ))}
         </div>
-        <button type="button" onClick={advance} aria-label="Next scene">
+        <button type="button" onClick={advance} aria-label="Next walkthrough step">
           <ArrowRight size={17} />
         </button>
       </div>
