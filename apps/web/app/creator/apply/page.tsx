@@ -644,13 +644,16 @@ function AvatarCropModal({
           onWheel={handleWheel}
           role="application"
         >
-          <img
+          <Image
             alt="Crop preview"
+            fill
+            sizes="320px"
             src={source}
             style={{
               objectPosition: `${focusX}% ${focusY}%`,
               transform: `scale(${zoom})`,
             }}
+            unoptimized
           />
           <span className="avatarCropGuide" />
         </div>
@@ -716,7 +719,13 @@ function ProfileStep({
       <div className="onboardingAvatarRow">
         <label className="onboardingAvatar" aria-label="Upload profile image">
           {avatarPreview ? (
-            <img alt="Profile preview" src={avatarPreview} />
+            <Image
+              alt="Profile preview"
+              fill
+              sizes="92px"
+              src={avatarPreview}
+              unoptimized
+            />
           ) : (
             <ImagePlus aria-hidden="true" size={22} />
           )}
@@ -794,13 +803,23 @@ function ImageStyleStep({
         <div className="imageStylePagePreview">
           <div className="imageStylePageImage">
             {avatarPreview ? (
-              <img alt="Uploaded profile preview" src={avatarPreview} />
+              <Image
+                alt="Uploaded profile preview"
+                fill
+                sizes="100%"
+                src={avatarPreview}
+                unoptimized
+              />
             ) : (
               <span>S</span>
             )}
           </div>
           <div className="imageStylePageAvatar">
-            {avatarPreview ? <img alt="" src={avatarPreview} /> : <span>S</span>}
+            {avatarPreview ? (
+              <Image alt="" fill sizes="78px" src={avatarPreview} unoptimized />
+            ) : (
+              <span>S</span>
+            )}
           </div>
           <strong>@{handle || 'your_handle'}</strong>
           <small>Really love sharing finds</small>
@@ -827,7 +846,9 @@ function ImageStyleStep({
           type="button"
         >
           <span className="imageStyleThumb fullBleedThumb">
-            {avatarPreview ? <img alt="" src={avatarPreview} /> : null}
+            {avatarPreview ? (
+              <Image alt="" fill sizes="100%" src={avatarPreview} unoptimized />
+            ) : null}
           </span>
           <strong>Full bleed</strong>
           <small>Showcase your photo across the page.</small>
@@ -839,7 +860,9 @@ function ImageStyleStep({
           type="button"
         >
           <span className="imageStyleThumb centralThumb">
-            {avatarPreview ? <img alt="" src={avatarPreview} /> : null}
+            {avatarPreview ? (
+              <Image alt="" fill sizes="100%" src={avatarPreview} unoptimized />
+            ) : null}
           </span>
           <strong>Central</strong>
           <small>Keep the image centered above your page.</small>
@@ -1008,7 +1031,7 @@ function PagePreviewStep({
         </div>
         <div className="creatorPreviewHero">
           {avatarPreview ? (
-            <img alt="" src={avatarPreview} />
+            <Image alt="" fill sizes="100%" src={avatarPreview} unoptimized />
           ) : (
             <span>{displayName.slice(0, 1).toUpperCase() || 'S'}</span>
           )}
@@ -1017,7 +1040,7 @@ function PagePreviewStep({
           <div className="creatorPreviewIdentity">
             <span className="creatorPreviewAvatar">
               {avatarPreview ? (
-                <img alt="" src={avatarPreview} />
+                <Image alt="" fill sizes="64px" src={avatarPreview} unoptimized />
               ) : (
                 displayName.slice(0, 1).toUpperCase() || 'S'
               )}
