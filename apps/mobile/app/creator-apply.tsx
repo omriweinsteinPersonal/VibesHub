@@ -1,10 +1,11 @@
-import type { CategoryCard, CreatorApplicationInput } from '@vibeshub/contracts';
+import type { CreatorApplicationInput } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ImagePlus } from 'lucide-react-native';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -23,42 +24,51 @@ import {
   checkCreatorHandle,
   getAccountSummary,
   getCreatorApplication,
-  getCreatorCategories,
   isCreatorHandle,
   normalizeCreatorHandle,
   saveAndSubmitCreatorApplication,
   suggestCreatorHandle,
   type CreatorApplication,
 } from '../lib/creator-onboarding';
-import { getSupabaseClient } from '../lib/supabase';
 
-type SocialLink = { followerCount?: number | null; platform: string; url: string };
-type ImageLayout = 'full-bleed' | 'standard';
-const SOCIAL_PLATFORMS = [
+type ImageLayout = 'full-bleed' | 'central';
+type SocialPlatform = NonNullable<
+  CreatorApplicationInput['socialLinks']
+>[number]['platform'];
+type SocialLink = {
+  followerCount?: number | null;
+  platform: SocialPlatform;
+  url: string;
+};
+const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string }[] = [
   { id: 'instagram', label: 'Instagram' },
   { id: 'tiktok', label: 'TikTok' },
   { id: 'youtube', label: 'YouTube' },
   { id: 'website', label: 'Website' },
 ];
 const TOUR_SLIDES = [
-  ['Your storefront', 'A home for your profile, links and recommendations.'],
-  ['Recommendations', 'Share products, places and ideas your audience will love.'],
   [
-    'Your style',
-    'Build a page that feels like you and keeps your best content together.',
+    'Add a recommendation',
+    'Share a product or place with a photo, a short note and one clear link.',
   ],
-  ['You are in control', 'Edit your page whenever you want from your creator studio.'],
+  [
+    'Add a brand',
+    'Keep the brands you work with in one place for your audience to discover.',
+  ],
+  ['Add media', 'Bring your recommendations to life with photos and short videos.'],
+  [
+    'Add a place',
+    'Turn a favourite location into a recommendation your audience can open in Maps.',
+  ],
 ] as const;
 
 export default function CreatorApplicationScreen() {
   const router = useRouter();
   const [application, setApplication] = useState<CreatorApplication | null>(null);
-  const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState('');
   const [handle, setHandle] = useState('');
   const [handleEdited, setHandleEdited] = useState(false);
-  const [categoryId, setCategoryId] = useState('');
   const [bio, setBio] = useState('');
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
     { platform: 'instagram', url: '' },
@@ -79,23 +89,18 @@ export default function CreatorApplicationScreen() {
         router.replace('/studio');
         return;
       }
-      const [loadedCategories, current] = await Promise.all([
-        getCreatorCategories(),
-        getCreatorApplication(),
-      ]);
-      setCategories(loadedCategories);
+      const current = await getCreatorApplication();
       setApplication(current);
       if (current) {
         setDisplayName(current.displayName ?? '');
         setHandle(current.requestedHandle ?? '');
         setHandleEdited(Boolean(current.requestedHandle));
-        setCategoryId(current.primaryCategoryId ?? '');
         setBio(current.bioText ?? '');
         setSocialLinks(
           current.socialLinks.length
             ? current.socialLinks.map((link) => ({
                 followerCount: link.followerCount,
-                platform: link.platform,
+                platform: link.platform as SocialPlatform,
                 url: link.url,
               }))
             : [{ platform: 'instagram', url: '' }],
@@ -145,7 +150,6 @@ export default function CreatorApplicationScreen() {
       if (!displayName.trim()) return 'Add your creator display name.';
       if (!isCreatorHandle(normalizeCreatorHandle(handle)))
         return 'Use 2–30 lowercase letters, numbers, hyphens or underscores.';
-      if (!categoryId) return 'Choose your main category.';
       if (!bio.trim() || !/[\u0590-\u05ff]/u.test(bio))
         return 'Add a short bio in Hebrew for your storefront.';
     }
@@ -192,7 +196,6 @@ export default function CreatorApplicationScreen() {
       const input: CreatorApplicationInput = {
         bioText: bio.trim(),
         displayName: displayName.trim(),
-        primaryCategoryId: categoryId,
         requestedHandle: normalizedHandle,
         socialLinks: socialLinks
           .filter((link) => link.url.trim())
@@ -211,16 +214,8 @@ export default function CreatorApplicationScreen() {
       setSubmitting(false);
     }
   }
-  async function signOut() {
-    await getSupabaseClient().auth.signOut({ scope: 'local' });
-    router.replace('/login');
-  }
-
   const editable =
     !application || ['draft', 'changes_requested'].includes(application.status);
-  const selectedCategory = categories.find(
-    (category) => category.id === categoryId,
-  )?.name;
   if (loading)
     return (
       <SafeAreaView style={styles.loadingScreen}>
@@ -244,9 +239,6 @@ export default function CreatorApplicationScreen() {
         >
           <View style={styles.headerRow}>
             <Text style={styles.wordmark}>swavii</Text>
-            <Pressable accessibilityRole="button" onPress={() => void signOut()}>
-              <Text style={styles.signOut}>Sign out</Text>
-            </Pressable>
           </View>
           {!editable && application ? (
             <View style={styles.statusCard}>
@@ -274,12 +266,9 @@ export default function CreatorApplicationScreen() {
                 {step === 0 ? (
                   <ProfileStep
                     bio={bio}
-                    categories={categories}
-                    categoryId={categoryId}
                     displayName={displayName}
                     handle={handle}
                     onBioChange={setBio}
-                    onCategoryChange={setCategoryId}
                     onDisplayNameChange={(value) => {
                       setDisplayName(value);
                       if (!handleEdited) setHandle(suggestCreatorHandle(value));
@@ -322,7 +311,6 @@ export default function CreatorApplicationScreen() {
                   <PreviewStep
                     avatar={avatarUri ? { uri: avatarUri } : null}
                     bio={bio}
-                    category={selectedCategory}
                     displayName={displayName}
                     imageLayout={imageLayout}
                     links={socialLinks}
@@ -385,23 +373,17 @@ function Progress({ step }: { step: number }) {
 }
 function ProfileStep({
   bio,
-  categories,
-  categoryId,
   displayName,
   handle,
   onBioChange,
-  onCategoryChange,
   onDisplayNameChange,
   onHandleChange,
   submitting,
 }: {
   bio: string;
-  categories: CategoryCard[];
-  categoryId: string;
   displayName: string;
   handle: string;
   onBioChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
   onDisplayNameChange: (value: string) => void;
   onHandleChange: (value: string) => void;
   submitting: boolean;
@@ -434,23 +416,6 @@ function ProfileStep({
           value={handle}
         />
       </View>
-      <FieldLabel text="Main category" />
-      <View style={styles.chipGrid}>
-        {categories.map((category) => {
-          const selected = categoryId === category.id;
-          return (
-            <Pressable
-              key={category.id}
-              onPress={() => onCategoryChange(category.id)}
-              style={[styles.chip, selected && styles.selectedChip]}
-            >
-              <Text style={[styles.chipText, selected && styles.selectedChipText]}>
-                {category.name}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
       <FieldLabel text="Short bio in Hebrew" />
       <TextInput
         editable={!submitting}
@@ -482,7 +447,11 @@ function ImageStep({
       <Text style={styles.sectionCopy}>
         Choose a photo and how it should sit at the top of your storefront.
       </Text>
-      <Pressable onPress={onChoose} style={styles.imagePicker}>
+      <Pressable
+        accessibilityLabel="Upload profile image"
+        onPress={onChoose}
+        style={styles.imagePicker}
+      >
         {avatarUri ? (
           <Image
             contentFit="cover"
@@ -490,15 +459,17 @@ function ImageStep({
             style={styles.avatarImage}
           />
         ) : (
-          <Text style={styles.imagePickerPlus}>+</Text>
+          <View style={styles.avatarPlaceholder}>
+            <ImagePlus color={colors.accent} size={30} />
+          </View>
         )}
-        <Text style={styles.imagePickerText}>
-          {avatarUri ? 'Change photo' : 'Upload photo'}
-        </Text>
+        <View style={styles.imagePickerBadge}>
+          <ImagePlus color={colors.white} size={16} />
+        </View>
       </Pressable>
       <Text style={styles.label}>Image style</Text>
       <View style={styles.layoutRow}>
-        {(['full-bleed', 'standard'] as const).map((layout) => (
+        {(['full-bleed', 'central'] as const).map((layout) => (
           <Pressable
             key={layout}
             onPress={() => onLayoutChange(layout)}
@@ -509,17 +480,43 @@ function ImageStep({
           >
             <View
               style={[
-                styles.layoutMock,
-                layout === 'full-bleed' && styles.layoutMockBleed,
+                styles.layoutPreview,
+                layout === 'full-bleed' && styles.layoutPreviewBleed,
               ]}
-            />
+            >
+              <View style={styles.layoutPreviewHero}>
+                {avatarUri ? (
+                  <Image
+                    contentFit="cover"
+                    source={{ uri: avatarUri }}
+                    style={styles.layoutPreviewImage}
+                  />
+                ) : null}
+              </View>
+              {layout === 'central' ? (
+                <View style={styles.layoutPreviewAvatar}>
+                  {avatarUri ? (
+                    <Image
+                      contentFit="cover"
+                      source={{ uri: avatarUri }}
+                      style={styles.layoutPreviewImage}
+                    />
+                  ) : null}
+                </View>
+              ) : null}
+              <View style={styles.layoutPreviewLines}>
+                <View style={styles.layoutPreviewLine} />
+                <View style={styles.layoutPreviewLine} />
+                <View style={styles.layoutPreviewLine} />
+              </View>
+            </View>
             <Text style={styles.layoutTitle}>
-              {layout === 'full-bleed' ? 'Full bleed' : 'Standard'}
+              {layout === 'full-bleed' ? 'Full bleed' : 'Central'}
             </Text>
             <Text style={styles.layoutCopy}>
               {layout === 'full-bleed'
-                ? 'Image fills the card'
-                : 'Image with soft margins'}
+                ? 'Your image fills the hero area'
+                : 'Your image sits centered above the page'}
             </Text>
           </Pressable>
         ))}
@@ -583,7 +580,23 @@ function TourStep({
   return (
     <View style={styles.tourWrap}>
       <View style={styles.tourIllustration}>
-        <Text style={styles.tourIllustrationText}>{slide + 1}</Text>
+        <View style={styles.tourScreen}>
+          <View style={styles.tourScreenHeader}>
+            <Text style={styles.tourScreenHeaderText}>swavii studio</Text>
+            <View style={styles.tourScreenAvatar} />
+          </View>
+          <View style={styles.tourScreenBody}>
+            <View style={styles.tourScreenTitleRow}>
+              <Text style={styles.tourScreenTitle}>{TOUR_SLIDES[slide][0]}</Text>
+              <Text style={styles.tourScreenPlus}>+</Text>
+            </View>
+            <View style={styles.tourScreenRows}>
+              <View style={styles.tourScreenRow} />
+              <View style={styles.tourScreenRow} />
+              <View style={styles.tourScreenRow} />
+            </View>
+          </View>
+        </View>
       </View>
       <Text style={styles.sectionTitle}>{title}</Text>
       <Text style={styles.sectionCopy}>{copy}</Text>
@@ -608,14 +621,12 @@ function TourStep({
 function PreviewStep({
   avatar,
   bio,
-  category,
   displayName,
   imageLayout,
   links,
 }: {
   avatar: { uri: string } | null;
   bio: string;
-  category?: string;
   displayName: string;
   imageLayout: ImageLayout;
   links: SocialLink[];
@@ -637,7 +648,6 @@ function PreviewStep({
       </View>
       <View style={styles.previewContent}>
         <Text style={styles.previewName}>{displayName || 'Your name'}</Text>
-        <Text style={styles.previewCategory}>{category || 'Your category'}</Text>
         <Text style={styles.previewBio}>{bio || 'Your short bio will appear here.'}</Text>
         <View style={styles.previewLinks}>
           {visibleLinks.map((link) => (
@@ -682,12 +692,15 @@ const styles = StyleSheet.create({
   container: { padding: spacing.lg, paddingBottom: spacing.xxl * 2 },
   headerRow: {
     alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.xxl,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   wordmark: { color: colors.ink, fontFamily: 'Georgia', fontSize: 28 },
-  signOut: { color: colors.muted, fontSize: 15, fontWeight: '600' },
   eyebrow: { color: colors.accent, fontSize: 11, letterSpacing: 2 },
   title: {
     color: colors.ink,
@@ -759,26 +772,41 @@ const styles = StyleSheet.create({
   selectedChipText: { color: colors.white, fontWeight: '700' },
   imagePicker: {
     alignItems: 'center',
-    backgroundColor: colors.background,
+    height: 142,
+    marginTop: spacing.xl,
+    position: 'relative',
+    width: 142,
+  },
+  avatarImage: {
     borderColor: colors.border,
-    borderRadius: radii.card,
+    borderRadius: 71,
+    borderWidth: 1,
+    height: 142,
+    width: 142,
+  },
+  avatarPlaceholder: {
+    alignItems: 'center',
+    backgroundColor: '#f2e3d5',
+    borderColor: colors.accent,
+    borderRadius: 71,
     borderStyle: 'dashed',
     borderWidth: 1,
-    marginTop: spacing.xl,
-    padding: spacing.lg,
+    height: 142,
+    justifyContent: 'center',
+    width: 142,
   },
-  avatarImage: { borderRadius: 60, height: 120, width: 120 },
-  imagePickerPlus: {
-    color: colors.accent,
-    fontSize: 44,
-    fontWeight: '300',
-    lineHeight: 54,
-  },
-  imagePickerText: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: '700',
-    marginTop: spacing.sm,
+  imagePickerBadge: {
+    alignItems: 'center',
+    backgroundColor: colors.accent,
+    borderColor: colors.white,
+    borderRadius: 19,
+    borderWidth: 3,
+    bottom: -2,
+    height: 38,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: -2,
+    width: 38,
   },
   layoutRow: { flexDirection: 'row', gap: spacing.sm },
   layoutCard: {
@@ -789,6 +817,46 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   layoutCardSelected: { borderColor: colors.accent, borderWidth: 2 },
+  layoutPreview: {
+    backgroundColor: '#fffdfa',
+    borderColor: colors.border,
+    borderRadius: 8,
+    height: 112,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  layoutPreviewHero: {
+    backgroundColor: '#ead6c5',
+    height: 48,
+    overflow: 'hidden',
+  },
+  layoutPreviewBleed: { borderColor: colors.accent, borderWidth: 1 },
+  layoutPreviewImage: { height: '100%', width: '100%' },
+  layoutPreviewAvatar: {
+    backgroundColor: '#ead6c5',
+    borderColor: colors.white,
+    borderRadius: 18,
+    borderWidth: 2,
+    height: 36,
+    left: 12,
+    overflow: 'hidden',
+    position: 'absolute',
+    top: 30,
+    width: 36,
+  },
+  layoutPreviewLines: {
+    gap: 4,
+    marginLeft: 12,
+    marginTop: 12,
+    width: '60%',
+  },
+  layoutPreviewLine: {
+    backgroundColor: '#eadfd5',
+    borderRadius: 2,
+    height: 4,
+    width: '100%',
+  },
   layoutMock: {
     backgroundColor: '#ead6c5',
     borderRadius: 8,
@@ -814,13 +882,55 @@ const styles = StyleSheet.create({
   tourIllustration: {
     alignItems: 'center',
     backgroundColor: '#f5e4d7',
-    borderRadius: 80,
-    height: 150,
+    borderRadius: 18,
+    height: 190,
     justifyContent: 'center',
     marginBottom: spacing.xl,
-    width: 150,
+    width: '100%',
   },
-  tourIllustrationText: { color: colors.accent, fontFamily: 'Georgia', fontSize: 64 },
+  tourScreen: {
+    backgroundColor: colors.white,
+    borderColor: colors.ink,
+    borderRadius: 13,
+    borderWidth: 4,
+    overflow: 'hidden',
+    width: '84%',
+  },
+  tourScreenHeader: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  tourScreenHeaderText: { color: colors.ink, fontSize: 9, fontWeight: '800' },
+  tourScreenAvatar: {
+    backgroundColor: '#e6c6b3',
+    borderRadius: 9,
+    height: 18,
+    width: 18,
+  },
+  tourScreenBody: { padding: 10 },
+  tourScreenTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  tourScreenTitle: { color: colors.ink, fontSize: 11, fontWeight: '700' },
+  tourScreenPlus: {
+    backgroundColor: colors.accent,
+    borderRadius: 9,
+    color: colors.white,
+    fontSize: 15,
+    height: 18,
+    lineHeight: 18,
+    textAlign: 'center',
+    width: 18,
+  },
+  tourScreenRows: { gap: 5, marginTop: 10 },
+  tourScreenRow: { backgroundColor: '#f1e3d8', borderRadius: 4, height: 19 },
   tourControls: {
     alignItems: 'center',
     flexDirection: 'row',

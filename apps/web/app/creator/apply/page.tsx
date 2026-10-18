@@ -1,17 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ArrowRight,
-  BarChart3,
   Check,
   ImagePlus,
   Link2,
   MapPin,
   ShoppingBag,
-  Sparkles,
+  Tag,
 } from 'lucide-react';
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react';
 
@@ -43,34 +43,39 @@ interface CreatorProfile {
 }
 type Step = 1 | 2 | 3 | 4 | 5;
 type SocialLink = { followerCount?: number | null; platform: string; url: string };
-type ImageLayout = 'full_bleed' | 'standard';
+type ImageLayout = 'full_bleed' | 'central';
 
 const tourSlides = [
   {
-    title: 'Your recommendations',
-    description: 'Share the products and places you love, all in one beautiful space.',
+    title: 'Add a recommendation',
+    description:
+      'Share a product or place with a photo, a short note and one clear link.',
     icon: ShoppingBag,
     kind: 'recommendations',
+    visual: 'Add recommendation',
   },
   {
-    title: 'Bring your audience with you',
+    title: 'Add a brand',
     description:
-      'Connect your social platforms so your community can find you everywhere.',
-    icon: Link2,
-    kind: 'social',
+      'Keep the brands you work with in one place for your audience to discover.',
+    icon: Tag,
+    kind: 'brands',
+    visual: 'Add brand',
   },
   {
-    title: 'Save your favourite places',
+    title: 'Add media',
+    description: 'Bring your recommendations to life with photos and short videos.',
+    icon: ImagePlus,
+    kind: 'media',
+    visual: 'Add media',
+  },
+  {
+    title: 'Add a place',
     description:
-      'Add maps and places to turn your personal discoveries into recommendations.',
+      'Turn a favourite location into a recommendation your audience can open in Maps.',
     icon: MapPin,
     kind: 'maps',
-  },
-  {
-    title: 'See what resonates',
-    description: 'Use insights to understand what your audience loves most.',
-    icon: BarChart3,
-    kind: 'analytics',
+    visual: 'Add a place',
   },
 ] as const;
 
@@ -244,12 +249,14 @@ export default function CreatorApplicationPage() {
     <main className="onboardingPage">
       <header className="onboardingHeader">
         <Link className="onboardingBrand" href="/" aria-label="swavii home">
-          <span className="onboardingBrandMark">
-            <Sparkles aria-hidden="true" size={15} />
-          </span>
-          <span>swavii</span>
+          <Image
+            src="/images/home/swavii-logo.png"
+            alt="swavii"
+            width={154}
+            height={121}
+            priority
+          />
         </Link>
-        <Link href="/account">Save &amp; exit</Link>
       </header>
       <section className="onboardingShell">
         <div className="onboardingIntro">
@@ -346,7 +353,7 @@ export default function CreatorApplicationPage() {
               </p>
             ) : null}
             <div className="onboardingActions">
-              {step > 1 && step !== 4 ? (
+              {step > 1 ? (
                 <button
                   className="button secondary"
                   disabled={saving}
@@ -361,15 +368,6 @@ export default function CreatorApplicationPage() {
               )}
               {step === 4 ? (
                 <span className="tourActions">
-                  <button
-                    className="button secondary"
-                    disabled={tourSlide === 0}
-                    onClick={() => setTourSlide((value) => Math.max(0, value - 1))}
-                    type="button"
-                  >
-                    <ArrowLeft aria-hidden="true" size={16} />
-                    Back
-                  </button>
                   <button
                     className="button primary"
                     onClick={() => {
@@ -547,16 +545,16 @@ function ImageStyleStep({
           {imageLayout === 'full_bleed' ? <Check aria-hidden="true" size={17} /> : null}
         </button>
         <button
-          className={imageLayout === 'standard' ? 'selected' : ''}
-          onClick={() => onLayout('standard')}
+          className={imageLayout === 'central' ? 'selected' : ''}
+          onClick={() => onLayout('central')}
           type="button"
         >
-          <span className="imageStyleThumb standardThumb">
+          <span className="imageStyleThumb centralThumb">
             {avatarPreview ? <img alt="" src={avatarPreview} /> : null}
           </span>
-          <strong>Standard</strong>
-          <small>Display a centered profile image.</small>
-          {imageLayout === 'standard' ? <Check aria-hidden="true" size={17} /> : null}
+          <strong>Central</strong>
+          <small>Keep the image centered above your page.</small>
+          {imageLayout === 'central' ? <Check aria-hidden="true" size={17} /> : null}
         </button>
       </div>
     </section>
@@ -646,7 +644,6 @@ function TourStep({
   slideIndex: number;
   onSkip: () => void;
 }) {
-  const Icon = slide.icon;
   return (
     <section aria-labelledby="onboarding-tour-title" className="tourStep">
       <div className="tourMeta">
@@ -656,11 +653,22 @@ function TourStep({
         </button>
       </div>
       <div className={`tourIllustration ${slide.kind}`}>
-        <Icon aria-hidden="true" size={42} />
-        <div className="tourIllustrationCards">
-          <span />
-          <span />
-          <span />
+        <div className="tourScreen">
+          <div className="tourScreenHeader">
+            <span>swavii studio</span>
+            <span className="tourScreenAvatar" />
+          </div>
+          <div className="tourScreenBody">
+            <div className="tourScreenTitle">
+              <strong>{slide.visual}</strong>
+              <span>+</span>
+            </div>
+            <div className="tourScreenRows">
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
         </div>
       </div>
       <h2 id="onboarding-tour-title">{slide.title}</h2>

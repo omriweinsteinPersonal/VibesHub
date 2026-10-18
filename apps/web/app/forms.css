@@ -1563,35 +1563,30 @@ textarea:disabled {
 }
 
 .onboardingHeader {
-  background: #ff633f;
-  color: #fffaf4;
+  background: #cd7853;
+  color: #fff;
   max-width: none;
-  padding: 18px clamp(20px, 5vw, 72px);
-}
-
-.onboardingHeader > a:last-child {
-  color: rgb(255 250 244 / 78%);
+  min-height: 74px;
+  padding: 0 max(5.2vw, calc((100vw - 1480px) / 2));
 }
 
 .onboardingBrand {
-  align-items: center;
-  color: inherit;
-  display: inline-flex;
-  font-size: 1.25rem;
-  font-weight: 800;
-  gap: 9px;
-  letter-spacing: -0.04em;
-  text-decoration: none;
+  display: block;
+  height: 43px;
+  overflow: hidden;
+  position: relative;
+  width: 117px;
 }
 
-.onboardingBrandMark {
-  align-items: center;
-  border: 1px solid rgb(255 255 255 / 55%);
-  border-radius: 50%;
-  display: inline-flex;
-  height: 28px;
-  justify-content: center;
-  width: 28px;
+.onboardingBrand img {
+  display: block;
+  height: auto;
+  left: 50%;
+  max-width: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 154px;
 }
 
 .onboardingShell {
@@ -1625,8 +1620,8 @@ textarea:disabled {
 }
 
 .onboardingProgress .active b {
-  background: #ff633f;
-  border-color: #ff633f;
+  background: #cd7853;
+  border-color: #cd7853;
 }
 
 .onboardingCard {
@@ -1758,13 +1753,13 @@ textarea:disabled {
   width: 100%;
 }
 
-.standardThumb {
+.centralThumb {
   align-items: center;
   display: flex;
   justify-content: center;
 }
 
-.standardThumb img {
+.centralThumb img {
   border-radius: 50%;
   height: 68px;
   width: 68px;
@@ -1813,6 +1808,16 @@ textarea:disabled {
   color: #d0734e;
 }
 
+.tourIllustration.brands {
+  background: #eee4f1;
+  color: #87659d;
+}
+
+.tourIllustration.media {
+  background: #e7edf0;
+  color: #587f8c;
+}
+
 .tourIllustrationCards {
   bottom: 20px;
   display: flex;
@@ -1827,6 +1832,75 @@ textarea:disabled {
   border-radius: 8px;
   height: 34px;
   width: 52px;
+}
+
+.tourScreen {
+  background: #fffdfa;
+  border: 7px solid #2e211b;
+  border-radius: 18px;
+  box-shadow: 0 15px 28px rgb(46 33 27 / 16%);
+  min-height: 190px;
+  overflow: hidden;
+  width: min(82%, 330px);
+}
+
+.tourScreenHeader {
+  align-items: center;
+  border-bottom: 1px solid #eee4dc;
+  color: #2e211b;
+  display: flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.tourScreenAvatar {
+  background: #e6c6b3;
+  border-radius: 50%;
+  height: 18px;
+  width: 18px;
+}
+
+.tourScreenBody {
+  padding: 14px;
+}
+
+.tourScreenTitle {
+  align-items: center;
+  color: #2e211b;
+  display: flex;
+  font-size: 0.76rem;
+  justify-content: space-between;
+}
+
+.tourScreenTitle span {
+  align-items: center;
+  background: #cd7853;
+  border-radius: 50%;
+  color: white;
+  display: inline-flex;
+  font-size: 1rem;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.tourScreenRows {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.tourScreenRows span {
+  background: #f1e3d8;
+  border-radius: 7px;
+  display: block;
+  height: 28px;
+}
+
+.tourScreenRows span:first-child {
+  background: linear-gradient(90deg, #e7c4b1 30%, #f1e3d8 30%);
 }
 
 .tourDots {
@@ -1880,7 +1954,7 @@ textarea:disabled {
   position: relative;
 }
 
-.creatorPagePreview.standard .creatorPreviewHero {
+.creatorPagePreview.central .creatorPreviewHero {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -1892,7 +1966,7 @@ textarea:disabled {
   width: 100%;
 }
 
-.creatorPagePreview.standard .creatorPreviewHero img {
+.creatorPagePreview.central .creatorPreviewHero img {
   border-radius: 50%;
   height: 104px;
   width: 104px;
@@ -1986,7 +2060,8 @@ textarea:disabled {
 
 @media (max-width: 700px) {
   .onboardingHeader {
-    padding: 16px 20px;
+    min-height: 64px;
+    padding: 0 20px;
   }
   .onboardingShell {
     padding-top: 30px;
