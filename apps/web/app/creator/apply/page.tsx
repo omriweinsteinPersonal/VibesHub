@@ -13,7 +13,16 @@ import {
   ShoppingBag,
   Tag,
 } from 'lucide-react';
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  type ChangeEvent,
+  type FormEvent,
+  type PointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type WheelEvent,
+} from 'react';
 
 import { apiRequest } from '../../../lib/api';
 import {
@@ -487,6 +496,10 @@ export default function CreatorApplicationPage() {
   );
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 async function cropAvatarFile(
   source: string,
   mimeType: string,
@@ -537,6 +550,73 @@ function AvatarCropModal({
   source: string;
   zoom: number;
 }) {
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const dragStart = useRef({ focusX, focusY, x: 0, y: 0 });
+  const pinchStart = useRef<{ distance: number; zoom: number } | null>(null);
+
+  function getDistance() {
+    const active = [...pointers.current.values()];
+    if (active.length < 2) return 0;
+    return Math.hypot(active[0]!.x - active[1]!.x, active[0]!.y - active[1]!.y);
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 1) {
+      dragStart.current = { focusX, focusY, x: event.clientX, y: event.clientY };
+    } else if (pointers.current.size === 2) {
+      pinchStart.current = { distance: getDistance(), zoom };
+    }
+  }
+
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (!pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size >= 2 && pinchStart.current) {
+      const distance = getDistance();
+      if (distance > 0) {
+        onZoom(
+          clamp(pinchStart.current.zoom * (distance / pinchStart.current.distance), 1, 3),
+        );
+      }
+      return;
+    }
+    const viewport = event.currentTarget.getBoundingClientRect();
+    onFocusX(
+      clamp(
+        dragStart.current.focusX -
+          ((event.clientX - dragStart.current.x) / viewport.width) * 100,
+        0,
+        100,
+      ),
+    );
+    onFocusY(
+      clamp(
+        dragStart.current.focusY -
+          ((event.clientY - dragStart.current.y) / viewport.height) * 100,
+        0,
+        100,
+      ),
+    );
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
+    pointers.current.delete(event.pointerId);
+    pinchStart.current = null;
+    if (pointers.current.size === 1) {
+      const remaining = [...pointers.current.values()][0];
+      if (remaining) {
+        dragStart.current = { focusX, focusY, x: remaining.x, y: remaining.y };
+      }
+    }
+  }
+
+  function handleWheel(event: WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    onZoom(clamp(zoom - event.deltaY * 0.002, 1, 3));
+  }
+
   return (
     <div aria-label="Crop profile image" className="avatarCropOverlay" role="dialog">
       <div className="avatarCropDialog">
@@ -554,7 +634,16 @@ function AvatarCropModal({
             ×
           </button>
         </div>
-        <div className="avatarCropViewport">
+        <div
+          aria-label="Drag the photo to position it"
+          className="avatarCropViewport"
+          onPointerCancel={handlePointerUp}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onWheel={handleWheel}
+          role="application"
+        >
           <img
             alt="Crop preview"
             src={source}
@@ -566,7 +655,7 @@ function AvatarCropModal({
           <span className="avatarCropGuide" />
         </div>
         <label className="avatarCropControl">
-          Zoom
+          Zoom in or out
           <input
             max="3"
             min="1"
@@ -576,28 +665,11 @@ function AvatarCropModal({
             value={zoom}
           />
         </label>
-        <div className="avatarCropFocusGrid">
-          <label>
-            Horizontal focus
-            <input
-              max="100"
-              min="0"
-              onChange={(event) => onFocusX(Number(event.target.value))}
-              type="range"
-              value={focusX}
-            />
-          </label>
-          <label>
-            Vertical focus
-            <input
-              max="100"
-              min="0"
-              onChange={(event) => onFocusY(Number(event.target.value))}
-              type="range"
-              value={focusY}
-            />
-          </label>
-        </div>
+        <p className="avatarCropHint">
+          Drag the photo to position it. Pinch or use the slider to zoom.
+          <br />
+          Only the area inside the circle will be saved.
+        </p>
         <div className="avatarCropActions">
           <button className="button secondary" onClick={onCancel} type="button">
             Cancel
