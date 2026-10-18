@@ -2,13 +2,24 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ArrowLeft, ArrowRight, Check, Layers, Palette, Tags } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ExternalLink,
+  Layers,
+  Palette,
+  Sparkles,
+  Tags,
+  Upload,
+  X,
+} from 'lucide-react';
 import styles from './creator-studio-demo.module.css';
 
 const categories = [
   {
-    title: 'Curate collections',
-    detail: 'Bring your favorite finds together.',
+    title: 'Add a recommendation',
+    detail: 'Fetch product details in seconds.',
     icon: Layers,
   },
   {
@@ -19,15 +30,15 @@ const categories = [
   { title: 'Shape every label', detail: 'Organize picks your way.', icon: Tags },
 ];
 const scenes = [
-  { category: 0, title: 'Add a pick' },
-  { category: 0, title: 'Build a collection' },
-  { category: 0, title: 'See it in your store' },
+  { category: 0, title: 'Paste a product link' },
+  { category: 0, title: 'Fetch the details' },
+  { category: 0, title: 'Add your point of view' },
+  { category: 0, title: 'Save the recommendation' },
+  { category: 0, title: 'See it on your storefront' },
   { category: 1, title: 'Customize your header' },
   { category: 1, title: 'Make your feed yours' },
-  { category: 1, title: 'Move things around' },
   { category: 2, title: 'Shape every label' },
   { category: 2, title: 'A home for every interest' },
-  { category: 2, title: 'More of what you love' },
 ] as const;
 const labels = ['All', 'My closet', 'Random', 'Beauty', 'Home & living'];
 const products = [
@@ -62,10 +73,10 @@ export function CreatorStudioDemo() {
   const scene = scenes[frame] ?? scenes[0];
   const category = scene.category;
   const step = frame;
-  const tone = toneOverride ?? (frame >= 4 ? 2 : frame === 3 ? 1 : 0);
+  const tone = toneOverride ?? (frame >= 5 ? 2 : frame === 4 ? 1 : 0);
   const label =
     labelOverride ??
-    (frame === 6 ? 'My closet' : frame === 7 ? 'Random' : frame === 8 ? 'Beauty' : 'All');
+    (frame === 7 ? 'My closet' : frame === 8 ? 'Random' : 'All');
   const indices =
     label === 'My closet'
       ? [0, 1, 2, 7]
@@ -79,7 +90,7 @@ export function CreatorStudioDemo() {
   const visibleProducts = indices.flatMap((index) =>
     products[index] ? [products[index]] : [],
   );
-  if (frame === 5) visibleProducts.reverse();
+  if (frame === 6) visibleProducts.reverse();
   const goTo = (next: number) => {
     setFrame(next);
     setTone(null);
@@ -109,7 +120,7 @@ export function CreatorStudioDemo() {
     if (!store) return;
 
     store.scrollTo({ top: 0, behavior: 'auto' });
-    if (frame < 2 || reducedMotion) return;
+    if (frame < 4 || reducedMotion) return;
 
     const scrollTimer = window.setTimeout(() => {
       store.scrollTo({ top: store.scrollHeight, behavior: 'smooth' });
@@ -127,7 +138,7 @@ export function CreatorStudioDemo() {
             key={title}
             aria-pressed={category === index}
             onClick={() => {
-              goTo([0, 3, 6][index] ?? 0);
+              goTo([0, 5, 7][index] ?? 0);
             }}
           >
             <Icon size={22} aria-hidden="true" />
@@ -136,65 +147,58 @@ export function CreatorStudioDemo() {
           </button>
         ))}
       </div>
-      <div className={styles.stage} data-scene={step < 2 ? 'editor' : 'store'}>
+      <div className={styles.stage} data-scene={step < 4 ? 'editor' : 'store'}>
         <div className={styles.canvas}>
           <div className={styles.sceneCaption} key={`caption-${frame}`}>
             <span className={styles.eyebrow}>MAYA’S CREATOR STUDIO</span>
             <h3>{scene.title}</h3>
           </div>
-          {category === 0 && step < 2 ? (
+          {category === 0 && step < 4 ? (
             <div className={styles.editor} key={`editor-${step}`}>
               <span className={styles.eyebrow}>CREATOR DASHBOARD</span>
-              <h4>{step === 0 ? 'Add recommendation' : 'Create collection'}</h4>
+              <div className={styles.demoModalHeader}>
+                <div>
+                  <h4>Add item</h4>
+                  <p>Add the details yourself, or paste a link to fill them in automatically.</p>
+                </div>
+                <X aria-hidden="true" size={15} />
+              </div>
               {step === 0 ? (
                 <>
+                  <div className={styles.changeType}>← &nbsp; Change type</div>
                   <div className={styles.field}>
-                    <span>
-                      Item link <small>Optional</small>
-                    </span>
-                    <div>Paste a link, or add your own details</div>
+                    <span>Item link <small>Optional</small></span>
+                    <div className={styles.inputFilled}>https://footlocker.co.il/products/f356680008</div>
                   </div>
-                  <div className={styles.pick}>
-                    <Image
-                      src={products[0].image}
-                      alt={products[0].name}
-                      width={110}
-                      height={130}
-                    />
-                    <div>
-                      <div className={styles.field}>
-                        <span>Item name</span>
-                        <div>{products[0].name}</div>
-                      </div>
-                      <div className={styles.field}>
-                        <span>Brand</span>
-                        <div>Orelune Studio</div>
-                      </div>
-                    </div>
-                  </div>
-                  <button className={styles.primary} type="button" onClick={advance}>
-                    Save recommendation <ArrowRight size={15} />
+                  <button className={styles.fetchButton} type="button" onClick={advance}>
+                    <Sparkles aria-hidden="true" size={14} /> Fetch details
                   </button>
+                  <p className={styles.helper}>Select Fetch details to fill in details from a link. A photo is optional.</p>
+                  <div className={styles.saveHint}>Add the item details, then save. <button type="button" onClick={advance}>Save recommendation</button></div>
+                </>
+              ) : step === 1 ? (
+                <>
+                  <div className={styles.successBanner}><Check aria-hidden="true" size={15} /> Product details fetched. Review them, then save.</div>
+                  <div className={styles.twoFields}>
+                    <div className={styles.field}><span>Item name</span><div className={styles.inputFilled}>740 sneakers</div></div>
+                    <div className={styles.field}><span>Brand</span><div className={styles.inputFilled}>Footlocker</div></div>
+                  </div>
+                  <div className={styles.field}><span>Product photos</span><small className={styles.helper}>A photo is optional. Add one if you want the recommendation to include product imagery.</small><div className={styles.photoGrid}>{products.slice(1,4).map((product,index)=><div className={styles.photoTile} key={product.name}><Image src={product.image} alt="" fill sizes="90px"/><button type="button" aria-label={`Remove photo ${index+1}`}><X size={11}/></button></div>)}</div></div>
+                  <div className={styles.twoFields}><div className={styles.field}><span>Price (₪) <small>Optional</small></span><div className={styles.inputFilled}>669</div></div><div className={styles.field}><span>Categories <small>Optional</small></span><div className={styles.inputFilled}>Fashion <span className={styles.chevron}>⌄</span></div></div></div>
+                  <button className={styles.primary} type="button" onClick={advance}>Continue <ArrowRight size={15}/></button>
+                </>
+              ) : step === 2 ? (
+                <>
+                  <div className={styles.field}><span>Review <small>Optional</small></span><div className={styles.textareaFilled} dir="ltr">A clean everyday sneaker with that perfect retro shape.</div></div>
+                  <div className={styles.field}><span>Instagram story or Highlight link <small>(optional)</small></span><div className={styles.inputFilled}>https://instagram.com/stories/elad</div></div>
+                  <div className={styles.field}><span>Story clips <small>(optional)</small></span><p className={styles.helper}>Attach short videos like your Instagram stories. They appear on this recommendation card in order.</p><div className={styles.uploadBox}><Upload aria-hidden="true" size={14}/><div><b>Upload videos</b><small>Short clips from your product story</small></div></div></div>
+                  <button className={styles.primary} type="button" onClick={advance}>Save recommendation <ArrowRight size={15}/></button>
                 </>
               ) : (
                 <>
-                  <div className={styles.field}>
-                    <span>Collection name</span>
-                    <div>Everyday favorites</div>
-                  </div>
-                  <span className={styles.selectionLabel}>
-                    Choose your recommendations
-                  </span>
-                  {products.slice(0, 3).map((product) => (
-                    <div className={styles.selection} key={product.name}>
-                      <Image src={product.image} alt="" width={44} height={48} />
-                      <span>{product.name}</span>
-                      <Check size={17} aria-label="Selected" />
-                    </div>
-                  ))}
-                  <button className={styles.primary} type="button" onClick={advance}>
-                    Create collection <ArrowRight size={15} />
-                  </button>
+                  <div className={styles.successBanner}><Check aria-hidden="true" size={15}/> Recommendation saved to your storefront.</div>
+                  <div className={styles.savedRecommendation}><Image src={products[1].image} alt="New Balance 740" width={82} height={96}/><div><span className={styles.eyebrow}>NEW BALANCE</span><strong>740 sneakers</strong><small>₪669 · Foot Locker</small><span className={styles.savedTag}>Live on storefront</span></div></div>
+                  <button className={styles.primary} type="button" onClick={advance}>View storefront <ExternalLink aria-hidden="true" size={15}/></button>
                 </>
               )}
             </div>

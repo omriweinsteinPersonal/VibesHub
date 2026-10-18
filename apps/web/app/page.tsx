@@ -14,7 +14,8 @@ import {
   UserRound,
   Video,
 } from 'lucide-react';
-import { HomeGallery, HomeStudio } from './_components/home-experience';
+import { HomeGallery } from './_components/home-experience';
+import { CreatorStudioDemo } from './_components/creator-studio-demo';
 import styles from './home.module.css';
 
 const signup = '/auth?mode=signup';
@@ -257,7 +258,7 @@ export default function HomePage() {
                 </li>
               </ol>
             </div>
-            <HomeStudio />
+            <CreatorStudioDemo />
           </div>
         </section>
         <section
