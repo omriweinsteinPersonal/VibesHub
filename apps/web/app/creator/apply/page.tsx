@@ -738,6 +738,9 @@ function ImageStyleStep({
           <div className="imageStylePageTabs">
             <span>All</span>
             <span>Fashion</span>
+            <span>Sports</span>
+            <span>Random</span>
+            <span>Food</span>
             <span>Travel</span>
           </div>
         </div>
