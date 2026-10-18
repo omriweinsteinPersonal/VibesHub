@@ -1810,9 +1810,7 @@ textarea:disabled {
 .imageStylePageImage img {
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
-  transform: scale(0.72);
-  transform-origin: center;
+  object-position: center 34%;
   width: 100%;
 }
 
@@ -1852,11 +1850,17 @@ textarea:disabled {
 }
 
 .imageStyleHero.full_bleed .imageStylePageImage {
-  height: 150px;
+  height: 158px;
 }
 
 .imageStyleHero.full_bleed .imageStylePageImage::after {
-  background: linear-gradient(180deg, transparent 15%, #d89573 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 22%,
+    rgb(216 149 115 / 18%) 48%,
+    rgb(216 149 115 / 72%) 76%,
+    #d89573 100%
+  );
   content: '';
   inset: 0;
   pointer-events: none;
