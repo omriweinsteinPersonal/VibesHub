@@ -40,6 +40,8 @@ interface StorefrontSectionRow {
 
 interface CuratedSectionRow {
   brandId: string | null;
+  contentItemsJson: unknown;
+  displayStyleJson: string | null;
   id: string;
   kind: 'section' | 'collection' | 'page';
   title: string;
@@ -72,7 +74,7 @@ interface MediaKitRow {
 
 export type CreatorStudioUpdateResult<T> =
   | { kind: 'invalid_categories' }
-  | { kind: 'invalid_recommendations' }
+  | { kind: 'invalid_recommendations'; reason?: string }
   | { kind: 'not_found' }
   | { actualVersion: number; kind: 'version_conflict' }
   | { data: T; kind: 'updated' };
@@ -241,6 +243,100 @@ export class CreatorStudioRepository {
       if (preference.version !== expectedVersion) {
         return { actualVersion: preference.version, kind: 'version_conflict' };
       }
+      const ownedRecommendations = await sql<{ id: string }[]>`
+        select recommendation.id
+        from app.recommendations recommendation
+        where recommendation.creator_id = ${identity.id}
+          and recommendation.lifecycle <> 'archived'
+          and recommendation.deleted_at is null
+      `;
+      const ownedRecommendationIds = new Set(ownedRecommendations.map(({ id }) => id));
+      const [ownedDiscounts, ownedBrands] = await Promise.all([
+        sql<{ id: string }[]>`
+          select discount.id
+          from app.discount_codes discount
+          where discount.creator_id = ${identity.id}
+            and discount.lifecycle_status <> 'archived'
+            and discount.deleted_at is null
+        `,
+        sql<{ id: string; brandId: string }[]>`
+          select brand.id, brand.brand_id as "brandId"
+          from app.creator_brands brand
+          where brand.creator_id = ${identity.id}
+            and brand.lifecycle = 'active'
+        `,
+      ]);
+      const ownedDiscountIds = new Set(ownedDiscounts.map(({ id }) => id));
+      const ownedBrandIds = new Set(ownedBrands.map(({ id }) => id));
+      const ownedCatalogBrandIds = new Set(ownedBrands.map(({ brandId }) => brandId));
+      const creatorBrandIdByCatalogId = new Map(
+        ownedBrands.map(({ id, brandId }) => [brandId, id]),
+      );
+      const featuredMediaIds = new Set(input.featuredMedia.map(({ id }) => id));
+      const validCollectionIds = new Set(
+        input.curatedSections
+          .filter(
+            (section) =>
+              section.kind === 'collection' &&
+              section.brandId !== null &&
+              ownedCatalogBrandIds.has(section.brandId),
+          )
+          .map(({ id }) => id),
+      );
+      const validSections = input.curatedSections.filter(
+        (section) => section.kind !== 'collection' || validCollectionIds.has(section.id),
+      );
+      const contentOrderKeys = new Set<string>();
+      input = {
+        ...input,
+        contentOrder: input.contentOrder.filter(({ kind, id }) => {
+          const key = `${kind}:${id}`;
+          if (contentOrderKeys.has(key)) return false;
+          contentOrderKeys.add(key);
+          if (kind === 'recommendation') return ownedRecommendationIds.has(id);
+          if (kind === 'discount') return ownedDiscountIds.has(id);
+          if (kind === 'media') return featuredMediaIds.has(id);
+          if (kind === 'collection') return validCollectionIds.has(id);
+          if (kind === 'section') {
+            return validSections.some(
+              (section) => section.id === id && section.kind === 'section',
+            );
+          }
+          return true;
+        }),
+        curatedSections: validSections.map((section) => {
+          const contentItems = section.contentItems.map((item) =>
+            item.kind === 'brand' && creatorBrandIdByCatalogId.has(item.id)
+              ? { ...item, id: creatorBrandIdByCatalogId.get(item.id)! }
+              : item,
+          );
+          const validContentItems = contentItems.filter((item) => {
+            if (item.kind === 'recommendation')
+              return ownedRecommendationIds.has(item.id);
+            if (item.kind === 'media') return featuredMediaIds.has(item.id);
+            if (item.kind === 'brand') return ownedBrandIds.has(item.id);
+            return validCollectionIds.has(item.id);
+          });
+          const contentRecommendationIds = validContentItems
+            .filter(({ kind }) => kind === 'recommendation')
+            .map(({ id }) => id);
+          return {
+            ...section,
+            recommendationIds: [
+              ...new Set([...section.recommendationIds, ...contentRecommendationIds]),
+            ].filter((id) => ownedRecommendationIds.has(id)),
+            contentItems: validContentItems,
+          };
+        }),
+        labels: input.labels.map((label) => ({
+          ...label,
+          recommendationIds: label.recommendationIds.filter((id) =>
+            ownedRecommendationIds.has(id),
+          ),
+          collectionIds: label.collectionIds.filter((id) => validCollectionIds.has(id)),
+          brandIds: label.brandIds.filter((id) => ownedBrandIds.has(id)),
+        })),
+      };
       const [categoryCount] = await sql<{ count: number }[]>`
         select count(*)::integer as count
         from app.categories
@@ -252,7 +348,10 @@ export class CreatorStudioRepository {
       }
       const orderedIds = input.contentOrder.map(({ kind, id }) => `${kind}:${id}`);
       if (new Set(orderedIds).size !== orderedIds.length)
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'duplicate content order entry',
+        };
       const orderedRecommendations = input.contentOrder
         .filter(({ kind }) => kind === 'recommendation')
         .map(({ id }) => id);
@@ -278,7 +377,10 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'invalid page or curated section order',
+        };
       const orderedCategories = input.contentOrder
         .filter(({ kind }) => kind === 'category')
         .map(({ id }) => id);
@@ -291,11 +393,17 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'invalid category or curated section order',
+        };
       if (
         orderedMedia.some((id) => !input.featuredMedia.some((media) => media.id === id))
       )
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'content order references unavailable media',
+        };
       const [orderOwnership] = await sql<
         { recommendations: number; discounts: number }[]
       >`
@@ -307,10 +415,47 @@ export class CreatorStudioRepository {
         orderOwnership?.recommendations !== orderedRecommendations.length ||
         orderOwnership.discounts !== orderedDiscounts.length
       )
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'content order contains inactive content',
+        };
       const recommendationIds = [
-        ...new Set(input.curatedSections.flatMap((section) => section.recommendationIds)),
-        ...new Set(input.labels.flatMap((label) => label.recommendationIds)),
+        ...new Set([
+          ...input.curatedSections.flatMap((section) => section.recommendationIds),
+          ...input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'recommendation')
+              .map(({ id }) => id),
+          ),
+          ...input.labels.flatMap((label) => label.recommendationIds),
+        ]),
+      ];
+      const mediaIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'media')
+              .map(({ id }) => id),
+          ),
+        ),
+      ];
+      const selectedBrandIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'brand')
+              .map(({ id }) => id),
+          ),
+        ),
+      ];
+      const selectedCollectionIds = [
+        ...new Set(
+          input.curatedSections.flatMap((section) =>
+            section.contentItems
+              .filter(({ kind }) => kind === 'collection')
+              .map(({ id }) => id),
+          ),
+        ),
       ];
       const collectionIds = new Set(input.labels.flatMap((label) => label.collectionIds));
       if (
@@ -321,7 +466,10 @@ export class CreatorStudioRepository {
             ),
         )
       )
-        return { kind: 'invalid_recommendations' };
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'label references an unknown collection',
+        };
       const brandIds = new Set(input.labels.flatMap((label) => label.brandIds));
       if (brandIds.size) {
         const [ownedBrands] = await sql<{ count: number }[]>`
@@ -332,7 +480,10 @@ export class CreatorStudioRepository {
             and lifecycle = 'active'
         `;
         if (ownedBrands?.count !== brandIds.size)
-          return { kind: 'invalid_recommendations' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'label references an inactive brand',
+          };
       }
       if (recommendationIds.length) {
         const [owned] = await sql<{ count: number }[]>`
@@ -344,12 +495,85 @@ export class CreatorStudioRepository {
             and deleted_at is null
         `;
         if (owned?.count !== recommendationIds.length) {
-          return { kind: 'invalid_recommendations' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'recommendation ownership or lifecycle check failed',
+          };
         }
+      }
+      const collectionRecommendationIds = [
+        ...new Set(
+          input.curatedSections
+            .filter((section) => section.kind === 'collection')
+            .flatMap((section) => section.recommendationIds),
+        ),
+      ];
+      if (collectionRecommendationIds.length) {
+        const collectionItems = await sql<{ id: string; brandId: string }[]>`
+          select recommendation.id, product.brand_id as "brandId"
+          from app.recommendations recommendation
+          join app.products product on product.id = recommendation.product_id
+          where recommendation.creator_id = ${identity.id}
+            and recommendation.id = any(${collectionRecommendationIds}::uuid[])
+            and recommendation.lifecycle <> 'archived'
+            and recommendation.deleted_at is null
+        `;
+        const itemBrandIds = new Map(
+          collectionItems.map((item) => [item.id, item.brandId]),
+        );
+        for (const section of input.curatedSections) {
+          if (
+            section.kind === 'collection' &&
+            section.recommendationIds.some(
+              (id) => itemBrandIds.get(id) !== section.brandId,
+            )
+          ) {
+            return {
+              kind: 'invalid_recommendations',
+              reason: 'collection products must belong to its selected brand',
+            };
+          }
+        }
+      }
+      if (mediaIds.some((id) => !input.featuredMedia.some((media) => media.id === id))) {
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'section references unavailable media',
+        };
+      }
+      if (selectedBrandIds.length) {
+        const [ownedBrands] = await sql<{ count: number }[]>`
+          select count(*)::integer as count
+          from app.creator_brands
+          where creator_id = ${identity.id}
+            and id = any(${selectedBrandIds}::uuid[])
+            and lifecycle = 'active'
+        `;
+        if (ownedBrands?.count !== selectedBrandIds.length)
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'section references an inactive brand',
+          };
+      }
+      if (
+        selectedCollectionIds.some(
+          (id) =>
+            !input.curatedSections.some(
+              (section) => section.id === id && section.kind === 'collection',
+            ),
+        )
+      ) {
+        return {
+          kind: 'invalid_recommendations',
+          reason: 'section references an unknown collection',
+        };
       }
       for (const section of input.curatedSections) {
         if (section.kind === 'collection' && !section.brandId)
-          return { kind: 'invalid_recommendations' };
+          return {
+            kind: 'invalid_recommendations',
+            reason: 'collection is missing its brand',
+          };
       }
 
       await sql`delete from app.creator_storefront_sections where creator_id = ${identity.id}`;
@@ -360,13 +584,29 @@ export class CreatorStudioRepository {
         `;
       }
       await sql`delete from app.creator_curated_sections where creator_id = ${identity.id}`;
+      const [generalSectionColumns] = await sql<{ available: boolean }[]>`
+        select count(*) = 2 as available
+        from information_schema.columns
+        where table_schema = 'app'
+          and table_name = 'creator_curated_sections'
+          and column_name = any(${['display_style', 'content_items']}::text[])
+      `;
       for (const [position, section] of input.curatedSections.entries()) {
-        await sql`
-          insert into app.creator_curated_sections
-            (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, position)
-          values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
-            ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${position})
-        `;
+        if (generalSectionColumns?.available) {
+          await sql`
+            insert into app.creator_curated_sections
+              (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, display_style, content_items, position)
+            values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
+              ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${section.displayStyle}, ${sql.json(section.contentItems)}, ${position})
+          `;
+        } else {
+          await sql`
+            insert into app.creator_curated_sections
+              (id, creator_id, kind, brand_id, title, description, image_url, show_items_individually, parent_collection_id, position)
+            values (${section.id}, ${identity.id}, ${section.kind}, ${section.brandId},
+              ${section.title}, ${section.description}, ${section.imageUrl}, ${section.showItemsIndividually}, ${section.parentCollectionId}, ${position})
+          `;
+        }
         for (const [
           itemPosition,
           recommendationId,
@@ -525,6 +765,8 @@ export class CreatorStudioRepository {
         section.id,
         section.kind,
         section.brand_id as "brandId",
+        to_jsonb(section)->'content_items' as "contentItemsJson",
+        to_jsonb(section)->>'display_style' as "displayStyleJson",
         section.title,
         section.description,
         section.image_url as "imageUrl",
@@ -542,7 +784,21 @@ export class CreatorStudioRepository {
     return creatorStorefrontConfigurationSchema.parse({
       contentOrder: Array.isArray(rows[0]?.contentOrder) ? rows[0].contentOrder : [],
       featuredMedia: Array.isArray(rows[0]?.featuredMedia) ? rows[0].featuredMedia : [],
-      curatedSections: curatedRows,
+      curatedSections: curatedRows.map(
+        ({ contentItemsJson, displayStyleJson, ...section }) => ({
+          ...section,
+          contentItems: Array.isArray(contentItemsJson)
+            ? contentItemsJson
+            : section.recommendationIds.map((id) => ({
+                id,
+                kind: 'recommendation' as const,
+              })),
+          displayStyle:
+            displayStyleJson === 'vertical'
+              ? ('vertical' as const)
+              : ('horizontal' as const),
+        }),
+      ),
       labels: Array.isArray(rows[0]?.labels) ? rows[0].labels : [],
       titles: Array.isArray(rows[0]?.titles) ? rows[0].titles : [],
       brandOrder: rows[0]?.brandOrder ?? [],

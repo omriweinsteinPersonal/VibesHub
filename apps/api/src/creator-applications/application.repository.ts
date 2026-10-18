@@ -51,7 +51,7 @@ interface FeedbackRow {
   publicMessage: string;
 }
 
-export interface ApplicationRepositoryPort {
+interface ApplicationRepositoryPort {
   approve(
     id: string,
     reviewerUserId: string,
@@ -309,6 +309,16 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
         insert into app.creator_categories (creator_id, category_id, sort_order)
         values (${creator.id}, ${application.primaryCategoryId}, 0)
         on conflict do nothing
+      `;
+      await transaction`
+        insert into app.creator_social_links (
+          creator_id, platform, url, handle, sort_order
+        )
+        select
+          ${creator.id}, platform, url, handle, position
+        from app.creator_application_social_links
+        where application_id = ${id}
+        order by position, id
       `;
       await transaction`
         insert into app.user_capabilities (user_id, capability, granted_by)

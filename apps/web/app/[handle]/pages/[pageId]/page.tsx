@@ -1,10 +1,11 @@
-import type { CreatorStorefront } from '@vibeshub/contracts';
+import type { CreatorStorefront, PublicDiscountCode } from '@vibeshub/contracts';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
-import { publicApiRequest } from '../../../../lib/api';
+import { publicApiCollectionRequest, publicApiRequest } from '../../../../lib/api';
 import { loadStorefrontRecommendations } from '../../../../lib/storefront-recommendations';
+import { CopyDiscountCodeButton } from '../../../_components/analytics-events';
 import { RecommendationCardView } from '../../../_components/recommendation-card';
 
 export const dynamic = 'force-dynamic';
@@ -15,9 +16,12 @@ export default async function StorefrontPageRoute({
   params: Promise<{ handle: string; pageId: string }>;
 }) {
   const { handle, pageId } = await params;
-  const [storefront, recommendations] = await Promise.all([
+  const [storefront, recommendations, discountResult] = await Promise.all([
     publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
     loadStorefrontRecommendations(handle),
+    publicApiCollectionRequest<PublicDiscountCode>(
+      `/creators/${encodeURIComponent(handle)}/discount-codes`,
+    ).catch(() => ({ data: [] })),
   ]);
   if (storefront.handle !== handle) {
     permanentRedirect(
@@ -34,6 +38,20 @@ export default async function StorefrontPageRoute({
   const collection = storefront.curatedSections.find(
     ({ id }) => id === page.parentCollectionId,
   );
+  const collectionBrand = storefront.brands.find(
+    ({ brandId }) => brandId === page.brandId,
+  );
+  const collectionDiscount =
+    page.kind === 'collection'
+      ? (discountResult.data.find(
+          (code) => code.scopeKind === 'collection' && code.scopeId === page.id,
+        ) ??
+        (collectionBrand
+          ? discountResult.data.find(
+              (code) => code.scopeKind === 'brand' && code.brandId === collectionBrand.id,
+            )
+          : undefined))
+      : undefined;
 
   return (
     <div className="editorialPage">
@@ -52,9 +70,45 @@ export default async function StorefrontPageRoute({
           Back
         </Link>
         <header>
-          {collection ? <p className="eyebrow">{collection.title}</p> : null}
-          <h1>{page.title}</h1>
-          {page.description ? <p>{page.description}</p> : null}
+          <div className="creatorProductPageHeaderMain">
+            {collection ? <p className="eyebrow">{collection.title}</p> : null}
+            <h1>{page.title}</h1>
+            {page.description ? <p>{page.description}</p> : null}
+          </div>
+          {collectionDiscount ? (
+            <aside className="creatorProductPageOffer" aria-label="Collection discount">
+              <span>
+                {collectionDiscount.discountPercent
+                  ? `${collectionDiscount.discountPercent}% off`
+                  : collectionDiscount.discountAmountMinor
+                    ? `₪${collectionDiscount.discountAmountMinor / 100} off`
+                    : collectionDiscount.label}
+              </span>
+              {collectionDiscount.code ? (
+                <div className="creatorProductPageOfferCode">
+                  <strong>{collectionDiscount.code}</strong>
+                  <CopyDiscountCodeButton
+                    code={collectionDiscount.code}
+                    creatorId={storefront.id}
+                    discountCodeId={collectionDiscount.id}
+                    recommendationId={null}
+                  />
+                </div>
+              ) : null}
+              {collectionDiscount.expiresAt ? (
+                <small>
+                  <span>Discount expires</span>
+                  <b>
+                    {new Intl.DateTimeFormat('en-GB', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    }).format(new Date(collectionDiscount.expiresAt))}
+                  </b>
+                </small>
+              ) : null}
+            </aside>
+          ) : null}
         </header>
         <div className="creatorProductPageGrid">
           {products.map((recommendation) => (
@@ -63,6 +117,7 @@ export default async function StorefrontPageRoute({
               creatorId={storefront.id}
               key={recommendation.id}
               recommendation={recommendation}
+              hideDiscount={page.kind === 'collection'}
               showPrice={false}
             />
           ))}

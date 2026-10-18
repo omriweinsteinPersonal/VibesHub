@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithApple, signInWithGoogle } from '../lib/auth';
+import { getSignedInDestination } from '../lib/creator-onboarding';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
@@ -38,7 +39,7 @@ export default function LoginScreen() {
           password,
         });
         if (authError) throw authError;
-        router.replace('/account');
+        router.replace(await getSignedInDestination());
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email,
@@ -46,8 +47,9 @@ export default function LoginScreen() {
           options: { data: { intended_role: 'creator' } },
         });
         if (authError) throw authError;
-        if (data.session) router.replace('/account');
-        else setMessage('Check your email to confirm your account.');
+        if (data.session) {
+          router.replace(await getSignedInDestination());
+        } else setMessage('Check your email to confirm your account.');
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
@@ -63,7 +65,9 @@ export default function LoginScreen() {
     try {
       const result =
         provider === 'apple' ? await signInWithApple() : await signInWithGoogle();
-      if (result === 'signed-in') router.replace('/account');
+      if (result === 'signed-in') {
+        router.replace(await getSignedInDestination());
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Authentication failed.');
     } finally {
@@ -125,6 +129,7 @@ export default function LoginScreen() {
           <View style={styles.divider} />
         </View>
         <TextInput
+          accessibilityLabel="Email"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -134,17 +139,27 @@ export default function LoginScreen() {
           value={email}
         />
         <TextInput
+          accessibilityLabel="Password"
           autoCapitalize="none"
           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           onChangeText={setPassword}
+          onSubmitEditing={() => void submit()}
           placeholder="Password"
+          returnKeyType="done"
           secureTextEntry
+          submitBehavior="blurAndSubmit"
           style={styles.input}
           value={password}
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {message ? <Text style={styles.success}>{message}</Text> : null}
-        <Pressable disabled={loading} onPress={submit} style={styles.submit}>
+        <Pressable
+          accessibilityLabel={mode === 'login' ? 'Submit login' : 'Create your page'}
+          accessibilityRole="button"
+          disabled={loading}
+          onPress={submit}
+          style={styles.submit}
+        >
           <Text style={styles.submitText}>
             {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create your page'}
           </Text>

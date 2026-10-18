@@ -2,13 +2,15 @@ import type { CreatorProfileSocialLink } from '@vibeshub/contracts';
 import Image from 'next/image';
 import { Globe2 } from 'lucide-react';
 
-type SocialPlatform = CreatorProfileSocialLink['platform'];
+type SocialPlatform = CreatorProfileSocialLink['platform'] | 'spotify' | 'apple_music';
 
 const iconFiles: Partial<Record<SocialPlatform, string>> = {
   facebook: 'facebook',
   instagram: 'instagram',
   linkedin: 'linkedin',
   pinterest: 'pinterest',
+  spotify: 'spotify',
+  apple_music: 'apple-music',
   tiktok: 'tiktok',
   x: 'x',
   youtube: 'youtube',

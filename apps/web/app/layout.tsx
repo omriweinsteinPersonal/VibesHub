@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 
 import { CreatorNavigationProvider } from './_components/creator-navigation-provider';
 import { CreatorWorkspaceFrame } from './_components/creator-workspace-frame';
+import { siteDescription, siteName, siteUrl } from '../lib/site-metadata';
 
 const bodyFont = DM_Sans({
   display: 'swap',
@@ -23,11 +24,24 @@ const displayFont = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  description:
-    'Build a customizable recommendation page and share everything you love with one link.',
+  applicationName: siteName,
+  metadataBase: new URL(siteUrl),
+  description: siteDescription,
   title: {
-    default: 'swavii',
-    template: '%s · swavii',
+    default: siteName,
+    template: `%s · ${siteName}`,
+  },
+  icons: { icon: '/icon.svg' },
+  openGraph: {
+    description: siteDescription,
+    siteName,
+    title: siteName,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    description: siteDescription,
+    title: siteName,
   },
 };
 

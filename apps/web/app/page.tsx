@@ -7,15 +7,19 @@ import {
   Check,
   Grid2X2,
   Home,
-  Image as ImageIcon,
   Link as LinkIcon,
+  MapPinned,
   Play,
   Tag,
   UserRound,
-  Video,
 } from 'lucide-react';
 import { HomeGallery } from './_components/home-experience';
 import { CreatorStudioDemo } from './_components/creator-studio-demo';
+import {
+  organizationStructuredData,
+  siteName,
+  websiteStructuredData,
+} from '../lib/site-metadata';
 import styles from './home.module.css';
 
 const signup = '/auth?mode=signup';
@@ -23,14 +27,28 @@ const description =
   'Swavii lets creators build a personal page that looks and feels like them—bringing together recommendations, collections, links, photos, videos and more in one place.';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/' },
   description,
-  openGraph: { description },
-  twitter: { description },
+  openGraph: {
+    description,
+    siteName,
+    title: siteName,
+    type: 'website',
+    url: '/',
+  },
+  title: siteName,
+  twitter: { description, title: siteName },
 };
 
 export default function HomePage() {
   return (
     <div className={styles.page}>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([websiteStructuredData, organizationStructuredData]),
+        }}
+        type="application/ld+json"
+      />
       <a className={styles.skip} href="#main">
         Skip to content
       </a>
@@ -50,7 +68,7 @@ export default function HomePage() {
           <a href="#pricing">Pricing</a>
         </nav>
         <div className={styles.headerActions}>
-          <Link href="/auth?mode=login">Creator log in</Link>
+          <Link href="/auth?mode=login">Log in</Link>
         </div>
       </header>
       <main id="main">
@@ -61,7 +79,10 @@ export default function HomePage() {
               <br />
               curated in one place.
             </h1>
-            <p>One page for everything you want to share.</p>
+            <p>
+              One <span className={styles.heroAccent}>link-in-bio</span> for everything
+              you want to share.
+            </p>
             <form action="/auth" className={styles.signup}>
               <input type="hidden" name="mode" value="signup" />
               <label className={styles.srOnly} htmlFor="creator-name">
@@ -94,11 +115,9 @@ export default function HomePage() {
         >
           <div className={styles.contentHeading}>
             <div>
-              <h2 id="content-title">More than a list of things you love.</h2>
-              <p>
-                Share your links, photos, videos, collections, Instagram and more — all in
-                one beautiful page.
-              </p>
+              <span className={styles.contentEyebrow}>BUILD YOUR PAGE</span>
+              <h2 id="content-title">Everything you love, in one place.</h2>
+              <p>Choose the pieces that make your page feel like you.</p>
             </div>
             <a href="#how-it-works">
               See how it works <ArrowRight size={17} aria-hidden="true" />
@@ -106,107 +125,97 @@ export default function HomePage() {
           </div>
           <div className={styles.contentGrid}>
             <article className={`${styles.contentBlock} ${styles.linkBlock}`}>
-              <h3>
-                <LinkIcon size={18} aria-hidden="true" /> Custom link
-              </h3>
-              <div className={styles.sampleLink}>
-                <LinkIcon size={18} aria-hidden="true" /> My camera gear{' '}
-                <ArrowRight size={16} aria-hidden="true" />
+              <div className={styles.featureVisual}>
+                <LinkIcon aria-hidden="true" />
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Custom link</h3>
+                <p>Share anything with a link made for you.</p>
               </div>
             </article>
-            <article className={`${styles.contentBlock} ${styles.galleryBlock}`}>
-              <h3>
-                <ImageIcon size={18} aria-hidden="true" /> Photo gallery
-              </h3>
-              <div className={styles.samplePhotos}>
-                {[
-                  '/images/home/daniel.jpg',
-                  '/images/home/chair-final.jpg',
-                  '/images/home/coffee.jpg',
-                  '/images/home/miya.jpg',
-                ].map((src, i) => (
-                  <Image
-                    key={src}
-                    src={src}
-                    alt={
-                      [
-                        'Photographer outdoors',
-                        'Design chair',
-                        'Coffee detail',
-                        'Creator in her kitchen',
-                      ][i] ?? 'Creator gallery photo'
-                    }
-                    width={124}
-                    height={104}
-                  />
+            <article className={`${styles.contentBlock} ${styles.mediaBlock}`}>
+              <div className={styles.featureMediaPreview} aria-hidden="true">
+                <Image
+                  src="/images/home/rotem-style-notes-v3.png"
+                  alt=""
+                  fill
+                  sizes="96px"
+                />
+                <span>
+                  <Play size={12} fill="currentColor" />
+                </span>
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Media</h3>
+                <p>Showcase your photos and videos.</p>
+              </div>
+            </article>
+            <article className={`${styles.contentBlock} ${styles.socialBlock}`}>
+              <div className={styles.featureSocialPreview} aria-hidden="true">
+                {['instagram', 'tiktok', 'youtube', 'spotify'].map((name) => (
+                  <span key={name}>
+                    <Image
+                      src={`/connectors/${name}.svg`}
+                      alt=""
+                      width={17}
+                      height={17}
+                    />
+                  </span>
                 ))}
               </div>
-            </article>
-            <article className={`${styles.contentBlock} ${styles.videoBlock}`}>
-              <h3>
-                <Video size={18} aria-hidden="true" /> Video
-              </h3>
-              <div className={styles.sampleVideo}>
-                <Image
-                  src="/images/home/kitchen-collection.jpg"
-                  alt="Editorial kitchen scene"
-                  fill
-                  sizes="400px"
-                />
-                <Play size={29} fill="currentColor" aria-hidden="true" />
-                <span>A day in the studio</span>
-              </div>
-            </article>
-            <article className={`${styles.contentBlock} ${styles.postBlock}`}>
-              <h3>
-                <Camera size={18} aria-hidden="true" /> Instagram post
-              </h3>
-              <div className={styles.samplePost}>
-                <Image
-                  src="/images/home/fashion-collection.jpg"
-                  alt="Wardrobe editorial"
-                  width={160}
-                  height={126}
-                />
-                <p>
-                  A few good pieces, on repeat.<small>Like · Comment · Share</small>
-                </p>
+              <div className={styles.featureCopy}>
+                <h3>Social links</h3>
+                <p>Bring all your social profiles together.</p>
               </div>
             </article>
             <article className={`${styles.contentBlock} ${styles.collectionBlock}`}>
-              <h3>
-                <Grid2X2 size={18} aria-hidden="true" /> Collection
-              </h3>
-              <div className={styles.sampleCollection}>
-                <strong>
-                  The Everyday Edit <ArrowRight size={16} aria-hidden="true" />
-                </strong>
-                <div>
-                  {[
-                    '/images/creator-demo-shoulder-bag.png',
-                    '/images/creator-demo-sneakers.png',
-                    '/images/home/tote.jpg',
-                  ].map((src) => (
-                    <Image key={src} src={src} alt="" width={90} height={76} />
-                  ))}
-                </div>
+              <div className={styles.featureCollectionPreview} aria-hidden="true">
+                <Image src="/images/home/tote.jpg" alt="" fill sizes="92px" />
+                <Image
+                  src="/images/creator-demo-shoulder-bag.png"
+                  alt=""
+                  width={62}
+                  height={52}
+                />
+                <Image src="/images/home/noah-boots.png" alt="" width={55} height={48} />
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Collection</h3>
+                <p>Group your links, media and more.</p>
               </div>
             </article>
-            <article className={`${styles.contentBlock} ${styles.recommendationBlock}`}>
-              <h3>
-                <Tag size={18} aria-hidden="true" /> Recommendation
-              </h3>
-              <div className={styles.sampleRecommendation}>
-                <Image
-                  src="/images/home/camera-v2.jpg"
-                  alt="Recommended camera"
-                  width={105}
-                  height={122}
-                />
-                <p>
-                  <strong>A camera to take everywhere.</strong>
-                  <span>One of Daniel’s everyday favorites.</span>
-                </p>
+            <article className={`${styles.contentBlock} ${styles.designBlock}`}>
+              <div className={styles.featureDesignPreview} aria-hidden="true">
+                <div>
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <Image src="/images/home/rotem-profile-v2.png" alt="" fill sizes="92px" />
+                <span>
+                  <b />
+                  <b />
+                  <b />
+                </span>
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Personal design</h3>
+                <p>Make it yours with custom styles.</p>
+              </div>
+            </article>
+            <article className={`${styles.contentBlock} ${styles.mapsBlock}`}>
+              <div className={styles.featureMapPreview} aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <b />
+                <b />
+                <b />
+                <MapPinned size={27} />
+              </div>
+              <div className={styles.featureCopy}>
+                <h3>Maps</h3>
+                <p>Share your location with ease.</p>
               </div>
             </article>
           </div>

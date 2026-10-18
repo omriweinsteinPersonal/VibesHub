@@ -1,11 +1,11 @@
 import type { CreatorCard } from '@vibeshub/contracts';
 import { colors, radii, spacing } from '@vibeshub/design-tokens';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,14 +15,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getSupabaseClient } from '../lib/supabase';
-import { getCreators } from '../lib/api';
+import { getCreators, prefetchPublicStorefront } from '../lib/api';
 import { useHiddenCreatorIds } from '../hooks/use-hidden-creator-ids';
+import { initialSessionRedirectGate } from '../lib/initial-session-routing';
 
 const categories = ['Fashion', 'Beauty', 'Skincare', 'Food', 'Fitness', 'Lifestyle'];
 
 export default function HomeScreen() {
   const router = useRouter();
   const [signedIn, setSignedIn] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(() =>
+    initialSessionRedirectGate.isPending(),
+  );
   const [featuredCreators, setFeaturedCreators] = useState<CreatorCard[]>([]);
   const [creatorsLoading, setCreatorsLoading] = useState(true);
   const hiddenCreatorIds = useHiddenCreatorIds();
@@ -31,15 +35,33 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
+    let active = true;
     const supabase = getSupabaseClient();
     void supabase.auth
       .getSession()
-      .then(({ data }) => setSignedIn(Boolean(data.session)));
+      .then(({ data }) => {
+        if (!active) return;
+        const hasSession = Boolean(data.session);
+        setSignedIn(hasSession);
+        if (initialSessionRedirectGate.consume(hasSession)) {
+          router.replace('/studio');
+          return;
+        }
+        setRestoringSession(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        initialSessionRedirectGate.consume(false);
+        setRestoringSession(false);
+      });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedIn(Boolean(session));
+      if (active) setSignedIn(Boolean(session));
     });
-    return () => subscription.subscription.unsubscribe();
-  }, []);
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [router]);
 
   useEffect(() => {
     let active = true;
@@ -58,6 +80,17 @@ export default function HomeScreen() {
       active = false;
     };
   }, []);
+
+  if (restoringSession) {
+    return (
+      <SafeAreaView style={styles.launchScreen}>
+        <StatusBar style="dark" />
+        <Text style={styles.launchWordmark}>swavii</Text>
+        <ActivityIndicator color={colors.accent} />
+        <Text style={styles.launchCopy}>Opening your creator workspace…</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -115,6 +148,7 @@ export default function HomeScreen() {
             {visibleFeaturedCreators.map((creator) => (
               <Pressable
                 accessibilityHint="Opens this creator's public storefront"
+                accessibilityLabel={creator.displayName}
                 accessibilityRole="button"
                 key={creator.id}
                 onPress={() =>
@@ -123,13 +157,20 @@ export default function HomeScreen() {
                     params: { handle: creator.handle },
                   })
                 }
+                onPressIn={() => void prefetchPublicStorefront(creator.handle)}
                 style={({ pressed }) => [
                   styles.creatorCard,
                   pressed && styles.creatorCardPressed,
                 ]}
               >
                 {creator.avatarUrl ? (
-                  <Image source={{ uri: creator.avatarUrl }} style={styles.avatar} />
+                  <Image
+                    cachePolicy="memory-disk"
+                    contentFit="cover"
+                    source={creator.avatarUrl}
+                    style={styles.avatar}
+                    transition={160}
+                  />
                 ) : (
                   <View style={[styles.avatar, styles.avatarFallback]}>
                     <Text style={styles.avatarInitial}>
@@ -166,6 +207,21 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
+  launchScreen: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    gap: spacing.md,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  launchWordmark: {
+    color: colors.ink,
+    fontFamily: 'Georgia',
+    fontSize: 46,
+    marginBottom: spacing.md,
+  },
+  launchCopy: { color: colors.muted, fontSize: 14 },
   content: { paddingBottom: spacing.xxl },
   header: {
     alignItems: 'center',

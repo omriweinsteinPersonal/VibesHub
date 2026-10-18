@@ -10,6 +10,12 @@ mobile web, Android, and iOS before it is considered complete. A change may use
 platform-specific implementation or UX, but none of the three surfaces may be skipped
 silently.
 
+This rule is bidirectional. A change that starts in `apps/web` must evaluate and update
+the iOS and Android experiences when the same journey exists there. A change that starts
+in `apps/mobile` must evaluate and update responsive mobile web when the same journey
+exists there. Backend, contract, authentication, analytics, billing, deep-link, and data
+model changes must be verified against all three clients.
+
 Every user-facing feature, behavior change, bug fix, and design change must be evaluated
 for both of Swavii's user-facing mobile surfaces:
 
@@ -41,6 +47,9 @@ Before completion:
 - Test the affected native flow on iOS and Android, or run the strongest available Expo
   validation when device builds are not available.
 - Add or update automated tests for shared logic and platform-specific behavior.
+- Complete the pull request's cross-platform impact section for Mobile Web, iOS, and
+  Android. For every surface, record either the implementation/tests performed or a
+  concrete reason why no code change is required.
 - Report the platforms tested and any remaining limitation in the pull request.
 
 A deliberately platform-specific change is allowed only when the product requirement or

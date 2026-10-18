@@ -49,7 +49,7 @@ apps/
   api/       NestJS/Fastify versioned public API
   worker/    Private asynchronous job service
 packages/
-  analytics/ auth/ config/ contracts/ database/ design-tokens/ domain/ observability/
+  analytics/ auth/ contracts/ design-tokens/ domain/ observability/
 supabase/
   migrations/ and deterministic seed data
 docker/

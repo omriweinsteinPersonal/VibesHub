@@ -1,7 +1,6 @@
 'use client';
 
 import type {
-  CategoryCard,
   CreatorMediaKit,
   CreatorMediaKitInput,
   CreatorProfileSettings,
@@ -9,10 +8,11 @@ import type {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, Camera, Check, Copy, ExternalLink, Upload } from 'lucide-react';
+import { ArrowUpRight, Copy, LogOut, Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
-import { ApiError, apiRequest, publicApiCollectionRequest } from '../../lib/api';
+import { ApiError, apiRequest } from '../../lib/api';
+import { getSupabaseBrowserClient } from '../../lib/supabase-browser';
 import { isCreatorHandle } from '../../lib/creator-handle';
 import {
   creatorImageAccept,
@@ -45,7 +45,6 @@ interface ProfileEditor {
   displayName: string;
   handle: string;
   instagramUrl: string;
-  primaryCategoryId: string;
 }
 
 interface MediaKitEditor {
@@ -81,17 +80,17 @@ const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
 
 export function CreatorAccount() {
   const router = useRouter();
-  const { setCreatorProfile } = useCreatorNavigation();
+  const { clearStorefrontHref, setCreatorProfile } = useCreatorNavigation();
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
   const [mediaKit, setMediaKit] = useState<CreatorMediaKit | null>(null);
   const [mediaEditor, setMediaEditor] = useState<MediaKitEditor | null>(null);
-  const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingMedia, setSavingMedia] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [editingMedia, setEditingMedia] = useState(false);
   const [uploadStage, setUploadStage] = useState<UploadStage>('idle');
   const stagedAssetRef = useRef<string | null>(null);
@@ -99,13 +98,11 @@ export function CreatorAccount() {
   useEffect(() => {
     let active = true;
     void (async () => {
-      const [accountResult, profileResult, mediaKitResult, categoriesResult] =
-        await Promise.allSettled([
-          apiRequest<AccountSummary>('/me'),
-          apiRequest<CreatorProfileSettings>('/creator/profile'),
-          apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
-          publicApiCollectionRequest<CategoryCard>('/categories'),
-        ] as const);
+      const [accountResult, profileResult, mediaKitResult] = await Promise.allSettled([
+        apiRequest<AccountSummary>('/me'),
+        apiRequest<CreatorProfileSettings>('/creator/profile'),
+        apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
+      ] as const);
 
       if (!active) return;
       if (accountResult.status === 'rejected') throw accountResult.reason;
@@ -119,26 +116,20 @@ export function CreatorAccount() {
         return;
       }
 
-      const rejected = [profileResult, mediaKitResult, categoriesResult].find(
+      const rejected = [profileResult, mediaKitResult].find(
         (result) => result.status === 'rejected',
       );
       if (rejected?.status === 'rejected') throw rejected.reason;
 
-      if (
-        profileResult.status === 'fulfilled' &&
-        mediaKitResult.status === 'fulfilled' &&
-        categoriesResult.status === 'fulfilled'
-      ) {
+      if (profileResult.status === 'fulfilled' && mediaKitResult.status === 'fulfilled') {
         const loadedProfile = profileResult.value;
         const loadedMediaKit = mediaKitResult.value;
-        const categoryPage = categoriesResult.value;
         if (!active) return;
         setEmail(account.email ?? '');
         setProfile(loadedProfile);
         setProfileEditor(toProfileEditor(loadedProfile));
         setMediaKit(loadedMediaKit);
         setMediaEditor(toMediaKitEditor(loadedMediaKit));
-        setCategories(categoryPage.data);
         setUploadStage(loadedProfile.avatar ? 'ready' : 'idle');
       }
     })().catch((cause: unknown) => {
@@ -251,7 +242,6 @@ export function CreatorAccount() {
           bioHe: profileEditor.bioHe,
           displayName: profileEditor.displayName,
           handle: profileEditor.handle.trim(),
-          primaryCategoryId: profileEditor.primaryCategoryId,
           socialLinks: instagramUrl
             ? [...otherLinks, { platform: 'instagram', url: instagramUrl }]
             : otherLinks,
@@ -332,9 +322,23 @@ export function CreatorAccount() {
     }
   }
 
-  const publicHref = profile ? `/${encodeURIComponent(profile.handle)}` : '';
   const creatorHref = profile ? `/creator/${encodeURIComponent(profile.handle)}` : '';
   const instagram = profileEditor?.instagramUrl.trim() ?? '';
+
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      const auth = getSupabaseBrowserClient().auth as unknown as {
+        signOut: () => Promise<unknown>;
+      };
+      await auth.signOut();
+      clearStorefrontHref();
+      router.replace('/');
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <main className={styles.page}>
@@ -344,11 +348,6 @@ export function CreatorAccount() {
           <h1>Your account.</h1>
           <p>The details behind your page and your collaborations.</p>
         </div>
-        {profile ? (
-          <Link className={styles.outlineButton} href={publicHref}>
-            <ExternalLink aria-hidden="true" size={16} /> View page
-          </Link>
-        ) : null}
       </header>
 
       {error ? (
@@ -367,17 +366,6 @@ export function CreatorAccount() {
 
       {profile && profileEditor && mediaKit && mediaEditor ? (
         <>
-          <section className={styles.identity} aria-label="Your public identity">
-            <Avatar name={profileEditor.displayName} url={profileEditor.avatarUrl} />
-            <div className={styles.identityCopy}>
-              <strong>{profileEditor.displayName || 'Your name'}</strong>
-              <span>
-                swavii.com/{profile.handle} <span aria-hidden="true">·</span>{' '}
-                {profile.primaryCategory.name}
-              </span>
-            </div>
-            <span className={styles.liveBadge}>Page is live</span>
-          </section>
           <div className={styles.layout}>
             <div className={styles.stack}>
               <form className={styles.profileForm} onSubmit={saveProfile}>
@@ -455,22 +443,6 @@ export function CreatorAccount() {
                       </small>
                     </label>
                     <label className={`${styles.field} ${styles.fullField}`}>
-                      Main category
-                      <select
-                        required
-                        value={profileEditor.primaryCategoryId}
-                        onChange={(event) =>
-                          updateProfile('primaryCategoryId', event.target.value)
-                        }
-                      >
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className={`${styles.field} ${styles.fullField}`}>
                       Bio
                       <textarea
                         dir="auto"
@@ -481,42 +453,6 @@ export function CreatorAccount() {
                       />
                     </label>
                   </div>
-                </section>
-                <section className={styles.card}>
-                  <div className={styles.sectionHeading}>
-                    <div>
-                      <h2>Social presence</h2>
-                      <p>Give people a way to keep up with you elsewhere.</p>
-                    </div>
-                    <span className={styles.sectionTag}>CONNECT</span>
-                  </div>
-                  <div className={styles.socialRow}>
-                    <span className={styles.socialIcon}>
-                      <Camera aria-hidden="true" size={17} />
-                    </span>
-                    <label className={styles.socialField}>
-                      Instagram
-                      <input
-                        aria-label="Instagram link"
-                        value={profileEditor.instagramUrl}
-                        onChange={(event) =>
-                          updateProfile('instagramUrl', event.target.value)
-                        }
-                        placeholder="@yourhandle or instagram.com/yourhandle"
-                      />
-                    </label>
-                    {instagram ? (
-                      <Check
-                        aria-hidden="true"
-                        className={styles.socialCheck}
-                        size={18}
-                      />
-                    ) : null}
-                  </div>
-                  <Link className={styles.textLink} href={creatorHref}>
-                    Manage all links in Storefront{' '}
-                    <ArrowUpRight aria-hidden="true" size={16} />
-                  </Link>
                 </section>
                 <div className={styles.saveRow}>
                   <span>Changes to your public profile appear after saving.</span>
@@ -747,11 +683,7 @@ export function CreatorAccount() {
                       url={profileEditor.avatarUrl}
                     />
                     <strong>{profileEditor.displayName || 'Your name'}</strong>
-                    <small>
-                      {categories.find(
-                        (category) => category.id === profileEditor.primaryCategoryId,
-                      )?.name ?? profile.primaryCategory.name}
-                    </small>
+                    <small>{profile.primaryCategory?.name ?? 'Creator'}</small>
                   </div>
                   <div className={styles.previewBody}>
                     <p>{profileEditor.bioHe || 'Your bio will appear here.'}</p>
@@ -803,6 +735,15 @@ export function CreatorAccount() {
               </section>
             </aside>
           </div>
+          <button
+            className={styles.logoutButton}
+            disabled={signingOut}
+            onClick={() => void signOut()}
+            type="button"
+          >
+            <LogOut aria-hidden="true" size={16} />
+            {signingOut ? 'Signing out…' : 'Log out'}
+          </button>
         </>
       ) : null}
     </main>
@@ -898,7 +839,6 @@ function toProfileEditor(profile: CreatorProfileSettings): ProfileEditor {
     handle: profile.handle,
     instagramUrl:
       profile.socialLinks.find(({ platform }) => platform === 'instagram')?.url ?? '',
-    primaryCategoryId: profile.primaryCategory.id,
   };
 }
 

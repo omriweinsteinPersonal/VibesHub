@@ -4,11 +4,12 @@ import * as WebBrowser from 'expo-web-browser';
 
 import { createAppleAuthNonce } from './apple-auth-nonce';
 import { parseAuthCallback } from './auth-callback';
+import { assertNativeOAuthRedirect } from './oauth-redirect';
 import { getSupabaseClient } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-export const nativeAuthRedirectUrl = makeRedirectUri({
+const nativeAuthRedirectUrl = makeRedirectUri({
   path: 'auth/callback',
   scheme: 'swavii',
 });
@@ -47,6 +48,7 @@ export async function signInWithGoogle(): Promise<'cancelled' | 'signed-in'> {
   });
   if (error) throw error;
   if (!data.url) throw new Error('Google sign-in could not be started.');
+  assertNativeOAuthRedirect(data.url, nativeAuthRedirectUrl);
 
   const result = await WebBrowser.openAuthSessionAsync(data.url, nativeAuthRedirectUrl);
   if (result.type !== 'success') return 'cancelled';

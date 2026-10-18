@@ -12,10 +12,10 @@ import { getSupabaseBrowserClient } from './supabase-browser';
 import { getSupabasePublicConfig } from './config';
 
 export const recommendationImageAccept = 'image/jpeg,image/png,image/webp';
-export const recommendationImageMaxBytes = 5 * 1_024 * 1_024;
+const recommendationImageMaxBytes = 5 * 1_024 * 1_024;
 export const creatorImageAccept = recommendationImageAccept;
 export const storyVideoAccept = 'video/mp4,video/webm,video/quicktime';
-export const storyVideoMaxBytes = 200 * 1_024 * 1_024;
+const storyVideoMaxBytes = 200 * 1_024 * 1_024;
 
 const supportedTypes = new Set<RecommendationImageContentType>([
   'image/jpeg',
@@ -239,6 +239,6 @@ export async function uploadVideoResumable(
   }
 }
 
-export async function deleteStoryVideo(assetId: string): Promise<void> {
+async function deleteStoryVideo(assetId: string): Promise<void> {
   await apiRequest<void>(`/creator/media/videos/${assetId}`, { method: 'DELETE' });
 }

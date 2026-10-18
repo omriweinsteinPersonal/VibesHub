@@ -7,6 +7,7 @@ import { logger } from '@vibeshub/observability';
 
 import { AppModule } from './app.module.js';
 import { parseApiConfig } from './config.js';
+import { normalizeApplicationVersionHeader } from './http/application-version-header.js';
 
 async function bootstrap(): Promise<void> {
   const config = parseApiConfig(process.env);
@@ -16,8 +17,22 @@ async function bootstrap(): Promise<void> {
     { bufferLogs: true, rawBody: true },
   );
 
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onRequest', (request, _reply, done) => {
+      normalizeApplicationVersionHeader(request.headers);
+      done();
+    });
+
   app.enableCors({
-    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'If-Match'],
+    allowedHeaders: [
+      'Authorization',
+      'Content-Type',
+      'Idempotency-Key',
+      'If-Match',
+      'X-Swavii-If-Match',
+    ],
     credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     origin: config.corsOrigins,

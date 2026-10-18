@@ -59,6 +59,19 @@ the mobile bundle.
 The first release keeps RevenueCat sandbox-only and does not expose a subscription or
 paywall.
 
+## Native authentication redirect
+
+Google OAuth intentionally uses the operating system's secure authentication sheet, but
+that sheet must close as soon as authentication succeeds. The Supabase production Auth
+URL configuration must include `swavii://**` under Additional Redirect URLs. If this is
+missing, Supabase falls back to the website Site URL and leaves the creator browsing the
+web product inside the authentication sheet instead of returning to the native app.
+
+Keep `swavii://**` in `supabase/config.toml`, apply the matching setting to production
+with `supabase config push`, and verify a real OAuth authorization response retains
+`swavii://auth/callback` before creating a store build. The mobile client also rejects an
+authorization URL whose `redirect_to` does not exactly match its native callback.
+
 ## Universal Links and Android App Links
 
 The native app claims `https://swavii.com/*`. Public creator URLs therefore open the

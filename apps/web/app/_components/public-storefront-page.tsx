@@ -39,7 +39,9 @@ async function StorefrontPage({
   try {
     const [creatorResult, recommendationResult, discountCodeResult] =
       await Promise.allSettled([
-        publicApiRequest<CreatorStorefront>(`/creators/${encodeURIComponent(handle)}`),
+        publicApiRequest<CreatorStorefront>(
+          `/creators/${encodeURIComponent(handle)}?includeBrandLogos=true`,
+        ),
         loadStorefrontRecommendations(handle),
         publicApiCollectionRequest<PublicDiscountCode>(
           `/creators/${encodeURIComponent(handle)}/discount-codes`,

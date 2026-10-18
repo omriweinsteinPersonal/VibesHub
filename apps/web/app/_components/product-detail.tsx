@@ -3,20 +3,15 @@
 import type { PublicRecommendationDetail } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  CalendarDays,
-  Camera,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-} from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { merchantNameFromHostname } from '../../lib/merchant-name';
 import { publicAssetUrl } from '../../lib/public-asset-url';
 import { publicShopUrl } from '../../lib/public-shop-url';
 import { hasRecommendationImage } from '../../lib/recommendation-image';
-import { CopyDiscountCodeButton } from './analytics-events';
+import { CopyDiscountCodeButton, TrackedInstagramLink } from './analytics-events';
+import { InstagramIcon } from './instagram-icon';
 import { StoryVideo } from './story-video';
 
 export function ProductDetailView({
@@ -152,6 +147,26 @@ export function ProductDetailView({
             </p>
           ) : null}
 
+          {recommendation.instagramStoryUrl ? (
+            <div className="productDetailStoryQuickAction">
+              <TrackedInstagramLink
+                className="productDetailInstagramStory"
+                creatorId={recommendation.creator.id}
+                href={recommendation.instagramStoryUrl}
+                title="Open creator story on Instagram"
+              >
+                <span aria-hidden="true" className="productDetailInstagramIcon">
+                  <InstagramIcon size={17} />
+                </span>
+                <span>
+                  <small>CREATOR STORY</small>
+                  <strong>View on Instagram</strong>
+                </span>
+                <ExternalLink aria-hidden="true" size={15} />
+              </TrackedInstagramLink>
+            </div>
+          ) : null}
+
           {recommendation.discount ? (
             <div className="productDetailDiscount">
               <div className="productDetailDiscountMain">
@@ -205,42 +220,6 @@ export function ProductDetailView({
               >
                 {recommendation.review.value}
               </p>
-            </section>
-          ) : null}
-
-          {clips.length || recommendation.instagramStoryUrl ? (
-            <section className="productDetailStories">
-              {clips.length ? <h2>Creator stories</h2> : null}
-              <div>
-                {clips.length ? (
-                  <StoryVideo
-                    creatorId={recommendation.creator.id}
-                    posterUrl={publicAssetUrl(recommendation.imageUrl)}
-                    productId={recommendation.productId}
-                    productName={recommendation.productName}
-                    recommendationId={recommendation.id}
-                    triggerLabel={`Watch ${clips.length === 1 ? 'story' : `${clips.length} stories`}`}
-                    videoUrls={clips}
-                  />
-                ) : null}
-                {recommendation.instagramStoryUrl ? (
-                  <a
-                    className="productDetailInstagramStory"
-                    href={recommendation.instagramStoryUrl}
-                    rel="nofollow noopener noreferrer"
-                    target="_blank"
-                  >
-                    <span className="productDetailInstagramIcon">
-                      <Camera aria-hidden="true" size={16} />
-                    </span>
-                    <span>
-                      <small>CREATOR STORY</small>
-                      <strong>View on Instagram</strong>
-                    </span>
-                    <ExternalLink aria-hidden="true" size={14} />
-                  </a>
-                ) : null}
-              </div>
             </section>
           ) : null}
         </div>

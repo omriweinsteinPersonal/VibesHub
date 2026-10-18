@@ -1002,6 +1002,79 @@ svg.lucide {
   font-size: 0.76rem;
   line-height: 17px;
 }
+.creatorDiscountInheritance {
+  background: #faf7f3;
+  border: 1px solid #e6ddd2;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.creatorDiscountInheritance .creatorCheckboxField {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin: 0;
+}
+.creatorDiscountInheritance .creatorCheckboxField > input {
+  accent-color: var(--vh-accent);
+  flex: 0 0 auto;
+  height: 18px;
+  margin: 2px 0 0;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+.creatorDiscountInheritance .creatorCheckboxField > span {
+  display: grid;
+  gap: 2px;
+  line-height: 18px;
+}
+.creatorDiscountInheritance strong {
+  color: var(--vh-ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+.creatorDiscountInheritance small {
+  color: #786c62;
+  font-size: 0.76rem;
+  line-height: 17px;
+}
+.creatorDiscountInheritance .creatorFormHint {
+  display: block;
+  margin: 8px 0 0 28px;
+}
+.creatorCollectionDiscountFields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(86px, 0.65fr) minmax(120px, 0.9fr);
+  margin: 12px 0 0 28px;
+}
+.creatorCollectionDiscountFields label {
+  color: #786c62;
+  display: grid;
+  font-size: 0.72rem;
+  gap: 4px;
+}
+.creatorCollectionDiscountFields input {
+  background: #fff;
+  border: 1px solid #ded5ca;
+  border-radius: 7px;
+  color: var(--vh-ink);
+  font: inherit;
+  min-height: 36px;
+  min-width: 0;
+  padding: 6px 8px;
+  width: 100%;
+}
+@media (max-width: 520px) {
+  .creatorCollectionDiscountFields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .creatorCollectionDiscountFields label:first-child {
+    grid-column: 1 / -1;
+  }
+}
 .creatorProductSavePrompt {
   align-items: center;
   background: #faf7f3;
@@ -1202,6 +1275,22 @@ svg.lucide {
   min-height: 210px;
   padding: 28px;
 }
+.creatorManageCard .creatorManageActions {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: auto auto;
+  justify-items: center;
+}
+.creatorManageCard .creatorManageActions .creatorLiveToggle {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+}
+.creatorManageCard .creatorManageActions > button {
+  grid-row: 1;
+}
 .creatorManageImage {
   border-radius: 22px;
   height: 116px;
@@ -1240,6 +1329,17 @@ svg.lucide {
   position: relative !important;
   width: 96px;
 }
+.creatorMapManageIcon {
+  align-items: center;
+  background: #f4eee6;
+  border: 1px solid #e2d5c8;
+  border-radius: 14px;
+  color: #b77856;
+  display: inline-flex;
+  height: 72px;
+  justify-content: center;
+  width: 96px;
+}
 .creatorMediaManageCard h3 {
   font-size: 1rem;
   margin: 4px 0 0;
@@ -1258,6 +1358,71 @@ svg.lucide {
   justify-content: center;
   padding: 8px;
 }
+
+/* On small screens keep the actions above the visibility switch instead of
+   squeezing all five card columns into one row. */
+@media (max-width: 620px) {
+  .creatorMediaManageCard {
+    align-items: center;
+    column-gap: 10px;
+    grid-template-columns: 72px minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
+    row-gap: 2px;
+    min-height: 96px;
+    padding: 10px 12px 10px 10px;
+  }
+
+  .creatorMediaManageCard > img {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    height: 72px;
+    width: 72px;
+  }
+
+  .creatorMediaManageCard > .creatorMapManageIcon {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    height: 72px;
+    width: 72px;
+  }
+
+  .creatorMediaManageCard > div {
+    align-self: end;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .creatorMediaManageCard h3 {
+    font-size: 0.9rem;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .creatorMediaManageCard .creatorLiveToggle {
+    align-self: start;
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin-top: 2px;
+  }
+
+  .creatorMediaManageCard > button {
+    align-self: end;
+    grid-row: 1;
+    padding: 6px;
+  }
+
+  .creatorMediaManageCard > button:nth-of-type(1) {
+    grid-column: 3;
+  }
+
+  .creatorMediaManageCard > button:nth-of-type(2) {
+    grid-column: 4;
+  }
+}
 .creatorMediaPreview {
   border-radius: 14px;
   height: 160px;
@@ -1274,14 +1439,34 @@ svg.lucide {
   border-radius: 18px;
   overflow: hidden;
 }
+.featuredMediaBlockEmbed {
+  background: transparent;
+  border: 0;
+  border-radius: 18px;
+  overflow: hidden;
+}
 .featuredMediaEmbed {
   aspect-ratio: 16 / 9;
   background: #f5f0e9;
+  line-height: 0;
 }
 .featuredMediaEmbed iframe {
   border: 0;
+  display: block;
   height: 100%;
   width: 100%;
+}
+.featuredMediaEmbed-spotify {
+  aspect-ratio: auto;
+}
+.featuredMediaEmbed-spotify iframe {
+  height: 152px;
+}
+.featuredMediaEmbed-apple_music {
+  aspect-ratio: auto;
+}
+.featuredMediaEmbed-apple_music iframe {
+  height: 175px;
 }
 .featuredMediaLink {
   color: inherit;
@@ -1316,6 +1501,96 @@ svg.lucide {
   gap: 4px;
   padding: 14px 16px 16px;
 }
+.featuredMapCard {
+  align-items: stretch;
+  background: var(--sf-product, #fff);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  min-height: 112px;
+  overflow: hidden;
+  padding: 10px;
+}
+.featuredMapArtwork {
+  align-items: center;
+  background: color-mix(in srgb, var(--sf-accent, #b77856) 16%, white);
+  border-radius: 12px;
+  color: var(--sf-accent, #b77856);
+  aspect-ratio: 1;
+  display: flex;
+  height: auto;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 112px;
+}
+.featuredMapArtwork img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+.featuredMapCopy {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 4px 0 4px 4px;
+}
+.featuredMapCopy strong,
+.featuredMapCopy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.featuredMapCopy strong {
+  font-size: 0.94rem;
+}
+.featuredMapCopy span {
+  color: var(--vh-muted);
+  font-size: 0.78rem;
+}
+.featuredMapLink {
+  align-items: center;
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--sf-accent, #b77856) 10%, white);
+  border: 1px solid color-mix(in srgb, var(--sf-accent, #b77856) 30%, white);
+  border-radius: 999px;
+  color: var(--vh-accent-strong);
+  display: inline-flex;
+  gap: 5px;
+  font-size: 0.68rem;
+  margin-top: auto;
+  padding: 6px 9px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.featuredMapLink:hover,
+.featuredMapLink:focus-visible {
+  background: color-mix(in srgb, var(--sf-accent, #b77856) 18%, white);
+  text-decoration: none;
+}
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard {
+  flex: 0 0 min(100%, 320px);
+  min-width: 0;
+  width: min(100%, 320px);
+}
+@media (max-width: 620px) {
+  .featuredMapCard {
+    grid-template-columns: minmax(0, 1fr) 104px;
+  }
+  .featuredMapArtwork {
+    width: 104px;
+  }
+  .referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard {
+    flex-basis: min(100%, 300px);
+    width: min(100%, 300px);
+  }
+}
 .featuredMediaLink small {
   color: var(--vh-muted);
   font-size: 0.68rem;
@@ -1328,6 +1603,103 @@ svg.lucide {
   color: var(--vh-accent-strong);
   font-size: 0.76rem;
   font-style: normal;
+}
+.featuredInstagramMedia {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.featuredInstagramMediaPreview {
+  aspect-ratio: 4 / 3;
+  background: #f5f0e9;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+.featuredInstagramMediaButton {
+  background: transparent;
+  border: 0;
+  cursor: zoom-in;
+  display: block;
+  height: 100%;
+  padding: 0;
+  position: relative;
+  width: 100%;
+}
+.featuredInstagramMediaButton img {
+  object-fit: cover;
+}
+.featuredInstagramMediaPlay {
+  align-items: center;
+  background: rgb(20 15 12 / 78%);
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  font-size: 1.1rem;
+  height: 42px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+}
+.featuredInstagramMediaFallback {
+  align-items: center;
+  color: #49372e;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+.featuredInstagramMediaIcon {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+.featuredInstagramMediaFallback small {
+  color: #75685f;
+}
+.featuredInstagramMediaExternal {
+  align-items: center;
+  color: var(--vh-accent-strong);
+  display: flex;
+  font-size: 0.78rem;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 8px 4px 0;
+  text-decoration: none;
+}
+.featuredInstagramMediaExternal:hover {
+  text-decoration: underline;
+}
+.featuredInstagramMediaDialog {
+  background: rgb(16 12 10 / 90%);
+  inset: 0;
+  position: fixed;
+  z-index: 30;
+}
+.featuredInstagramMediaDialog img {
+  object-fit: contain;
+  padding: 32px;
+}
+.featuredInstagramMediaDialogClose {
+  background: #fff;
+  border: 0;
+  border-radius: 50%;
+  color: #30251f;
+  cursor: pointer;
+  font-size: 1.5rem;
+  height: 36px;
+  line-height: 1;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 36px;
+  z-index: 1;
 }
 .creatorManageCopy h3 {
   font-size: 1.65rem;
@@ -2691,9 +3063,11 @@ svg.lucide {
 }
 .referenceCollectionFrame .storeProductImage {
   aspect-ratio: 4 / 3;
+  background: transparent;
 }
 .referenceCollectionFrame .storeProductImage img {
-  object-fit: contain;
+  object-fit: cover;
+  padding: 0;
 }
 @media (max-width: 900px) {
   .referenceCollectionFrame {
@@ -2732,7 +3106,7 @@ svg.lucide {
 }
 .referenceStorefrontCodes.referenceDiscountLayer {
   box-sizing: border-box;
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   max-width: 100%;
   padding: 0;
   width: 100%;
@@ -2743,9 +3117,9 @@ svg.lucide {
   border: 1px solid #dfd6cb;
   border-radius: 18px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 78px;
+  min-height: 96px;
   overflow: hidden;
   padding: 12px clamp(16px, 2vw, 28px);
   position: relative;
@@ -2819,14 +3193,14 @@ svg.lucide {
   min-width: 0;
 }
 .referenceDiscountLogo {
-  background: #fff;
-  border: 1px solid #e8ded5;
-  border-radius: 9px;
-  flex: 0 0 36px;
-  height: 36px;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  flex: 0 0 82px;
+  height: 68px;
   object-fit: contain;
-  padding: 3px;
-  width: 36px;
+  padding: 0;
+  width: 82px;
 }
 .referenceDiscountIdentity > div {
   min-width: 0;
@@ -2889,6 +3263,12 @@ svg.lucide {
 .referenceStorefrontRow h3 {
   font-size: 2.2rem;
   margin: 0 0 6px;
+}
+.referenceStorefrontRow[data-carousel='true'] h3.referenceCarouselTitle {
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 1.36rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 .referenceStorefrontRow p {
   color: #82766e;
@@ -3113,8 +3493,13 @@ svg.lucide {
 @media (max-width: 560px) {
   .referenceStorefrontCodes.referenceDiscountLayer article {
     border-radius: 16px;
-    min-height: 76px;
+    min-height: 92px;
     padding: 12px 14px;
+  }
+  .referenceDiscountLogo {
+    flex-basis: 72px;
+    height: 60px;
+    width: 72px;
   }
   .referenceDiscountIdentity h3 {
     overflow: hidden;
@@ -3393,211 +3778,6 @@ nav,
   justify-content: flex-end;
 }
 
-.searchTrigger,
-.searchClose {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  color: var(--vh-ink);
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  justify-content: center;
-}
-
-.searchTrigger {
-  border-radius: 50%;
-  height: 42px;
-  transition:
-    background 180ms ease,
-    color 180ms ease;
-  width: 42px;
-}
-
-.searchTrigger:hover,
-.searchTrigger:focus-visible {
-  background: var(--vh-surface);
-  color: var(--vh-accent);
-}
-
-.searchModalBackdrop {
-  align-items: start;
-  background: rgb(43 33 28 / 42%);
-  display: grid;
-  inset: 0;
-  justify-items: center;
-  padding: min(12vh, 110px) 20px 30px;
-  position: fixed;
-  z-index: 100;
-}
-
-.searchModal {
-  background: var(--vh-background);
-  border: 1px solid var(--vh-border);
-  border-radius: 28px;
-  box-shadow: 0 30px 90px rgb(43 33 28 / 25%);
-  max-height: calc(100vh - 80px);
-  overflow: hidden;
-  padding: 30px;
-  width: min(720px, 100%);
-}
-
-.searchModal > header {
-  align-items: start;
-  display: flex;
-  justify-content: space-between;
-}
-
-.searchModal h2 {
-  font-size: clamp(2rem, 5vw, 3.1rem);
-  letter-spacing: -0.035em;
-  margin: 8px 0 22px;
-}
-
-.searchClose {
-  border: 1px solid var(--vh-border);
-  border-radius: 50%;
-  flex: 0 0 auto;
-  font-size: 1.6rem;
-  height: 40px;
-  width: 40px;
-}
-
-.searchModalInput {
-  align-items: center;
-  background: white;
-  border: 1px solid var(--vh-border);
-  border-radius: var(--vh-radius-control);
-  box-shadow: 0 5px 18px rgb(43 33 28 / 7%);
-  display: flex;
-  gap: 12px;
-  min-height: 58px;
-  padding: 0 18px;
-}
-
-.searchModalInput:focus-within {
-  border-color: var(--vh-accent);
-  box-shadow: 0 0 0 3px rgb(198 117 79 / 12%);
-}
-
-.searchModalInput svg {
-  color: var(--vh-muted);
-  flex: 0 0 auto;
-}
-
-.searchModalInput input {
-  background: transparent;
-  border: 0;
-  color: var(--vh-ink);
-  flex: 1;
-  font: inherit;
-  min-width: 0;
-  outline: 0;
-}
-
-.searchModalResults {
-  max-height: min(52vh, 480px);
-  overflow-y: auto;
-  padding: 10px 2px 0;
-}
-
-.searchHint {
-  color: var(--vh-muted);
-  margin: 0;
-  padding: 30px 8px;
-  text-align: center;
-}
-
-.searchResultGroup > p {
-  color: var(--vh-muted);
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
-  margin: 18px 8px 7px;
-  text-transform: uppercase;
-}
-
-.creatorSearchResult,
-.productSearchResult {
-  align-items: center;
-  border-radius: 16px;
-  display: flex;
-  gap: 13px;
-  padding: 10px;
-  transition: background 160ms ease;
-}
-
-.creatorSearchResult:hover,
-.creatorSearchResult:focus-visible,
-.productSearchResult:hover,
-.productSearchResult:focus-visible {
-  background: var(--vh-surface);
-  outline: none;
-}
-
-.creatorSearchResult > span {
-  align-items: center;
-  background: linear-gradient(145deg, #f2d7c2, #b77150);
-  border: 2px solid white;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--vh-accent);
-  color: white;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-family:
-    Iowan Old Style,
-    Baskerville,
-    serif;
-  height: 46px;
-  justify-content: center;
-  width: 46px;
-}
-
-.creatorSearchResult div,
-.productSearchResult div {
-  display: grid;
-  flex: 1;
-  gap: 3px;
-  min-width: 0;
-}
-
-.creatorSearchResult small,
-.productSearchResult small,
-.productSearchResult span {
-  color: var(--vh-muted);
-  font-size: 0.72rem;
-}
-
-.productSearchImage {
-  background: var(--vh-surface);
-  border-radius: 12px;
-  flex: 0 0 auto;
-  height: 58px;
-  overflow: hidden;
-  position: relative;
-  width: 58px;
-}
-
-.productSearchImage img {
-  object-fit: cover;
-}
-
-.productSearchResult b {
-  flex: 0 0 auto;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.searchAllLink {
-  align-items: center;
-  border-top: 1px solid var(--vh-border);
-  color: var(--vh-accent);
-  display: flex;
-  font-size: 0.82rem;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding: 18px 8px 0;
-}
-
 .button {
   align-items: center;
   border-radius: var(--vh-radius-control);
@@ -3682,48 +3862,9 @@ h1 em {
   margin: 0 0 8px;
 }
 
-.editorialCollage {
-  align-self: center;
-  background: var(--vh-surface);
-  border-radius: 40px;
-  display: grid;
-  gap: 5px;
-  grid-template: 1.2fr 0.8fr / 1.1fr 0.8fr 0.9fr;
-  height: 520px;
-  overflow: hidden;
-}
-
-.editorialCollage div,
 .productImage {
   background-position: center;
   background-size: cover;
-}
-
-.portrait {
-  background: linear-gradient(145deg, #ddbea8, #704e3e);
-  grid-row: 1 / 3;
-}
-
-.beautyStill {
-  background:
-    radial-gradient(circle at 62% 66%, #f7dfbc 0 13%, transparent 14%),
-    linear-gradient(140deg, #eed9bd, #9e806c);
-  grid-column: 2;
-}
-
-.fashionStill {
-  background: linear-gradient(140deg, #e2c6a1, #89634b);
-  grid-column: 3;
-}
-
-.foodStill {
-  background: radial-gradient(
-    ellipse at center,
-    #be784c 0 24%,
-    #f1dfc5 25% 47%,
-    #917157 48% 100%
-  );
-  grid-column: 2 / 4;
 }
 
 .categoryBand {
@@ -4785,10 +4926,6 @@ h1 em {
     padding-top: 60px;
   }
 
-  .editorialCollage {
-    height: 440px;
-  }
-
   .productGrid,
   .trustGrid,
   .creatorGrid,
@@ -4857,11 +4994,6 @@ h1 em {
     font-size: 1.75rem;
   }
 
-  .editorialCollage {
-    border-radius: 26px;
-    height: 330px;
-  }
-
   .section,
   .trust {
     padding: 70px 20px;
@@ -4883,21 +5015,6 @@ h1 em {
   .discoverSearch > div {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .searchModalBackdrop {
-    padding: 0;
-  }
-
-  .searchModal {
-    border-radius: 0 0 24px 24px;
-    max-height: 94vh;
-    padding: 22px 18px;
-    width: 100%;
-  }
-
-  .productSearchResult b {
-    display: none;
   }
 
   .directoryHeading {
@@ -5029,11 +5146,6 @@ dd {
 
 .actions {
   gap: 12px;
-}
-
-.searchTrigger {
-  height: 36px;
-  width: 36px;
 }
 
 .siteHeader .button {
@@ -5537,10 +5649,6 @@ dt {
   width: 32px;
 }
 
-.searchModal h2 {
-  font-family: var(--font-vh-display), ui-serif, Georgia, serif;
-}
-
 .editorialPage > main > .hero {
   gap: 66px;
   grid-template-columns: 1.04fr 0.96fr;
@@ -5576,19 +5684,6 @@ dt {
 
 .editorialPage .metrics dd {
   font-size: 1.9rem;
-}
-
-.editorialCollage {
-  aspect-ratio: 1.395 / 1;
-  border-radius: 32px;
-  min-height: 0;
-  overflow: visible;
-  position: relative;
-}
-
-.editorialCollage > img {
-  border-radius: inherit;
-  object-fit: cover;
 }
 
 .creatorsAcquisitionHero {
@@ -5638,45 +5733,6 @@ dt {
 .creatorsDirectory .directorySearch {
   margin-bottom: 36px;
   margin-top: 0;
-}
-
-.rotatingHeroCollage {
-  display: grid;
-  gap: 5px;
-  grid-template-columns: 1.1fr 0.92fr 1fr;
-  grid-template-rows: 1.08fr 0.92fr;
-  overflow: hidden;
-}
-
-.rotatingHeroTile {
-  background: var(--vh-surface);
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-.rotatingHeroTile.tile1 {
-  grid-row: 1 / 3;
-}
-
-.rotatingHeroTile img {
-  opacity: 0;
-  object-fit: cover;
-  transform: scale(1.025);
-  transition:
-    opacity 1.15s ease,
-    transform 6.4s ease;
-}
-
-.rotatingHeroTile img.active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rotatingHeroTile img {
-    transition: none;
-  }
 }
 
 .creatorUpdate {
@@ -6052,12 +6108,6 @@ dt {
     gap: 46px;
     grid-template-columns: 1fr;
     padding-top: 64px;
-  }
-
-  .editorialCollage {
-    margin: 0 auto;
-    max-width: 680px;
-    width: 100%;
   }
 
   .aboutImage {
@@ -7431,6 +7481,33 @@ dt {
   gap: 10px;
 }
 
+.creatorRecommendationFilters {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin: 0 0 14px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.creatorRecommendationFilters button {
+  background: #f7f1eb;
+  border: 1px solid #eadfd5;
+  border-radius: 999px;
+  color: #766960;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.creatorRecommendationFilters button.isActive {
+  background: #294a55;
+  border-color: #294a55;
+  color: #fff;
+}
+
 .creatorManageCollection {
   background: #fffdfb;
   border: 1px solid #e5dbd0;
@@ -7466,6 +7543,34 @@ dt {
   flex: 0 0 auto;
   gap: 4px;
 }
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions {
+  align-items: center;
+  display: grid;
+  gap: 4px 8px;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: auto auto;
+  justify-items: center;
+}
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > .creatorLiveToggle {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+}
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > a,
+.creatorManageCollection:not(.creatorBrandManageCard):not(.creatorSectionManageCard)
+  > .creatorManageCollectionHeader
+  > .creatorManageCollectionActions
+  > button {
+  grid-row: 1;
+}
 .creatorManageCollectionActions button {
   align-items: center;
   background: transparent;
@@ -7487,6 +7592,28 @@ dt {
 .creatorManageCollectionActions button:disabled {
   cursor: default;
   opacity: 0.4;
+}
+
+.creatorSectionExpand {
+  align-items: center;
+  background: #f7f1eb;
+  border: 1px solid #e5dbd0;
+  border-radius: 50%;
+  color: #5f5149;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  margin-left: 2px;
+  width: 34px;
+}
+
+.creatorSectionExpand:hover,
+.creatorSectionExpand:focus-visible {
+  background: #fff;
+  border-color: #b9a79a;
+  outline: none;
 }
 .creatorManageCollectionItems {
   display: grid;
@@ -7580,6 +7707,274 @@ dt {
   background: #f4e8dc;
   color: #2b2420;
   font-weight: 600;
+}
+.creatorDashboardSidebar button.creatorDashboardNavCard {
+  align-items: center;
+  display: flex;
+  direction: ltr;
+  gap: 12px;
+  min-height: 76px;
+  padding: 11px 10px;
+  position: relative;
+  text-align: left;
+  width: 100%;
+}
+.creatorDashboardNavCardRecommendations {
+  border-left: 3px solid #c97850 !important;
+}
+.creatorDashboardNavBadge {
+  align-items: center;
+  background: #f3e3d7;
+  border: 1px solid #e6c8b7;
+  border-radius: 50%;
+  color: #a85a3b;
+  display: inline-flex;
+  height: 42px;
+  justify-content: center;
+  position: relative;
+  flex: 0 0 auto;
+  width: 42px;
+}
+.creatorDashboardNavBadge::after {
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  content: '';
+  height: 7px;
+  opacity: 0.45;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 7px;
+}
+.creatorDashboardNavCardLabels .creatorDashboardNavBadge {
+  background: #f0e5d8;
+  color: #8f6d54;
+}
+.creatorDashboardNavCardMedia .creatorDashboardNavBadge {
+  background: #eee9e2;
+  color: #876653;
+}
+.creatorDashboardNavCardSocial .creatorDashboardNavBadge {
+  background: #eee7df;
+  color: #6f625a;
+}
+.creatorDashboardNavBadge::after {
+  display: none;
+}
+.creatorDashboardNavBadgeShape {
+  display: block;
+  height: 26px;
+  position: relative;
+  width: 29px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  background: #d6b6a0;
+  border-radius: 3px;
+  content: '';
+  height: 20px;
+  position: absolute;
+  top: 4px;
+  width: 16px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::before {
+  left: 1px;
+  transform: rotate(-17deg);
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  right: 1px;
+  transform: rotate(14deg);
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape {
+  background: #b85f38;
+  border-radius: 3px;
+  height: 22px;
+  left: 1px;
+  top: 2px;
+  transform: rotate(-8deg);
+  width: 18px;
+  z-index: 1;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span {
+  display: none;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::marker {
+  content: '★';
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape {
+  color: #fff9f4;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  color: #fff9f4;
+  content: '★';
+  font-size: 10px;
+  height: auto;
+  line-height: 22px;
+  position: absolute;
+  right: 4px;
+  text-align: center;
+  top: 0;
+  transform: none;
+  width: 10px;
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::after {
+  background: #c66d45;
+  border-radius: 2px 4px 4px 2px;
+  clip-path: polygon(0 18%, 72% 0, 100% 25%, 100% 78%, 70% 100%, 0 84%);
+  content: '';
+  height: 21px;
+  position: absolute;
+  width: 17px;
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::before {
+  left: 2px;
+  top: 1px;
+  transform: rotate(-17deg);
+}
+.creatorDashboardNavBadge-labels .creatorDashboardNavBadgeShape::after {
+  background: #d9b69d;
+  right: 1px;
+  top: 4px;
+  transform: rotate(19deg);
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before,
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  border: 2px solid #b86a49;
+  border-radius: 3px;
+  content: '';
+  height: 18px;
+  position: absolute;
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before {
+  left: 4px;
+  top: 1px;
+  transform: rotate(-5deg);
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  background: #bd6845;
+  left: 1px;
+  top: 5px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape {
+  border-bottom: 7px solid #fff8f3;
+  border-left: 9px solid transparent;
+  border-right: 0 solid transparent;
+  height: 0;
+  left: 8px;
+  top: 8px;
+  width: 0;
+  z-index: 1;
+}
+.creatorDashboardNavBadge-social .creatorDashboardNavBadgeShape::before {
+  background: #9b6b52;
+  content: '';
+  height: 2px;
+  left: 6px;
+  position: absolute;
+  top: 14px;
+  transform: rotate(-28deg);
+  width: 18px;
+  box-shadow: 10px 2px 0 #9b6b52;
+}
+.creatorDashboardNavBadge-social .creatorDashboardNavBadgeShape::after {
+  background: #b95f3b;
+  border-radius: 50%;
+  box-shadow:
+    -10px 12px 0 #8e674f,
+    10px 13px 0 #c18a6a;
+  content: '';
+  height: 10px;
+  left: 10px;
+  position: absolute;
+  top: 3px;
+  width: 10px;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape::after {
+  background: #d6b6a0;
+  border-radius: 3px;
+  content: '';
+  height: 20px;
+  position: absolute;
+  right: -7px;
+  top: 2px;
+  transform: rotate(14deg);
+  width: 16px;
+  z-index: -1;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span::after {
+  color: #fff9f4;
+  content: '★';
+  font-size: 10px;
+  left: 4px;
+  line-height: 22px;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 10px;
+}
+.creatorDashboardNavBadgeShape span {
+  display: block;
+  inset: 0;
+  position: absolute;
+}
+.creatorDashboardNavBadge-recommendations .creatorDashboardNavBadgeShape span {
+  display: block;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape {
+  background: #bd6845;
+  border-radius: 3px;
+  border: 0;
+  height: 18px;
+  left: 1px;
+  top: 5px;
+  transform: none;
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::before {
+  background: transparent;
+  border: 2px solid #b86a49;
+  height: 18px;
+  left: 4px;
+  top: -4px;
+  transform: rotate(-5deg);
+  width: 23px;
+}
+.creatorDashboardNavBadge-media .creatorDashboardNavBadgeShape::after {
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid #fff8f3;
+  border-top: 5px solid transparent;
+  content: '';
+  height: 0;
+  left: 8px;
+  position: absolute;
+  top: 4px;
+  width: 0;
+}
+.creatorDashboardNavCopy {
+  display: block;
+  min-width: 0;
+  text-align: left;
+  width: auto;
+}
+.creatorDashboardNavCopy strong {
+  color: inherit;
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+.creatorDashboardNavCopy small {
+  color: #756b64;
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.creatorDashboardNavArrow {
+  color: #8e837a;
+  float: right;
+  margin: 8px 0 0 8px;
 }
 .creatorDashboardNavMobile {
   display: none;
@@ -7729,7 +8124,7 @@ dt {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(38%, 42%);
   margin-top: 7px;
-  min-height: 154px;
+  min-height: 140px;
   overflow: hidden;
   text-decoration: none;
 }
@@ -7738,7 +8133,15 @@ dt {
   display: grid;
   gap: 7px;
   grid-column: 1;
-  padding: 16px 20px;
+  padding: 14px 17px;
+  text-align: right;
+}
+.referenceStandaloneRecommendationContent[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+.referenceStandaloneRecommendationContent[dir='rtl'] {
+  direction: rtl;
   text-align: right;
 }
 .referenceStandaloneRecommendationBrand {
@@ -7768,6 +8171,9 @@ dt {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.referenceStandaloneRecommendationContent h3[dir='rtl'] {
+  text-align: right;
+}
 .referenceStandaloneRecommendationOffer {
   align-items: start;
   display: flex;
@@ -7793,7 +8199,7 @@ dt {
   background: #eee7df;
   display: block;
   grid-column: 2;
-  min-height: 154px;
+  min-height: 140px;
   overflow: hidden;
   position: relative;
 }
@@ -7812,7 +8218,7 @@ dt {
   display: grid;
   grid-template-columns: minmax(0, 58%) minmax(38%, 42%);
   margin-top: 14px;
-  min-height: 190px;
+  min-height: 172px;
   overflow: hidden;
   text-decoration: none;
 }
@@ -7820,7 +8226,18 @@ dt {
   align-content: start;
   display: grid;
   gap: 8px;
-  padding: 18px 22px;
+  padding: 15px 18px;
+  text-align: right;
+}
+.referenceBrandSingleProductCopy[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+.referenceBrandSingleProductCopy[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+.referenceBrandSingleProductCopy h3[dir='rtl'] {
   text-align: right;
 }
 .referenceBrandSingleProductMeta,
@@ -7900,12 +8317,13 @@ dt {
 }
 .referenceBrandSingleProductImage {
   background: #ebe9e6;
-  min-height: 190px;
+  min-height: 172px;
   overflow: hidden;
   position: relative;
 }
 .referenceBrandSingleProductImage img {
-  object-fit: contain;
+  object-fit: cover;
+  padding: 0;
   transition: transform 180ms ease;
 }
 .referenceBrandSingleProduct:hover .referenceBrandSingleProductImage img {
@@ -7914,14 +8332,14 @@ dt {
 @media (max-width: 620px) {
   .referenceStandaloneRecommendation {
     grid-template-columns: minmax(0, 1fr) 42%;
-    min-height: 132px;
+    min-height: 120px;
   }
   .referenceStandaloneRecommendationContent {
     gap: 5px;
-    padding: 14px;
+    padding: 12px;
   }
   .referenceStandaloneRecommendationImage {
-    min-height: 132px;
+    min-height: 120px;
   }
   .referenceStandaloneRecommendationBrand {
     font-size: 0.6rem;
@@ -7931,11 +8349,11 @@ dt {
   }
   .referenceBrandSingleProduct {
     grid-template-columns: minmax(0, 58%) 42%;
-    min-height: 156px;
+    min-height: 140px;
   }
   .referenceBrandSingleProductCopy {
     gap: 5px;
-    padding: 14px;
+    padding: 12px;
   }
   .referenceBrandSingleProductMeta span,
   .referenceBrandSingleProductMeta strong,
@@ -7946,7 +8364,7 @@ dt {
     font-size: 1.25rem;
   }
   .referenceBrandSingleProductImage {
-    min-height: 156px;
+    min-height: 140px;
   }
 }
 .referenceBrandBlock {
@@ -8111,8 +8529,8 @@ dt {
   padding: 12px;
 }
 .referenceBrandCollectionCard strong {
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 1.05rem;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
   font-weight: 400;
 }
 .referenceBrandCollectionCard small {
@@ -8157,11 +8575,17 @@ dt {
   border-bottom: 1px solid #e6ddd2;
   margin: 32px 0;
   padding-bottom: 26px;
+  position: relative;
+}
+.creatorProductPageHeaderMain {
+  min-width: 0;
+  width: 100%;
 }
 .creatorProductPage > header h1 {
-  font-family: var(--font-vh-display), Georgia, serif;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
   font-size: clamp(2.2rem, 5vw, 3.8rem);
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   margin: 8px 0;
 }
 .creatorProductPage > header p:last-child {
@@ -8176,9 +8600,67 @@ dt {
 .creatorProductPageGrid > * {
   min-width: 0;
 }
+.creatorProductPageOffer {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 92px;
+  position: absolute;
+  right: 0;
+  top: -18px;
+  text-align: right;
+}
+.creatorProductPageOffer > span {
+  color: #69584e;
+  font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.creatorProductPageOfferCode {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.creatorProductPageOfferCode > strong {
+  background: rgb(255 255 255 / 48%);
+  border: 1px dashed color-mix(in srgb, currentColor 48%, transparent);
+  border-radius: 6px;
+  color: #17120f;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.creatorProductPageOfferCode .copyDiscountCodeButton {
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  font-size: 0.66rem;
+  min-height: 26px;
+  padding: 0 7px;
+}
+.creatorProductPageOffer small {
+  color: #75695f;
+  display: grid;
+  font-size: 0.68rem;
+  gap: 2px;
+  line-height: 1.15;
+}
+.creatorProductPageOffer small b {
+  font-size: 0.76rem;
+  font-weight: 400;
+}
 @media (max-width: 620px) {
   .creatorProductPage {
     padding: 28px 14px 80px;
+  }
+  .creatorProductPage > header {
+    padding-top: 10px;
+  }
+  .creatorProductPageOffer {
+    min-width: 76px;
+    top: -12px;
   }
   .creatorProductPageGrid {
     gap: 10px;
@@ -8398,6 +8880,25 @@ dt {
   gap: 7px;
 }
 
+.creatorCuratedForm > .creatorCheckboxField {
+  align-items: center;
+  color: #4f443d;
+  display: flex;
+  flex-direction: row;
+  font-size: 0.82rem;
+  gap: 8px;
+}
+
+.creatorCuratedForm > .creatorCheckboxField > input {
+  accent-color: var(--vh-accent);
+  flex: 0 0 auto;
+  height: 16px;
+  margin: 0;
+  min-height: 16px;
+  padding: 0;
+  width: 16px;
+}
+
 .creatorCuratedForm > label input {
   border: 1px solid #ded5ca;
   border-radius: 8px;
@@ -8507,13 +9008,36 @@ dt {
   gap: 2px;
   min-width: 0;
 }
+.creatorCuratedModeNote {
+  background: #f7f3ee;
+  border: 1px solid #e7ddd3;
+  border-radius: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+}
+.creatorCuratedModeNote span,
+.creatorCuratedModeNote small {
+  color: #786d62;
+  font-size: 0.75rem;
+}
+.creatorCuratedModeNote strong {
+  color: #2e241d;
+  font-size: 0.9rem;
+}
 .creatorCuratedOrder {
   margin-top: 16px;
 }
 .creatorCuratedOrder > p {
   color: #786d62;
   font-size: 0.8rem;
-  margin: 0 0 8px;
+  margin: 0;
+}
+.creatorCuratedOrderHint {
+  color: #9a8f86;
+  display: block;
+  font-size: 0.72rem;
+  margin: 3px 0 8px;
 }
 .creatorCuratedOrder ol {
   list-style: none;
@@ -8522,19 +9046,43 @@ dt {
 }
 .creatorCuratedOrder li {
   align-items: center;
+  background: #fff;
   border: 1px solid #e6ddd2;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   gap: 8px;
   margin-bottom: 6px;
-  padding: 6px 8px;
+  min-height: 44px;
+  padding: 6px 10px;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
 }
-.creatorCuratedOrder li > span:nth-child(2) {
+.creatorCuratedOrder li.isDragging {
+  border-color: #c77955;
+  box-shadow: 0 6px 14px rgb(61 42 30 / 12%);
+  opacity: 0.55;
+}
+.creatorCuratedOrder li > span:last-child {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.creatorCuratedOrderNumber {
+  align-items: center;
+  background: #f5eee7;
+  border-radius: 7px;
+  color: #725847;
+  display: inline-flex;
+  flex: 0 0 28px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0.04em;
 }
 .creatorCuratedOrder button {
   background: transparent;
@@ -8937,39 +9485,6 @@ dt {
   -webkit-line-clamp: 2;
 }
 
-.storeProductDetails h3.bilingualProductTitle,
-.savedProductRail .storeProductDetails h3.bilingualProductTitle,
-.discoverProducts .storeProductDetails h3.bilingualProductTitle {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  -webkit-line-clamp: unset;
-}
-
-.bilingualProductTitle span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  unicode-bidi: isolate;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.bilingualProductTitle span[dir='ltr'] {
-  text-align: left;
-}
-
-.bilingualProductTitle span[dir='rtl'] {
-  text-align: right;
-}
-
-.bilingualProductTitle .productTitleSecondary {
-  color: #6f625a;
-  font-family: var(--font-vh-body), sans-serif;
-  font-size: 0.82em;
-  line-height: 1.25;
-}
-
 .storeProductDetails h3.singleLanguageProductTitle,
 .savedProductRail .storeProductDetails h3.singleLanguageProductTitle,
 .discoverProducts .storeProductDetails h3.singleLanguageProductTitle {
@@ -9241,10 +9756,6 @@ dt {
   min-height: 2.44em;
 }
 
-.compactProductCard .storeProductDetails h3.bilingualProductTitle {
-  gap: 1px;
-}
-
 .compactProductCard .storeProductDetails h3.singleLanguageProductTitle {
   min-height: 1.22em;
 }
@@ -9336,9 +9847,384 @@ dt {
   --vh-accent: var(--sf-accent);
   background: var(--sf-page);
   color: var(--sf-text);
+  min-height: 100dvh;
 }
 .creatorStorefrontCanvas[data-mobile-preview='true'] {
   min-height: 100vh;
+}
+
+/* Public creator pages stay phone-sized on desktop, matching the real visitor experience. */
+@media (min-width: 901px) {
+  body:has(.storefrontPage:not(:has(.storefrontDesignWorkspace))) {
+    background: #f2eee9;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) {
+    width: min(430px, calc(100vw - 48px));
+    height: min(860px, calc(100dvh - 48px));
+    min-height: 0;
+    margin: 24px auto;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    border: 1px solid #d9d1c8;
+    border-radius: 44px;
+    border-width: 9px;
+    background: #fffdfa;
+    box-shadow:
+      0 26px 70px rgb(54 43 35 / 16%),
+      0 0 0 8px rgb(255 255 255 / 78%),
+      inset 0 0 0 1px rgb(255 255 255 / 35%);
+    position: relative;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace))::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    z-index: 20;
+    width: 112px;
+    height: 23px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: #202827;
+    box-shadow: inset 0 -1px 1px rgb(255 255 255 / 12%);
+    pointer-events: none;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) > main {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-color: rgb(66 74 71 / 55%) transparent;
+    scrollbar-width: thin;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .creatorStorefrontCanvas {
+    min-height: 100%;
+  }
+
+  /* Match the creator Storefront proportions inside the public phone frame. */
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontProducts,
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontCodes {
+    padding-inline: 14px;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontName {
+    width: 100%;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceStorefrontName h1 {
+    font-size: clamp(1.65rem, 7vw, 2.35rem);
+    white-space: nowrap;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace)) .referenceBrandShelf {
+    grid-auto-columns: minmax(0, calc((100% - 12px) / 2));
+    overflow-x: visible;
+  }
+
+  .storefrontPage:not(:has(.storefrontDesignWorkspace))
+    .referenceBrandShelf
+    .compactProductCard {
+    width: 100%;
+  }
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] {
+  background: #17204a;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  border: 1px solid #3047d6;
+  border-bottom: 0;
+  border-top: 0;
+  bottom: 18px;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: 18px;
+  width: clamp(16px, 5vw, 84px);
+  z-index: -1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before {
+  border-radius: 48px 0 0 48px;
+  box-shadow:
+    inset 8px 0 0 #f26858,
+    0 0 0 10px rgb(48 71 214 / 8%);
+  left: 2vw;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  border-radius: 0 48px 48px 0;
+  box-shadow:
+    inset -8px 0 0 #d8f052,
+    0 0 0 10px rgb(48 71 214 / 8%);
+  right: 2vw;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  overflow: hidden;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::after {
+  border-radius: 999px;
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::before {
+  background: #3047d6;
+  height: 180px;
+  left: max(18px, calc(50% - 780px));
+  opacity: 0.92;
+  top: 22px;
+  width: 180px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::after {
+  background: #f26858;
+  height: 92px;
+  right: max(28px, calc(50% - 760px));
+  top: 34px;
+  width: 92px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontInner,
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontActions,
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontBio {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontAvatar {
+  border-color: #fff9f1;
+  box-shadow:
+    0 0 0 8px rgb(255 249 241 / 72%),
+    0 12px 28px rgb(23 26 45 / 18%);
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels::before {
+  background: #3047d6;
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: -1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button {
+  color: #fff9f1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: #d8f052;
+  color: #171a2d;
+}
+/* Editorial Frame decor stays in the page chrome; it never becomes part of a
+   recommendation card or changes the platform's card geometry. */
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  background:
+    radial-gradient(circle at 50% 8%, #d8f052 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 92%, #f26858 0 2px, transparent 3px),
+    repeating-linear-gradient(
+      to bottom,
+      #3047d6 0 28px,
+      transparent 28px 40px,
+      #3047d6 40px 42px,
+      transparent 42px 74px
+    );
+  border: 0;
+  border-radius: 999px;
+  bottom: 10px;
+  box-shadow: none;
+  height: auto;
+  left: 8px;
+  right: auto;
+  top: 10px;
+  width: 3px;
+  z-index: 2;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  left: auto;
+  right: 8px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  background-color: #fff9f1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::before {
+  background: #3047d6;
+  border: 2px solid rgb(216 240 82 / 72%);
+  height: 116px;
+  left: 18px;
+  opacity: 0.5;
+  top: 16px;
+  width: 116px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontHero::after {
+  background: #f26858;
+  border: 2px solid #fff9f1;
+  height: 70px;
+  opacity: 0.78;
+  right: 22px;
+  top: 22px;
+  width: 70px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero > * {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontInner {
+  grid-template-areas: 'avatar identity';
+  grid-template-columns: 124px minmax(0, 1fr);
+  justify-items: start;
+  min-height: 172px;
+  padding: 28px 5vw 26px;
+  text-align: start;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontAvatar {
+  border-color: #fff9f1;
+  display: grid;
+  height: 112px;
+  position: relative;
+  width: 112px;
+  z-index: 2;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontName {
+  align-self: center;
+  max-width: 100%;
+  min-width: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .profile.hero
+  .referenceStorefrontName
+  h1 {
+  color: #171a2d;
+  font-size: clamp(2rem, 7vw, 3.7rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+@media (max-width: 700px) {
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontInner {
+    grid-template-columns: 96px minmax(0, 1fr);
+    min-height: 148px;
+    padding-inline: 28px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontAvatar {
+    height: 86px;
+    width: 86px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .profile.hero
+    .referenceStorefrontName
+    h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+}
+.storefrontTemplatePicker {
+  border-bottom: 1px solid #eadfd5;
+  margin: 0 0 18px;
+  padding: 0 0 18px;
+}
+.storefrontTemplatePicker h3 {
+  margin: 0;
+}
+.storefrontTemplatePicker p,
+.storefrontTemplateOption small {
+  color: #756a62;
+  display: block;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+.storefrontTemplateList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.storefrontTemplateOption {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5dacf;
+  border-radius: 14px;
+  color: #30251f;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  padding: 10px;
+  text-align: left;
+}
+.storefrontTemplateOption[aria-pressed='true'] {
+  border-color: #3047d6;
+  box-shadow: 0 0 0 2px rgb(48 71 214 / 13%);
+}
+.storefrontTemplateOption strong {
+  display: block;
+}
+.storefrontTemplatePreview {
+  border-radius: 9px;
+  display: block;
+  height: 58px;
+  overflow: hidden;
+  position: relative;
+}
+.classicTemplatePreview {
+  background: linear-gradient(#fbf6ec 0 34%, #fff 34% 100%);
+  border: 1px solid #e6ddd4;
+}
+.classicTemplatePreview::after {
+  background: #b77856;
+  border-radius: 999px;
+  content: '';
+  height: 6px;
+  left: 10px;
+  position: absolute;
+  right: 10px;
+  top: 13px;
+}
+.editorialTemplatePreview {
+  background: #17204a;
+  border: 1px solid #3047d6;
+}
+.editorialTemplatePreview::before {
+  background: #3047d6;
+  border-radius: 0 0 20px 0;
+  content: '';
+  height: 35px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.editorialTemplatePreview::after {
+  background: #d8f052;
+  border-radius: 999px;
+  content: '';
+  height: 8px;
+  left: 8px;
+  position: absolute;
+  right: 8px;
+  top: 41px;
 }
 .creatorStorefrontCanvas .referenceStorefrontHero {
   background: var(--sf-profile);
@@ -9562,6 +10448,305 @@ dt {
   font-variant-numeric: tabular-nums;
   min-width: 58px;
 }
+.storefrontChoiceGrid,
+.storefrontTypographyFields {
+  display: grid;
+  gap: 9px;
+}
+.storefrontChoiceCard {
+  background: #fffdfa;
+  border: 1px solid #e6ddd4;
+  border-radius: 12px;
+  color: #30251f;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+}
+.storefrontChoiceCard[aria-pressed='true'] {
+  background: #fff5ec;
+  border-color: #b77856;
+  box-shadow: 0 0 0 1px #b77856;
+}
+.storefrontChoiceCard strong {
+  font-size: 0.82rem;
+}
+.storefrontChoiceCard span {
+  color: #766b63;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.storefrontTemplateCard {
+  align-items: center;
+  grid-template-columns: 46px minmax(0, 1fr);
+}
+.storefrontTemplateSwatch {
+  border: 1px solid rgb(48 37 31 / 12%);
+  border-radius: 12px;
+  display: block;
+  height: 42px;
+  width: 42px;
+}
+.storefrontTemplateSwatch-citrus-glow {
+  background: #d8ef66;
+}
+.storefrontTemplateSwatch-clay-editorial {
+  background: #d99a78;
+}
+.storefrontTemplateSwatch-forest-glass {
+  background:
+    url('/images/storefront/forest-glass-waves.svg') center / cover no-repeat,
+    linear-gradient(135deg, #123f3b, #1d6258 48%, #0a2d2d);
+}
+.storefrontTemplateSwatch-aurora-veil {
+  background:
+    url('/images/storefront/aurora-veil.svg') center / cover no-repeat,
+    linear-gradient(140deg, #281a34, #654d79);
+}
+.storefrontTemplateSwatch-desert-rose {
+  background:
+    url('/images/storefront/desert-rose.svg') center / cover no-repeat,
+    linear-gradient(140deg, #643a32, #b86c53);
+}
+.storefrontTemplateSwatch-glacier-current {
+  background:
+    url('/images/storefront/glacier-current.svg') center / cover no-repeat,
+    linear-gradient(140deg, #102f43, #28627a);
+}
+.storefrontTemplateCard > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+.storefrontTemplateCard[aria-pressed='true'] .storefrontTemplateSwatch {
+  box-shadow: 0 0 0 2px #b77856;
+}
+
+/* Curated storefront templates. They change the atmosphere and palette while
+   leaving the creator's content and layout untouched. */
+.creatorStorefrontCanvas[data-template='citrus-glow'] {
+  background-color: #d8ef66;
+  background-image:
+    radial-gradient(circle at 18% 10%, rgb(255 255 255 / 22%), transparent 27%),
+    radial-gradient(circle at 85% 70%, rgb(137 169 34 / 16%), transparent 30%),
+    repeating-radial-gradient(
+      ellipse at 35% 40%,
+      transparent 0 28px,
+      rgb(105 132 26 / 7%) 29px 31px
+    );
+}
+.creatorStorefrontCanvas[data-template='clay-editorial'] {
+  background-color: #d99a78;
+  background-image:
+    radial-gradient(circle at 20% 15%, rgb(255 245 233 / 20%), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgb(122 62 40 / 12%), transparent 34%),
+    repeating-radial-gradient(
+      ellipse at 60% 45%,
+      transparent 0 34px,
+      rgb(122 62 40 / 6%) 35px 37px
+    );
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] {
+  background-color: #123f3b;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgb(155 211 182 / 22%) 0 18%, transparent 48%),
+    radial-gradient(ellipse at 84% 78%, rgb(7 48 47 / 58%) 0 17%, transparent 56%),
+    linear-gradient(140deg, #0c302f 0%, #16534b 48%, #0b302f 100%);
+  background-attachment: fixed;
+}
+/* Templates style only the outer chrome. Recommendation cards keep their
+   existing structure, media treatment, and controls. */
+.creatorStorefrontCanvas:is(
+    [data-template='citrus-glow'],
+    [data-template='clay-editorial'],
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontLabels {
+  background: color-mix(in srgb, var(--sf-page) 78%, white);
+  border: 1px solid color-mix(in srgb, var(--sf-page) 62%, var(--sf-text));
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgb(55 39 27 / 8%);
+  margin-inline: 12px;
+  padding: 5px;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='citrus-glow'],
+    [data-template='clay-editorial'],
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontLabels
+  button {
+  border-radius: 999px;
+}
+.creatorStorefrontCanvas[data-template='citrus-glow']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'],
+.creatorStorefrontCanvas[data-template='clay-editorial']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--sf-page) 58%, white);
+  color: var(--sf-text);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontHero {
+  background-color: transparent;
+  background-image:
+    linear-gradient(180deg, rgb(9 42 41 / 12%), rgb(9 42 41 / 42%)),
+    var(--sf-profile-image, none);
+  background-position: center, center;
+  background-size: cover;
+  border-bottom-color: rgb(222 244 222 / 16%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontName h1,
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontBio {
+  color: #f4efe3;
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontAvatar {
+  border-color: #d6e8d1;
+  box-shadow:
+    0 0 0 5px rgb(214 232 209 / 18%),
+    0 16px 30px rgb(4 25 25 / 32%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontLabels {
+  background: rgb(17 60 56 / 76%);
+  border-color: rgb(214 232 209 / 36%);
+  box-shadow: 0 10px 24px rgb(3 25 25 / 24%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontLabels button {
+  color: #edf5e9;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: #f4efe3;
+  color: #123f3b;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontActions.referenceConnectors
+  > a {
+  background: rgb(215 235 216 / 14%);
+  border-color: rgb(215 235 216 / 34%);
+  color: #f4efe3;
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceCollectionFrame,
+.creatorStorefrontCanvas[data-template='forest-glass'] .storeProductCard,
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceDiscountLayer article {
+  box-shadow: 0 16px 30px rgb(5 30 28 / 18%);
+}
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar {
+  background-color: var(--sf-product);
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+
+/* Keep plain creator titles legible on the dark background templates without
+   changing the colors of offer or recommendation cards. */
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .storefrontContentBlock:not([style])
+  .storefrontContentTitle,
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontProducts
+  .storefrontMediaHeading {
+  color: #f5f2eb;
+}
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontAvatar img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+.storefrontTypographyFields label {
+  align-items: center;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 12px;
+  justify-content: space-between;
+}
+.storefrontTypographyFields select {
+  background: #fffdfa;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #30251f;
+  font: inherit;
+  min-height: 36px;
+  padding: 0 9px;
+}
+.storefrontTitlesEditor {
+  display: grid;
+  gap: 10px;
+}
+.storefrontTitlesEditorHeader {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.storefrontTitlesEditorHeader p {
+  color: #766b63;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  margin: 0;
+}
+.storefrontTitlesEditorHeader button,
+.storefrontTitlesEditor article > button {
+  background: transparent;
+  border: 1px solid #d8cec3;
+  border-radius: 999px;
+  color: #7a3d26;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+.storefrontTitlesEditor article {
+  background: #fffdfa;
+  border: 1px solid #e6ddd4;
+  border-radius: 11px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+.storefrontTitlesEditor article label {
+  color: #766b63;
+  display: grid;
+  font-size: 0.72rem;
+  gap: 4px;
+}
+.storefrontTitlesEditor article input,
+.storefrontTitlesEditor article select {
+  background: #fff;
+  border: 1px solid #d8cec3;
+  border-radius: 7px;
+  color: #30251f;
+  font: inherit;
+  min-height: 36px;
+  padding: 6px 8px;
+  width: 100%;
+}
+.storefrontTitlesEditor article > button {
+  justify-self: start;
+}
+.storefrontTitlesEditor > .button {
+  justify-self: stretch;
+}
 .storefrontContrastNotice {
   background: #fff5ec;
   border-radius: 9px;
@@ -9601,6 +10786,14 @@ dt {
 .productDetailPrice {
   font-size: 1.3rem;
   margin: 0 0 14px;
+}
+
+.productDetailStoryQuickAction {
+  margin: -2px 0 18px;
+}
+
+.productDetailStoryQuickAction .productDetailStoryButton {
+  min-height: 42px;
 }
 
 .productDetailCreator {
@@ -10046,7 +11239,7 @@ dt {
 /* Label grids keep the brand context without wrapping each group in a large card. */
 .referenceCompactLabelGroups {
   display: grid;
-  gap: 0;
+  gap: 18px;
   margin-top: 6px;
 }
 .referenceCompactLabelGroups > .referenceBrandBlock {
@@ -10054,6 +11247,19 @@ dt {
 }
 .referenceCompactLabelGroups > .referenceBrandBlock:first-child {
   margin-top: 4px;
+}
+
+/* Products that are not part of a selected brand card use Home's horizontal
+   standalone recommendation treatment, stacked as a clean label list. */
+.referenceCompactLabelStandaloneList {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.referenceCompactLabelStandaloneList > .referenceStandaloneRecommendation {
+  margin-top: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .referenceCompactLabelGroup {
@@ -10105,7 +11311,7 @@ dt {
 
 @media (max-width: 520px) {
   .referenceCompactLabelGroups {
-    gap: 0;
+    gap: 14px;
     margin-top: 4px;
   }
 
@@ -11310,6 +12516,161 @@ dt {
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
+/* Legal pages share the same warm brand frame as the homepage. */
+.legalPage {
+  background: #fff;
+  color: var(--vh-ink);
+}
+
+.legalPage .creatorMarketingHeader {
+  background: #cd7853;
+  border-bottom: 0;
+  color: #fff;
+}
+
+.legalPage .creatorMarketingHeader .siteHeaderInner {
+  max-width: none;
+  padding-inline: max(5.2vw, calc((100vw - 1480px) / 2));
+}
+
+.legalPage .creatorMarketingHeader .logoWordmarkHome {
+  display: block;
+  height: 43px;
+  overflow: hidden;
+  position: relative;
+  width: 117px;
+}
+
+.legalPage .creatorMarketingHeader .logoWordmarkHome img {
+  display: block;
+  height: auto;
+  left: 50%;
+  max-width: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 154px;
+}
+
+.legalPage .creatorMarketingHeader nav a,
+.legalPage .creatorMarketingHeader .loginLink {
+  color: #fff;
+}
+
+.legalPage .creatorMarketingHeader nav a:hover,
+.legalPage .creatorMarketingHeader nav a:focus-visible,
+.legalPage .creatorMarketingHeader .loginLink:hover,
+.legalPage .creatorMarketingHeader .loginLink:focus-visible {
+  color: #fff3ed;
+}
+
+.legalPage .creatorMarketingHeader .loginLink {
+  border: 1px solid rgb(255 255 255 / 66%);
+  border-radius: 9px;
+  padding: 9px 15px;
+}
+
+.legalPage .creatorMarketingMobileNav {
+  display: none;
+}
+
+.legalPage .legalMain {
+  max-width: 100%;
+  padding: 0 32px 72px;
+}
+
+.legalPage .legalHero {
+  border-bottom: 0;
+  margin: 0 auto 56px;
+  max-width: 1216px;
+  padding: 88px 0 52px;
+  position: relative;
+}
+
+.legalPage .legalHero::after {
+  background: #cd7853;
+  bottom: 0;
+  content: '';
+  height: 4px;
+  left: 0;
+  position: absolute;
+  width: 76px;
+}
+
+.legalPage .legalHero h1 {
+  color: var(--vh-ink);
+  font-size: clamp(3.4rem, 6vw, 5.7rem);
+  letter-spacing: -0.06em;
+  margin: 18px 0 24px;
+}
+
+.legalPage .legalSummary {
+  color: var(--vh-muted);
+  font-size: 1.08rem;
+  max-width: 680px;
+}
+
+.legalPage .legalContent {
+  gap: 0;
+  margin: 0 auto;
+  max-width: 920px;
+}
+
+.legalPage .legalContent section {
+  border-bottom: 1px solid var(--vh-border);
+  padding: 34px 0;
+}
+
+.legalPage .legalContent section:first-child {
+  border: 1px solid #e7c4b4;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  padding: 26px 28px;
+  background: #fff6f1;
+}
+
+.legalPage .legalContent h2 {
+  font-size: clamp(1.55rem, 2.5vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.legalPage .legalContent a {
+  color: #a65336;
+  text-decoration-color: #e7b4a0;
+}
+
+.legalPage .legalContent a:hover {
+  color: #7f3c28;
+}
+
+@media (max-width: 900px) {
+  .legalPage .legalMain {
+    padding-inline: 20px;
+  }
+
+  .legalPage .creatorMarketingHeader .siteHeaderInner {
+    padding-inline: 20px;
+  }
+
+  .legalPage .legalHero {
+    padding: 56px 0 40px;
+  }
+}
+
+@media (max-width: 520px) {
+  .legalPage .legalHero h1 {
+    font-size: clamp(3rem, 16vw, 4.3rem);
+  }
+
+  .legalPage .legalContent section:first-child {
+    padding: 22px 20px;
+  }
+
+  .legalPage .legalContent section {
+    padding: 28px 0;
+  }
+}
+
 @media (max-width: 900px) {
   .creatorHero {
     grid-template-columns: 1fr;
@@ -11767,30 +13128,6 @@ dt {
 
 :is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
   .compactProductCard
-  .bilingualProductTitle
-  span {
-  text-overflow: ellipsis;
-}
-
-:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
-  .compactProductCard
-  .bilingualProductTitle
-  .productTitlePrimary {
-  display: -webkit-box;
-  white-space: normal;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
-  .compactProductCard
-  .bilingualProductTitle
-  .productTitleSecondary {
-  white-space: nowrap;
-}
-
-:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
-  .compactProductCard
   .storePriceRow {
   align-items: end;
   direction: ltr;
@@ -11876,14 +13213,31 @@ dt {
 .referenceBrandBlockWrapper > .referenceBrandBlock,
 .creatorStorefrontCanvas .referenceBrandBlockWrapper > .referenceBrandBlock {
   border-bottom: 0;
-  margin-top: 10px;
-  padding-bottom: 10px;
+  margin-top: 0;
+  padding-bottom: 0;
 }
 
 .referenceCompactLabelGroups > .referenceBrandBlock {
   border-bottom: 0;
-  margin-top: 10px;
-  padding-bottom: 10px;
+  margin-top: 0;
+  padding-bottom: 0;
+}
+
+/* Every recommendation block gets one shared separation. The card internals
+   keep their own spacing; only the space between sibling recommendations is
+   normalized here. */
+.referenceBrandBlockWrapper {
+  margin-top: 8px;
+}
+
+.referenceBrandBlockWrapper > .referenceStandaloneRecommendation {
+  margin-top: 0;
+}
+
+.referenceBrandRecommendation .referenceStandaloneRecommendationOffer > strong {
+  border: 1px dashed #c9b6a7;
+  border-radius: 7px;
+  color: #43352d;
 }
 
 .referenceBrandBlockWrapper > .referenceBrandBlock > header h3,
@@ -11975,6 +13329,46 @@ dt {
   padding: 12px 12px 10px;
 }
 
+/* Multi-item brand recommendations use the same framed surface as a
+   single-product brand recommendation, while keeping the existing header and
+   horizontal product/collection shelf inside the frame. */
+.referenceBrandBlock[data-has-recommendations='true'] {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 18px;
+  margin: 0;
+  padding: 14px 14px 16px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] > header {
+  margin: 0 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] .referenceBrandShelf {
+  margin-bottom: 0;
+  padding-bottom: 10px;
+}
+
+/* Keep the information rows in every single-product brand recommendation in
+   the same two-column positions as the Billabong reference card. */
+.referenceStandaloneRecommendationTopline,
+.referenceBrandSingleProductMeta,
+.referenceStandaloneRecommendationOffer,
+.referenceBrandSingleProductOffer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.referenceStandaloneRecommendationTopline,
+.referenceBrandSingleProductMeta {
+  align-items: baseline;
+}
+
+.referenceStandaloneRecommendationOffer,
+.referenceBrandSingleProductOffer {
+  align-items: start;
+}
+
 .referenceBrandBlock[data-brand-only='true'][data-has-logo='true'] {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 76px;
@@ -12028,6 +13422,18 @@ dt {
 .referenceBrandBlock[data-brand-only='true'] .referenceBrandOfferBody {
   margin-top: 9px;
 }
+
+/* Brand discount cards share the exact product recommendation frame. The
+   content remains brand-specific, while the right pane owns the full image. */
+.referenceStorefrontCodes.referenceDiscountLayer {
+  margin-top: 7px;
+}
+
+.referenceDiscountRecommendation {
+  margin-top: 0;
+  width: 100%;
+}
+
 .creatorVideoUploadButton {
   display: inline-flex;
   align-items: center;
@@ -12124,8 +13530,8 @@ dt {
 .creatorStorefrontCanvas .referenceBrandShelf .referenceBrandCollectionCard strong {
   color: #17120f;
   display: block;
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 0.88rem;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
   font-weight: 400;
   line-height: 1.22;
   min-height: 2.44em;
@@ -12800,14 +14206,6 @@ dt {
   background: #eee4d6;
   font-weight: 600;
 }
-.storefrontContentEditor {
-  display: grid;
-  gap: 12px;
-}
-.storefrontContentEditor > p {
-  color: #75695f;
-  font-size: 0.85rem;
-}
 .storefrontSearchControl {
   align-items: center;
   background: #f8f3ed;
@@ -12843,11 +14241,6 @@ dt {
   inline-size: 18px;
   margin: 0;
 }
-.storefrontTitleEditor {
-  border: 1px solid #ded5ca;
-  border-radius: 10px;
-  overflow: hidden;
-}
 .storefrontTitleSelect {
   background: transparent;
   border: 0;
@@ -12857,55 +14250,9 @@ dt {
   width: 100%;
   overflow-wrap: anywhere;
 }
-.storefrontTitleEditor fieldset {
-  border: 0;
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 12px;
-}
-.storefrontTitleEditor label {
-  display: grid;
-  gap: 5px;
-  font-size: 0.85rem;
-}
-.storefrontBackgroundReset {
-  align-items: start;
-  display: grid;
-  gap: 6px;
-}
-.storefrontBackgroundReset .button {
-  justify-self: start;
-}
-.storefrontBackgroundReset small {
-  color: #75695f;
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-.storefrontTitleEditor select,
-.storefrontTitleEditor textarea,
-.storefrontTitleEditor input {
-  min-width: 0;
-  width: 100%;
-  border: 1px solid #ded5ca;
-  border-radius: 6px;
-  padding: 8px;
-  font: inherit;
-}
 .referenceStorefrontProducts .storefrontContentBlock {
-  margin: 20px 0 12px;
+  margin: 4px 0 6px;
   overflow-wrap: anywhere;
-}
-.storefrontAddContentActions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-.storefrontAddContentActions .button {
-  min-height: 44px;
-  justify-content: flex-start;
-  white-space: normal;
-  text-align: left;
 }
 .referenceStorefrontProducts .storefrontMediaBlock {
   display: grid;
@@ -13023,67 +14370,6 @@ dt {
   font-size: 1.2rem;
 }
 
-.storefrontLayerList {
-  display: grid;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.storefrontProfileTargets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-block: 0.75rem;
-}
-
-.storefrontProfileTargets button {
-  border: 1px solid color-mix(in srgb, var(--sf-accent, #8b6248) 35%, transparent);
-  border-radius: 999px;
-  background: #fff;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 0.45rem 0.7rem;
-}
-
-.storefrontProfileTargets button[aria-pressed='true'] {
-  background: var(--sf-accent, #8b6248);
-  color: var(--sf-accent-ink, #fff);
-}
-.storefrontLayerList li {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ded5ca;
-  border-radius: 8px;
-  padding: 5px;
-}
-.storefrontLayerList li[data-selected='true'] {
-  border-color: #8b6248;
-  background: #f5eee5;
-}
-.storefrontLayerList button {
-  background: transparent;
-  border: 0;
-  padding: 8px;
-  cursor: pointer;
-}
-.storefrontLayerList button:first-child {
-  display: grid;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-}
-.storefrontLayerList small {
-  color: #75695f;
-}
-.storefrontLayerList span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .creatorStorefrontCanvas[data-editing-content='true'] [data-editor-block] {
   cursor: pointer;
 }
@@ -13718,6 +15004,74 @@ dt {
   }
 }
 
+/* Dashboard navigation cards: keep the visual entry points legible on phones. */
+@media (max-width: 760px) {
+  .creatorDashboardWorkspace {
+    display: block;
+  }
+
+  .creatorDashboardSidebar {
+    margin-bottom: 14px;
+    position: static;
+    width: 100%;
+  }
+
+  .creatorDashboardSidebar button.creatorDashboardNavCard {
+    min-height: 64px;
+    padding: 9px 8px;
+    width: 100%;
+  }
+
+  .creatorDashboardNavBadge {
+    height: 34px;
+    width: 34px;
+  }
+
+  .creatorDashboardNavBadge svg {
+    height: 18px;
+    width: 18px;
+  }
+
+  .creatorDashboardNavCopy strong {
+    font-size: 0.76rem;
+  }
+
+  .creatorDashboardNavCopy small {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .creatorDashboardSidebar {
+    align-items: stretch;
+    display: grid;
+    gap: 8px;
+    overflow: visible;
+    padding: 0;
+    position: static;
+  }
+
+  .creatorDashboardSidebar button.creatorDashboardNavCard {
+    min-height: 72px;
+    padding: 10px 12px;
+    white-space: normal;
+    width: 100%;
+  }
+
+  .creatorDashboardNavBadge {
+    height: 42px;
+    width: 42px;
+  }
+
+  .creatorDashboardNavCopy strong {
+    font-size: 0.88rem;
+  }
+
+  .creatorDashboardNavCopy small {
+    font-size: 0.68rem;
+  }
+}
+
 @media (max-width: 340px) {
   .creatorTypeGrid button {
     min-height: 82px;
@@ -14011,6 +15365,75 @@ dt {
   outline-offset: 1px;
 }
 
+.storefrontBioAlignment {
+  align-items: center;
+  display: flex;
+  font-size: 0.78rem;
+  justify-content: space-between;
+}
+
+.storefrontBioAlignment select {
+  background: #fffdfa;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #2d2924;
+  font: inherit;
+  min-height: 34px;
+  padding: 0 9px;
+}
+
+.creatorTitlesEditor {
+  display: grid;
+  gap: 12px;
+}
+
+.creatorTitleEditorCard {
+  background: #fffdfa;
+  border: 1px solid #e4d9cf;
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.creatorTitleEditorCard label {
+  color: #4b4139;
+  display: grid;
+  font-size: 0.78rem;
+  gap: 6px;
+}
+
+.creatorTitleEditorCard input,
+.creatorTitleEditorCard select {
+  background: #fff;
+  border: 1px solid #d8cec3;
+  border-radius: 9px;
+  color: #2d2924;
+  font: inherit;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.creatorTitleEditorActions {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.creatorTitleEditorActions button {
+  background: transparent;
+  border: 0;
+  color: #9a5135;
+  cursor: pointer;
+  font-size: 0.76rem;
+  padding: 0;
+}
+
+.creatorTitleEditorActions small {
+  color: #8a7c70;
+  font-size: 0.72rem;
+}
+
 .storefrontBioEditor .button {
   justify-self: start;
 }
@@ -14065,50 +15488,6 @@ dt {
   background: #f5f3ee;
   border-color: #e4e1d9;
   margin-top: 18px;
-}
-
-.storefrontDesignPanel .storefrontContentEditor > p {
-  font-size: 0.76rem;
-  line-height: 1.4;
-  margin: 3px 0 0;
-}
-
-.storefrontAddContentToggle {
-  align-items: center;
-  background: #c97853;
-  border: 0;
-  border-radius: 8px;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 700;
-  justify-content: space-between;
-  min-height: 44px;
-  padding: 0 13px;
-  width: 100%;
-}
-
-.storefrontAddContentToggle > span {
-  align-items: center;
-  display: inline-flex;
-  gap: 7px;
-}
-
-.storefrontAddContentToggle:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.storefrontAddContentToggle:focus-visible {
-  outline: 2px solid #633e2f;
-  outline-offset: 2px;
-}
-
-.storefrontDesignPanel .storefrontAddContentActions .button {
-  font-size: 0.76rem;
-  padding-inline: 10px;
 }
 
 .storefrontDesignWorkspace .storefrontPhoneStage {
@@ -14206,6 +15585,83 @@ dt {
   text-shadow: none;
 }
 
+/* Creator-selectable header and type treatments. The classic layout remains
+   the default so older saved themes render unchanged. */
+.creatorStorefrontCanvas[data-header-style='circular'] .referenceStorefrontHero {
+  background: var(--sf-page);
+  padding-block: 28px 24px;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontInner {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 0;
+  text-align: center;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontAvatar {
+  background-image: var(--sf-profile-image, none);
+  background-position: center;
+  background-size: cover;
+  border: 4px solid color-mix(in srgb, var(--sf-accent) 28%, white);
+  box-shadow: 0 8px 20px rgb(48 37 31 / 12%);
+  height: 92px;
+  width: 92px;
+}
+
+.creatorStorefrontCanvas[data-header-style='circular']
+  .referenceStorefrontHero
+  .referenceStorefrontName {
+  align-self: center;
+}
+
+.creatorStorefrontCanvas[data-heading-font='sans']
+  :is(
+    .referenceStorefrontName h1,
+    .referenceStorefrontRow h3,
+    .referenceCollectionFrame h3
+  ) {
+  font-family: var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-weight: 700;
+}
+
+.creatorStorefrontCanvas[data-heading-font='editorial']
+  :is(
+    .referenceStorefrontName h1,
+    .referenceStorefrontRow h3,
+    .referenceCollectionFrame h3
+  ) {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+
+.creatorStorefrontCanvas[data-body-font='sans'] {
+  font-family: var(--font-vh-body), ui-sans-serif, sans-serif;
+}
+
+.creatorStorefrontCanvas[data-body-font='serif'] {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.creatorStorefrontCanvas[data-bio-align='left'] .referenceStorefrontBio {
+  text-align: left;
+}
+
+.creatorStorefrontCanvas[data-bio-align='center'] .referenceStorefrontBio {
+  text-align: center;
+}
+
+.creatorStorefrontCanvas[data-bio-align='right'] .referenceStorefrontBio {
+  text-align: right;
+}
+
 @media (max-width: 900px) {
   .storefrontDesignWorkspace {
     background: #fff;
@@ -14297,5 +15753,1238 @@ dt {
 @media (prefers-reduced-motion: reduce) {
   .storefrontDesignPanel {
     transition: none;
+  }
+}
+
+/* Keep the framed multi-item brand card's lower edge visible after the
+   editable-slot reset rules above. */
+.referenceBrandBlockWrapper > .referenceBrandBlock[data-has-recommendations='true'],
+.referenceCompactLabelGroups > .referenceBrandBlock[data-has-recommendations='true'] {
+  border: 1px solid #e2d5c8;
+  border-bottom-color: #d5c3b5;
+}
+
+/* The frame should finish shortly after the last product label. Product
+   cards in a brand shelf do not need the two-line title reserve used by the
+   general product grid. */
+.referenceBrandBlock[data-has-recommendations='true'] {
+  padding-bottom: 8px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true'] .referenceBrandShelf {
+  padding-bottom: 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true']
+  .referenceBrandShelf
+  .compactProductCard
+  .storeProductDetails {
+  min-height: 0;
+  padding-bottom: 2px;
+}
+
+.referenceBrandBlock[data-has-recommendations='true']
+  .referenceBrandShelf
+  .compactProductCard
+  .storeProductDetails
+  h3 {
+  min-height: 0;
+}
+
+/* Keep brand and product copy aligned with the storefront label typography. */
+.referenceBrandBlock > header h3,
+.referenceCompactLabelGroups > .referenceBrandBlock > header h3,
+.referenceStandaloneRecommendationContent h3,
+.referenceStandaloneRecommendationBrand {
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 1.36rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.referenceStandaloneRecommendationContent h3 {
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.28;
+}
+
+.referenceStandaloneRecommendationBrand {
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+:is(.creatorStorefrontCanvas .referenceBrandShelf, .creatorProductPageGrid)
+  .compactProductCard
+  .storeProductDetails
+  h3 {
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 400;
+  line-height: 1.28;
+}
+
+/* General storefront sections can use the same content library as the rest of
+   the page. Keep their two display modes explicit and let featured media share
+   the row without forcing a full-width block inside a carousel. */
+.referenceStorefrontRowVertical .referenceStorefrontScroller {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: visible;
+}
+
+.referenceStorefrontScroller > .featuredMediaBlock {
+  flex: 0 0 min(100%, 360px);
+  width: min(100%, 360px);
+  scroll-snap-align: start;
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock {
+  width: 100%;
+}
+
+/* Sections use the same shelf language as the recommendation cards inside a
+   brand: the image owns the tile, while the copy sits directly on the
+   storefront surface instead of inside a second white card. */
+.referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard,
+.referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: none;
+  overflow: visible;
+  width: 172px;
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductImage,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductImage {
+  aspect-ratio: 1 / 1.08;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductDetails,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .compactProductCard
+  .storeProductDetails {
+  background: transparent;
+  padding: 7px 2px 2px;
+}
+
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+.referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+  align-self: start;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 0 0 min(100%, 320px);
+  min-width: 0;
+  overflow: visible;
+  width: min(100%, 320px);
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaCover,
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaEmbed,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaCover,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaEmbed {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaLink
+  > span:last-child,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .featuredMediaBlock
+  .featuredMediaLink
+  > span:last-child {
+  padding: 7px 2px 2px;
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaSummary,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaSummary {
+  background: var(--sf-discount, #f8f6f2);
+  border: 1px solid #e2d5c8;
+  border-radius: 12px;
+  grid-template-columns: 58px minmax(0, 1fr) 14px;
+  min-height: 78px;
+  padding: 8px;
+}
+
+.referenceStorefrontRow
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaArtwork,
+.referenceCollectionFrame
+  .referenceStorefrontScroller
+  > .editorialMediaCard
+  .editorialMediaArtwork {
+  border-radius: 8px;
+  height: 58px;
+  width: 58px;
+}
+
+@media (max-width: 900px) {
+  .referenceStorefrontRow .referenceStorefrontScroller > .compactProductCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .compactProductCard,
+  .referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+    width: 158px;
+  }
+
+  .referenceStorefrontRow .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceCollectionFrame .referenceStorefrontScroller > .featuredMediaBlock,
+  .referenceStorefrontRow .referenceStorefrontScroller > .editorialMediaCard,
+  .referenceCollectionFrame .referenceStorefrontScroller > .editorialMediaCard {
+    flex-basis: min(100%, 320px);
+    width: min(100%, 320px);
+  }
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .compactProductCard,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .editorialMediaCard {
+  width: 100%;
+}
+
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .featuredMediaBlock,
+.referenceStorefrontRowVertical .referenceStorefrontScroller > .editorialMediaCard {
+  flex-basis: auto;
+}
+
+/* Horizontal sections can mix compact product tiles with full media cards.
+   Flex lets each child keep its own intended width instead of forcing every
+   item into the product grid's fixed track. */
+.referenceStorefrontRow:not(.referenceStorefrontRowVertical) .referenceStorefrontScroller,
+.referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller {
+  display: flex;
+  align-items: flex-start;
+}
+
+.referenceStorefrontRow:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller
+  > .compactProductCard,
+.referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+  .referenceStorefrontScroller
+  > .compactProductCard {
+  flex: 0 0 172px;
+}
+
+@media (max-width: 900px) {
+  .referenceStorefrontRow:not(.referenceStorefrontRowVertical)
+    .referenceStorefrontScroller
+    > .compactProductCard,
+  .referenceCollectionFrame:not(.referenceStorefrontRowVertical)
+    .referenceStorefrontScroller
+    > .compactProductCard {
+    flex-basis: 158px;
+  }
+}
+
+.creatorSectionManageCard {
+  border-color: #d8c8b9;
+}
+
+/* Keep the four creation choices visible together on the compact dashboard. */
+.creatorTypeGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.creatorTypeGrid button {
+  min-width: 0;
+  padding: 16px;
+}
+
+.creatorTypeGrid strong {
+  font-size: 1.12rem;
+}
+
+.creatorTypeGrid small {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.creatorComposer > .creatorCuratedForm {
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+.creatorCuratedForm > label input,
+.creatorCuratedForm > label select {
+  box-sizing: border-box;
+}
+
+@media (max-width: 620px) {
+  .creatorTypeGrid {
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+  }
+
+  .creatorTypeGrid button {
+    border-radius: 10px;
+    min-height: 148px;
+    padding: 14px 12px;
+  }
+
+  .creatorTypeGrid span {
+    height: 28px;
+    width: 28px;
+  }
+
+  .creatorTypeGrid strong {
+    font-size: 1rem;
+    line-height: 1.1;
+    margin: 10px 0 5px;
+  }
+
+  .creatorTypeGrid small {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 360px) {
+  .creatorTypeGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The optional Editorial Frame owns only the page chrome. Recommendation
+   components keep their normal layout and can be added in any order. */
+.creatorStorefrontCanvas[data-template='editorial-frame'] {
+  background:
+    radial-gradient(circle at 5% 5%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 96% 31%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 3% 67%, #ff705d 0 4px, transparent 5px), #141d48;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 16px clamp(8px, 2.4vw, 42px) 22px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::before,
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  background:
+    radial-gradient(circle at 50% 4%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 50% 38%, #d8f052 0 3px, transparent 4px),
+    radial-gradient(circle at 50% 76%, #d8f052 0 3px, transparent 4px),
+    repeating-linear-gradient(to bottom, #3655f5 0 110px, transparent 110px 130px);
+  border: 0;
+  border-radius: 0;
+  bottom: 12px;
+  box-shadow: none;
+  left: max(3px, calc(50% - 344px));
+  opacity: 0.9;
+  right: auto;
+  top: 12px;
+  width: 2px;
+  z-index: 0;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']::after {
+  left: auto;
+  right: max(3px, calc(50% - 344px));
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontHero {
+  background-color: #fffaf2;
+  background-image: none;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame'] .referenceStorefrontLabels {
+  background: #fffaf2;
+  border-bottom: 1px solid #d4d8ec;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 4px 2px 9px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels::before {
+  display: none;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button {
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  color: #111a3e;
+  font-family: Aptos, Arial, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 400;
+  padding-inline: 8px;
+}
+.creatorStorefrontCanvas[data-template='editorial-frame']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: transparent;
+  border-bottom-color: #3655f5;
+  color: #3047d6;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .creatorStorefrontCanvas[data-template='editorial-frame'] {
+    padding: 9px 8px 16px;
+  }
+}
+
+/* Forest Glass uses its own artwork layer and a matching teal canvas. */
+.creatorStorefrontCanvas[data-template='forest-glass'] {
+  background-attachment: scroll;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontHero {
+  background-color: transparent;
+  background-image: none;
+  position: relative;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontActions.referenceConnectors
+  > a {
+  background: rgb(239 248 234 / 15%);
+  border: 1px solid rgb(239 248 234 / 24%);
+  color: #fff;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 22%),
+    0 4px 12px rgb(2 27 27 / 14%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontActions.referenceConnectors
+  > a:hover,
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontActions.referenceConnectors
+  > a:focus-visible {
+  background: rgb(239 248 234 / 28%);
+  border-color: rgb(239 248 234 / 58%);
+  color: #fff;
+}
+/* Store filters can be framed on every theme, including Classic, or left as
+   a simple text rail. */
+.creatorStorefrontCanvas[data-label-frame='true'] .referenceStorefrontLabels {
+  background: color-mix(in srgb, var(--sf-page) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sf-text) 24%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 7%);
+  padding: 5px;
+}
+.creatorStorefrontCanvas[data-label-frame='false'] .referenceStorefrontLabels {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  padding: 2px 2px 8px;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontHero {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+.creatorStorefrontCanvas .referenceConnectorLink img {
+  filter: brightness(0) saturate(100%);
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceConnectorLink
+  img {
+  filter: brightness(0) invert(1);
+}
+.storefrontFrameToggle {
+  align-items: flex-start;
+  background: #fffdfa;
+  border: 1px solid #e6ddd4;
+  border-radius: 12px;
+  color: #30251f;
+  display: flex;
+  gap: 11px;
+  padding: 12px;
+}
+.storefrontColorFields .storefrontFrameToggle {
+  align-items: flex-start;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  min-width: 0;
+  width: 100%;
+}
+.storefrontColorFields .storefrontFrameToggle input {
+  accent-color: #b77856;
+  block-size: 18px;
+  flex: 0 0 18px;
+  inline-size: 18px;
+  margin: 2px 0 0;
+}
+.storefrontColorFields .storefrontFrameToggle > span {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 4px;
+  min-width: 0;
+}
+.storefrontFrameToggle strong {
+  font-size: 0.82rem;
+}
+.storefrontFrameToggle small {
+  color: #766b63;
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+/* The editor uses the same bespoke background art as the live storefront. */
+.creatorStorefrontCanvas[data-template='forest-glass'] {
+  background-color: #123f3b;
+  background-image:
+    radial-gradient(ellipse at 50% 12%, rgb(155 211 182 / 24%), transparent 36%),
+    linear-gradient(158deg, #0b302e 0%, #103d39 48%, #092a2a 100%);
+  background-attachment: scroll;
+}
+.creatorStorefrontCanvas[data-template='aurora-veil'] {
+  background-color: #281a34;
+  background-image:
+    radial-gradient(ellipse at 50% 12%, rgb(146 101 171 / 24%), transparent 36%),
+    linear-gradient(160deg, #24152f 0%, #382144 42%, #21142c 100%);
+}
+.creatorStorefrontCanvas[data-template='desert-rose'] {
+  background-color: #693f36;
+  background-image:
+    radial-gradient(ellipse at 58% 8%, rgb(255 191 157 / 25%), transparent 36%),
+    linear-gradient(158deg, #75483d 0%, #653c34 48%, #4b2b2d 100%);
+}
+.creatorStorefrontCanvas[data-template='glacier-current'] {
+  background-color: #102f43;
+  background-image:
+    radial-gradient(ellipse at 51% 12%, rgb(116 190 207 / 24%), transparent 36%),
+    linear-gradient(158deg, #0e2e42 0%, #16445a 46%, #092638 100%);
+}
+.creatorStorefrontCanvas:is(
+  [data-template='forest-glass'],
+  [data-template='aurora-veil'],
+  [data-template='desert-rose'],
+  [data-template='glacier-current']
+) {
+  position: relative;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )::before {
+  aspect-ratio: 5 / 7;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  content: '';
+  inset: 0 0 auto;
+  opacity: 0.96;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']::before {
+  background-image: url('/images/storefront/forest-glass-waves.svg');
+}
+.creatorStorefrontCanvas[data-template='aurora-veil']::before {
+  background-image: url('/images/storefront/aurora-veil.svg');
+}
+.creatorStorefrontCanvas[data-template='desert-rose']::before {
+  background-image: url('/images/storefront/desert-rose.svg');
+}
+.creatorStorefrontCanvas[data-template='glacier-current']::before {
+  background-image: url('/images/storefront/glacier-current.svg');
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  > * {
+  position: relative;
+  z-index: 1;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )[data-header-style='circular']
+  .referenceStorefrontHeroImage {
+  display: none;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )[data-header-style='circular']
+  .referenceStorefrontAvatar {
+  height: 104px;
+  width: 104px;
+}
+.creatorStorefrontCanvas[data-template='aurora-veil'] .referenceStorefrontAvatar {
+  border-color: #f4e1ff;
+  box-shadow:
+    0 0 0 5px rgb(246 224 255 / 25%),
+    0 0 26px 11px rgb(211 151 244 / 43%),
+    0 0 62px 24px rgb(164 108 199 / 25%),
+    0 14px 30px rgb(16 8 26 / 48%);
+}
+.creatorStorefrontCanvas[data-template='desert-rose'] .referenceStorefrontAvatar {
+  border-color: #fff0e1;
+  box-shadow:
+    0 0 0 5px rgb(255 229 208 / 25%),
+    0 0 26px 11px rgb(248 177 141 / 42%),
+    0 0 62px 24px rgb(211 124 97 / 24%),
+    0 14px 30px rgb(40 17 20 / 42%);
+}
+.creatorStorefrontCanvas[data-template='glacier-current'] .referenceStorefrontAvatar {
+  border-color: #e0faff;
+  box-shadow:
+    0 0 0 5px rgb(220 248 249 / 24%),
+    0 0 26px 11px rgb(114 212 224 / 42%),
+    0 0 62px 24px rgb(62 159 190 / 24%),
+    0 14px 30px rgb(0 16 25 / 46%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontAvatar {
+  border-color: #e5f5e9;
+  box-shadow:
+    0 0 0 5px rgb(221 242 222 / 25%),
+    0 0 26px 11px rgb(151 220 190 / 43%),
+    0 0 58px 22px rgb(100 186 164 / 24%),
+    0 14px 30px rgb(0 16 17 / 42%);
+}
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontHero::before {
+  content: none;
+  display: none;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontName
+  h1,
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontBio {
+  color: #f8f5ef;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 30%);
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontLabels {
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  background: rgb(241 245 235 / 12%);
+  border-color: rgb(241 245 235 / 25%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 13%),
+    0 10px 28px rgb(0 12 18 / 20%);
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontLabels
+  button {
+  color: #f5f2eb;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  background: #f4f0e5;
+  color: #243c3a;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontActions.referenceConnectors
+  > a {
+  background: rgb(241 245 235 / 13%);
+  border: 1px solid rgb(241 245 235 / 23%);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 19%),
+    0 4px 12px rgb(2 27 27 / 14%);
+  color: #fff;
+}
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontActions.referenceConnectors
+  > a:hover,
+.creatorStorefrontCanvas:is(
+    [data-template='forest-glass'],
+    [data-template='aurora-veil'],
+    [data-template='desert-rose'],
+    [data-template='glacier-current']
+  )
+  .referenceStorefrontActions.referenceConnectors
+  > a:focus-visible {
+  background: rgb(250 252 246 / 24%);
+  border-color: rgb(250 252 246 / 48%);
+  color: #fff;
+}
+.creatorStorefrontCanvas[data-template='aurora-veil']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  color: #392342;
+}
+.creatorStorefrontCanvas[data-template='desert-rose']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  color: #704237;
+}
+.creatorStorefrontCanvas[data-template='glacier-current']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  color: #173c4e;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']
+  .referenceStorefrontLabels
+  button[aria-pressed='true'] {
+  color: #173b37;
+}
+.creatorStorefrontCanvas[data-template='forest-glass']::after,
+.creatorStorefrontCanvas[data-template='forest-glass'] .referenceStorefrontHero::before {
+  content: none;
+  display: none;
+}
+
+/* Every mixed storefront row uses one shared rhythm, regardless of whether
+   the next item is a product, brand card, or media embed. */
+.referenceStorefrontRow .referenceStorefrontScroller,
+.referenceCollectionFrame .referenceStorefrontScroller {
+  column-gap: 12px;
+  row-gap: 12px;
+}
+.referenceStorefrontRow .referenceStorefrontScroller > *,
+.referenceCollectionFrame .referenceStorefrontScroller > * {
+  margin-block: 0;
+}
+
+/* Compact, scannable selection rows for collections and carousels. */
+.creatorCuratedChoices {
+  max-height: 280px;
+}
+.creatorCuratedChoices label {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  min-height: 48px;
+  padding: 6px 10px;
+  text-align: start;
+}
+.creatorCuratedChoices label:has(.creatorCuratedProductThumb) {
+  grid-template-columns: 20px 38px minmax(0, 1fr);
+}
+.creatorCuratedChoices label > span:last-child {
+  align-content: center;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.creatorCuratedChoices label > span:last-child small {
+  color: #8b8078;
+  font-size: 0.72rem;
+}
+
+/* Carousels are a compact, clearly-marked content type in the dashboard. */
+.creatorSectionManageCard {
+  background: #fffdfa;
+  border-color: #d3b4a2;
+  padding: 12px 14px;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader {
+  gap: 10px;
+  margin-bottom: 0;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader .eyebrow {
+  color: #b66542;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader h3 {
+  font-size: 1.25rem;
+}
+.creatorSectionManageCard .creatorManageCollectionHeader p {
+  font-size: 0.72rem;
+}
+
+/* Use the same warm visual language as the rest of the creator dashboard. */
+.creatorLabelsEditor {
+  background: #fbf7f2;
+  border: 1px solid #eadfd5;
+  border-radius: 18px;
+  padding: 18px;
+}
+.creatorLabelsHeadingTitle {
+  align-items: center;
+  display: flex;
+  gap: 9px;
+}
+.creatorLabelsHeadingMark {
+  align-items: center;
+  background: #f1dfd2;
+  border-radius: 9px;
+  color: #b66542;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+.creatorLabelsEditor > .creatorSectionHeading p {
+  max-width: 520px;
+}
+.creatorLabelsEditor > .button {
+  background: #fff;
+  border-color: #d9b7a3;
+  color: #a75737;
+}
+.creatorLabelEditorCard {
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(83 55 38 / 5%);
+}
+
+/* Custom labels use the same horizontal recommendation rail as Home. */
+.referenceCompactLabelScroller {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-auto-columns: 172px;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.referenceCompactLabelScroller::-webkit-scrollbar {
+  display: none;
+}
+.referenceCompactLabelScroller > .compactProductCard {
+  grid-column: auto;
+  scroll-snap-align: start;
+  width: 172px;
+}
+@media (max-width: 900px) {
+  .referenceCompactLabelScroller {
+    grid-auto-columns: 158px;
+  }
+  .referenceCompactLabelScroller > .compactProductCard {
+    width: 158px;
+  }
+}
+
+/* These classes are rendered only by the opt-in Editorial Frame card variant. */
+.editorialBrandCard,
+.editorialMediaCard {
+  background: #fff;
+  border: 1px solid #dfe2e8;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgb(19 29 72 / 4%);
+  color: #111a3e;
+  overflow: hidden;
+}
+.editorialBrandCard {
+  margin-top: 10px;
+  padding: 14px;
+}
+.editorialBrandHeaderLink {
+  align-items: center;
+  color: inherit;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 74px minmax(0, 1fr) 20px;
+  min-width: 0;
+  text-decoration: none;
+}
+.editorialBrandMark {
+  align-items: center;
+  background: #f9fafc;
+  border: 1px solid #e5e7ec;
+  border-radius: 12px;
+  display: flex;
+  height: 74px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 74px;
+}
+.editorialBrandMark img {
+  object-fit: contain;
+  padding: 7px;
+}
+.editorialBrandMark > span {
+  font:
+    700 28px Georgia,
+    serif;
+}
+.editorialBrandHeading {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.editorialBrandHeading > strong {
+  font:
+    700 1.13rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.editorialBrandOfferValue {
+  color: #ff6552;
+  font:
+    700 1rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialBrandCode,
+.editorialBrandExpiry {
+  color: #25304e;
+  font:
+    400 0.81rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialBrandCode b {
+  font-weight: 700;
+}
+.editorialBrandExpiry {
+  color: #657084;
+  font-size: 0.72rem;
+}
+.editorialBrandArrow {
+  justify-self: end;
+}
+.editorialBrandDetails {
+  color: #34405d;
+  font:
+    400 0.82rem/1.4 Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+.editorialBrandShelf {
+  margin-top: 13px;
+}
+.editorialCollectionTile {
+  text-decoration: none;
+}
+.editorialCollectionImage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+.editorialCollectionImage > span {
+  font:
+    700 1.7rem Georgia,
+    serif;
+}
+.editorialBrandCard .referenceBrandVideoRail {
+  margin-top: 12px;
+}
+.editorialBrandCard .referenceBrandVideoRail video {
+  flex-basis: 100px;
+  width: 100px;
+}
+@media (max-width: 600px) {
+  .editorialBrandCard {
+    padding: 12px;
+  }
+  .editorialBrandHeaderLink {
+    gap: 10px;
+    grid-template-columns: 60px minmax(0, 1fr) 18px;
+  }
+  .editorialBrandMark {
+    height: 60px;
+    width: 60px;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame'] .editorialBrandShelf {
+    gap: 8px;
+    grid-auto-columns: minmax(0, calc((100% - 8px) / 2));
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .editorialCollectionTile,
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .storeProductCard.compactProductCard {
+    max-width: none;
+    width: 100%;
+  }
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .referenceBrandCardImage,
+  .creatorStorefrontCanvas[data-template='editorial-frame']
+    .editorialBrandShelf
+    .storeProductImage {
+    aspect-ratio: 1;
+  }
+}
+.editorialMediaCard {
+  width: 100%;
+}
+.editorialMediaSummary {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 86px minmax(0, 1fr) 20px;
+  min-height: 106px;
+  padding: 10px 14px;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+.editorialMediaArtwork {
+  align-items: center;
+  background: #e9ecf3;
+  border-radius: 10px;
+  display: flex;
+  height: 86px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 86px;
+}
+.editorialMediaArtwork > img {
+  object-fit: cover;
+}
+.editorialMediaArtworkFallback {
+  color: #3047d6;
+}
+.editorialMediaPlay {
+  align-items: center;
+  background: #111a3e;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  bottom: 5px;
+  color: #fff;
+  display: flex;
+  height: 27px;
+  justify-content: center;
+  left: 5px;
+  position: absolute;
+  width: 27px;
+}
+.editorialMediaCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.editorialMediaCopy small {
+  color: #3047d6;
+  font:
+    700 0.72rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+}
+.editorialMediaCopy strong {
+  color: #111a3e;
+  display: -webkit-box;
+  font:
+    700 0.95rem/1.25 Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.editorialMediaArrow {
+  justify-self: end;
+}
+.editorialMediaPlayer {
+  border-top: 1px solid #e6e8ee;
+  padding: 12px;
+}
+.editorialMediaPlayer iframe {
+  border: 0;
+  border-radius: 10px;
+  display: block;
+  height: 230px;
+  width: 100%;
+}
+.editorialMediaCard[data-provider='spotify'] .editorialMediaPlayer iframe {
+  height: 152px;
+}
+.editorialMediaCard[data-provider='apple_music'] .editorialMediaPlayer iframe {
+  height: 175px;
+}
+.editorialMediaCard[data-provider='instagram'] .editorialMediaPlayer iframe {
+  height: 420px;
+}
+.editorialMediaPlayer > a {
+  color: #3047d6;
+  display: inline-block;
+  font:
+    700 0.78rem Aptos,
+    'Aptos Body',
+    Arial,
+    sans-serif;
+  margin-top: 8px;
+}
+
+/* Instagram-style story viewer: the media owns the full portrait canvas and
+   navigation is handled by invisible left/right tap targets. */
+.storyViewerBackdrop {
+  background: rgb(0 0 0 / 94%);
+  padding: 0;
+}
+.storyViewer {
+  aspect-ratio: 9 / 16;
+  background: #000;
+  border-radius: 0;
+  height: min(100dvh, 920px);
+  max-height: 100dvh;
+  max-width: 100vw;
+  overflow: hidden;
+  position: relative;
+  width: min(100vw, 560px);
+}
+.storyViewer video {
+  background: #000;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+.storyViewerProgress.storyViewerSegments {
+  gap: 4px;
+  left: 12px;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 5;
+}
+.storyViewerProgress.storyViewerSegments > i {
+  background: rgb(255 255 255 / 38%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  height: 3px;
+}
+.storyViewerHeader {
+  pointer-events: none;
+  position: absolute;
+  right: 12px;
+  top: 25px;
+  z-index: 6;
+}
+.storyViewerClose {
+  pointer-events: auto;
+}
+.storyViewerNavigation {
+  display: none;
+}
+.storyViewerTapZones {
+  display: flex;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+.storyViewerTapZone {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  height: 100%;
+  pointer-events: auto;
+  width: 36%;
+}
+.storyViewerTapZone:disabled {
+  cursor: default;
+}
+.storyViewerTapZonePrevious {
+  margin-right: auto;
+}
+.storyViewerTapZoneNext {
+  margin-left: auto;
+}
+@media (max-width: 600px) {
+  .editorialMediaSummary {
+    gap: 10px;
+    grid-template-columns: 72px minmax(0, 1fr) 16px;
+    min-height: 92px;
+    padding: 9px 10px;
+  }
+  .editorialMediaArtwork {
+    height: 72px;
+    width: 72px;
   }
 }

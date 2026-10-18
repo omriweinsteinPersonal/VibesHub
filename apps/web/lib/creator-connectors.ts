@@ -1,6 +1,6 @@
 import type { CreatorProfileSocialLink } from '@vibeshub/contracts';
 
-type SocialPlatform = CreatorProfileSocialLink['platform'];
+type SocialPlatform = CreatorProfileSocialLink['platform'] | 'spotify' | 'apple_music';
 
 export const creatorConnectors: Array<{
   label: string;
@@ -29,6 +29,16 @@ export const creatorConnectors: Array<{
     label: 'Pinterest',
     placeholder: 'https://pinterest.com/yourname',
     platform: 'pinterest',
+  },
+  {
+    label: 'Spotify',
+    placeholder: 'https://open.spotify.com/user/yourname',
+    platform: 'spotify',
+  },
+  {
+    label: 'Apple Music',
+    placeholder: 'https://music.apple.com/profile/yourname',
+    platform: 'apple_music',
   },
   { label: 'Website', placeholder: 'https://yourwebsite.com', platform: 'website' },
 ];

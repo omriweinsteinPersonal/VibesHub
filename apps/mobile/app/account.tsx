@@ -15,12 +15,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { deleteCurrentAccount } from '../lib/api';
 import { getAppleAccountDeletionAuthorizationCode } from '../lib/auth';
 import { isNativeBillingConfigured, restoreNativePurchases } from '../lib/billing';
+import {
+  clearCreatorStudioBundleCache,
+  getCreatorStudioBundle,
+} from '../lib/creator-api';
+import { getAccountSummary } from '../lib/creator-onboarding';
 import { openExternalWebPage } from '../lib/external-browser';
 import { getSupabaseClient } from '../lib/supabase';
 
 const webLinks = {
   privacy: 'https://swavii.com/privacy',
-  studio: 'https://swavii.com/creator-home',
   support: 'https://swavii.com/support',
   terms: 'https://swavii.com/terms',
 };
@@ -28,23 +32,35 @@ const webLinks = {
 export default function AccountScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [hasCreatorProfile, setHasCreatorProfile] = useState<boolean | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
-    void supabase.auth.getSession().then(({ data }) => {
+    void supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         router.replace('/login');
         return;
       }
       setEmail(data.session.user.email ?? 'Creator account');
+      try {
+        const account = await getAccountSummary();
+        const isCreator = Boolean(account.creator);
+        setHasCreatorProfile(isCreator);
+        if (isCreator) void getCreatorStudioBundle().catch(() => undefined);
+      } catch (cause) {
+        setError(
+          cause instanceof Error ? cause.message : 'Account details could not be loaded.',
+        );
+      }
     });
   }, [router]);
 
   async function signOut() {
     await getSupabaseClient().auth.signOut({ scope: 'local' });
+    clearCreatorStudioBundleCache();
     router.replace('/');
   }
 
@@ -110,6 +126,7 @@ export default function AccountScreen() {
         appleAuthorizationCode ? { appleAuthorizationCode } : {},
       );
       await supabase.auth.signOut({ scope: 'local' });
+      clearCreatorStudioBundleCache();
       Alert.alert('Account deleted', 'Your Swavii account and storefront were deleted.', [
         { onPress: () => router.replace('/'), text: 'Done' },
       ]);
@@ -130,20 +147,40 @@ export default function AccountScreen() {
         <Text style={styles.title}>Your account</Text>
         <Text style={styles.email}>{email || 'Loading your account…'}</Text>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Creator tools</Text>
-          <Text style={styles.sectionCopy}>
-            Manage your storefront, recommendations, links and analytics in the Swavii
-            creator studio.
-          </Text>
-          <Pressable
-            accessibilityRole="link"
-            onPress={() => void openExternalUrl(webLinks.studio)}
-            style={styles.primaryButton}
-          >
-            <Text style={styles.primaryButtonText}>Open creator studio</Text>
-          </Pressable>
-        </View>
+        {hasCreatorProfile === null ? (
+          <View style={styles.section}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        ) : hasCreatorProfile ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Creator tools</Text>
+            <Text style={styles.sectionCopy}>
+              Manage your storefront, recommendations, links and analytics in the Swavii
+              creator studio.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/studio')}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>Open creator studio</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Finish creator setup</Text>
+            <Text style={styles.sectionCopy}>
+              Choose your public address and add the details for your storefront.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/creator-apply')}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>Continue creator setup</Text>
+            </Pressable>
+          </View>
+        )}
 
         {isNativeBillingConfigured() ? (
           <View style={styles.section}>
@@ -198,25 +235,33 @@ export default function AccountScreen() {
           <Text style={styles.signOutText}>Sign out</Text>
         </Pressable>
 
-        <View style={styles.dangerZone}>
-          <Text style={styles.dangerTitle}>Delete account</Text>
-          <Text style={styles.dangerCopy}>
-            Permanently remove your creator account, public storefront and all content
-            associated with it.
-          </Text>
+        <View style={styles.accountManagement}>
+          <Text style={styles.accountManagementTitle}>Account management</Text>
           <Pressable
+            accessibilityHint="Permanently removes your account and associated data after confirmation"
+            accessibilityLabel="Delete account"
             accessibilityRole="button"
             disabled={deleting}
             onPress={confirmDeletion}
             style={({ pressed }) => [
-              styles.deleteButton,
+              styles.deleteRow,
               (deleting || pressed) && styles.deleteButtonDisabled,
             ]}
           >
             {deleting ? (
               <ActivityIndicator color="#9b2c24" />
             ) : (
-              <Text style={styles.deleteButtonText}>Delete account</Text>
+              <>
+                <View style={styles.deleteCopy}>
+                  <Text style={styles.deleteButtonText}>Delete account</Text>
+                  <Text style={styles.deleteHint}>
+                    Permanently remove your account and storefront
+                  </Text>
+                </View>
+                <Text accessibilityElementsHidden style={styles.deleteArrow}>
+                  ›
+                </Text>
+              </>
             )}
           </Pressable>
         </View>
@@ -291,19 +336,16 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   signOutText: { color: colors.ink, fontSize: 16, fontWeight: '600' },
-  dangerZone: {
-    borderColor: '#dfb4ae',
-    borderRadius: radii.card,
-    borderWidth: 1,
+  accountManagement: {
     marginTop: spacing.xxl,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.sm,
   },
-  dangerTitle: { color: '#8a3028', fontSize: 20, fontWeight: '700' },
-  dangerCopy: {
+  accountManagementTitle: {
     color: colors.muted,
-    fontSize: 15,
-    lineHeight: 23,
-    marginTop: spacing.sm,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   error: {
     backgroundColor: '#fff0ed',
@@ -311,16 +353,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: 12,
   },
-  deleteButton: {
+  deleteRow: {
     alignItems: 'center',
-    borderColor: '#b43a31',
-    borderRadius: radii.control,
-    borderWidth: 1,
-    marginTop: spacing.lg,
-    minHeight: 50,
-    justifyContent: 'center',
-    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+    minHeight: 54,
+    paddingVertical: spacing.sm,
   },
   deleteButtonDisabled: { opacity: 0.55 },
-  deleteButtonText: { color: '#9b2c24', fontSize: 16, fontWeight: '700' },
+  deleteCopy: { flex: 1 },
+  deleteButtonText: { color: '#7e4f49', fontSize: 15, fontWeight: '600' },
+  deleteHint: { color: colors.muted, fontSize: 13, marginTop: 3 },
+  deleteArrow: { color: colors.muted, fontSize: 22, marginLeft: spacing.md },
 });

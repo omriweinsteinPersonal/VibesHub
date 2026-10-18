@@ -299,11 +299,22 @@ export function StorefrontLayout({
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
   }, [creatorId, editable, keys, layout, saveLayout]);
-  const ordered = [
+  const orderedContent = [
     ...fixedSlots,
     ...keys.map((id) => movableSlots.find((slot) => slot.id === id)!),
   ];
-  const firstContentId = movableSlots[0]?.id;
+  // Search is a utility for the content rail, so keep it immediately under
+  // the label rail even when an older saved layout placed it at the bottom.
+  const searchSlot = orderedContent.find(({ id }) => id === 'search');
+  const ordered = searchSlot
+    ? (() => {
+        const next = orderedContent.filter(({ id }) => id !== 'search');
+        const labelsIndex = next.findIndex(({ id }) => id === 'labels');
+        next.splice(labelsIndex < 0 ? 0 : labelsIndex + 1, 0, searchSlot);
+        return next;
+      })()
+    : orderedContent;
+  const firstContentId = movableSlots.find(({ id }) => id !== 'search')?.id;
   // Adjacent platform links form one natural icon row, wherever they are placed.
   const groups: Slot[][] = [];
   ordered.forEach((slot) => {
@@ -335,6 +346,9 @@ export function StorefrontLayout({
   return (
     <div
       className={styles.layout}
+      data-template={theme.templateId ?? 'classic'}
+      data-header-style={theme.headerStyle ?? 'classic'}
+      data-label-frame={theme.labelsFrame ?? true}
       data-compact-preview={compactPreview}
       data-sort-region="page"
       data-layout-editable={editable}

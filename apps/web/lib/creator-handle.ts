@@ -1,4 +1,4 @@
-export const creatorHandlePattern = /^(?=.{2,100}$)(?!.*[/?#%\\\p{Cc}]).+$/u;
+const creatorHandlePattern = /^(?=.{2,100}$)(?!.*[/?#%\\\p{Cc}]).+$/u;
 
 const hebrewTransliteration: Record<string, string> = {
   א: 'a',
@@ -31,13 +31,7 @@ const hebrewTransliteration: Record<string, string> = {
 };
 
 export function normalizeCreatorHandle(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9_-]/g, '')
-    .replace(/^[^a-z0-9]+/, '')
-    .slice(0, 30);
+  return value.trim().replace(/\s+/g, '-').slice(0, 100);
 }
 
 export function suggestCreatorHandle(displayName: string): string {

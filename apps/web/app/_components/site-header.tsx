@@ -12,14 +12,14 @@ const publicLinks = [
   { href: '/#pricing', label: 'Pricing' },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ homeLogo = false }: { homeLogo?: boolean }) {
   const pathname = usePathname();
 
   return (
     <>
       <header className="siteHeader creatorMarketingHeader">
         <div className="siteHeaderInner">
-          <Brand />
+          <Brand homeLogo={homeLogo} />
           <nav aria-label="Primary navigation">
             {publicLinks.map((link) => (
               <Link href={link.href} key={link.href}>

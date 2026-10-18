@@ -1,7 +1,6 @@
 'use client';
 
 import type {
-  CategoryCard,
   CreatorProfileSettings,
   CreatorProfileSocialLink,
 } from '@vibeshub/contracts';
@@ -10,7 +9,7 @@ import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
 
-import { apiRequest, publicApiCollectionRequest } from '../../../lib/api';
+import { apiRequest } from '../../../lib/api';
 import { creatorConnectors } from '../../../lib/creator-connectors';
 import {
   creatorImageAccept,
@@ -23,7 +22,7 @@ import {
 } from '../../../lib/use-creator-handle-availability';
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
-type SocialPlatform = CreatorProfileSocialLink['platform'];
+type SocialPlatform = CreatorProfileSocialLink['platform'] | 'spotify' | 'apple_music';
 
 interface EditorState {
   avatarAssetId: string;
@@ -31,7 +30,6 @@ interface EditorState {
   bioHe: string;
   displayName: string;
   handle: string;
-  primaryCategoryId: string;
   socialUrls: Record<SocialPlatform, string>;
 }
 
@@ -40,6 +38,8 @@ const emptySocialUrls: Record<SocialPlatform, string> = {
   instagram: '',
   linkedin: '',
   pinterest: '',
+  spotify: '',
+  apple_music: '',
   tiktok: '',
   website: '',
   x: '',
@@ -48,7 +48,6 @@ const emptySocialUrls: Record<SocialPlatform, string> = {
 
 export default function CreatorProfilePage() {
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
-  const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -59,14 +58,10 @@ export default function CreatorProfilePage() {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      apiRequest<CreatorProfileSettings>('/creator/profile'),
-      publicApiCollectionRequest<CategoryCard>('/categories'),
-    ])
-      .then(([loadedProfile, categoryPage]) => {
+    void apiRequest<CreatorProfileSettings>('/creator/profile')
+      .then((loadedProfile) => {
         if (!active) return;
         setProfile(loadedProfile);
-        setCategories(categoryPage.data);
         setEditor(toEditor(loadedProfile));
       })
       .catch((cause: unknown) => {
@@ -188,7 +183,6 @@ export default function CreatorProfilePage() {
           bioHe: editor.bioHe,
           displayName: editor.displayName,
           handle: editor.handle,
-          primaryCategoryId: editor.primaryCategoryId,
           socialLinks,
         }),
         headers: { 'if-match': `"${profile.version}"` },
@@ -326,21 +320,6 @@ export default function CreatorProfilePage() {
             </div>
 
             <label>
-              Main expertise
-              <select
-                onChange={(event) => update('primaryCategoryId', event.target.value)}
-                required
-                value={editor.primaryCategoryId}
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
               Bio
               <textarea
                 dir="auto"
@@ -399,7 +378,6 @@ function toEditor(profile: CreatorProfileSettings): EditorState {
     bioHe: profile.bioHe,
     displayName: profile.displayName,
     handle: profile.handle,
-    primaryCategoryId: profile.primaryCategory.id,
     socialUrls,
   };
 }

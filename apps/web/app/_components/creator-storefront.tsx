@@ -11,6 +11,7 @@ import {
 import type {
   CreatorStorefront,
   CreatorStorefrontConfiguration,
+  CreatorStorefrontConfigurationInput,
   CreatorDiscountCode,
   CreatorRecommendation,
   CreatorProfileSocialLink,
@@ -20,7 +21,16 @@ import type {
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BadgeCheck, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  MapPinned,
+  Music2,
+  Play,
+  Search,
+} from 'lucide-react';
 import {
   Fragment,
   useEffect,
@@ -34,14 +44,17 @@ import { StorefrontLayout, StorefrontRegion, StorefrontSlot } from './storefront
 import { apiCollectionRequest, apiRequest } from '../../lib/api';
 import { connectorLabel } from '../../lib/creator-connectors';
 import { publicAssetUrl } from '../../lib/public-asset-url';
-import type { StorefrontLayer } from '../../lib/storefront-order';
 import { textOnAccent } from '../../lib/storefront-theme';
 import { StorefrontViewTracker, TrackedInstagramLink } from './analytics-events';
 import { CreatorConnectorIcon } from './creator-connector-icon';
 import { RecommendationCardView } from './recommendation-card';
 
+type StorefrontLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
+type StorefrontCanvasStyle = CSSProperties & Record<`--sf-${string}`, string>;
+
 function safeProfileImageUrl(value: string | undefined) {
   if (!value) return '';
+  if (value.startsWith('/')) return value;
   try {
     const url = new URL(value);
     return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : '';
@@ -82,6 +95,7 @@ export function CreatorStorefrontView({
   const [previewTheme, setPreviewTheme] = useState<StorefrontTheme>(
     storefront.theme ?? defaultStorefrontTheme,
   );
+  const editorialFrame = previewTheme.templateId === 'editorial-frame';
   const [canEdit, setCanEdit] = useState(editable);
   const [configuration, setConfiguration] =
     useState<CreatorStorefrontConfiguration | null>(null);
@@ -96,6 +110,8 @@ export function CreatorStorefrontView({
     safeProfileImageUrl(
       storefront.avatarUrl ? publicAssetUrl(storefront.avatarUrl) : undefined,
     );
+  const avatarImageUrl =
+    profileImageUrl || (storefront.avatarUrl ? publicAssetUrl(storefront.avatarUrl) : '');
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('mobilePreview')) return;
     const receive = (event: MessageEvent) => {
@@ -275,12 +291,10 @@ export function CreatorStorefrontView({
       recommendations.filter(
         (item) =>
           !hiddenRecommendationIds.has(item.id) &&
-          ![...hiddenBrandIds].some((brandId) =>
-            storefront.brands.find(
-              (brand) =>
-                brand.id === brandId && brandKey(brand.name) === brandKey(item.brandName),
-            ),
-          ),
+          ![...hiddenBrandIds].some((brandId) => {
+            const brand = storefront.brands.find(({ id }) => id === brandId);
+            return brand ? brandMatchesRecommendation(brand, item) : false;
+          }),
       ),
     [hiddenBrandIds, hiddenRecommendationIds, recommendations, storefront.brands],
   );
@@ -291,6 +305,10 @@ export function CreatorStorefrontView({
       ),
     [configuration?.featuredMedia, storefront.featuredMedia],
   );
+  const standaloneFeaturedMedia = useMemo(
+    () => visibleFeaturedMedia,
+    [visibleFeaturedMedia],
+  );
   const orderedStorefront = useMemo(
     () => ({ ...storefront, contentOrder, curatedSections: visibleCuratedSections }),
     [storefront, contentOrder, visibleCuratedSections],
@@ -300,19 +318,19 @@ export function CreatorStorefrontView({
     [configuration?.labels, storefront.labels],
   );
   const displayBrands = useMemo(() => {
-    const byName = new Map<string, CreatorStorefront['brands'][number]>();
+    const byBrand = new Map<string, CreatorStorefront['brands'][number]>();
     for (const brand of storefront.brands) {
-      const key = brandKey(brand.name);
-      const current = byName.get(key);
+      const key = brand.brandId;
+      const current = byBrand.get(key);
       const hasOffer = codes.some(
         (code) => code.brandId === brand.id && code.scopeKind === 'brand',
       );
       const currentHasOffer = current
         ? codes.some((code) => code.brandId === current.id && code.scopeKind === 'brand')
         : false;
-      if (!current || (hasOffer && !currentHasOffer)) byName.set(key, brand);
+      if (!current || (hasOffer && !currentHasOffer)) byBrand.set(key, brand);
     }
-    return [...byName.values()].filter((brand) => !hiddenBrandIds.has(brand.id));
+    return [...byBrand.values()].filter((brand) => !hiddenBrandIds.has(brand.id));
   }, [codes, hiddenBrandIds, storefront.brands]);
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('he-IL');
@@ -327,10 +345,8 @@ export function CreatorStorefrontView({
         )
         .filter(Boolean) ?? [],
     );
-    const cardBrandNames = new Set(
-      displayBrands
-        .filter((brand) => (label?.brandIds ?? []).includes(brand.id))
-        .map((brand) => brandKey(brand.name)),
+    const cardBrands = displayBrands.filter((brand) =>
+      (label?.brandIds ?? []).includes(brand.id),
     );
     return visibleRecommendations.filter((item) => {
       const matchesLabel =
@@ -339,7 +355,7 @@ export function CreatorStorefrontView({
           ? item.category.slug === label.categorySlug
           : label.recommendationIds.includes(item.id) ||
             collectionRecommendationIds.has(item.id) ||
-            cardBrandNames.has(brandKey(item.brandName)));
+            cardBrands.some((brand) => brandMatchesRecommendation(brand, item)));
       const matchesSearch =
         !term ||
         [item.productName, item.brandName, item.review.value, item.category.name].some(
@@ -356,10 +372,23 @@ export function CreatorStorefrontView({
     visibleCuratedSections,
   ]);
   const rows = useMemo(() => {
-    const brandNames = new Set(displayBrands.map(({ name }) => brandKey(name)));
+    const cardBrands = displayBrands;
+    const sectionRecommendationIds = new Set(
+      orderedStorefront.curatedSections
+        .filter(({ kind }) => kind !== 'page')
+        .flatMap((section) =>
+          sectionContentRecommendations(section, orderedStorefront, filtered).map(
+            ({ id }) => id,
+          ),
+        ),
+    );
     return groupRecommendations(
       orderedStorefront,
-      filtered.filter(({ brandName }) => !brandNames.has(brandKey(brandName))),
+      filtered.filter(
+        (item) =>
+          sectionRecommendationIds.has(item.id) ||
+          !cardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
+      ),
     );
   }, [displayBrands, filtered, orderedStorefront]);
   const activeLabel = labels.find(({ id }) => id === activeLabelId) ?? null;
@@ -376,10 +405,12 @@ export function CreatorStorefrontView({
     ) {
       return [];
     }
-    const cardBrandNames = new Set(
-      selectedCardBrands.map((brand) => brandKey(brand.name)),
+    // A selected brand keeps Home's regular brand card. Only recommendations
+    // that are not owned by one of those brand cards use the Home product rail.
+    return filtered.filter(
+      (item) =>
+        !selectedCardBrands.some((brand) => brandMatchesRecommendation(brand, item)),
     );
-    return filtered.filter((item) => !cardBrandNames.has(brandKey(item.brandName)));
   }, [activeLabel, filtered, selectedCardBrands]);
   const showingCompactLabelGrid = Boolean(
     activeLabel && !activeLabel.categorySlug && (activeLabel.layout ?? 'grid') === 'grid',
@@ -400,7 +431,7 @@ export function CreatorStorefrontView({
     for (const layer of contentOrder) {
       if (layer.kind === 'media') {
         if (activeLabelId) continue;
-        const media = visibleFeaturedMedia.find(({ id }) => id === layer.id);
+        const media = standaloneFeaturedMedia.find(({ id }) => id === layer.id);
         if (media) result.push({ key: `media:${media.id}`, layer, media });
       } else if (layer.kind === 'discount') {
         const index = remainingCodes.findIndex(({ id }) => id === layer.id);
@@ -427,7 +458,7 @@ export function CreatorStorefrontView({
       }),
     );
     return result;
-  }, [activeLabelId, rows, codes, contentOrder, visibleFeaturedMedia]);
+  }, [activeLabelId, rows, codes, contentOrder, standaloneFeaturedMedia]);
   const validTargets = new Set([
     ...displayBrands.map(({ id }) => id),
     ...rows.map(({ key }) => key),
@@ -581,6 +612,12 @@ export function CreatorStorefrontView({
       <div
         className="creatorStorefrontCanvas"
         data-mobile-preview={isMobilePreview}
+        data-template={previewTheme.templateId ?? 'classic'}
+        data-header-style={previewTheme.headerStyle ?? 'classic'}
+        data-label-frame={previewTheme.labelsFrame ?? true}
+        data-heading-font={previewTheme.headingFont ?? 'display'}
+        data-body-font={previewTheme.bodyFont ?? 'aptos'}
+        data-bio-align={previewTheme.bioAlign ?? 'center'}
         data-editing-content={canEdit && !previewMode && editingContent}
         onClickCapture={(event) => {
           if (
@@ -624,19 +661,19 @@ export function CreatorStorefrontView({
         }}
         style={
           {
-            '--sf-profile': previewTheme.profileBackground,
+            '--sf-profile': previewTheme.recommendationsBackground,
             '--sf-profile-image': profileImageUrl
               ? `url("${profileImageUrl.replace(/["\\)]/g, '')}")`
               : 'none',
             '--sf-page': previewTheme.recommendationsBackground,
             '--sf-divider': previewTheme.dividerColor,
             '--sf-product': previewTheme.productBackground,
-            '--sf-discount': previewTheme.discountBackground,
-            '--sf-collection': previewTheme.collectionBackground,
+            '--sf-discount': previewTheme.productBackground,
+            '--sf-collection': previewTheme.productBackground,
             '--sf-accent': previewTheme.accentColor,
             '--sf-accent-ink': textOnAccent(previewTheme.accentColor),
             '--sf-text': previewTheme.textColor,
-          } as CSSProperties
+          } as StorefrontCanvasStyle
         }
       >
         {trackStorefrontView ? <StorefrontViewTracker creatorId={storefront.id} /> : null}
@@ -651,15 +688,16 @@ export function CreatorStorefrontView({
         >
           <StorefrontRegion>
             <StorefrontSlot id="profile" label="Profile" kind="profile">
+              <span aria-hidden="true" className="referenceStorefrontHeroImage" />
               <div className="referenceStorefrontInner">
                 <span className="referenceStorefrontAvatar">
-                  {storefront.avatarUrl ? (
+                  {avatarImageUrl ? (
                     <Image
                       alt={`${storefront.displayName} profile photo`}
                       fill
                       priority
                       sizes="180px"
-                      src={publicAssetUrl(storefront.avatarUrl)}
+                      src={avatarImageUrl}
                       unoptimized
                     />
                   ) : (
@@ -742,6 +780,7 @@ export function CreatorStorefrontView({
           </StorefrontRegion>
 
           <StorefrontRegion>
+            {!showingCompactLabelGrid ? renderTitles(null) : null}
             {labels.length ? (
               <StorefrontSlot id="labels" label="Labels">
                 <nav aria-label="Store filters" className="referenceStorefrontLabels">
@@ -793,9 +832,10 @@ export function CreatorStorefrontView({
                       )}
                       creatorId={storefront.id}
                       discountCodes={codes}
+                      editorial={editorialFrame}
                       handle={storefront.handle}
-                      items={filtered.filter(
-                        (item) => brandKey(item.brandName) === brandKey(brand.name),
+                      items={filtered.filter((item) =>
+                        brandMatchesRecommendation(brand, item),
                       )}
                       key={brand.id}
                       offer={
@@ -807,16 +847,36 @@ export function CreatorStorefrontView({
                     />
                   ))}
                   {compactLabelItems.length ? (
-                    <div className="referenceCompactLabelGrid">
-                      {compactLabelItems.map((item) => (
-                        <RecommendationCardView
-                          creatorId={storefront.id}
-                          key={item.id}
-                          recommendation={item}
-                          showBrand
-                          showPrice={false}
-                        />
-                      ))}
+                    <div className="referenceCompactLabelStandaloneList">
+                      {compactLabelItems.map((item) => {
+                        const brand = displayBrands.find((candidate) =>
+                          brandMatchesRecommendation(candidate, item),
+                        );
+                        const discount =
+                          item.discount ??
+                          codes.find(
+                            (code) =>
+                              code.scopeKind === 'item' && code.scopeId === item.id,
+                          ) ??
+                          null;
+                        return brand ? (
+                          <StandaloneRecommendationCard
+                            brand={brand}
+                            discount={discount}
+                            handle={storefront.handle}
+                            item={item}
+                            key={item.id}
+                          />
+                        ) : (
+                          <RecommendationCardView
+                            creatorId={storefront.id}
+                            key={item.id}
+                            recommendation={item}
+                            showBrand
+                            showPrice={false}
+                          />
+                        );
+                      })}
                     </div>
                   ) : null}
                 </div>
@@ -826,9 +886,7 @@ export function CreatorStorefrontView({
               ? displayBrands
                   .filter((brand) =>
                     activeLabelId
-                      ? filtered.some(
-                          (item) => brandKey(item.brandName) === brandKey(brand.name),
-                        )
+                      ? filtered.some((item) => brandMatchesRecommendation(brand, item))
                       : true,
                   )
                   .sort((a, b) => {
@@ -854,9 +912,10 @@ export function CreatorStorefrontView({
                             )}
                             creatorId={storefront.id}
                             discountCodes={codes}
+                            editorial={editorialFrame}
                             handle={storefront.handle}
-                            items={filtered.filter(
-                              (item) => brandKey(item.brandName) === brandKey(brand.name),
+                            items={filtered.filter((item) =>
+                              brandMatchesRecommendation(brand, item),
                             )}
                             offer={
                               codes.find(
@@ -913,9 +972,17 @@ export function CreatorStorefrontView({
               ? null
               : !showingCompactLabelGrid
                 ? blocks.map(({ key, row, code, media }) => {
+                    const isCarousel = Boolean(
+                      row &&
+                      visibleCuratedSections.some(
+                        (section) => section.id === row.key && section.kind === 'section',
+                      ),
+                    );
                     const productContent = row ? (
                       <StorefrontRow
+                        carousel={isCarousel}
                         creatorId={storefront.id}
+                        editorial={editorialFrame}
                         framed={row.framed}
                         pages={visibleCuratedSections.filter(
                           (section) =>
@@ -923,13 +990,23 @@ export function CreatorStorefrontView({
                             section.parentCollectionId === row.key,
                         )}
                         recommendations={row.items}
+                        featuredMedia={row.media ?? []}
+                        displayStyle={row.displayStyle ?? 'horizontal'}
                         storefrontHandle={storefront.handle}
                         title={row.title}
                       />
                     ) : code ? (
-                      <DiscountBlock code={code} />
+                      <DiscountBlock
+                        brandLogoUrl={
+                          code.brandId
+                            ? (storefront.brands.find(({ id }) => id === code.brandId)
+                                ?.logoUrl ?? null)
+                            : null
+                        }
+                        code={code}
+                      />
                     ) : media ? (
-                      <FeaturedMediaBlock media={media} />
+                      <FeaturedMediaBlock editorial={editorialFrame} media={media} />
                     ) : null;
                     return (
                       <Fragment key={key}>
@@ -949,7 +1026,6 @@ export function CreatorStorefrontView({
                     );
                   })
                 : null}
-            {!showingCompactLabelGrid ? renderTitles(null) : null}
           </StorefrontRegion>
         </StorefrontLayout>
       </div>
@@ -975,7 +1051,7 @@ function StandaloneRecommendationCard({
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div className="referenceStandaloneRecommendationContent" dir="auto">
+      <div className="referenceStandaloneRecommendationContent" dir="ltr">
         <div className="referenceStandaloneRecommendationTopline">
           <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
           {value ? <span>{value}</span> : null}
@@ -1010,10 +1086,23 @@ function StandaloneRecommendationCard({
   );
 }
 
-function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
+function FeaturedMediaBlock({
+  editorial = false,
+  media,
+}: {
+  editorial?: boolean;
+  media: FeaturedMedia;
+}) {
+  if (media.provider === 'maps') return <MapRecommendationCard media={media} />;
+  if (editorial) return <EditorialMediaCard media={media} />;
   const embedUrl = featuredMediaEmbedUrl(media);
+  if (media.provider === 'instagram') {
+    return <InstagramMediaCard media={media} />;
+  }
   return (
-    <article className="featuredMediaBlock">
+    <article
+      className={`featuredMediaBlock${embedUrl ? ' featuredMediaBlockEmbed' : ''}`}
+    >
       {media.thumbnailUrl && !embedUrl ? (
         <div className="featuredMediaCover">
           <Image
@@ -1026,7 +1115,7 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
         </div>
       ) : null}
       {media.displayMode === 'embed' && embedUrl ? (
-        <div className="featuredMediaEmbed">
+        <div className={`featuredMediaEmbed featuredMediaEmbed-${media.provider}`}>
           <iframe
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
@@ -1068,6 +1157,188 @@ function FeaturedMediaBlock({ media }: { media: FeaturedMedia }) {
   );
 }
 
+function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
+  return (
+    <article className="featuredMapCard">
+      <div className="featuredMapCopy" dir="auto">
+        <strong>{media.title}</strong>
+        {media.location ? <span>{media.location}</span> : null}
+        <a
+          aria-label={`Open ${media.title} in Google Maps`}
+          className="featuredMapLink"
+          href={media.url}
+          rel="noopener noreferrer"
+          target="_blank"
+          title="Open in Google Maps"
+        >
+          <span>Open map</span>
+          <ExternalLink aria-hidden="true" size={13} />
+        </a>
+      </div>
+      <div className="featuredMapArtwork" aria-hidden="true">
+        {media.thumbnailUrl ? (
+          <Image alt="" fill sizes="112px" src={media.thumbnailUrl} unoptimized />
+        ) : (
+          <MapPinned size={28} />
+        )}
+      </div>
+    </article>
+  );
+}
+
+function EditorialMediaCard({ media }: { media: FeaturedMedia }) {
+  const [expanded, setExpanded] = useState(false);
+  const embedUrl = featuredMediaEmbedUrl(media);
+  const canEmbed = media.displayMode === 'embed' && Boolean(embedUrl);
+  const providerName =
+    media.provider === 'apple_music'
+      ? 'Apple Music'
+      : media.provider === 'youtube'
+        ? 'YouTube'
+        : media.provider === 'tiktok'
+          ? 'TikTok'
+          : media.provider === 'spotify'
+            ? 'Spotify'
+            : 'Instagram';
+  const summary = (
+    <>
+      <span className="editorialMediaArtwork">
+        {media.thumbnailUrl ? (
+          <Image alt="" fill sizes="96px" src={media.thumbnailUrl} unoptimized />
+        ) : (
+          <span className="editorialMediaArtworkFallback" aria-hidden="true">
+            {media.provider === 'spotify' || media.provider === 'apple_music' ? (
+              <Music2 size={26} />
+            ) : (
+              <Play size={26} />
+            )}
+          </span>
+        )}
+        <span className="editorialMediaPlay" aria-hidden="true">
+          <Play size={13} fill="currentColor" />
+        </span>
+      </span>
+      <span className="editorialMediaCopy" dir="auto">
+        <small>{providerName}</small>
+        <strong>{media.title}</strong>
+      </span>
+      <ChevronRight aria-hidden="true" className="editorialMediaArrow" size={20} />
+    </>
+  );
+  return (
+    <article className="editorialMediaCard" data-provider={media.provider}>
+      {canEmbed ? (
+        <button
+          aria-expanded={expanded}
+          aria-label={`${expanded ? 'Hide' : 'Play'} ${media.title}`}
+          className="editorialMediaSummary"
+          onClick={() => setExpanded((current) => !current)}
+          type="button"
+        >
+          {summary}
+        </button>
+      ) : (
+        <a
+          aria-label={`Open ${media.title} on ${providerName}`}
+          className="editorialMediaSummary"
+          href={media.url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {summary}
+        </a>
+      )}
+      {canEmbed && expanded && embedUrl ? (
+        <div className="editorialMediaPlayer">
+          <iframe
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            src={embedUrl}
+            title={media.title}
+          />
+          <a href={media.url} rel="noopener noreferrer" target="_blank">
+            Open on {providerName} ↗
+          </a>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function InstagramMediaCard({ media }: { media: FeaturedMedia }) {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const isReel = /\/reel\//u.test(media.url);
+  return (
+    <article className="featuredMediaBlock featuredInstagramMedia">
+      <div className="featuredInstagramMediaPreview">
+        {media.thumbnailUrl ? (
+          <button
+            aria-label={
+              isReel ? 'Enlarge Instagram Reel preview' : 'Enlarge Instagram post preview'
+            }
+            className="featuredInstagramMediaButton"
+            onClick={() => setIsPreviewOpen(true)}
+            type="button"
+          >
+            <Image
+              alt={media.title}
+              fill
+              sizes="(max-width: 700px) 100vw, 640px"
+              src={media.thumbnailUrl}
+              unoptimized
+            />
+            <span className="featuredInstagramMediaPlay" aria-hidden="true">
+              {isReel ? '▶' : '＋'}
+            </span>
+          </button>
+        ) : (
+          <div className="featuredInstagramMediaFallback">
+            <span className="featuredInstagramMediaIcon">◎</span>
+            <strong>{isReel ? 'Instagram Reel' : 'Instagram post'}</strong>
+            <small>Open on Instagram to view the original</small>
+          </div>
+        )}
+      </div>
+      <a
+        className="featuredInstagramMediaExternal"
+        href={media.url}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <span>Open on Instagram</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+      {isPreviewOpen && media.thumbnailUrl ? (
+        <div
+          aria-label="Instagram media preview"
+          aria-modal="true"
+          className="featuredInstagramMediaDialog"
+          onClick={() => setIsPreviewOpen(false)}
+          role="dialog"
+        >
+          <button
+            aria-label="Close preview"
+            className="featuredInstagramMediaDialogClose"
+            onClick={() => setIsPreviewOpen(false)}
+            type="button"
+          >
+            ×
+          </button>
+          <Image
+            alt={media.title}
+            fill
+            sizes="100vw"
+            src={media.thumbnailUrl}
+            unoptimized
+          />
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 function featuredMediaEmbedUrl(media: FeaturedMedia): string | null {
   try {
     const url = new URL(media.url);
@@ -1081,6 +1352,13 @@ function featuredMediaEmbedUrl(media: FeaturedMedia): string | null {
     }
     if (media.provider === 'instagram' && /^\/(?:p|reel)\//u.test(url.pathname)) {
       return `https://www.instagram.com${url.pathname.replace(/\/$/, '')}/embed/`;
+    }
+    if (
+      media.provider === 'tiktok' &&
+      ['tiktok.com', 'm.tiktok.com'].includes(url.hostname.replace(/^www\./, ''))
+    ) {
+      const id = url.pathname.match(/\/video\/(\d+)/u)?.[1];
+      return id ? `https://www.tiktok.com/player/v1/${id}?description=1` : null;
     }
     if (
       media.provider === 'spotify' &&
@@ -1113,15 +1391,15 @@ function SingleBrandProductCard({
   return (
     <Link
       aria-label={`View ${item.productName} at ${brand.name}`}
-      className="referenceBrandSingleProduct"
+      className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
-      <div className="referenceBrandSingleProductCopy" dir="auto">
-        <div className="referenceBrandSingleProductMeta">
-          <span>{brand.name}</span>
-          {offerValue(offer) ? <strong>{offerValue(offer)}</strong> : null}
+      <div className="referenceStandaloneRecommendationContent" dir="ltr">
+        <div className="referenceStandaloneRecommendationTopline">
+          <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+          {offerValue(offer) ? <span>{offerValue(offer)}</span> : null}
         </div>
-        <div className="referenceBrandSingleProductOffer">
+        <div className="referenceStandaloneRecommendationOffer">
           <span
             className={`referenceDiscountExpiry${offer.expiresAt ? '' : ' is-empty'}`}
           >
@@ -1137,9 +1415,9 @@ function SingleBrandProductCard({
           )}
         </div>
         <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
-        {offer.details ? <p>{offer.details.value}</p> : null}
+        {offer.details ? <small>{offer.details.value}</small> : null}
       </div>
-      <div className="referenceBrandSingleProductImage">
+      <div className="referenceStandaloneRecommendationImage">
         <Image
           alt={item.productName}
           fill
@@ -1157,6 +1435,7 @@ function BrandBlock({
   collections,
   creatorId,
   discountCodes,
+  editorial = false,
   handle,
   items,
   offer,
@@ -1165,6 +1444,7 @@ function BrandBlock({
   collections: CreatorStorefront['curatedSections'];
   creatorId: string;
   discountCodes: PublicDiscountCode[];
+  editorial?: boolean;
   handle: string;
   items: RecommendationCard[];
   offer: PublicDiscountCode | null;
@@ -1178,6 +1458,115 @@ function BrandBlock({
       .flatMap(({ recommendationIds }) => recommendationIds),
   );
   const standaloneItems = items.filter(({ id }) => !collectedIds.has(id));
+  if (editorial) {
+    return (
+      <section
+        className="editorialBrandCard"
+        data-brand-only={collections.length + standaloneItems.length === 0}
+      >
+        <header>
+          <a
+            aria-label={`Visit ${brand.name}`}
+            className="editorialBrandHeaderLink"
+            href={brand.websiteUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span className="editorialBrandMark">
+              {brand.logoUrl ? (
+                <Image
+                  alt=""
+                  fill
+                  sizes="72px"
+                  src={publicAssetUrl(brand.logoUrl)}
+                  unoptimized
+                />
+              ) : (
+                <span aria-hidden="true">{brand.name.slice(0, 1).toUpperCase()}</span>
+              )}
+            </span>
+            <span className="editorialBrandHeading">
+              <strong>{brand.name}</strong>
+              {offer && offerValue(offer) ? (
+                <span className="editorialBrandOfferValue">{offerValue(offer)}</span>
+              ) : null}
+              {offer?.code ? (
+                <span className="editorialBrandCode">
+                  Use code <b>{offer.code}</b>
+                </span>
+              ) : null}
+              {offer?.expiresAt ? (
+                <span className="editorialBrandExpiry">
+                  Discount expires {formatOfferDate(offer.expiresAt)}
+                </span>
+              ) : null}
+            </span>
+            <ChevronRight aria-hidden="true" className="editorialBrandArrow" size={20} />
+          </a>
+        </header>
+        {offer?.details ? (
+          <p className="editorialBrandDetails" dir={offer.details.direction}>
+            {offer.details.value}
+          </p>
+        ) : null}
+        {storyClips.length ? (
+          <div className="referenceBrandVideoRail" aria-label={`${brand.name} videos`}>
+            {storyClips.map((clip) => (
+              <video
+                key={clip.id}
+                controls
+                playsInline
+                preload="metadata"
+                src={clip.url}
+                aria-label={`${brand.name} video ${clip.position + 1}`}
+              />
+            ))}
+          </div>
+        ) : null}
+        {collections.length || standaloneItems.length ? (
+          <div
+            className="referenceBrandShelf editorialBrandShelf"
+            data-item-count={collections.length + standaloneItems.length}
+          >
+            {collections.map((collection) => {
+              const firstItem = collection.recommendationIds.flatMap(
+                (id) => items.find((item) => item.id === id) ?? [],
+              )[0];
+              const cover = collection.imageUrl || firstItem?.imageUrl;
+              const textDirection = textDirectionFor(collection.title);
+              return (
+                <Link
+                  aria-label={`View collection ${collection.title}`}
+                  className="referenceBrandCollectionCard editorialCollectionTile"
+                  data-text-direction={textDirection}
+                  href={`/${encodeURIComponent(handle)}/pages/${collection.id}`}
+                  key={collection.id}
+                >
+                  <span className="referenceBrandCardImage editorialCollectionImage">
+                    {cover ? (
+                      <Image alt="" fill sizes="160px" src={cover} unoptimized />
+                    ) : (
+                      <span aria-hidden="true">{collection.title.slice(0, 1)}</span>
+                    )}
+                  </span>
+                  <strong dir={textDirection}>{collection.title}</strong>
+                </Link>
+              );
+            })}
+            {standaloneItems.map((item) => (
+              <RecommendationCardView
+                creatorId={creatorId}
+                hideDiscount={offer?.id === item.discount?.id}
+                key={item.id}
+                recommendation={item}
+                showPrice={false}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
+    );
+  }
   if (items.length === 1 && collections.length === 0) {
     const item = items[0]!;
     if (offer) {
@@ -1201,10 +1590,16 @@ function BrandBlock({
     );
   }
   const isBrandOnly = collections.length === 0 && standaloneItems.length === 0;
+  if (isBrandOnly && offer) {
+    return <BrandOnlyRecommendationCard brand={brand} offer={offer} />;
+  }
   const brandLogoUrl = brand.logoUrl;
   return (
     <section
       className="referenceBrandBlock"
+      data-has-recommendations={
+        collections.length || standaloneItems.length ? 'true' : undefined
+      }
       data-brand-only={isBrandOnly ? 'true' : undefined}
       data-has-logo={isBrandOnly && brandLogoUrl ? 'true' : undefined}
     >
@@ -1312,6 +1707,64 @@ function BrandBlock({
   );
 }
 
+function BrandOnlyRecommendationCard({
+  brand,
+  offer,
+}: {
+  brand: CreatorStorefront['brands'][number];
+  offer: PublicDiscountCode;
+}) {
+  const logoUrl =
+    brand.logoUrl ||
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
+      new URL(brand.websiteUrl).hostname,
+    )}&sz=128`;
+  const textDirection = textDirectionFor(brand.name);
+  return (
+    <a
+      aria-label={`Visit ${brand.name}${offer.code ? ` with discount code ${offer.code}` : ''}`}
+      className="referenceStandaloneRecommendation referenceBrandRecommendation"
+      href={brand.websiteUrl}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      <div className="referenceStandaloneRecommendationContent" dir={textDirection}>
+        <div className="referenceStandaloneRecommendationTopline">
+          <p className="referenceStandaloneRecommendationBrand">{brand.name}</p>
+          <span>{offerValue(offer) || null}</span>
+        </div>
+        <div className="referenceStandaloneRecommendationOffer">
+          <span
+            className={`referenceDiscountExpiry${offer.expiresAt ? '' : ' is-empty'}`}
+          >
+            <span>Discount expires</span>
+            <strong>
+              {offer.expiresAt ? formatOfferDate(offer.expiresAt) : '\u00a0'}
+            </strong>
+          </span>
+          {offer.code ? (
+            <strong>{offer.code}</strong>
+          ) : (
+            <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+          )}
+        </div>
+        {offer.details ? (
+          <h3 dir={offer.details.direction}>{offer.details.value}</h3>
+        ) : null}
+      </div>
+      <div className="referenceStandaloneRecommendationImage">
+        <Image
+          alt={`${brand.name} logo`}
+          fill
+          sizes="(max-width: 620px) 42vw, 220px"
+          src={publicAssetUrl(logoUrl)}
+          unoptimized
+        />
+      </div>
+    </a>
+  );
+}
+
 function formatOfferDate(value: string): string {
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
@@ -1333,56 +1786,62 @@ function discountValue(
   return discount.label;
 }
 
-function DiscountBlock({ code }: { code: PublicDiscountCode }) {
+function DiscountBlock({
+  brandLogoUrl,
+  code,
+}: {
+  brandLogoUrl?: string | null;
+  code: PublicDiscountCode;
+}) {
   const brandName =
     code.merchantHostname
       .replace(/^www\./i, '')
       .split('.')[0]
       ?.replaceAll('-', ' ') || code.merchantName;
   const merchantUrl = code.merchantUrl || `https://${code.merchantHostname}`;
-  const logoUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(code.merchantHostname)}&sz=64`;
+  const logoUrl =
+    brandLogoUrl ||
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(code.merchantHostname)}&sz=64`;
   return (
     <section className="referenceStorefrontCodes referenceDiscountLayer">
-      <article>
-        <a
-          aria-label={`Visit ${brandName}${code.code ? ` with discount code ${code.code}` : ''}`}
-          className="referenceDiscountHitArea"
-          href={merchantUrl}
-          rel="noopener noreferrer"
-          target="_blank"
-        />
-        <div className="referenceDiscountIdentity">
-          <Image
-            alt=""
-            className="referenceDiscountLogo"
-            height={36}
-            src={logoUrl}
-            unoptimized
-            width={36}
-          />
-          <div>
-            <p>{brandName}</p>
-            <h3>{offerValue(code) || 'Brand offer'}</h3>
+      <a
+        aria-label={`Visit ${brandName}${code.code ? ` with discount code ${code.code}` : ''}`}
+        className="referenceStandaloneRecommendation referenceDiscountRecommendation"
+        href={merchantUrl}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <div className="referenceStandaloneRecommendationContent" dir="auto">
+          <div className="referenceStandaloneRecommendationTopline">
+            <p className="referenceStandaloneRecommendationBrand">{brandName}</p>
+            <span>{offerValue(code) || null}</span>
+          </div>
+          <div className="referenceStandaloneRecommendationOffer">
+            <span
+              className={`referenceDiscountExpiry${code.expiresAt ? '' : ' is-empty'}`}
+            >
+              <span>Discount expires</span>
+              <strong>
+                {code.expiresAt ? formatOfferDate(code.expiresAt) : '\u00a0'}
+              </strong>
+            </span>
+            {code.code ? (
+              <strong>{code.code}</strong>
+            ) : (
+              <span aria-hidden="true" className="referenceDiscountCodePlaceholder" />
+            )}
           </div>
         </div>
-        {code.code ? (
-          <p className="referenceDiscountCode">
-            <span>Code</span>
-            <strong>{code.code}</strong>
-          </p>
-        ) : (
-          <p className="referenceDiscountCode">
-            <span>Offer</span>
-            <strong>
-              {code.discountPercent
-                ? `${code.discountPercent}%`
-                : code.discountAmountMinor
-                  ? `₪${code.discountAmountMinor / 100}`
-                  : 'Active'}
-            </strong>
-          </p>
-        )}
-      </article>
+        <div className="referenceStandaloneRecommendationImage">
+          <Image
+            alt={`${brandName} logo`}
+            fill
+            sizes="(max-width: 620px) 42vw, 220px"
+            src={logoUrl}
+            unoptimized
+          />
+        </div>
+      </a>
     </section>
   );
 }
@@ -1394,14 +1853,22 @@ function offerValue(offer: PublicDiscountCode): string | null {
 }
 
 function StorefrontRow({
+  carousel = false,
   creatorId,
+  displayStyle,
+  editorial = false,
+  featuredMedia = [],
   framed,
   pages,
   recommendations,
   storefrontHandle,
   title,
 }: {
+  carousel?: boolean;
   creatorId: string;
+  displayStyle?: 'horizontal' | 'vertical';
+  editorial?: boolean;
+  featuredMedia?: FeaturedMedia[];
   framed?: boolean | undefined;
   pages: CreatorStorefront['curatedSections'];
   recommendations: RecommendationCard[];
@@ -1417,16 +1884,19 @@ function StorefrontRow({
   }
   return (
     <section
-      className={`referenceStorefrontRow${framed ? ' referenceCollectionFrame' : ''}`}
+      className={`referenceStorefrontRow${framed ? ' referenceCollectionFrame' : ''}${displayStyle === 'vertical' ? ' referenceStorefrontRowVertical' : ''}`}
+      data-carousel={carousel || undefined}
     >
       <header>
         <div>
-          <h3>{title}</h3>
-          <p>
-            {recommendations.length
-              ? `${recommendations.length} ${recommendations.length === 1 ? 'item' : 'items'}`
-              : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
-          </p>
+          <h3 className={carousel ? 'referenceCarouselTitle' : undefined}>{title}</h3>
+          {!carousel ? (
+            <p>
+              {recommendations.length + featuredMedia.length
+                ? `${recommendations.length + featuredMedia.length} ${recommendations.length + featuredMedia.length === 1 ? 'item' : 'items'}`
+                : `${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`}
+            </p>
+          ) : null}
         </div>
         {recommendations.length ? (
           <div>
@@ -1443,15 +1913,19 @@ function StorefrontRow({
           </div>
         ) : null}
       </header>
-      {recommendations.length ? (
+      {recommendations.length || featuredMedia.length ? (
         <div className="referenceStorefrontScroller" ref={row}>
           {recommendations.map((recommendation) => (
             <RecommendationCardView
               creatorId={creatorId}
+              hideDiscount={carousel}
               key={recommendation.id}
               recommendation={recommendation}
               showPrice={false}
             />
+          ))}
+          {featuredMedia.map((media) => (
+            <FeaturedMediaBlock editorial={editorial} key={media.id} media={media} />
           ))}
         </div>
       ) : null}
@@ -1473,6 +1947,43 @@ function StorefrontRow({
   );
 }
 
+function sectionContentRecommendations(
+  section: CreatorStorefront['curatedSections'][number],
+  storefront: CreatorStorefront,
+  recommendations: RecommendationCard[],
+) {
+  const contentItems = section.contentItems?.length
+    ? section.contentItems
+    : section.recommendationIds.map((id) => ({
+        id,
+        kind: 'recommendation' as const,
+      }));
+  const selectedIds = new Set<string>();
+  for (const content of contentItems) {
+    if (content.kind === 'recommendation') selectedIds.add(content.id);
+    if (content.kind === 'collection') {
+      const collection = storefront.curatedSections.find(
+        ({ id, kind }) => id === content.id && kind === 'collection',
+      );
+      collection?.recommendationIds.forEach((id) => selectedIds.add(id));
+    }
+    if (content.kind === 'brand') {
+      const brand = storefront.brands.find(({ id }) => id === content.id);
+      if (brand)
+        recommendations
+          .filter((item) => brandMatchesRecommendation(brand, item))
+          .forEach(({ id }) => selectedIds.add(id));
+    }
+  }
+  return recommendations.filter(({ id }) => selectedIds.has(id));
+}
+
+function isBrandOwnedCollection(
+  section: CreatorStorefront['curatedSections'][number],
+): boolean {
+  return section.kind === 'collection' && Boolean(section.brandId);
+}
+
 export function groupRecommendations(
   storefront: CreatorStorefront,
   recommendations: RecommendationCard[],
@@ -1488,7 +1999,11 @@ export function groupRecommendations(
     const curatedProductIds = new Set(
       curatedSections
         .filter(({ kind }) => kind !== 'page')
-        .flatMap(({ recommendationIds }) => recommendationIds),
+        .flatMap((section) =>
+          sectionContentRecommendations(section, storefront, recommendations).map(
+            ({ id }) => id,
+          ),
+        ),
     );
     const used = new Set<string>();
     const rows: Array<{
@@ -1496,19 +2011,38 @@ export function groupRecommendations(
       key: string;
       title: string;
       framed?: boolean;
+      media?: FeaturedMedia[];
+      displayStyle?: 'horizontal' | 'vertical';
     }> = [];
     for (const layer of contentOrder) {
       if (layer.kind === 'collection' || layer.kind === 'section') {
         const section = curatedSections.find(
           ({ id, kind }) => id === layer.id && kind === layer.kind,
         );
-        const items =
-          section?.recommendationIds.flatMap(
-            (id) => recommendations.find((item) => item.id === id) ?? [],
-          ) ?? [];
+        if (!section) continue;
+        if (isBrandOwnedCollection(section)) {
+          sectionContentRecommendations(section, storefront, recommendations).forEach(
+            ({ id }) => used.add(id),
+          );
+          continue;
+        }
+        const contentItems = section?.contentItems?.length
+          ? section.contentItems
+          : (section?.recommendationIds ?? []).map((id) => ({
+              id,
+              kind: 'recommendation' as const,
+            }));
+        const items = sectionContentRecommendations(section, storefront, recommendations);
+        const media = contentItems
+          .filter(({ kind }) => kind === 'media')
+          .flatMap(
+            ({ id }) =>
+              (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+          );
         items.forEach(({ id }) => used.add(id));
         if (
           items.length ||
+          media.length ||
           curatedSections.some(
             (page) => page.kind === 'page' && page.parentCollectionId === layer.id,
           )
@@ -1517,7 +2051,9 @@ export function groupRecommendations(
             items,
             key: layer.id,
             title: section?.title ?? 'Collection',
-            framed: layer.kind === 'collection',
+            framed: true,
+            media,
+            displayStyle: section?.displayStyle ?? 'horizontal',
           });
       } else if (layer.kind === 'recommendation') {
         const item = recommendations.find(
@@ -1545,12 +2081,29 @@ export function groupRecommendations(
     for (const section of curatedSections.filter(({ kind }) => kind !== 'page')) {
       if (contentOrder.some(({ kind, id }) => kind === section.kind && id === section.id))
         continue;
-      const items = section.recommendationIds.flatMap(
-        (id) => recommendations.find((item) => item.id === id) ?? [],
-      );
+      if (isBrandOwnedCollection(section)) {
+        sectionContentRecommendations(section, storefront, recommendations).forEach(
+          ({ id }) => used.add(id),
+        );
+        continue;
+      }
+      const contentItems = section.contentItems?.length
+        ? section.contentItems
+        : section.recommendationIds.map((id) => ({
+            id,
+            kind: 'recommendation' as const,
+          }));
+      const items = sectionContentRecommendations(section, storefront, recommendations);
+      const media = contentItems
+        .filter(({ kind }) => kind === 'media')
+        .flatMap(
+          ({ id }) =>
+            (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+        );
       items.forEach(({ id }) => used.add(id));
       if (
         items.length ||
+        media.length ||
         curatedSections.some(
           (page) => page.kind === 'page' && page.parentCollectionId === section.id,
         )
@@ -1559,7 +2112,9 @@ export function groupRecommendations(
           items,
           key: section.id,
           title: section.title,
-          framed: section.kind === 'collection',
+          framed: true,
+          media,
+          displayStyle: section.displayStyle,
         });
     }
     for (const category of sections) {
@@ -1589,14 +2144,33 @@ export function groupRecommendations(
     key: string;
     title: string;
     framed?: boolean;
+    media?: FeaturedMedia[];
+    displayStyle?: 'horizontal' | 'vertical';
   }> = curatedSections
     .filter(({ kind }) => kind !== 'page')
     .flatMap((section) => {
-      const items = section.recommendationIds.flatMap(
-        (id) => recommendations.find((item) => item.id === id) ?? [],
-      );
+      if (isBrandOwnedCollection(section)) {
+        sectionContentRecommendations(section, storefront, recommendations).forEach(
+          ({ id }) => used.add(id),
+        );
+        return [];
+      }
+      const contentItems = section.contentItems?.length
+        ? section.contentItems
+        : section.recommendationIds.map((id) => ({
+            id,
+            kind: 'recommendation' as const,
+          }));
+      const items = sectionContentRecommendations(section, storefront, recommendations);
+      const media = contentItems
+        .filter(({ kind }) => kind === 'media')
+        .flatMap(
+          ({ id }) =>
+            (storefront.featuredMedia ?? []).find((item) => item.id === id) ?? [],
+        );
       if (
         !items.length &&
+        !media.length &&
         !curatedSections.some(
           (page) => page.kind === 'page' && page.parentCollectionId === section.id,
         )
@@ -1608,7 +2182,9 @@ export function groupRecommendations(
           items,
           key: section.id,
           title: section.title,
-          framed: section.kind === 'collection',
+          framed: true,
+          media,
+          displayStyle: section.displayStyle,
         },
       ];
     });
@@ -1642,6 +2218,14 @@ function brandKey(value: string): string {
     .replace(/[’'`´]/gu, '')
     .replace(/[^\p{L}\p{N}]/gu, '')
     .toLocaleLowerCase('he-IL');
+}
+
+function brandMatchesRecommendation(
+  brand: { brandId: string; name: string },
+  recommendation: { brandId?: string | null; brandName: string },
+): boolean {
+  if (recommendation.brandId) return brand.brandId === recommendation.brandId;
+  return brandKey(brand.name) === brandKey(recommendation.brandName);
 }
 
 async function loadCreatorInventory<T>(path: string): Promise<T[]> {

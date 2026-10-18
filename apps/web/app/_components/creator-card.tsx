@@ -40,7 +40,7 @@ export function CreatorCardView({ creator }: CreatorCardViewProps) {
             ) : null}
           </div>
         </div>
-        <p className="creatorCategory">{creator.primaryCategory.name} creator</p>
+        <p className="creatorCategory">{creator.primaryCategory?.name ?? 'Creator'}</p>
         <p className="creatorBio" dir={creator.bio.direction} lang={creator.bio.language}>
           {creator.bio.value}
         </p>

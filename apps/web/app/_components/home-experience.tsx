@@ -8,13 +8,14 @@ import {
   ArrowRight,
   Camera,
   Check,
-  ChevronRight,
+  ExternalLink,
   Grid2X2,
   GripVertical,
+  Headphones,
   Link as LinkIcon,
+  MapPin,
   Play,
   Video,
-  X,
 } from 'lucide-react';
 import styles from '../home.module.css';
 
@@ -31,48 +32,160 @@ const assets = {
   bowl: '/images/home/bowl.jpg',
   fashionCollection: '/images/home/fashion-collection.jpg',
   kitchenCollection: '/images/home/kitchen-collection.jpg',
+  rotemDressNeutral: '/images/home/rotem-dress-v2.png',
+  rotemJeansNeutral: '/images/home/rotem-jeans-v2.png',
+  rotemBagNeutral: '/images/home/rotem-bag-v2.png',
+  rotemSunglassesNeutral: '/images/home/rotem-sunglasses-v2.png',
+  noahBoots: '/images/home/noah-boots.png',
+  noahPack: '/images/home/noah-pack.png',
+  noahTote: '/images/home/noah-tote.png',
+  noahMug: '/images/home/noah-mug.png',
 };
 type Product = { name: string; image: string };
-const danielProducts: Product[] = [
-  { name: 'Compact camera', image: assets.camera },
-  { name: 'Table lamp', image: assets.lamp },
-  { name: 'Lounge chair', image: assets.chair },
-  { name: 'Ceramic mug', image: assets.mug },
-];
-const fashionProducts: Product[] = [
-  { name: 'Everyday shoulder bag', image: assets.bag },
-  { name: 'Everyday sneakers', image: assets.shoes },
-];
-const kitchenProducts: Product[] = [
-  { name: 'Ceramic bowl', image: assets.bowl },
-  { name: 'Pour over set', image: assets.pour },
-];
-const creators = [
+type BrandRecommendation = {
+  brand: string;
+  discount: string;
+  code: string;
+  expires: string;
+  products: Product[];
+};
+type CreatorMedia =
+  | { type: 'video'; title: string; detail: string; image: string }
+  | { type: 'podcast'; title: string; detail: string; image: string }
+  | { type: 'map'; title: string; location: string; detail: string };
+type CreatorExample = {
+  name: string;
+  handle: string;
+  details: string;
+  bio: string;
+  image: string;
+  theme: string;
+  background: string;
+  ink: string;
+  labels: string[];
+  recommendations: BrandRecommendation[];
+  media: CreatorMedia;
+};
+
+const creators: CreatorExample[] = [
   {
-    name: 'Daniel Parks',
-    handle: 'danielparks',
-    details: 'Photo · Home · Everyday life',
-    image: '/images/home/daniel.jpg',
-    theme: 'daniel',
-    products: danielProducts,
+    name: 'Rotem Cohen',
+    handle: 'rotemcohen',
+    details: 'Style · Everyday · Finds',
+    bio: '',
+    image: '/images/home/rotem-profile-v3.png',
+    theme: 'rotem',
+    background: '#d99a78',
+    ink: '#173c38',
+    labels: ['All', 'Fashion', 'Sports', 'Random', 'Favs'],
+    recommendations: [
+      {
+        brand: 'Vela Thread',
+        discount: '20% off',
+        code: 'Rotem20',
+        expires: '17/10/2026',
+        products: [
+          { name: 'Softline Dress', image: assets.rotemDressNeutral },
+          { name: 'Daylight Denim', image: assets.rotemJeansNeutral },
+        ],
+      },
+      {
+        brand: 'Morrow Edit',
+        discount: '15% off',
+        code: 'Morrow15',
+        expires: '24/10/2026',
+        products: [
+          { name: 'Luna Structured Bag', image: assets.rotemBagNeutral },
+          { name: 'Dune Sunglasses', image: assets.rotemSunglassesNeutral },
+        ],
+      },
+    ],
+    media: {
+      type: 'video',
+      title: "Rotem Cohen's Style Notes",
+      detail: 'A few favorite looks · 8 min',
+      image: '/images/home/rotem-style-notes-v3.png',
+    },
   },
   {
-    name: 'Maren Louise',
-    handle: 'marenlouise',
-    details: 'Style · Wardrobe · Travel',
-    image: '/images/home/maren-v2.jpg',
-    theme: 'maren',
-    products: fashionProducts,
-  },
-  {
-    name: 'Miya',
-    handle: 'chefmiya',
-    details: 'Food · Home · Simple living',
+    name: 'Mia Chen',
+    handle: 'miachen',
+    details: '',
+    bio: 'Small rituals and thoughtful pieces for home.',
     image: '/images/home/miya.jpg',
-    theme: 'miya',
-    products: kitchenProducts,
+    theme: 'mia',
+    background: '#a9b6a0',
+    ink: '#243e36',
+    labels: ['All', 'Home', 'Coffee', 'Lifestyle', 'Favs'],
+    recommendations: [
+      {
+        brand: 'Cedar & Steam',
+        discount: '20% off',
+        code: 'Mia20',
+        expires: '25/11/2026',
+        products: [
+          { name: 'Slow Pour Kettle', image: assets.pour },
+          { name: 'Sunday Cup Set', image: assets.mug },
+        ],
+      },
+      {
+        brand: 'Quiet Kiln',
+        discount: '15% off',
+        code: 'Kiln15',
+        expires: '02/12/2026',
+        products: [
+          { name: 'Hearth Bowl', image: assets.bowl },
+          { name: 'Evening Lamp', image: assets.lamp },
+        ],
+      },
+    ],
+    media: {
+      type: 'podcast',
+      title: 'A Slower Morning',
+      detail: 'A gentle start to the day · 28 min',
+      image: assets.coffee,
+    },
   },
-] as const;
+  {
+    name: 'Noah Carter',
+    handle: 'noahcarter',
+    details: '',
+    bio: 'Places worth the walk, and the gear I take along.',
+    image: '/images/home/noah-trail-demo.png',
+    theme: 'noah',
+    background: '#68899b',
+    ink: '#f8f6ef',
+    labels: ['All', 'Outdoors', 'Travel', 'Gear', 'Favs'],
+    recommendations: [
+      {
+        brand: 'Northpath Supply',
+        discount: '25% off',
+        code: 'Noah25',
+        expires: '31/12/2026',
+        products: [
+          { name: 'Ridge Hiker', image: assets.noahBoots },
+          { name: 'Waypoint Pack', image: assets.noahPack },
+        ],
+      },
+      {
+        brand: 'Summit Field',
+        discount: '20% off',
+        code: 'Summit20',
+        expires: '10/01/2027',
+        products: [
+          { name: 'Trail Tote', image: assets.noahTote },
+          { name: 'Camp Mug', image: assets.noahMug },
+        ],
+      },
+    ],
+    media: {
+      type: 'map',
+      title: 'Alpine Lake Loop',
+      location: 'Dolomites',
+      detail: 'A quiet route with a lakeside stop.',
+    },
+  },
+];
 
 function ProductGrid({ products }: { products: Product[] }) {
   return (
@@ -94,88 +207,153 @@ function ProductGrid({ products }: { products: Product[] }) {
   );
 }
 
-function CollectionTile({ kitchen = false }: { kitchen?: boolean }) {
+function BrandRecommendation({
+  recommendation,
+}: {
+  recommendation: BrandRecommendation;
+}) {
   return (
-    <div className={styles.collectionTile}>
-      <div className={styles.collectionPhoto}>
-        <Image
-          src={kitchen ? assets.kitchenCollection : assets.fashionCollection}
-          alt={kitchen ? 'Coffee and tableware' : 'Curated everyday wardrobe'}
-          fill
-          sizes="320px"
-        />
+    <article className={styles.brandRecommendation}>
+      <div className={styles.brandRecommendationHeader}>
+        <strong>{recommendation.brand}</strong>
+        <div>
+          <span>{recommendation.discount}</span>
+          <small>{recommendation.code}</small>
+        </div>
       </div>
-      <div>
-        <strong>{kitchen ? 'Sunday table' : 'The Everyday Edit'}</strong>
-        <ChevronRight size={15} aria-hidden="true" />
-      </div>
-      <small>Collection · {kitchen ? '5' : '8'} picks</small>
-    </div>
+      <p>Discount expires {recommendation.expires}</p>
+      <ProductGrid products={recommendation.products} />
+    </article>
   );
 }
 
-function CreatorCard({
-  index,
-  demo = false,
-  collectionFirst = false,
-}: {
-  index: number;
-  demo?: boolean;
-  collectionFirst?: boolean;
-}) {
-  const creator = creators[index] ?? creators[0];
+function CreatorMediaPreview({ media }: { media: CreatorMedia }) {
+  if (media.type === 'map') {
+    return (
+      <article
+        className={styles.mapRecommendation}
+        aria-label={`${media.title}, ${media.location}`}
+      >
+        <div className={styles.mapRecommendationHeading}>
+          <div>
+            <MapPin size={14} aria-hidden="true" />
+            <strong>{media.title}</strong>
+          </div>
+          <span>{media.location}</span>
+        </div>
+        <div className={styles.mapArtwork} aria-hidden="true">
+          <svg viewBox="0 0 360 100" preserveAspectRatio="none">
+            <path d="M-12 72C32 58 24 27 75 34s51 52 92 34 46-48 91-32 55 12 114-10" />
+            <path d="M-8 88c44-18 54-2 84-16s37-55 82-48 41 53 87 42 61-32 127-17" />
+            <path d="M22-8c19 28 3 56 26 75s58 10 80 38M169-6c-6 28 22 37 16 67s-31 32-20 49M286-10c-28 33-8 53 7 68s4 31-7 47" />
+            <path
+              className={styles.mapRoute}
+              d="M46 60c35-17 44 12 77 2s31-31 68-20 38 28 71 13 33-20 58-11"
+            />
+          </svg>
+          <MapPin
+            className={styles.mapMarker}
+            size={20}
+            fill="currentColor"
+            aria-hidden="true"
+          />
+        </div>
+        <div className={styles.mapRecommendationFooter}>
+          <small>{media.detail}</small>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${media.title}, ${media.location}`)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open in Google Maps <ExternalLink size={12} aria-hidden="true" />
+          </a>
+        </div>
+      </article>
+    );
+  }
+
+  if (media.type === 'podcast') {
+    return (
+      <article className={styles.podcastPreview}>
+        <Image src={media.image} alt="" fill sizes="80px" />
+        <div className={styles.podcastCopy}>
+          <small>
+            <Headphones size={12} aria-hidden="true" /> PODCAST
+          </small>
+          <strong>{media.title}</strong>
+          <span>{media.detail}</span>
+          <div className={styles.audioProgress} aria-hidden="true">
+            <i />
+          </div>
+        </div>
+        <span className={styles.mediaPlay} aria-hidden="true">
+          <Play size={15} fill="currentColor" />
+        </span>
+      </article>
+    );
+  }
+
+  return (
+    <article className={styles.creatorVideoPreview}>
+      <Image src={media.image} alt="" fill sizes="(max-width: 760px) 320px, 340px" />
+      <div className={styles.videoScrim} />
+      <span className={styles.mediaPlay} aria-hidden="true">
+        <Play size={17} fill="currentColor" />
+      </span>
+      <div className={styles.creatorVideoCopy}>
+        <small className={styles.youtubeBadge}>YouTube</small>
+        <strong>{media.title}</strong>
+        <small>{media.detail}</small>
+      </div>
+    </article>
+  );
+}
+
+function CreatorCard({ index }: { index: number }) {
+  const creator = creators[index] ?? creators[0]!;
   return (
     <article
-      className={`${styles.creatorCard} ${styles[creator.theme]} ${demo ? styles.demoCard : ''}`}
+      className={styles.creatorCard}
+      data-theme={creator.theme}
       aria-label={`${creator.name}, example creator page`}
+      style={
+        {
+          '--creator-background': creator.background,
+          '--creator-ink': creator.ink,
+        } as CSSProperties
+      }
     >
-      <div className={styles.phoneStatus} aria-hidden="true">
-        <span>9:41</span>
-        <span>●●● ▰</span>
+      <div className={styles.cover}>
+        <Image src={creator.image} alt="" fill sizes="(max-width: 760px) 320px, 360px" />
       </div>
       <div className={styles.identity}>
-        <Image
-          className={styles.avatar}
-          src={creator.image}
-          alt={creator.name}
-          width={58}
-          height={58}
-          priority={!demo && index === 0}
-        />
-        <div>
-          <strong>{creator.name}</strong>
-          <span>{creator.details}</span>
-        </div>
+        <strong>{creator.name}</strong>
+        {creator.details ? <span>{creator.details}</span> : null}
       </div>
-      <p className={styles.creatorBio}>
-        {index === 0
-          ? 'Places, objects and everything in between.'
-          : index === 1
-            ? 'A little bold. Always personal.'
-            : 'Good food, good company, a softer way to live.'}
-      </p>
+      {creator.bio ? <p className={styles.creatorBio}>{creator.bio}</p> : null}
       <div className={styles.socialIcons} aria-label="Social platforms preview">
-        <Image src="/connectors/instagram.svg" alt="Instagram" width={15} height={15} />
-        <Image src="/connectors/youtube.svg" alt="YouTube" width={16} height={16} />
+        <Image src="/connectors/youtube.svg" alt="" width={16} height={16} />
+        <Image src="/connectors/pinterest.svg" alt="" width={16} height={16} />
+        <Image src="/connectors/tiktok.svg" alt="" width={16} height={16} />
+        <Image src="/connectors/instagram.svg" alt="" width={16} height={16} />
         <LinkIcon size={15} aria-hidden="true" />
       </div>
       <div className={styles.cardTabs} aria-hidden="true">
-        {(index === 0
-          ? ['Links', 'Gallery', 'Video', 'Shop']
-          : index === 1
-            ? ['Links', 'Shop', 'Collections', 'Instagram']
-            : ['Links', 'Recipes', 'Video', 'Instagram']
-        ).map((item) => (
-          <span key={item}>{item}</span>
+        {creator.labels.map((item, itemIndex) => (
+          <span className={itemIndex === 0 ? styles.activeLabel : ''} key={item}>
+            {item}
+          </span>
         ))}
       </div>
       <div className={styles.cardFeed}>
-        {(index === 1 || index === 2 || collectionFirst) && (
-          <CollectionTile kitchen={index === 2} />
-        )}
-        <ProductGrid products={creator.products} />
+        {creator.recommendations.map((recommendation) => (
+          <BrandRecommendation
+            key={recommendation.brand}
+            recommendation={recommendation}
+          />
+        ))}
+        <CreatorMediaPreview media={creator.media} />
       </div>
-      <div className={styles.phoneHomeIndicator} aria-hidden="true" />
     </article>
   );
 }
@@ -597,88 +775,5 @@ export function HomeStudio() {
         </div>
       </div>
     </div>
-  );
-}
-
-const collections = [
-  {
-    title: 'Everyday rotation',
-    subtitle: 'The pieces you reach for, on repeat.',
-    image: assets.shoes,
-    products: fashionProducts,
-  },
-  {
-    title: 'For the kitchen',
-    subtitle: 'Good mornings start with the little things.',
-    image: assets.coffee,
-    products: kitchenProducts,
-  },
-  {
-    title: 'Through the lens',
-    subtitle: 'Objects for a life spent looking closer.',
-    image: assets.camera,
-    products: danielProducts,
-  },
-] as const;
-
-export function ExampleCollections() {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [selected, setSelected] = useState(0);
-  const collection = collections[selected] ?? collections[0];
-  return (
-    <>
-      <div className={styles.collectionExamples}>
-        {collections.map((item, index) => (
-          <button
-            type="button"
-            key={item.title}
-            onClick={() => {
-              setSelected(index);
-              dialog.current?.showModal();
-            }}
-          >
-            <div>
-              <Image
-                src={item.image}
-                alt={item.subtitle}
-                fill
-                sizes="(max-width: 600px) 90vw, 33vw"
-              />
-            </div>
-            <span>
-              {item.title}
-              <ChevronRight size={19} />
-            </span>
-          </button>
-        ))}
-      </div>
-      <dialog
-        ref={dialog}
-        className={styles.collectionDialog}
-        aria-label={`${collection.title}, example collection`}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) dialog.current?.close();
-        }}
-      >
-        <div className={styles.dialogContent}>
-          <button
-            className={styles.close}
-            type="button"
-            onClick={() => dialog.current?.close()}
-            aria-label="Close collection"
-          >
-            <X size={20} />
-          </button>
-          <p className={styles.eyebrow}>Example collection</p>
-          <h2>{collection.title}</h2>
-          <p>{collection.subtitle}</p>
-          <ProductGrid products={collection.products} />
-          <Link className={styles.button} href="/auth?mode=signup">
-            Make a collection of your own
-          </Link>
-          <small>Demo content, not a shop. Products are shown for inspiration.</small>
-        </div>
-      </dialog>
-    </>
   );
 }

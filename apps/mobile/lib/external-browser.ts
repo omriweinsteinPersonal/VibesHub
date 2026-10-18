@@ -1,15 +1,8 @@
-import * as WebBrowser from 'expo-web-browser';
-import { Linking, Platform } from 'react-native';
+import { Linking } from 'react-native';
 
 export async function openExternalWebPage(url: string): Promise<void> {
-  if (Platform.OS === 'web') {
-    await Linking.openURL(url);
-    return;
-  }
-
-  await WebBrowser.openBrowserAsync(url, {
-    createTask: false,
-    dismissButtonStyle: 'close',
-    presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-  });
+  // External legal and merchant pages belong in the system browser. Core
+  // Swavii flows stay inside native React Native screens; OAuth is the only
+  // intentional system authentication session.
+  await Linking.openURL(url);
 }

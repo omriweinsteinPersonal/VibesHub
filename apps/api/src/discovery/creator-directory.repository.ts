@@ -186,6 +186,8 @@ export class CreatorDirectoryRepository {
                 'id', section.id,
                 'kind', section.kind,
                 'brandId', section.brand_id,
+                'contentItems', coalesce(to_jsonb(section)->'content_items', '[]'::jsonb),
+                'displayStyle', coalesce(to_jsonb(section)->>'display_style', 'horizontal'),
                 'title', section.title,
                 'description', section.description,
                 'imageUrl', section.image_url,

@@ -7,8 +7,8 @@ import {
 } from './creator-handle';
 
 describe('creator handles', () => {
-  it('normalizes a creator chosen address', () => {
-    expect(normalizeCreatorHandle('  Noa Levi! ')).toBe('noa-levi');
+  it('preserves a creator chosen address', () => {
+    expect(normalizeCreatorHandle('  Noa Levi! ')).toBe('Noa-Levi!');
     expect(isCreatorHandle('noa-levi')).toBe(true);
     expect(isCreatorHandle('Noa Levi')).toBe(true);
   });

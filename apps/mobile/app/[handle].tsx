@@ -4,13 +4,14 @@ import type {
   PublicDiscountCode,
   RecommendationCard,
 } from '@vibeshub/contracts';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  Image as NativeImage,
   Linking,
   Pressable,
   RefreshControl,
@@ -29,6 +30,10 @@ import {
   getPublicStorefront,
   getStorefrontDiscountCodes,
   getStorefrontRecommendations,
+  prefetchPublicRecommendation,
+  readCachedPublicStorefront,
+  readCachedStorefrontDiscountCodes,
+  readCachedStorefrontRecommendations,
 } from '../lib/api';
 import {
   getContentSafetyInstallationId,
@@ -57,90 +62,77 @@ const fallbackTheme = {
   textColor: '#30251f',
 };
 
+function readInitialStorefrontData(handle?: string): StorefrontData | null {
+  if (!handle) return null;
+  const storefront = readCachedPublicStorefront(handle);
+  const recommendations = readCachedStorefrontRecommendations(handle);
+  const codes = readCachedStorefrontDiscountCodes(handle);
+  return storefront && recommendations && codes
+    ? { codes, recommendations, storefront }
+    : null;
+}
+
 export default function PublicStorefrontScreen() {
   const params = useLocalSearchParams<{ handle?: string | string[] }>();
   const router = useRouter();
   const handle = Array.isArray(params.handle) ? params.handle[0] : params.handle;
-  const [data, setData] = useState<StorefrontData | null>(null);
+  const [initialData] = useState<StorefrontData | null>(() =>
+    readInitialStorefrontData(handle),
+  );
+  const [data, setData] = useState<StorefrontData | null>(initialData);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
   const [creatorHidden, setCreatorHidden] = useState(false);
   const [reportBusy, setReportBusy] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const loadSequence = useRef(0);
 
   const loadStorefront = useCallback(
     async (refresh = false) => {
+      const sequence = ++loadSequence.current;
       if (!handle) {
         setError('This storefront link is incomplete.');
         setLoading(false);
         return;
       }
       if (refresh) setRefreshing(true);
-      else setLoading(true);
+      else if (!initialData) setLoading(true);
       setError(null);
       try {
         const [storefront, recommendations, codes, hiddenCreatorIds] = await Promise.all([
-          getPublicStorefront(handle),
-          getStorefrontRecommendations(handle),
-          getStorefrontDiscountCodes(handle),
+          getPublicStorefront(handle, { forceRefresh: refresh }),
+          getStorefrontRecommendations(handle, { forceRefresh: refresh }),
+          getStorefrontDiscountCodes(handle, { forceRefresh: refresh }),
           getHiddenCreatorIds(),
         ]);
+        if (sequence !== loadSequence.current) return;
         setData({ codes, recommendations, storefront });
         setCreatorHidden(hiddenCreatorIds.has(storefront.id));
       } catch (cause) {
+        if (sequence !== loadSequence.current) return;
         if (cause instanceof ApiError && cause.status === 404) {
           setError('This creator storefront could not be found.');
         } else {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : 'This storefront could not be loaded.',
-          );
+          setError('This storefront could not be loaded. Please try again.');
         }
       } finally {
+        if (sequence !== loadSequence.current) return;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [handle],
+    [handle, initialData],
   );
 
   useEffect(() => {
-    if (!handle) return;
-    let active = true;
-    void Promise.all([
-      getPublicStorefront(handle),
-      getStorefrontRecommendations(handle),
-      getStorefrontDiscountCodes(handle),
-      getHiddenCreatorIds(),
-    ])
-      .then(([storefront, recommendations, codes, hiddenCreatorIds]) => {
-        if (active) {
-          setData({ codes, recommendations, storefront });
-          setCreatorHidden(hiddenCreatorIds.has(storefront.id));
-        }
-      })
-      .catch((cause: unknown) => {
-        if (!active) return;
-        if (cause instanceof ApiError && cause.status === 404) {
-          setError('This creator storefront could not be found.');
-        } else {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : 'This storefront could not be loaded.',
-          );
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const timer = globalThis.setTimeout(() => void loadStorefront(), 0);
     return () => {
-      active = false;
+      globalThis.clearTimeout(timer);
+      loadSequence.current += 1;
     };
-  }, [handle]);
+  }, [loadStorefront]);
 
   const filteredRecommendations = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -293,8 +285,11 @@ export default function PublicStorefrontScreen() {
             {data.storefront.avatarUrl ? (
               <Image
                 accessibilityLabel={`${data.storefront.displayName}'s profile photo`}
-                source={{ uri: data.storefront.avatarUrl }}
+                cachePolicy="memory-disk"
+                contentFit="cover"
+                source={data.storefront.avatarUrl}
                 style={[styles.avatar, { borderColor: '#ffffff' }]}
+                transition={160}
               />
             ) : (
               <View style={[styles.avatar, styles.avatarFallback]}>
@@ -308,7 +303,8 @@ export default function PublicStorefrontScreen() {
                 {data.storefront.displayName}
               </Text>
               <Text style={[styles.creatorMeta, { color: theme.textColor }]}>
-                {data.storefront.primaryCategory.name} · @{data.storefront.handle}
+                {data.storefront.primaryCategory?.name ?? 'Creator'} · @
+                {data.storefront.handle}
               </Text>
             </View>
           </View>
@@ -443,6 +439,13 @@ export default function PublicStorefrontScreen() {
               filteredRecommendations.map((recommendation) => (
                 <ProductCard
                   key={recommendation.id}
+                  onOpen={() =>
+                    router.push({
+                      pathname: '/products/[id]',
+                      params: { id: recommendation.id },
+                    })
+                  }
+                  onOpenStart={() => void prefetchPublicRecommendation(recommendation.id)}
                   onReport={() =>
                     setReportTarget({
                       targetId: recommendation.id,
@@ -486,10 +489,14 @@ function StorefrontLoading() {
 }
 
 function ProductCard({
+  onOpen,
+  onOpenStart,
   onReport,
   recommendation,
   theme,
 }: {
+  onOpen: () => void;
+  onOpenStart: () => void;
   onReport: () => void;
   recommendation: RecommendationCard;
   theme: typeof fallbackTheme;
@@ -503,7 +510,7 @@ function ProductCard({
       ]}
     >
       <View style={[styles.imageStage, { backgroundColor: theme.productBackground }]}>
-        <Image
+        <NativeImage
           blurRadius={24}
           source={{ uri: recommendation.imageUrl }}
           style={styles.imageBackdrop}
@@ -511,9 +518,11 @@ function ProductCard({
         <View style={styles.imageVeil} />
         <Image
           accessibilityLabel={recommendation.productName}
-          resizeMode="contain"
-          source={{ uri: recommendation.imageUrl }}
+          cachePolicy="memory-disk"
+          contentFit="contain"
+          source={recommendation.imageUrl}
           style={styles.productImage}
+          transition={180}
         />
         {hasStory ? (
           <View style={styles.storyBadge}>
@@ -570,6 +579,18 @@ function ProductCard({
           </View>
         ) : null}
         <Pressable
+          accessibilityLabel={`View details for ${recommendation.productName}`}
+          accessibilityRole="button"
+          onPress={onOpen}
+          onPressIn={onOpenStart}
+          style={[styles.detailButton, { borderColor: theme.accentColor }]}
+        >
+          <Text style={[styles.detailButtonText, { color: theme.accentColor }]}>
+            Details
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={`Shop ${recommendation.productName}`}
           accessibilityRole="link"
           onPress={() => void openExternalUrl(recommendation.shopUrl)}
           style={[styles.shopButton, { backgroundColor: theme.accentColor }]}
@@ -613,6 +634,8 @@ function socialLabel(platform: CreatorStorefront['socialLinks'][number]['platfor
     instagram: 'IG',
     linkedin: 'in',
     pinterest: 'P',
+    spotify: 'S',
+    apple_music: '',
     tiktok: 'TT',
     website: '↗',
     x: 'X',
@@ -750,6 +773,14 @@ const styles = StyleSheet.create({
   },
   storyBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
   productBody: { padding: 18 },
+  detailButton: {
+    alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    marginTop: 16,
+    paddingVertical: 12,
+  },
+  detailButtonText: { fontSize: 15, fontWeight: '700' },
   brand: { fontSize: 11, fontWeight: '700', letterSpacing: 1.6 },
   productName: { fontFamily: 'Georgia', fontSize: 26, marginTop: 7 },
   price: { fontSize: 17, fontWeight: '600', marginTop: 7 },

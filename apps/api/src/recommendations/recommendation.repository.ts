@@ -319,8 +319,24 @@ export class RecommendationRepository {
       const sql = transaction as unknown as DatabaseClient;
       const creator = await this.findCreator(sql, userId);
       if (!creator) return null;
+      const [current] = await sql<{ offerId: string }[]>`
+        select recommendation.offer_id as "offerId"
+        from app.recommendations recommendation
+        where recommendation.id = ${id}
+          and recommendation.creator_id = ${creator.id}
+          and recommendation.version = ${expectedVersion}
+          and recommendation.lifecycle <> 'archived'
+          and recommendation.deleted_at is null
+      `;
+      if (!current) return null;
       const image = await this.resolveImageSource(sql, userId, input, true);
-      const catalog = await this.upsertCatalog(sql, userId, input, image);
+      const catalog = await this.upsertCatalog(
+        sql,
+        userId,
+        input,
+        image,
+        current.offerId,
+      );
       const creatorBrandId = await this.ensureCreatorBrand(
         sql,
         creator.id,
@@ -819,7 +835,11 @@ export class RecommendationRepository {
     userId: string,
     input: CreatorRecommendationInput,
     image: RecommendationImageSource,
+    existingOfferId?: string,
   ): Promise<CatalogIdentity> {
+    const destination = validateRedirectDestination(input.productUrl);
+    const destinationUrl = destination.destinationUrl;
+    const hostname = destination.hostname;
     const brandIdentity = normalizeCatalogName(input.brandName);
     const [brand] = await sql<CatalogIdRow[]>`
       insert into app.brands (slug, name, normalized_name, created_by_user_id)
@@ -835,51 +855,70 @@ export class RecommendationRepository {
     `;
     if (!brand) throw new Error('Brand upsert did not return an identity');
 
+    const [existingOffer] = existingOfferId
+      ? await sql<{ id: string; productId: string; brandId: string }[]>`
+          select offer.id, offer.product_id as "productId", product.brand_id as "brandId"
+          from app.product_offers offer
+          join app.products product on product.id = offer.product_id
+          where offer.id = ${existingOfferId} and offer.destination_url = ${destinationUrl}
+        `
+      : [];
     const productIdentity = normalizeCatalogName(input.productName);
-    const productSlug = catalogSlug(
-      `${input.brandName}-${input.productName}`,
-      `${brandIdentity}:${productIdentity}`,
-    );
-    const [product] = await sql<CatalogIdRow[]>`
-      insert into app.products (
-        slug,
-        brand_id,
-        primary_category_id,
-        name,
-        normalized_name,
-        primary_image_asset_id,
-        primary_image_url,
-        created_by_user_id
-      ) values (
-        ${productSlug},
-        ${brand.id},
-        ${input.categoryId},
-        ${input.productName},
-        ${productIdentity},
-        ${image.assetId},
-        ${image.assetId ? null : image.publicUrl},
-        ${userId}
-      )
-      on conflict (brand_id, normalized_name) do update
-      set
-        name = excluded.name,
-        primary_image_asset_id = case
-          when excluded.primary_image_asset_id is not null then excluded.primary_image_asset_id
-          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then null
-          else app.products.primary_image_asset_id
-        end,
-        primary_image_url = case
-          when excluded.primary_image_asset_id is not null then null
-          when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then excluded.primary_image_url
-          else app.products.primary_image_url
-        end
-      returning id
-    `;
+    let product: CatalogIdRow | undefined;
+    if (existingOffer && existingOffer.brandId === brand.id) {
+      [product] = await sql<CatalogIdRow[]>`
+        update app.products
+        set
+          name = ${input.productName},
+          normalized_name = ${productIdentity},
+          primary_category_id = ${input.categoryId},
+          primary_image_asset_id = ${image.assetId},
+          primary_image_url = ${image.assetId ? null : image.publicUrl}
+        where id = ${existingOffer.productId}
+        returning id
+      `;
+    } else {
+      const productSlug = catalogSlug(
+        `${input.brandName}-${input.productName}`,
+        `${brandIdentity}:${productIdentity}`,
+      );
+      [product] = await sql<CatalogIdRow[]>`
+        insert into app.products (
+          slug,
+          brand_id,
+          primary_category_id,
+          name,
+          normalized_name,
+          primary_image_asset_id,
+          primary_image_url,
+          created_by_user_id
+        ) values (
+          ${productSlug},
+          ${brand.id},
+          ${input.categoryId},
+          ${input.productName},
+          ${productIdentity},
+          ${image.assetId},
+          ${image.assetId ? null : image.publicUrl},
+          ${userId}
+        )
+        on conflict (brand_id, normalized_name) do update
+        set
+          name = excluded.name,
+          primary_image_asset_id = case
+            when excluded.primary_image_asset_id is not null then excluded.primary_image_asset_id
+            when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then null
+            else app.products.primary_image_asset_id
+          end,
+          primary_image_url = case
+            when excluded.primary_image_asset_id is not null then null
+            when excluded.primary_image_url <> ${linkCardPlaceholderUrl} then excluded.primary_image_url
+            else app.products.primary_image_url
+          end
+        returning id
+      `;
+    }
     if (!product) throw new Error('Product upsert did not return an identity');
-
-    const destination = validateRedirectDestination(input.productUrl);
-    const destinationUrl = destination.destinationUrl;
-    const hostname = destination.hostname;
     const [merchant] = await sql<CatalogIdRow[]>`
       insert into app.merchants (slug, name, hostname, homepage_url)
       values (
@@ -1000,17 +1039,17 @@ export class RecommendationRepository {
     discountAmountMinor: number | null,
     creatorBrandId: string,
   ): Promise<void> {
-    const [previousItemDiscount] = await sql<
+    const [previousPlacement] = await sql<
       {
         code: string | null;
         id: string;
+        scopeKind: string;
       }[]
     >`
-      select code.id, code.code as code from app.recommendation_discount_codes placement
+      select code.id, code.code as code, code.scope_kind as "scopeKind"
+        from app.recommendation_discount_codes placement
       join app.discount_codes code on code.id = placement.code_id
       where placement.recommendation_id = ${recommendationId}
-        and code.scope_kind = 'item'
-        and code.scope_id = ${recommendationId}
       limit 1
     `;
     await sql`
@@ -1032,13 +1071,13 @@ export class RecommendationRepository {
         insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
         values (${recommendationId}, ${brandCode.id}, 0)
       `;
-      if (previousItemDiscount)
-        await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
+      if (previousPlacement?.scopeKind === 'item')
+        await sql`delete from app.discount_codes where id = ${previousPlacement.id}`;
       return;
     }
     if (!discountCode && discountLabel) {
       const [offer] =
-        previousItemDiscount?.code === null
+        previousPlacement?.scopeKind === 'item' && previousPlacement.code === null
           ? await sql<{ id: string }[]>`
             update app.discount_codes set label = ${discountLabel}, expires_at = ${discountExpiresAt},
               discount_percent = ${discountPercent}, discount_amount_minor = ${discountAmountMinor},
@@ -1046,7 +1085,7 @@ export class RecommendationRepository {
               verification_status = 'creator_confirmed', last_verified_at = statement_timestamp(),
               lifecycle_status = 'published',
               version = version + 1
-            where id = ${previousItemDiscount.id} returning id
+            where id = ${previousPlacement.id} returning id
           `
           : await sql<{ id: string }[]>`
             insert into app.discount_codes (
@@ -1060,8 +1099,8 @@ export class RecommendationRepository {
               'creator_confirmed', statement_timestamp()
             ) returning id
           `;
-      if (previousItemDiscount && previousItemDiscount.code !== null)
-        await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
+      if (previousPlacement?.scopeKind === 'item' && previousPlacement.code !== null)
+        await sql`delete from app.discount_codes where id = ${previousPlacement.id}`;
       if (!offer) throw new Error('Discount offer could not be saved');
       await sql`
         insert into app.recommendation_discount_codes (recommendation_id, code_id, position)
@@ -1069,61 +1108,42 @@ export class RecommendationRepository {
       `;
       return;
     }
-    if (previousItemDiscount)
-      await sql`delete from app.discount_codes where id = ${previousItemDiscount.id}`;
     if (!discountCode) return;
-    const [sharedBrandOffer] = await sql<{ id: string }[]>`
+    const [existingBrandOffer] = await sql<{ id: string }[]>`
       select id from app.discount_codes
       where creator_id = ${creatorId} and merchant_id = ${catalog.merchantId}
-        and code = ${discountCode} and creator_brand_id is not null
+        and creator_brand_id = ${creatorBrandId}
         and scope_kind = 'brand' and deleted_at is null and lifecycle_status <> 'archived'
+      order by updated_at desc, id desc
       limit 1
     `;
-    if (sharedBrandOffer) throw new Error('BRAND_DISCOUNT_REQUIRES_LINK');
-
-    const [code] = await sql<{ id: string }[]>`
-      insert into app.discount_codes (
-        creator_id,
-        merchant_id,
-        brand_id,
-        creator_brand_id,
-        code,
-        label,
-        discount_percent,
-        discount_amount_minor,
-        expires_at,
-        lifecycle_status,
-        verification_status,
-        last_verified_at
-      ) values (
-        ${creatorId},
-        ${catalog.merchantId},
-        ${catalog.brandId},
-        ${creatorBrandId},
-        ${discountCode},
-        ${discountLabel},
-        ${discountPercent},
-        ${discountAmountMinor},
-        ${discountExpiresAt},
-        'published',
-        'creator_confirmed',
-        statement_timestamp()
-      )
-      on conflict (creator_id, merchant_id, code)
-        where deleted_at is null and lifecycle_status <> 'archived'
-      do update set
-        brand_id = excluded.brand_id,
-        label = excluded.label,
-        discount_percent = excluded.discount_percent,
-        discount_amount_minor = excluded.discount_amount_minor,
-        expires_at = excluded.expires_at,
-        creator_brand_id = excluded.creator_brand_id,
-        lifecycle_status = 'published',
-        verification_status = 'creator_confirmed',
-        last_verified_at = statement_timestamp()
-      returning id
-    `;
+    const [code] = existingBrandOffer
+      ? await sql<{ id: string }[]>`
+          update app.discount_codes set
+            code = ${discountCode}, label = ${discountLabel},
+            discount_percent = ${discountPercent}, discount_amount_minor = ${discountAmountMinor},
+            expires_at = ${discountExpiresAt}, lifecycle_status = 'published',
+            verification_status = 'creator_confirmed', last_verified_at = statement_timestamp(),
+            version = version + 1, updated_at = statement_timestamp()
+          where id = ${existingBrandOffer.id}
+          returning id
+        `
+      : await sql<{ id: string }[]>`
+          insert into app.discount_codes (
+            creator_id, merchant_id, brand_id, creator_brand_id, code, label,
+            discount_percent, discount_amount_minor, expires_at, scope_kind, scope_id,
+            offer_type, priority, stackable, recurrence_rule, source,
+            lifecycle_status, verification_status, last_verified_at
+          ) values (
+            ${creatorId}, ${catalog.merchantId}, ${catalog.brandId}, ${creatorBrandId},
+            ${discountCode}, ${discountLabel}, ${discountPercent}, ${discountAmountMinor},
+            ${discountExpiresAt}, 'brand', null, 'creator_code', 0, false, 'none', 'manual',
+            'published', 'creator_confirmed', statement_timestamp()
+          ) returning id
+        `;
     if (!code) throw new Error('Discount code upsert did not return an identity');
+    if (previousPlacement?.scopeKind === 'item')
+      await sql`delete from app.discount_codes where id = ${previousPlacement.id}`;
     await sql`
       insert into app.recommendation_discount_codes (
         recommendation_id,

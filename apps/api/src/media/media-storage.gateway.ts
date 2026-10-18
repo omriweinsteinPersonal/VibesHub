@@ -101,33 +101,11 @@ export class MediaStorageGateway {
     return { size, prefix: bytes.slice(0, length) };
   }
 
-  async publishVerifiedVideoStream(
-    objectPath: string,
-    contentType: StoryVideoContentType,
-    size: number,
-  ): Promise<void> {
-    const source = await this.videoObjectRequest(
-      STORY_VIDEO_UPLOAD_BUCKET,
-      objectPath,
-      'GET',
-    );
-    if (!source.ok || !source.body) throw new Error('Verified video could not be read');
-    const target = await this.videoObjectRequest(
-      STORY_VIDEO_BUCKET,
-      objectPath,
-      'POST',
-      {
-        'Content-Type': contentType,
-        'Content-Length': String(size),
-        'cache-control': '31536000',
-        'x-upsert': 'true',
-      },
-      source.body,
-    );
-    if (!target.ok)
-      throw new Error(
-        `Video publication failed (${target.status}): ${await target.text()}`,
-      );
+  async publishVerifiedVideoCopy(objectPath: string): Promise<void> {
+    const { error } = await this.storage
+      .from(STORY_VIDEO_UPLOAD_BUCKET)
+      .copy(objectPath, objectPath, { destinationBucket: STORY_VIDEO_BUCKET });
+    if (error) throw new Error(`Video publication failed: ${error.message}`);
   }
 
   private videoObjectRequest(

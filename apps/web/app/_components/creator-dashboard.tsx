@@ -10,25 +10,26 @@ import type {
   CreatorStorefrontConfiguration,
   CreatorStorefrontConfigurationInput,
   FeaturedMedia,
+  StorefrontTitle,
   StoryClipInput,
 } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowLeft,
-  ArrowDown,
-  ArrowUp,
-  Check,
+  Clapperboard,
   ChevronDown,
-  Copy,
+  ChevronRight,
   ExternalLink,
   GripVertical,
   LayoutGrid,
+  Layers3,
   Link2,
-  PlayCircle,
+  MapPinned,
   Pencil,
   Plus,
   Sparkles,
+  Store,
   Tag,
   Trash2,
   Upload,
@@ -60,15 +61,28 @@ import { useCreatorNavigation } from './creator-navigation-provider';
 import { DelayedLoading } from './delayed-loading';
 import styles from './creator-dashboard.module.css';
 
-type Composer = null | 'choose' | 'product' | 'discount' | 'brand' | 'collection';
+type Composer =
+  null | 'choose' | 'product' | 'discount' | 'brand' | 'collection' | 'section';
 type CuratedSection = CreatorStorefrontConfigurationInput['curatedSections'][number];
 type ContentLayer = CreatorStorefrontConfigurationInput['contentOrder'][number];
 type StorefrontLabel = CreatorStorefrontConfigurationInput['labels'][number];
 type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
+type MapDraft = {
+  thumbnailAssetId: string;
+  location: string;
+  thumbnailUrl: string;
+  title: string;
+  url: string;
+};
 type CollectionManageEntry = {
   kind: 'collection';
   section: CuratedSection;
   items: CreatorRecommendation[];
+};
+type CollectionDiscountDraft = {
+  code: string;
+  discountPercent: string;
+  expiresAt: string;
 };
 
 interface ProductEditor {
@@ -289,6 +303,7 @@ export function CreatorDashboard() {
   const [curatedSections, setCuratedSections] = useState<CuratedSection[]>([]);
   const [contentOrder, setContentOrder] = useState<ContentLayer[]>([]);
   const [featuredMedia, setFeaturedMedia] = useState<FeaturedMedia[]>([]);
+  const [storefrontTitles, setStorefrontTitles] = useState<StorefrontTitle[]>([]);
   const [mediaDraft, setMediaDraft] = useState<FeaturedMediaDraft>({
     provider: 'youtube',
     url: '',
@@ -298,14 +313,28 @@ export function CreatorDashboard() {
   });
   const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
   const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
+  const [mapDraft, setMapDraft] = useState<MapDraft>({
+    location: '',
+    thumbnailAssetId: '',
+    thumbnailUrl: '',
+    title: '',
+    url: '',
+  });
+  const [editingMapId, setEditingMapId] = useState<string | null>(null);
+  const [mapEditorOpen, setMapEditorOpen] = useState(false);
   const [storefrontLabels, setStorefrontLabels] = useState<StorefrontLabel[]>([]);
   const [hiddenBrandIds, setHiddenBrandIds] = useState<string[]>([]);
   const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
   const [hiddenRecommendationIds, setHiddenRecommendationIds] = useState<string[]>([]);
   const [expandedBrandId, setExpandedBrandId] = useState<string | null>(null);
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [recommendationFilter, setRecommendationFilter] = useState<
+    'all' | 'brands' | 'items' | 'sections'
+  >('all');
   const [dashboardView, setDashboardView] = useState<
-    'recommendations' | 'labels' | 'connectors' | 'media'
+    'recommendations' | 'labels' | 'connectors' | 'media' | 'maps'
   >('recommendations');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -369,6 +398,7 @@ export function CreatorDashboard() {
         const loadedOrder = Array.isArray(config.contentOrder) ? config.contentOrder : [];
         setConfiguration({ ...config, contentOrder: loadedOrder });
         setFeaturedMedia(config.featuredMedia ?? []);
+        setStorefrontTitles(config.titles ?? []);
         setStorefrontLabels(config.labels ?? []);
         setHiddenBrandIds(config.hiddenBrandIds ?? []);
         setHiddenCollectionIds(config.hiddenCollectionIds ?? []);
@@ -401,6 +431,12 @@ export function CreatorDashboard() {
         setCuratedSections(
           config.curatedSections.map((section) => ({
             ...section,
+            contentItems:
+              section.contentItems ??
+              section.recommendationIds.map((id) => ({
+                id,
+                kind: 'recommendation' as const,
+              })),
             recommendationIds: section.recommendationIds.filter((id) =>
               activeIds.has(id),
             ),
@@ -452,16 +488,6 @@ export function CreatorDashboard() {
     });
     return () => window.cancelAnimationFrame(frame);
   }, [composer]);
-
-  function showComposer(next: Exclude<Composer, null>) {
-    setComposer(next);
-    setEditingProduct(null);
-    setEditingDiscount(null);
-    setEditingBrand(null);
-    setError('');
-    setVideoError('');
-    setNotice('');
-  }
 
   function closeComposer() {
     productFetchRequest.current += 1;
@@ -515,6 +541,7 @@ export function CreatorDashboard() {
   async function saveBrand(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedWebsiteUrl = brand.websiteUrl.trim();
+    const normalizedLogoUrl = brand.logoUrl.trim();
     const brandWebsiteChanged =
       !editingBrand || normalizedWebsiteUrl !== editingBrand.websiteUrl.trim();
     const brandLogoChanged =
@@ -525,6 +552,10 @@ export function CreatorDashboard() {
       setError(
         'Enter a full HTTPS brand website URL, for example https://www.example.com.',
       );
+      return;
+    }
+    if (normalizedLogoUrl && !normalizedProductUrl(normalizedLogoUrl)) {
+      setError('Enter a valid HTTPS brand image URL, or clear the optional image field.');
       return;
     }
     if (
@@ -991,6 +1022,30 @@ export function CreatorDashboard() {
     setFetching(false);
     setNotice('');
     const isLinkCard = product.contentKind === 'link';
+    const trimmedProductUrl = product.productUrl.trim();
+    const trimmedImageUrl = product.imageUrl.trim();
+    if (trimmedProductUrl && !normalizedProductUrl(trimmedProductUrl)) {
+      setError('Enter a valid HTTPS item link, or clear the optional link field.');
+      return;
+    }
+    if (trimmedImageUrl && !normalizedProductUrl(trimmedImageUrl)) {
+      setError('Enter a valid HTTPS image link, or upload an image instead.');
+      return;
+    }
+    const invalidAdditionalImage = product.additionalImages.find(
+      (image) => !image.imageAssetId && !normalizedProductUrl(image.url),
+    );
+    if (invalidAdditionalImage) {
+      setError('One of the additional image links is invalid. Remove it or replace it.');
+      return;
+    }
+    const invalidStoryClip = product.storyClips.find(
+      (clip) => !clip.mediaAssetId && !normalizedProductUrl(clip.url),
+    );
+    if (invalidStoryClip) {
+      setError('One of the story video links is invalid. Remove it or replace it.');
+      return;
+    }
     const price = product.priceIls.trim() ? Number(product.priceIls) : 0;
     if (!Number.isFinite(price) || price < 0) {
       setError('Enter a valid price.');
@@ -1072,7 +1127,7 @@ export function CreatorDashboard() {
             ),
         priceAmountMinor: isLinkCard ? 0 : Math.round(price * 100),
         productName: product.productName,
-        productUrl: recommendationProductUrl(product.productUrl),
+        productUrl: recommendationProductUrl(trimmedProductUrl),
         reviewHe: isLinkCard
           ? product.linkHasBackground
             ? 'Link card / backdrop'
@@ -1122,6 +1177,13 @@ export function CreatorDashboard() {
       const collectionsChanged =
         [...product.collectionIds].sort().join(':') !==
         [...currentCollectionIds].sort().join(':');
+      const currentCategoryIds = editingProduct?.categoryIds ?? [];
+      const categoriesChanged =
+        [...product.categoryIds].sort().join(':') !==
+        [...currentCategoryIds].sort().join(':');
+      const nextSelectedSections = categoriesChanged
+        ? [...new Set([...selectedSections, ...product.categoryIds])]
+        : selectedSections;
       const nextSections = collectionsChanged
         ? curatedSections.map((section) => {
             if (section.kind !== 'collection') return section;
@@ -1146,8 +1208,8 @@ export function CreatorDashboard() {
             { kind: 'recommendation' as const, id: savedProduct.id },
           ];
       if (
-        (collectionsChanged || !editingProduct) &&
-        !(await saveSections(selectedSections, nextSections, nextOrder))
+        (collectionsChanged || categoriesChanged || !editingProduct) &&
+        !(await saveSections(nextSelectedSections, nextSections, nextOrder))
       ) {
         setEditingProduct(savedProduct);
         return;
@@ -1285,6 +1347,91 @@ export function CreatorDashboard() {
       setError(messageFor(cause));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveCollectionDiscount(
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) {
+    const existing = discounts.find(
+      (discount) =>
+        discount.scopeKind === 'collection' && discount.scopeId === section.id,
+    );
+    const brand = brands.find(({ brandId }) => brandId === section.brandId);
+    if (!brand) return false;
+    const hasOffer = Boolean(draft?.code.trim() || draft?.discountPercent);
+    if (
+      draft?.discountPercent &&
+      (!Number.isInteger(Number(draft.discountPercent)) ||
+        Number(draft.discountPercent) < 1 ||
+        Number(draft.discountPercent) > 100)
+    ) {
+      setError('Enter a whole-number discount from 1 to 100%.');
+      return false;
+    }
+    try {
+      if (!hasOffer) {
+        if (existing) {
+          await apiRequest(`/creator/discount-codes/${existing.id}/archive`, {
+            headers: { 'if-match': `"${existing.version}"` },
+            idempotent: true,
+            method: 'POST',
+          });
+          setDiscounts((current) => current.filter(({ id }) => id !== existing.id));
+        }
+        return true;
+      }
+      const body: DiscountOfferPayload = {
+        brandId: brand.id,
+        code: draft?.code.trim() || null,
+        detailsHe: null,
+        discountPercent: draft?.discountPercent ? Number(draft.discountPercent) : null,
+        discountAmountMinor: null,
+        expiresAt: toDateTimeIso(draft?.expiresAt ?? ''),
+        label: draft?.discountPercent ? `${draft.discountPercent}% off` : null,
+        merchantUrl: brand.websiteUrl,
+        offerType: 'creator_code',
+        priority: 0,
+        recurrenceRule: 'none',
+        scopeId: section.id,
+        scopeKind: 'collection',
+        source: 'manual',
+        stackable: false,
+        startsAt: null,
+      };
+      const saved = existing
+        ? await saveOffer<CreatorDiscountCode>(
+            `/creator/discount-codes/${existing.id}`,
+            body,
+            { headers: { 'if-match': `"${existing.version}"` }, method: 'PATCH' },
+          )
+        : await saveOffer<CreatorDiscountCode>('/creator/discount-codes', body, {
+            idempotent: true,
+            method: 'POST',
+          });
+      const refreshed = await apiRequest<CreatorDiscountCode>(
+        `/creator/discount-codes/${saved.id}`,
+      );
+      let published = refreshed;
+      if (refreshed.lifecycle !== 'published') {
+        published = await apiRequest<CreatorDiscountCode>(
+          `/creator/discount-codes/${refreshed.id}/confirm`,
+          {
+            headers: { 'if-match': `"${refreshed.version}"` },
+            idempotent: true,
+            method: 'POST',
+          },
+        );
+      }
+      setDiscounts((current) => [
+        ...current.filter(({ id }) => id !== published.id),
+        published,
+      ]);
+      return true;
+    } catch (cause) {
+      setError(messageFor(cause));
+      return false;
     }
   }
 
@@ -1432,20 +1579,92 @@ export function CreatorDashboard() {
     nextHiddenCollections = hiddenCollectionIds,
     nextHiddenRecommendations = hiddenRecommendationIds,
     nextFeaturedMedia = featuredMedia,
+    nextTitles = storefrontTitles,
   ) {
     if (!configuration) return false;
     const collectionSections = nextCurated.filter(({ kind }) => kind !== 'page');
+    // Keep references selected in the form even when a newly-created item has
+    // not made it through the recommendations refresh yet. The API remains the
+    // source of truth for ownership and lifecycle validation.
+    const activeRecommendationIdSet = new Set([
+      ...activeRecommendations.map(({ id }) => id),
+      ...nextCurated.flatMap(({ recommendationIds }) => recommendationIds),
+      ...nextLabels.flatMap(({ recommendationIds }) => recommendationIds),
+    ]);
+    const activeBrandIdSet = new Set([
+      ...brands.map(({ id }) => id),
+      ...nextCurated.flatMap(({ contentItems }) =>
+        contentItems.filter(({ kind }) => kind === 'brand').map(({ id }) => id),
+      ),
+      ...nextLabels.flatMap(({ brandIds }) => brandIds),
+    ]);
+    const activeCollectionIdSet = new Set(
+      collectionSections.filter(({ kind }) => kind === 'collection').map(({ id }) => id),
+    );
+    const activeMediaIdSet = new Set([
+      ...nextFeaturedMedia.map(({ id }) => id),
+      ...nextCurated.flatMap(({ contentItems }) =>
+        contentItems.filter(({ kind }) => kind === 'media').map(({ id }) => id),
+      ),
+    ]);
+    const activeDiscountIdSet = new Set(
+      discounts.filter(({ lifecycle }) => lifecycle !== 'archived').map(({ id }) => id),
+    );
+    const sanitizedSections = collectionSections.map((section) => {
+      const contentItems = section.contentItems.filter((item) => {
+        if (item.kind === 'recommendation') return activeRecommendationIdSet.has(item.id);
+        if (item.kind === 'brand') return activeBrandIdSet.has(item.id);
+        if (item.kind === 'collection') return activeCollectionIdSet.has(item.id);
+        return activeMediaIdSet.has(item.id);
+      });
+      const recommendationIds =
+        section.kind === 'section'
+          ? contentItems
+              .filter(({ kind }) => kind === 'recommendation')
+              .map(({ id }) => id)
+          : section.recommendationIds;
+      return {
+        ...section,
+        recommendationIds: [...new Set(recommendationIds)].filter((id) =>
+          activeRecommendationIdSet.has(id),
+        ),
+        contentItems,
+      };
+    });
+    const previousCuratedRecommendationIds = new Set(
+      curatedSections.flatMap(({ recommendationIds }) => recommendationIds),
+    );
+    const nextCuratedRecommendationIds = new Set(
+      sanitizedSections.flatMap(({ recommendationIds }) => recommendationIds),
+    );
+    const restoredRecommendationIds = [...previousCuratedRecommendationIds].filter(
+      (id) => !nextCuratedRecommendationIds.has(id),
+    );
+    const orderWithRestoredRecommendations = [
+      ...nextOrder,
+      ...restoredRecommendationIds.map((id) => ({
+        kind: 'recommendation' as const,
+        id,
+      })),
+    ];
     setSaving(true);
     setError('');
     try {
-      const groupedIds = new Set(
-        collectionSections.flatMap(({ recommendationIds }) => recommendationIds),
-      );
-      const normalizedOrder = nextOrder.filter(
-        ({ kind, id }) =>
-          (kind !== 'recommendation' || !groupedIds.has(id)) &&
-          (kind !== 'category' || nextCategories.includes(id)),
-      );
+      const orderKeys = new Set<string>();
+      const normalizedOrder = orderWithRestoredRecommendations.filter(({ kind, id }) => {
+        const isValid =
+          (kind !== 'recommendation' || activeRecommendationIdSet.has(id)) &&
+          (kind !== 'discount' || activeDiscountIdSet.has(id)) &&
+          (kind !== 'media' || activeMediaIdSet.has(id)) &&
+          (kind !== 'collection' || activeCollectionIdSet.has(id)) &&
+          (kind !== 'section' ||
+            sanitizedSections.some((section) => section.id === id)) &&
+          (kind !== 'category' || nextCategories.includes(id));
+        const key = `${kind}:${id}`;
+        if (!isValid || orderKeys.has(key)) return false;
+        orderKeys.add(key);
+        return true;
+      });
       for (const id of nextCategories) {
         if (
           !normalizedOrder.some((layer) => layer.kind === 'category' && layer.id === id)
@@ -1455,11 +1674,13 @@ export function CreatorDashboard() {
       }
       const input = {
         categoryIds: nextCategories,
-        curatedSections: collectionSections.map(
+        curatedSections: sanitizedSections.map(
           ({
             id,
             kind,
             brandId,
+            contentItems,
+            displayStyle,
             recommendationIds,
             title,
             description,
@@ -1470,6 +1691,8 @@ export function CreatorDashboard() {
             id,
             kind,
             brandId,
+            contentItems,
+            displayStyle,
             recommendationIds,
             title,
             description,
@@ -1480,7 +1703,17 @@ export function CreatorDashboard() {
         ),
         contentOrder: normalizedOrder,
         featuredMedia: nextFeaturedMedia,
-        labels: nextLabels,
+        titles: nextTitles,
+        labels: nextLabels.map((label) => ({
+          ...label,
+          recommendationIds: label.recommendationIds.filter((id) =>
+            activeRecommendationIdSet.has(id),
+          ),
+          collectionIds: label.collectionIds.filter((id) =>
+            activeCollectionIdSet.has(id),
+          ),
+          brandIds: label.brandIds.filter((id) => activeBrandIdSet.has(id)),
+        })),
         hiddenBrandIds: nextHiddenBrands,
         hiddenCollectionIds: nextHiddenCollections,
         hiddenRecommendationIds: nextHiddenRecommendations,
@@ -1516,6 +1749,7 @@ export function CreatorDashboard() {
       setHiddenCollectionIds(updated.hiddenCollectionIds ?? []);
       setHiddenRecommendationIds(updated.hiddenRecommendationIds ?? []);
       setFeaturedMedia(updated.featuredMedia ?? []);
+      setStorefrontTitles(updated.titles ?? []);
       setNotice('Storefront sections saved.');
       return true;
     } catch (cause) {
@@ -1568,15 +1802,20 @@ export function CreatorDashboard() {
     event.preventDefault();
     const detected = detectFeaturedMedia(mediaDraft.url);
     if (!detected) {
-      setError('Paste a valid YouTube, Instagram, Spotify or Apple Music link.');
+      setError('Paste a valid YouTube, Instagram, TikTok, Spotify or Apple Music link.');
       return;
     }
+    const enriched = await enrichMediaDraft(mediaDraft.url, detected);
+    const resolvedTitle = enriched?.title || mediaDraft.title.trim() || detected.title;
+    const resolvedThumbnailUrl =
+      mediaDraft.thumbnailUrl || enriched?.thumbnailUrl || detected.thumbnailUrl;
     const item: FeaturedMedia = {
       ...mediaDraft,
+      displayMode: 'embed',
       provider: detected.provider,
-      thumbnailUrl: mediaDraft.thumbnailUrl || detected.thumbnailUrl,
+      thumbnailUrl: resolvedThumbnailUrl,
       id: editingMediaId ?? randomUuid(),
-      title: mediaDraft.title.trim() || detected.title,
+      title: resolvedTitle,
       url: mediaDraft.url.trim(),
       visible: editingMediaId
         ? (featuredMedia.find(({ id }) => id === editingMediaId)?.visible ?? true)
@@ -1612,6 +1851,142 @@ export function CreatorDashboard() {
       setEditingMediaId(null);
       setMediaEditorOpen(false);
     }
+  }
+
+  function startMapEditor(item?: FeaturedMedia) {
+    setEditingMapId(item?.id ?? null);
+    setMapDraft({
+      location: item?.location ?? '',
+      thumbnailAssetId: '',
+      thumbnailUrl: item?.thumbnailUrl ?? '',
+      title: item?.title ?? '',
+      url: item?.url ?? '',
+    });
+    setMapEditorOpen(true);
+    setError('');
+  }
+
+  async function saveMap(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const url = normalizeMapUrl(mapDraft.url);
+    if (!url) {
+      setError('Paste a valid Google Maps link.');
+      return;
+    }
+    const title = mapDraft.title.trim();
+    if (!title) {
+      setError('Add a name for this map recommendation.');
+      return;
+    }
+    const item: FeaturedMedia = {
+      displayMode: 'link',
+      id: editingMapId ?? randomUuid(),
+      location: mapDraft.location.trim() || undefined,
+      provider: 'maps',
+      thumbnailUrl: mapDraft.thumbnailUrl.trim() || null,
+      title,
+      url,
+      visible: editingMapId
+        ? (featuredMedia.find(({ id }) => id === editingMapId)?.visible ?? true)
+        : true,
+    };
+    const nextMedia = editingMapId
+      ? featuredMedia.map((current) => (current.id === item.id ? item : current))
+      : [...featuredMedia, item];
+    const nextOrder = contentOrder.some(
+      ({ kind, id }) => kind === 'media' && id === item.id,
+    )
+      ? contentOrder
+      : [...contentOrder, { kind: 'media' as const, id: item.id }];
+    if (
+      await saveSections(
+        selectedSections,
+        curatedSections,
+        nextOrder,
+        storefrontLabels,
+        hiddenBrandIds,
+        hiddenCollectionIds,
+        hiddenRecommendationIds,
+        nextMedia,
+      )
+    ) {
+      setMapDraft({
+        location: '',
+        thumbnailAssetId: '',
+        thumbnailUrl: '',
+        title: '',
+        url: '',
+      });
+      setEditingMapId(null);
+      setMapEditorOpen(false);
+    }
+  }
+
+  async function selectMapImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const previous = {
+      thumbnailAssetId: mapDraft.thumbnailAssetId,
+      thumbnailUrl: mapDraft.thumbnailUrl,
+    };
+    const previewUrl = URL.createObjectURL(file);
+    setMapDraft((current) => ({
+      ...current,
+      thumbnailAssetId: '',
+      thumbnailUrl: previewUrl,
+    }));
+    setUploading(true);
+    setError('');
+    setNotice('');
+    try {
+      const asset = await uploadRecommendationImage(file, () => undefined);
+      setMapDraft((current) => ({
+        ...current,
+        thumbnailAssetId: asset.id,
+        thumbnailUrl: asset.publicUrl,
+      }));
+      setNotice('Map image uploaded and verified.');
+    } catch (cause) {
+      setMapDraft((current) => ({ ...current, ...previous }));
+      setError(messageFor(cause));
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      setUploading(false);
+      event.target.value = '';
+    }
+  }
+
+  async function removeMap(id: string) {
+    const nextMedia = featuredMedia.filter((item) => item.id !== id);
+    const nextOrder = contentOrder.filter(
+      (layer) => layer.kind !== 'media' || layer.id !== id,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      nextOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
+  }
+
+  async function toggleMap(id: string) {
+    const nextMedia = featuredMedia.map((item) =>
+      item.id === id ? { ...item, visible: !item.visible } : item,
+    );
+    await saveSections(
+      selectedSections,
+      curatedSections,
+      contentOrder,
+      storefrontLabels,
+      hiddenBrandIds,
+      hiddenCollectionIds,
+      hiddenRecommendationIds,
+      nextMedia,
+    );
   }
 
   async function removeFeaturedMedia(id: string) {
@@ -1681,6 +2056,7 @@ export function CreatorDashboard() {
       !brandId && lifecycle !== 'archived' && !placedDiscountIds.has(id),
   );
   const collections = curatedSections.filter(({ kind }) => kind === 'collection');
+  const standaloneSections = curatedSections.filter(({ kind }) => kind === 'section');
   const collectedProductIds = new Set(
     collections.flatMap(({ recommendationIds }) => recommendationIds),
   );
@@ -1746,21 +2122,6 @@ export function CreatorDashboard() {
         ? !groupedRecommendationIds.has(entry.item.id)
         : true,
   );
-  const firstName = profile?.displayName.trim().split(/\s+/)[0];
-
-  async function copyStorefrontLink() {
-    if (!profile?.handle) return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/${encodeURIComponent(profile.handle)}`,
-      );
-      setNotice('Storefront link copied.');
-      setError('');
-    } catch {
-      setError('Could not copy the link. Open your storefront to copy its URL.');
-    }
-  }
-
   return (
     <main
       className={`creatorDashboardMain creatorDashboardMainWithSidebar ${styles.root}`}
@@ -1768,48 +2129,10 @@ export function CreatorDashboard() {
       <section className="creatorDashboardIntro">
         <div>
           <p className="eyebrow">CREATOR STUDIO / DASHBOARD</p>
-          <h1 aria-busy={!profile}>
-            {firstName ? (
-              `Your studio, ${firstName}.`
-            ) : (
-              <span aria-hidden="true">&nbsp;</span>
-            )}
-          </h1>
-          <p>Make your page feel like you, one recommendation at a time.</p>
+          <h1 aria-busy={!profile}>Creator dashboard</h1>
+          <p>Everything you need to shape your page.</p>
         </div>
-        {profile?.handle ? (
-          <Link
-            className={styles.storefrontLink}
-            href={`/${encodeURIComponent(profile.handle)}`}
-          >
-            <ExternalLink aria-hidden="true" size={16} />
-            View storefront
-          </Link>
-        ) : null}
       </section>
-
-      {profile?.handle ? (
-        <section aria-label="Your live storefront" className={styles.liveBanner}>
-          <span className={styles.liveIcon}>
-            <Check aria-hidden="true" size={18} />
-          </span>
-          <div className={styles.liveCopy}>
-            <strong>Your page is live</strong>
-            <span>
-              swavii.com/{profile.handle} · Share it wherever your audience finds you.
-            </span>
-          </div>
-          <button
-            aria-label="Copy storefront link"
-            className={styles.copyButton}
-            onClick={() => void copyStorefrontLink()}
-            type="button"
-          >
-            <Copy aria-hidden="true" size={15} />
-            <span>Copy link</span>
-          </button>
-        </section>
-      ) : null}
 
       {error ? (
         <p className="formError" role="alert">
@@ -1826,40 +2149,104 @@ export function CreatorDashboard() {
         <nav aria-label="Dashboard sections" className="creatorDashboardSidebar">
           <p className="eyebrow">MANAGE</p>
           <button
-            aria-current={dashboardView === 'labels' ? 'page' : undefined}
-            onClick={() => setDashboardView('labels')}
-            type="button"
-          >
-            <Tag aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Storefront labels</span>
-            <span className="creatorDashboardNavMobile">Storefront labels</span>
-          </button>
-          <button
             aria-current={dashboardView === 'recommendations' ? 'page' : undefined}
             onClick={() => setDashboardView('recommendations')}
             type="button"
           >
-            <LayoutGrid aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Recommendations</span>
-            <span className="creatorDashboardNavMobile">Recommendations</span>
+            <Sparkles
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconRecommendations"
+              size={19}
+            />
+            <span className="creatorDashboardNavCopy">
+              <strong>Recommendations</strong>
+              <small>Manage brands, items and collections.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
+          </button>
+          <button
+            aria-current={dashboardView === 'labels' ? 'page' : undefined}
+            onClick={() => setDashboardView('labels')}
+            type="button"
+          >
+            <Tag
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconLabels"
+              size={19}
+            />
+            <span className="creatorDashboardNavCopy">
+              <strong>Storefront labels</strong>
+              <small>Customize the labels on your page.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
           <button
             aria-current={dashboardView === 'media' ? 'page' : undefined}
             onClick={() => setDashboardView('media')}
             type="button"
           >
-            <PlayCircle aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Featured content</span>
-            <span className="creatorDashboardNavMobile">Featured content</span>
+            <Clapperboard
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconMedia"
+              size={19}
+            />
+            <span className="creatorDashboardNavCopy">
+              <strong>Media</strong>
+              <small>Add and organize your photos and videos.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
+          </button>
+          <button
+            aria-current={dashboardView === 'maps' ? 'page' : undefined}
+            onClick={() => setDashboardView('maps')}
+            type="button"
+          >
+            <MapPinned
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconMaps"
+              size={19}
+            />
+            <span className="creatorDashboardNavCopy">
+              <strong>Maps</strong>
+              <small>Add places and recommendations from Google Maps.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
           <button
             aria-current={dashboardView === 'connectors' ? 'page' : undefined}
             onClick={() => setDashboardView('connectors')}
             type="button"
           >
-            <Link2 aria-hidden="true" size={17} />
-            <span className="creatorDashboardNavDesktop">Social links</span>
-            <span className="creatorDashboardNavMobile">Social links</span>
+            <Link2
+              aria-hidden="true"
+              className="creatorDashboardNavIcon creatorDashboardNavIconSocial"
+              size={19}
+            />
+            <span className="creatorDashboardNavCopy">
+              <strong>Social links</strong>
+              <small>Connect your platforms in one place.</small>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="creatorDashboardNavArrow"
+              size={17}
+            />
           </button>
         </nav>
         <div className="creatorDashboardPanel">
@@ -1867,7 +2254,7 @@ export function CreatorDashboard() {
             <section className="creatorRecommendationSection">
               <div className="creatorSectionHeading">
                 <div>
-                  <h2>Featured content</h2>
+                  <h2>Media</h2>
                   <p>Add videos, posts and music from your social platforms.</p>
                 </div>
                 <button
@@ -1900,11 +2287,29 @@ export function CreatorDashboard() {
                           thumbnailUrl: detected?.thumbnailUrl ?? current.thumbnailUrl,
                           title: current.title || detected?.title || '',
                         }));
+                        if (detected) {
+                          void enrichMediaDraft(url, detected).then((metadata) => {
+                            if (!metadata) return;
+                            setMediaDraft((current) =>
+                              current.url.trim() === url.trim()
+                                ? {
+                                    ...current,
+                                    thumbnailUrl:
+                                      current.thumbnailUrl || metadata.thumbnailUrl,
+                                    title:
+                                      current.title === detected.title || !current.title
+                                        ? metadata.title
+                                        : current.title,
+                                  }
+                                : current,
+                            );
+                          });
+                        }
                       }}
-                      placeholder="https://www.youtube.com/watch?v=…"
+                      placeholder="https://www.tiktok.com/@creator/video/…"
                     />
                     <small>
-                      Paste a YouTube, Instagram, Spotify or Apple Music link.
+                      Paste a YouTube, Instagram, TikTok, Spotify or Apple Music link.
                     </small>
                   </label>
                   <label>
@@ -1921,21 +2326,9 @@ export function CreatorDashboard() {
                       }
                     />
                   </label>
-                  <label>
-                    Display
-                    <select
-                      value={mediaDraft.displayMode}
-                      onChange={(event) =>
-                        setMediaDraft((current) => ({
-                          ...current,
-                          displayMode: event.target.value as FeaturedMedia['displayMode'],
-                        }))
-                      }
-                    >
-                      <option value="embed">Embedded player</option>
-                      <option value="link">Link card</option>
-                    </select>
-                  </label>
+                  <p className="fieldHint creatorFullField">
+                    Media will be shown as an embedded player.
+                  </p>
                   {mediaDraft.thumbnailUrl ? (
                     <div className="creatorMediaPreview">
                       <Image
@@ -1971,47 +2364,225 @@ export function CreatorDashboard() {
                 </form>
               ) : null}
               <div className="creatorMediaManageList">
-                {featuredMedia.map((item) => (
-                  <article className="creatorMediaManageCard" key={item.id}>
-                    {item.thumbnailUrl ? (
-                      <Image
-                        alt=""
-                        fill
-                        sizes="120px"
-                        src={item.thumbnailUrl}
-                        unoptimized
-                      />
-                    ) : null}
-                    <div>
-                      <small>{item.provider.replace('_', ' ')}</small>
-                      <h3>{item.title}</h3>
-                    </div>
-                    <label className="creatorLiveToggle">
-                      <input
-                        checked={item.visible}
-                        onChange={() => void toggleFeaturedMedia(item.id)}
-                        type="checkbox"
-                      />
-                      <span /> {item.visible ? 'On' : 'Off'}
-                    </label>
+                {featuredMedia
+                  .filter((item) => item.provider !== 'maps')
+                  .map((item) => (
+                    <article className="creatorMediaManageCard" key={item.id}>
+                      {item.thumbnailUrl ? (
+                        <Image
+                          alt=""
+                          fill
+                          sizes="120px"
+                          src={item.thumbnailUrl}
+                          unoptimized
+                        />
+                      ) : null}
+                      <div>
+                        <small>{item.provider.replace('_', ' ')}</small>
+                        <h3>{item.title}</h3>
+                      </div>
+                      <label className="creatorLiveToggle">
+                        <input
+                          checked={item.visible}
+                          onChange={() => void toggleFeaturedMedia(item.id)}
+                          type="checkbox"
+                        />
+                        <span /> {item.visible ? 'On' : 'Off'}
+                      </label>
+                      <button
+                        aria-label={`Edit ${item.title}`}
+                        onClick={() => startMediaEditor(item)}
+                        type="button"
+                      >
+                        <Pencil aria-hidden="true" size={16} />
+                      </button>
+                      <button
+                        aria-label={`Remove ${item.title}`}
+                        onClick={() => void removeFeaturedMedia(item.id)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={16} />
+                      </button>
+                    </article>
+                  ))}
+                {!featuredMedia.some((item) => item.provider !== 'maps') ? (
+                  <p className="creatorEmptyState">No media yet.</p>
+                ) : null}
+              </div>
+            </section>
+          ) : dashboardView === 'maps' ? (
+            <section className="creatorRecommendationSection">
+              <div className="creatorSectionHeading">
+                <div>
+                  <h2>Maps</h2>
+                  <p>Add a place recommendation that opens directly in Google Maps.</p>
+                </div>
+                <button
+                  className="button primary"
+                  onClick={() => startMapEditor()}
+                  type="button"
+                >
+                  <MapPinned aria-hidden="true" size={16} />
+                  <span>Add map</span>
+                </button>
+              </div>
+              {mapEditorOpen ? (
+                <form
+                  className="creatorComposer creatorComposerBody creatorFormGrid"
+                  onSubmit={(event) => void saveMap(event)}
+                >
+                  <label>
+                    Google Maps link
+                    <input
+                      required
+                      type="url"
+                      value={mapDraft.url}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          url: event.target.value,
+                        }))
+                      }
+                      placeholder="https://maps.google.com/..."
+                    />
+                    <small>Paste a Google Maps place or directions link.</small>
+                  </label>
+                  <label>
+                    Map name
+                    <input
+                      required
+                      maxLength={160}
+                      value={mapDraft.title}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          title: event.target.value,
+                        }))
+                      }
+                      placeholder="Best coffee in Tel Aviv"
+                    />
+                  </label>
+                  <label>
+                    Location <span className="fieldOptional">(optional)</span>
+                    <input
+                      maxLength={160}
+                      value={mapDraft.location}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          location: event.target.value,
+                        }))
+                      }
+                      placeholder="Florentin, Tel Aviv"
+                    />
+                  </label>
+                  <label>
+                    Place image <span className="fieldOptional">(optional)</span>
+                    <span className="creatorPhotoControls">
+                      <span className="button secondary">
+                        <Upload aria-hidden="true" size={16} />
+                        {uploading ? 'Uploading…' : 'Upload image'}
+                        <input
+                          accept={recommendationImageAccept}
+                          disabled={saving || uploading}
+                          onChange={selectMapImage}
+                          type="file"
+                        />
+                      </span>
+                      {mapDraft.thumbnailUrl ? (
+                        <span className="creatorCollectionCoverInput">
+                          <Image
+                            alt="Map recommendation preview"
+                            height={72}
+                            src={mapDraft.thumbnailUrl}
+                            unoptimized
+                            width={96}
+                          />
+                        </span>
+                      ) : null}
+                    </span>
+                    <small>
+                      JPEG, PNG or WebP up to 5 MB. This image appears on the right side
+                      of the map card.
+                    </small>
+                  </label>
+                  <div className="creatorFormActions creatorFullField">
                     <button
-                      aria-label={`Edit ${item.title}`}
-                      onClick={() => startMediaEditor(item)}
-                      type="button"
+                      className="button primary"
+                      disabled={saving || uploading}
+                      type="submit"
                     >
-                      <Pencil aria-hidden="true" size={16} />
+                      {saving ? 'Saving…' : editingMapId ? 'Save map' : 'Add map'}
                     </button>
                     <button
-                      aria-label={`Remove ${item.title}`}
-                      onClick={() => void removeFeaturedMedia(item.id)}
+                      onClick={() => {
+                        setEditingMapId(null);
+                        setMapEditorOpen(false);
+                        setMapDraft({
+                          location: '',
+                          thumbnailAssetId: '',
+                          thumbnailUrl: '',
+                          title: '',
+                          url: '',
+                        });
+                      }}
                       type="button"
                     >
-                      <Trash2 aria-hidden="true" size={16} />
+                      Cancel
                     </button>
-                  </article>
-                ))}
-                {!featuredMedia.length ? (
-                  <p className="creatorEmptyState">No featured content yet.</p>
+                  </div>
+                </form>
+              ) : null}
+              <div className="creatorMediaManageList">
+                {featuredMedia
+                  .filter((item) => item.provider === 'maps')
+                  .map((item) => (
+                    <article className="creatorMediaManageCard" key={item.id}>
+                      {item.thumbnailUrl ? (
+                        <Image
+                          alt=""
+                          height={72}
+                          sizes="96px"
+                          src={item.thumbnailUrl}
+                          unoptimized
+                          width={96}
+                        />
+                      ) : (
+                        <span className="creatorMapManageIcon" aria-hidden="true">
+                          <MapPinned size={20} />
+                        </span>
+                      )}
+                      <div>
+                        <small>Maps</small>
+                        <h3>{item.title}</h3>
+                        {item.location ? <p>{item.location}</p> : null}
+                      </div>
+                      <label className="creatorLiveToggle">
+                        <input
+                          checked={item.visible}
+                          onChange={() => void toggleMap(item.id)}
+                          type="checkbox"
+                        />
+                        <span /> {item.visible ? 'On' : 'Off'}
+                      </label>
+                      <button
+                        aria-label={`Edit ${item.title}`}
+                        onClick={() => startMapEditor(item)}
+                        type="button"
+                      >
+                        <Pencil aria-hidden="true" size={16} />
+                      </button>
+                      <button
+                        aria-label={`Remove ${item.title}`}
+                        onClick={() => void removeMap(item.id)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden="true" size={16} />
+                      </button>
+                    </article>
+                  ))}
+                {!featuredMedia.some((item) => item.provider === 'maps') ? (
+                  <p className="creatorEmptyState">No maps yet.</p>
                 ) : null}
               </div>
             </section>
@@ -2025,359 +2596,354 @@ export function CreatorDashboard() {
                     organized.
                   </p>
                 </div>
-                <button
-                  className="button primary"
-                  onClick={() => showComposer('choose')}
-                  type="button"
-                >
-                  <Plus aria-hidden="true" size={16} />
-                  <span>Add recommendation</span>
-                </button>
               </div>
 
-              {composer ? (
-                <div className="creatorComposer" id="creator-composer">
-                  {composer === 'choose' ? (
-                    <>
-                      <ComposerHeader title="Add recommendation" onClose={closeComposer}>
-                        Choose what you want to share with your audience.
-                      </ComposerHeader>
-                      <div className="creatorTypeGrid">
-                        <button onClick={() => setComposer('brand')} type="button">
-                          <span aria-hidden="true">
-                            <Sparkles size={16} />
-                          </span>
-                          <strong>Brand</strong>
-                          <small>Create a brand card. A discount code is optional.</small>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setProduct(emptyProduct);
-                            setComposer('product');
+              <div
+                className={`creatorComposer ${
+                  composer === null || composer === 'choose'
+                    ? 'creatorComposerCompact'
+                    : ''
+                }`}
+                id="creator-composer"
+              >
+                {composer === null || composer === 'choose' ? (
+                  <div className="creatorTypeGrid">
+                    <button onClick={() => setComposer('brand')} type="button">
+                      <span aria-hidden="true">
+                        <Store size={16} />
+                      </span>
+                      <strong>Brand</strong>
+                      <small>Create a brand card</small>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setProduct(emptyProduct);
+                        setComposer('product');
+                      }}
+                      type="button"
+                    >
+                      <span aria-hidden="true">
+                        <Link2 size={16} />
+                      </span>
+                      <strong>Item</strong>
+                      <small>Recommend one item</small>
+                    </button>
+                    <button onClick={() => setComposer('collection')} type="button">
+                      <span aria-hidden="true">
+                        <LayoutGrid size={16} />
+                      </span>
+                      <strong>Collection</strong>
+                      <small>Group items together</small>
+                    </button>
+                    <button onClick={() => setComposer('section')} type="button">
+                      <span aria-hidden="true">
+                        <Layers3 size={16} />
+                      </span>
+                      <strong>Carousel</strong>
+                      <small>Mix products and media together</small>
+                    </button>
+                  </div>
+                ) : null}
+                {composer === 'product' ? (
+                  <ProductForm
+                    brands={brands}
+                    discounts={discounts}
+                    categories={categories}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    recommendations={activeRecommendations}
+                    editor={product}
+                    editing={Boolean(editingProduct)}
+                    fetching={fetching}
+                    fetchWarnings={fetchWarnings}
+                    onAddStoryLink={addStoryLink}
+                    onCategoryCreated={(category) =>
+                      setCategories((current) => [...current, category])
+                    }
+                    onChange={setProduct}
+                    onChangeType={() => {
+                      setProduct(emptyProduct);
+                      setComposer('choose');
+                    }}
+                    onClose={closeComposer}
+                    onFetch={fetchProductDetails}
+                    onImages={selectProductImages}
+                    onValidationError={() => setNotice('')}
+                    onSave={saveProduct}
+                    onStory={selectStoryClip}
+                    videoStage={videoStage}
+                    videoError={videoError}
+                    saving={saving || uploading}
+                  />
+                ) : null}
+                {composer === 'brand' ? (
+                  <>
+                    <ComposerHeader
+                      title={editingBrand ? 'Edit brand' : 'Add brand'}
+                      onClose={closeComposer}
+                    >
+                      Add the brand once. Its discount details are optional and can be
+                      edited later.
+                    </ComposerHeader>
+                    <form
+                      className="creatorComposerBody creatorFormGrid"
+                      onSubmit={(event) => void saveBrand(event)}
+                    >
+                      <label>
+                        Brand website
+                        <input
+                          required
+                          inputMode="url"
+                          type="text"
+                          placeholder="https://www.adidas.com"
+                          value={brand.websiteUrl}
+                          onBlur={() => {
+                            setBrand((current) => ({
+                              ...current,
+                              name: current.name || brandNameFromUrl(current.websiteUrl),
+                            }));
                           }}
+                          onChange={(event) =>
+                            setBrand({ ...brand, websiteUrl: event.target.value })
+                          }
+                        />
+                        <button
+                          className="creatorInlineAction"
+                          disabled={fetching || saving || uploading}
+                          onClick={() => void fetchBrandDetails()}
                           type="button"
                         >
-                          <span aria-hidden="true">
-                            <Tag size={16} />
-                          </span>
-                          <strong>Item</strong>
-                          <small>
-                            Recommend one specific product with its price, details and
-                            story clips.
-                          </small>
+                          {fetching ? 'Fetching…' : 'Fetch name and image'}
                         </button>
-                        <button onClick={() => setComposer('collection')} type="button">
-                          <span aria-hidden="true">
-                            <LayoutGrid size={16} />
-                          </span>
-                          <strong>Collection</strong>
-                          <small>
-                            Group your favorite products in one named storefront row.
-                          </small>
-                        </button>
-                      </div>
-                    </>
-                  ) : null}
-                  {composer === 'product' ? (
-                    <ProductForm
-                      brands={brands}
-                      discounts={discounts}
-                      categories={categories}
-                      collections={curatedSections.filter(
-                        ({ kind }) => kind === 'collection',
-                      )}
-                      recommendations={activeRecommendations}
-                      editor={product}
-                      editing={Boolean(editingProduct)}
-                      fetching={fetching}
-                      fetchWarnings={fetchWarnings}
-                      onAddStoryLink={addStoryLink}
-                      onCategoryCreated={(category) =>
-                        setCategories((current) => [...current, category])
-                      }
-                      onChange={setProduct}
-                      onChangeType={() => {
-                        setProduct(emptyProduct);
-                        setComposer('choose');
-                      }}
-                      onClose={closeComposer}
-                      onFetch={fetchProductDetails}
-                      onImages={selectProductImages}
-                      onValidationError={() => setNotice('')}
-                      onSave={saveProduct}
-                      onStory={selectStoryClip}
-                      videoStage={videoStage}
-                      videoError={videoError}
-                      saving={saving || uploading}
-                    />
-                  ) : null}
-                  {composer === 'brand' ? (
-                    <>
-                      <ComposerHeader
-                        title={editingBrand ? 'Edit brand' : 'Add brand'}
-                        onClose={closeComposer}
-                      >
-                        Add the brand once. Its discount details are optional and can be
-                        edited later.
-                      </ComposerHeader>
-                      <form
-                        className="creatorComposerBody creatorFormGrid"
-                        onSubmit={(event) => void saveBrand(event)}
-                      >
-                        <label>
-                          Brand website
-                          <input
-                            required
-                            inputMode="url"
-                            type="text"
-                            placeholder="https://www.adidas.com"
-                            value={brand.websiteUrl}
-                            onBlur={() => {
-                              setBrand((current) => ({
-                                ...current,
-                                name:
-                                  current.name || brandNameFromUrl(current.websiteUrl),
-                              }));
-                            }}
-                            onChange={(event) =>
-                              setBrand({ ...brand, websiteUrl: event.target.value })
-                            }
-                          />
-                          <button
-                            className="creatorInlineAction"
-                            disabled={fetching || saving || uploading}
-                            onClick={() => void fetchBrandDetails()}
-                            type="button"
-                          >
-                            {fetching ? 'Fetching…' : 'Fetch name and image'}
-                          </button>
-                        </label>
-                        <label>
-                          Brand name
-                          <input
-                            required
-                            maxLength={120}
-                            value={brand.name}
-                            onChange={(event) =>
-                              setBrand({ ...brand, name: event.target.value })
-                            }
-                          />
-                          <small>
-                            Filled automatically from the website and remains editable.
-                          </small>
-                        </label>
-                        <label className="creatorFullField">
-                          Brand image <span className="fieldOptional">Optional</span>
-                          <input
-                            accept={recommendationImageAccept}
-                            disabled={saving || uploading}
-                            type="file"
-                            onChange={(event) => void selectBrandLogo(event)}
-                          />
-                          <input
-                            inputMode="url"
-                            placeholder="https://brand.com/logo.png"
-                            type="url"
-                            value={brand.logoUrl}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                logoAssetId: '',
-                                logoUrl: event.target.value,
-                              })
-                            }
-                          />
-                          {brand.logoUrl ? (
-                            <div className="creatorProductPhotoGrid">
-                              <span>
-                                <Image
-                                  alt="Brand image preview"
-                                  fill
-                                  sizes="96px"
-                                  src={brand.logoUrl}
-                                  unoptimized
-                                />
-                                <small>Default</small>
-                                <button
-                                  aria-label="Remove brand image"
-                                  onClick={() =>
-                                    setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
-                                  }
-                                  type="button"
-                                >
-                                  <X aria-hidden="true" size={12} />
-                                </button>
-                              </span>
-                            </div>
-                          ) : null}
-                          <small>
-                            We suggest the brand&apos;s favicon from its website. Replace
-                            it with an upload or image URL if needed.
-                          </small>
-                        </label>
-                        <label>
-                          Code <span className="fieldOptional">Optional</span>
-                          <input
-                            maxLength={50}
-                            value={brand.code}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                code: event.target.value,
-                              })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Discount type <span className="fieldOptional">Optional</span>
-                          <select
-                            value={brand.discountType}
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                discountType: event.target
-                                  .value as BrandEditor['discountType'],
-                                discountPercent: '',
-                                discountAmount: '',
-                              })
-                            }
-                          >
-                            <option value="percent">Percent off</option>
-                            <option value="amount">Fixed ₪ amount off</option>
-                          </select>
-                        </label>
-                        <label>
-                          {brand.discountType === 'amount'
-                            ? 'Amount off (₪)'
-                            : 'Percent off'}
-                          <input
-                            min="1"
-                            max={brand.discountType === 'amount' ? undefined : '100'}
-                            type="number"
-                            value={
-                              brand.discountType === 'amount'
-                                ? brand.discountAmount
-                                : brand.discountPercent
-                            }
-                            onChange={(event) =>
-                              setBrand({
-                                ...brand,
-                                [brand.discountType === 'amount'
-                                  ? 'discountAmount'
-                                  : 'discountPercent']: event.target.value,
-                              })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Expires <span className="fieldOptional">Optional</span>
-                          <input
-                            type="date"
-                            value={brand.expiresAt}
-                            onChange={(event) =>
-                              setBrand({ ...brand, expiresAt: event.target.value })
-                            }
-                          />
-                        </label>
-                        <label className="creatorFullField">
-                          Details <span className="fieldOptional">Optional</span>
-                          <textarea
-                            dir="auto"
-                            rows={3}
-                            value={brand.detailsHe}
-                            onChange={(event) =>
-                              setBrand({ ...brand, detailsHe: event.target.value })
-                            }
-                          />
-                        </label>
-                        <div className="creatorFullField">
-                          <button
-                            className="button primary"
-                            disabled={saving}
-                            type="submit"
-                          >
-                            {saving
-                              ? 'Saving…'
-                              : editingBrand
-                                ? 'Save brand'
-                                : 'Add brand'}
-                          </button>
-                        </div>
-                      </form>
-                    </>
-                  ) : null}
-                  {composer === 'discount' ? (
-                    <DiscountForm
-                      brands={brands}
-                      collections={curatedSections.filter(
-                        ({ kind }) => kind === 'collection',
-                      )}
-                      editor={discount}
-                      editing={Boolean(editingDiscount)}
-                      onChange={setDiscount}
-                      onClose={closeComposer}
-                      onSave={saveDiscount}
-                      recommendations={activeRecommendations}
-                      saving={saving}
-                    />
-                  ) : null}
-                  {composer === 'collection' ? (
-                    <>
-                      <ComposerHeader title="New collection" onClose={closeComposer}>
-                        Curate products into one storefront row.
-                      </ComposerHeader>
-                      <div className="creatorComposerBody">
-                        <CuratedSectionForm
-                          brands={brands}
-                          kind="collection"
-                          recommendations={activeRecommendations}
-                          onAddNewItem={async (section, brandName) => {
-                            const saved = await saveSections(
-                              selectedSections,
-                              [...curatedSections, section],
-                              [...contentOrder, { kind: 'collection', id: section.id }],
-                            );
-                            if (!saved) return false;
-                            setProduct({
-                              ...emptyProduct,
-                              brandName,
-                              collectionIds: [section.id],
-                              categoryId: '',
-                              categoryIds: [],
-                            });
-                            setComposer('product');
-                            return true;
-                          }}
-                          onCreateBrand={async (input) => {
-                            const created = await apiRequest<CreatorBrand>(
-                              '/creator/brands',
-                              {
-                                body: JSON.stringify(input),
-                                idempotent: true,
-                                method: 'POST',
-                              },
-                            );
-                            setBrands((current) => [
-                              ...current.filter(({ id }) => id !== created.id),
-                              created,
-                            ]);
-                            return created;
-                          }}
-                          onCancel={closeComposer}
-                          onSave={(section) =>
-                            saveSections(
-                              selectedSections,
-                              [...curatedSections, section],
-                              [...contentOrder, { kind: 'collection', id: section.id }],
-                            )
+                      </label>
+                      <label>
+                        Brand name
+                        <input
+                          required
+                          maxLength={120}
+                          value={brand.name}
+                          onChange={(event) =>
+                            setBrand({ ...brand, name: event.target.value })
                           }
-                          saving={saving}
                         />
+                        <small>
+                          Filled automatically from the website and remains editable.
+                        </small>
+                      </label>
+                      <label className="creatorFullField">
+                        Brand image <span className="fieldOptional">Optional</span>
+                        <input
+                          accept={recommendationImageAccept}
+                          disabled={saving || uploading}
+                          type="file"
+                          onChange={(event) => void selectBrandLogo(event)}
+                        />
+                        <input
+                          inputMode="url"
+                          placeholder="https://brand.com/logo.png"
+                          type="text"
+                          value={brand.logoUrl}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              logoAssetId: '',
+                              logoUrl: event.target.value,
+                            })
+                          }
+                        />
+                        {brand.logoUrl ? (
+                          <div className="creatorProductPhotoGrid">
+                            <span>
+                              <Image
+                                alt="Brand image preview"
+                                fill
+                                sizes="96px"
+                                src={brand.logoUrl}
+                                unoptimized
+                              />
+                              <small>Default</small>
+                              <button
+                                aria-label="Remove brand image"
+                                onClick={() =>
+                                  setBrand({ ...brand, logoAssetId: '', logoUrl: '' })
+                                }
+                                type="button"
+                              >
+                                <X aria-hidden="true" size={12} />
+                              </button>
+                            </span>
+                          </div>
+                        ) : null}
+                        <small>
+                          We suggest the brand&apos;s favicon from its website. Replace it
+                          with an upload or image URL if needed.
+                        </small>
+                      </label>
+                      <label>
+                        Code <span className="fieldOptional">Optional</span>
+                        <input
+                          maxLength={50}
+                          value={brand.code}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              code: event.target.value,
+                            })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Discount type <span className="fieldOptional">Optional</span>
+                        <select
+                          value={brand.discountType}
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              discountType: event.target
+                                .value as BrandEditor['discountType'],
+                              discountPercent: '',
+                              discountAmount: '',
+                            })
+                          }
+                        >
+                          <option value="percent">Percent off</option>
+                          <option value="amount">Fixed ₪ amount off</option>
+                        </select>
+                      </label>
+                      <label>
+                        {brand.discountType === 'amount'
+                          ? 'Amount off (₪)'
+                          : 'Percent off'}
+                        <input
+                          min="1"
+                          max={brand.discountType === 'amount' ? undefined : '100'}
+                          type="number"
+                          value={
+                            brand.discountType === 'amount'
+                              ? brand.discountAmount
+                              : brand.discountPercent
+                          }
+                          onChange={(event) =>
+                            setBrand({
+                              ...brand,
+                              [brand.discountType === 'amount'
+                                ? 'discountAmount'
+                                : 'discountPercent']: event.target.value,
+                            })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Expires <span className="fieldOptional">Optional</span>
+                        <input
+                          type="date"
+                          value={brand.expiresAt}
+                          onChange={(event) =>
+                            setBrand({ ...brand, expiresAt: event.target.value })
+                          }
+                        />
+                      </label>
+                      <label className="creatorFullField">
+                        Details <span className="fieldOptional">Optional</span>
+                        <textarea
+                          dir="auto"
+                          rows={3}
+                          value={brand.detailsHe}
+                          onChange={(event) =>
+                            setBrand({ ...brand, detailsHe: event.target.value })
+                          }
+                        />
+                      </label>
+                      <div className="creatorFullField">
+                        <button
+                          className="button primary"
+                          disabled={saving}
+                          type="submit"
+                        >
+                          {saving ? 'Saving…' : editingBrand ? 'Save brand' : 'Add brand'}
+                        </button>
                       </div>
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
+                    </form>
+                  </>
+                ) : null}
+                {composer === 'discount' ? (
+                  <DiscountForm
+                    brands={brands}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    editor={discount}
+                    editing={Boolean(editingDiscount)}
+                    onChange={setDiscount}
+                    onClose={closeComposer}
+                    onSave={saveDiscount}
+                    recommendations={activeRecommendations}
+                    saving={saving}
+                  />
+                ) : null}
+                {composer === 'collection' ? (
+                  <>
+                    <ComposerHeader title="New collection" onClose={closeComposer}>
+                      Curate products into one storefront row.
+                    </ComposerHeader>
+                    <div className="creatorComposerBody">
+                      <CuratedSectionForm
+                        brands={brands}
+                        discounts={discounts}
+                        kind="collection"
+                        recommendations={activeRecommendations}
+                        onCreateBrand={async (input) => {
+                          const created = await apiRequest<CreatorBrand>(
+                            '/creator/brands',
+                            {
+                              body: JSON.stringify(input),
+                              idempotent: true,
+                              method: 'POST',
+                            },
+                          );
+                          setBrands((current) => [
+                            ...current.filter(({ id }) => id !== created.id),
+                            created,
+                          ]);
+                          return created;
+                        }}
+                        onSaveCollectionDiscount={saveCollectionDiscount}
+                        onCancel={closeComposer}
+                        onSave={(section) =>
+                          saveSections(
+                            selectedSections,
+                            [...curatedSections, section],
+                            [...contentOrder, { kind: 'collection', id: section.id }],
+                          )
+                        }
+                        saving={saving}
+                      />
+                    </div>
+                  </>
+                ) : null}
+                {composer === 'section' ? (
+                  <CuratedSectionForm
+                    brands={brands}
+                    collections={curatedSections.filter(
+                      ({ kind }) => kind === 'collection',
+                    )}
+                    featuredMedia={featuredMedia}
+                    kind="section"
+                    onCancel={closeComposer}
+                    onSave={async (section) => {
+                      const saved = await saveSections(
+                        selectedSections,
+                        [...curatedSections, section],
+                        [...contentOrder, { kind: 'section', id: section.id }],
+                      );
+                      return saved;
+                    }}
+                    recommendations={activeRecommendations}
+                    saving={saving}
+                  />
+                ) : null}
+              </div>
 
               <div aria-label="Recommendation totals" className={styles.counts}>
                 <span>
@@ -2392,170 +2958,546 @@ export function CreatorDashboard() {
               </div>
 
               {loading ? <DelayedLoading>Loading recommendations…</DelayedLoading> : null}
+              <div
+                aria-label="Filter recommendations"
+                className="creatorRecommendationFilters"
+                role="tablist"
+              >
+                {(
+                  [
+                    ['all', 'All'],
+                    ['brands', 'Brands'],
+                    ['items', 'Items'],
+                    ['sections', 'Carousels'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    aria-selected={recommendationFilter === value}
+                    className={recommendationFilter === value ? 'isActive' : ''}
+                    key={value}
+                    onClick={() => setRecommendationFilter(value)}
+                    role="tab"
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
               <div className="creatorManageList">
-                {brandGroups.map(
-                  ({
-                    brand: managedBrand,
-                    collections: brandCollections,
-                    items: brandItems,
-                  }) => (
-                    <section
-                      className="creatorManageCollection creatorBrandManageCard"
-                      key={managedBrand.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <button
-                          aria-expanded={expandedBrandId === managedBrand.id}
-                          aria-controls={`brand-contents-${managedBrand.id}`}
-                          className="creatorBrandToggle"
-                          onClick={() =>
-                            setExpandedBrandId((current) =>
-                              current === managedBrand.id ? null : managedBrand.id,
-                            )
-                          }
-                          type="button"
-                        >
-                          <ChevronDown aria-hidden="true" size={18} />
-                          <span>
-                            <strong>{managedBrand.name}</strong>
-                            <small>
-                              {brandCollections.length} collections ?{' '}
-                              {
-                                new Set([
-                                  ...brandCollections.flatMap(({ items }) =>
-                                    items.map(({ id }) => id),
-                                  ),
-                                  ...brandItems.map(({ id }) => id),
-                                ]).size
-                              }{' '}
-                              items
-                            </small>
-                          </span>
-                        </button>
-                        <div className="creatorManageCollectionActions">
-                          <label
-                            className="creatorLiveToggle"
-                            title={
-                              hiddenBrandIds.includes(managedBrand.id)
-                                ? 'Show brand'
-                                : 'Hide brand'
+                {(recommendationFilter === 'all' ||
+                  recommendationFilter === 'sections') &&
+                  standaloneSections.map((section) => {
+                    const sectionItems = section.recommendationIds.flatMap(
+                      (id) => activeRecommendations.find((item) => item.id === id) ?? [],
+                    );
+                    const sectionMedia = section.contentItems.filter(
+                      ({ kind }) => kind === 'media',
+                    );
+                    return (
+                      <section
+                        aria-label={`${section.title} carousel`}
+                        className="creatorManageCollection creatorSectionManageCard"
+                        key={section.id}
+                      >
+                        <header className="creatorManageCollectionHeader">
+                          <div>
+                            <span className="eyebrow">CAROUSEL</span>
+                            <h3>{section.title}</h3>
+                          </div>
+                          <div className="creatorManageCollectionActions">
+                            <label className="creatorLiveToggle">
+                              <input
+                                checked={!hiddenCollectionIds.includes(section.id)}
+                                onChange={(event) =>
+                                  void toggleVisibility(
+                                    'collection',
+                                    section.id,
+                                    event.target.checked,
+                                  )
+                                }
+                                type="checkbox"
+                              />
+                              <span />
+                              {hiddenCollectionIds.includes(section.id) ? 'Off' : 'On'}
+                            </label>
+                            <button
+                              aria-label={`Edit ${section.title}`}
+                              disabled={saving}
+                              onClick={() => setEditingSectionId(section.id)}
+                              type="button"
+                            >
+                              <Pencil aria-hidden="true" size={16} />
+                            </button>
+                            <button
+                              aria-label={`Delete ${section.title}`}
+                              disabled={saving}
+                              onClick={() => {
+                                if (
+                                  !window.confirm(`Delete the ${section.title} carousel?`)
+                                )
+                                  return;
+                                void saveCuratedSections(
+                                  curatedSections.filter(({ id }) => id !== section.id),
+                                ).then((saved) => {
+                                  if (saved) setEditingSectionId(null);
+                                });
+                              }}
+                              type="button"
+                            >
+                              <Trash2 aria-hidden="true" size={16} />
+                            </button>
+                          </div>
+                          <button
+                            aria-expanded={expandedSectionId === section.id}
+                            aria-label={`${expandedSectionId === section.id ? 'Hide' : 'Show'} ${section.title} content`}
+                            className="creatorSectionExpand"
+                            onClick={() =>
+                              setExpandedSectionId((current) =>
+                                current === section.id ? null : section.id,
+                              )
                             }
+                            type="button"
                           >
-                            <input
-                              checked={!hiddenBrandIds.includes(managedBrand.id)}
-                              onChange={(event) =>
-                                void toggleVisibility(
-                                  'brand',
-                                  managedBrand.id,
-                                  event.target.checked,
+                            {expandedSectionId === section.id ? (
+                              <ChevronDown aria-hidden="true" size={18} />
+                            ) : (
+                              <ChevronRight aria-hidden="true" size={18} />
+                            )}
+                          </button>
+                        </header>
+                        {editingSectionId === section.id ? (
+                          <div className="creatorManageCollectionEditor">
+                            <CuratedSectionForm
+                              brands={brands}
+                              collections={curatedSections.filter(
+                                ({ kind }) => kind === 'collection',
+                              )}
+                              discounts={discounts}
+                              featuredMedia={featuredMedia}
+                              initial={section}
+                              kind="section"
+                              onCancel={() => setEditingSectionId(null)}
+                              onSave={(updated) =>
+                                saveCuratedSections(
+                                  curatedSections.map((current) =>
+                                    current.id === section.id ? updated : current,
+                                  ),
                                 )
                               }
-                              type="checkbox"
+                              recommendations={activeRecommendations}
+                              saving={saving}
                             />
-                            <span />
-                            {hiddenBrandIds.includes(managedBrand.id) ? 'Off' : 'On'}
-                          </label>
-                          <a
-                            href={managedBrand.websiteUrl}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                            <ExternalLink size={16} />
-                          </a>
-                          <button
-                            aria-label={`Edit ${managedBrand.name}`}
-                            onClick={() => {
-                              const offer = discounts.find(
-                                (item) =>
-                                  item.brandId === managedBrand.id &&
-                                  item.scopeKind === 'brand',
-                              );
-                              setEditingBrand(managedBrand);
-                              setBrand({
-                                code: offer?.code ?? '',
-                                discountType: offer?.discountAmountMinor
-                                  ? 'amount'
-                                  : 'percent',
-                                detailsHe: offer?.details?.value ?? '',
-                                discountPercent: offer?.discountPercent?.toString() ?? '',
-                                discountAmount: offer?.discountAmountMinor
-                                  ? String(offer.discountAmountMinor / 100)
-                                  : '',
-                                expiresAt: toLocalDate(offer?.expiresAt ?? null),
-                                name: managedBrand.name,
-                                websiteUrl: managedBrand.websiteUrl,
-                                logoAssetId: managedBrand.logoAssetId ?? '',
-                                logoUrl: managedBrand.logoUrl ?? '',
-                              });
-                              setComposer('brand');
-                              window.scrollTo({ behavior: 'smooth', top: 120 });
-                            }}
-                            type="button"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${managedBrand.name}`}
-                            disabled={saving}
-                            onClick={() => {
-                              const archiveRecommendations =
-                                managedBrand.itemCount > 0 &&
-                                window.confirm(
-                                  `Also remove ${managedBrand.itemCount} recommendation${managedBrand.itemCount === 1 ? '' : 's'} under ${managedBrand.name}? Choose OK to remove them too, or Cancel to keep them.`,
-                                );
-                              void apiRequest(
-                                `/creator/brands/${managedBrand.id}?archiveRecommendations=${archiveRecommendations}`,
-                                {
-                                  headers: { 'if-match': `"${managedBrand.version}"` },
-                                  method: 'DELETE',
-                                },
-                              )
-                                .then(() => load())
-                                .catch((cause: unknown) => setError(messageFor(cause)));
-                            }}
-                            type="button"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </header>
-                      <div
-                        id={`brand-contents-${managedBrand.id}`}
-                        hidden={expandedBrandId !== managedBrand.id}
-                      >
-                        {brandCollections.length || brandItems.length ? (
-                          <div className="creatorBrandManageContents">
-                            {brandCollections.map((entry) => (
-                              <CollectionManageCard
-                                brands={brands}
-                                editing={editingCollectionId === entry.section.id}
-                                entry={entry}
-                                key={entry.section.id}
-                                nested
-                                onArchiveItem={(item) => {
-                                  if (
-                                    window.confirm(
-                                      'Remove this recommendation from your storefront?',
-                                    )
+                          </div>
+                        ) : expandedSectionId === section.id &&
+                          (sectionItems.length || sectionMedia.length) ? (
+                          <div className="creatorManageCollectionItems">
+                            {sectionItems.map((item) => (
+                              <RecommendationManageCard
+                                item={item}
+                                key={item.id}
+                                onToggle={() =>
+                                  toggleVisibility(
+                                    'recommendation',
+                                    item.id,
+                                    !hiddenRecommendationIds.includes(item.id),
                                   )
-                                    void recommendationCommand(item, 'archive');
-                                }}
-                                onCreateBrand={async (input) => {
-                                  const created = await apiRequest<CreatorBrand>(
-                                    '/creator/brands',
-                                    {
-                                      body: JSON.stringify(input),
-                                      idempotent: true,
-                                      method: 'POST',
-                                    },
+                                }
+                                visible={!hiddenRecommendationIds.includes(item.id)}
+                                onArchive={() =>
+                                  void recommendationCommand(item, 'archive')
+                                }
+                                onEdit={() => editProduct(item)}
+                              />
+                            ))}
+                            {sectionMedia.length ? (
+                              <p className="creatorManageCollectionEmpty">
+                                {sectionMedia.length} Featured Content item
+                                {sectionMedia.length === 1 ? '' : 's'} included.
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : expandedSectionId === section.id ? (
+                          <p className="creatorManageCollectionEmpty">
+                            No content yet. Edit this carousel to add existing content.
+                          </p>
+                        ) : null}
+                      </section>
+                    );
+                  })}
+                {(recommendationFilter === 'all' || recommendationFilter === 'brands') &&
+                  brandGroups.map(
+                    ({
+                      brand: managedBrand,
+                      collections: brandCollections,
+                      items: brandItems,
+                    }) => (
+                      <section
+                        className="creatorManageCollection creatorBrandManageCard"
+                        key={managedBrand.id}
+                      >
+                        <header className="creatorManageCollectionHeader">
+                          <button
+                            aria-expanded={expandedBrandId === managedBrand.id}
+                            aria-controls={`brand-contents-${managedBrand.id}`}
+                            className="creatorBrandToggle"
+                            onClick={() =>
+                              setExpandedBrandId((current) =>
+                                current === managedBrand.id ? null : managedBrand.id,
+                              )
+                            }
+                            type="button"
+                          >
+                            <ChevronDown aria-hidden="true" size={18} />
+                            <span>
+                              <strong>{managedBrand.name}</strong>
+                              <small>
+                                {brandCollections.length} collections ?{' '}
+                                {
+                                  new Set([
+                                    ...brandCollections.flatMap(({ items }) =>
+                                      items.map(({ id }) => id),
+                                    ),
+                                    ...brandItems.map(({ id }) => id),
+                                  ]).size
+                                }{' '}
+                                items
+                              </small>
+                            </span>
+                          </button>
+                          <div className="creatorManageCollectionActions">
+                            <label
+                              className="creatorLiveToggle"
+                              title={
+                                hiddenBrandIds.includes(managedBrand.id)
+                                  ? 'Show brand'
+                                  : 'Hide brand'
+                              }
+                            >
+                              <input
+                                checked={!hiddenBrandIds.includes(managedBrand.id)}
+                                onChange={(event) =>
+                                  void toggleVisibility(
+                                    'brand',
+                                    managedBrand.id,
+                                    event.target.checked,
+                                  )
+                                }
+                                type="checkbox"
+                              />
+                              <span />
+                              {hiddenBrandIds.includes(managedBrand.id) ? 'Off' : 'On'}
+                            </label>
+                            <a
+                              href={managedBrand.websiteUrl}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                            <button
+                              aria-label={`Edit ${managedBrand.name}`}
+                              onClick={() => {
+                                const offer = discounts.find(
+                                  (item) =>
+                                    item.brandId === managedBrand.id &&
+                                    item.scopeKind === 'brand',
+                                );
+                                setEditingBrand(managedBrand);
+                                setBrand({
+                                  code: offer?.code ?? '',
+                                  discountType: offer?.discountAmountMinor
+                                    ? 'amount'
+                                    : 'percent',
+                                  detailsHe: offer?.details?.value ?? '',
+                                  discountPercent:
+                                    offer?.discountPercent?.toString() ?? '',
+                                  discountAmount: offer?.discountAmountMinor
+                                    ? String(offer.discountAmountMinor / 100)
+                                    : '',
+                                  expiresAt: toLocalDate(offer?.expiresAt ?? null),
+                                  name: managedBrand.name,
+                                  websiteUrl: managedBrand.websiteUrl,
+                                  logoAssetId: managedBrand.logoAssetId ?? '',
+                                  logoUrl: managedBrand.logoUrl ?? '',
+                                });
+                                setComposer('brand');
+                                window.scrollTo({ behavior: 'smooth', top: 120 });
+                              }}
+                              type="button"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              aria-label={`Delete ${managedBrand.name}`}
+                              disabled={saving}
+                              onClick={() => {
+                                const archiveRecommendations =
+                                  managedBrand.itemCount > 0 &&
+                                  window.confirm(
+                                    `Also remove ${managedBrand.itemCount} recommendation${managedBrand.itemCount === 1 ? '' : 's'} under ${managedBrand.name}? Choose OK to remove them too, or Cancel to keep them.`,
                                   );
-                                  setBrands((current) => [
-                                    ...current.filter(({ id }) => id !== created.id),
-                                    created,
-                                  ]);
-                                  return created;
-                                }}
-                                onDelete={() => {
+                                void apiRequest(
+                                  `/creator/brands/${managedBrand.id}?archiveRecommendations=${archiveRecommendations}`,
+                                  {
+                                    headers: { 'if-match': `"${managedBrand.version}"` },
+                                    method: 'DELETE',
+                                  },
+                                )
+                                  .then(() => load())
+                                  .catch((cause: unknown) => setError(messageFor(cause)));
+                              }}
+                              type="button"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </header>
+                        <div
+                          id={`brand-contents-${managedBrand.id}`}
+                          hidden={expandedBrandId !== managedBrand.id}
+                        >
+                          {brandCollections.length || brandItems.length ? (
+                            <div className="creatorBrandManageContents">
+                              {brandCollections.map((entry) => (
+                                <CollectionManageCard
+                                  brands={brands}
+                                  discounts={discounts}
+                                  editing={editingCollectionId === entry.section.id}
+                                  entry={entry}
+                                  key={entry.section.id}
+                                  nested
+                                  onArchiveItem={(item) => {
+                                    if (
+                                      window.confirm(
+                                        'Remove this recommendation from your storefront?',
+                                      )
+                                    )
+                                      void recommendationCommand(item, 'archive');
+                                  }}
+                                  onCreateBrand={async (input) => {
+                                    const created = await apiRequest<CreatorBrand>(
+                                      '/creator/brands',
+                                      {
+                                        body: JSON.stringify(input),
+                                        idempotent: true,
+                                        method: 'POST',
+                                      },
+                                    );
+                                    setBrands((current) => [
+                                      ...current.filter(({ id }) => id !== created.id),
+                                      created,
+                                    ]);
+                                    return created;
+                                  }}
+                                  onSaveCollectionDiscount={saveCollectionDiscount}
+                                  onDelete={() => {
+                                    if (
+                                      !window.confirm(
+                                        `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
+                                      )
+                                    )
+                                      return;
+                                    void saveCuratedSections(
+                                      curatedSections
+                                        .filter(({ id }) => id !== entry.section.id)
+                                        .map((section) =>
+                                          section.parentCollectionId === entry.section.id
+                                            ? { ...section, parentCollectionId: null }
+                                            : section,
+                                        ),
+                                    ).then((saved) => {
+                                      if (saved) setEditingCollectionId(null);
+                                    });
+                                  }}
+                                  onEditItem={editProduct}
+                                  onToggleItem={(item) =>
+                                    toggleVisibility(
+                                      'recommendation',
+                                      item.id,
+                                      !hiddenRecommendationIds.includes(item.id),
+                                    )
+                                  }
+                                  isItemVisible={(item) =>
+                                    !hiddenRecommendationIds.includes(item.id)
+                                  }
+                                  visible={
+                                    !hiddenCollectionIds.includes(entry.section.id)
+                                  }
+                                  onToggleVisibility={(visible) =>
+                                    toggleVisibility(
+                                      'collection',
+                                      entry.section.id,
+                                      visible,
+                                    )
+                                  }
+                                  onEditState={(editing) =>
+                                    setEditingCollectionId(
+                                      editing ? entry.section.id : null,
+                                    )
+                                  }
+                                  onSave={(updated) =>
+                                    saveCuratedSections(
+                                      curatedSections.map((section) =>
+                                        section.id === entry.section.id
+                                          ? updated
+                                          : section,
+                                      ),
+                                    )
+                                  }
+                                  profileHandle={profile?.handle}
+                                  recommendations={activeRecommendations}
+                                  saving={saving}
+                                />
+                              ))}
+                              {brandItems.length ? (
+                                <details className="creatorBrandStandaloneItems creatorManageDisclosure">
+                                  <summary>
+                                    Individual items <span>({brandItems.length})</span>
+                                  </summary>
+                                  {brandItems.map((item) => (
+                                    <RecommendationManageCard
+                                      item={item}
+                                      key={item.id}
+                                      onToggle={() =>
+                                        void toggleVisibility(
+                                          'recommendation',
+                                          item.id,
+                                          !hiddenRecommendationIds.includes(item.id),
+                                        )
+                                      }
+                                      visible={!hiddenRecommendationIds.includes(item.id)}
+                                      onArchive={() => {
+                                        if (
+                                          window.confirm(
+                                            'Remove this recommendation from your storefront?',
+                                          )
+                                        )
+                                          void recommendationCommand(item, 'archive');
+                                      }}
+                                      onEdit={() => editProduct(item)}
+                                    />
+                                  ))}
+                                </details>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="creatorManageCollectionEmpty">
+                              No recommendations have been added to this brand yet.
+                            </p>
+                          )}
+                        </div>
+                      </section>
+                    ),
+                  )}
+                {recommendationFilter === 'items' &&
+                  activeRecommendations.map((item) => (
+                    <RecommendationManageCard
+                      item={item}
+                      key={item.id}
+                      onToggle={() =>
+                        void toggleVisibility(
+                          'recommendation',
+                          item.id,
+                          !hiddenRecommendationIds.includes(item.id),
+                        )
+                      }
+                      visible={!hiddenRecommendationIds.includes(item.id)}
+                      onArchive={() => {
+                        if (
+                          window.confirm(
+                            'Remove this recommendation from your storefront?',
+                          )
+                        )
+                          void recommendationCommand(item, 'archive');
+                      }}
+                      onEdit={() => editProduct(item)}
+                    />
+                  ))}
+                {recommendationFilter === 'items' &&
+                  activeDiscounts.map((item) => (
+                    <DiscountManageCard
+                      item={item}
+                      key={item.id}
+                      onArchive={() => void archiveDiscount(item)}
+                      onEdit={() => editDiscount(item)}
+                      onToggle={() => void toggleDiscount(item)}
+                    />
+                  ))}
+                {(recommendationFilter === 'all' ||
+                  recommendationFilter === 'sections') &&
+                  ungroupedEntries
+                    .filter(
+                      (entry) =>
+                        recommendationFilter === 'all' || entry.kind === 'collection',
+                    )
+                    .map((entry) =>
+                      entry.kind === 'collection' ? (
+                        <section
+                          aria-label={`${entry.section.title} collection`}
+                          className="creatorManageCollection"
+                          key={entry.section.id}
+                        >
+                          <header className="creatorManageCollectionHeader">
+                            <div>
+                              <span className="eyebrow">COLLECTION</span>
+                              <h3>{entry.section.title}</h3>
+                              <p>
+                                {activeRecommendations.find(
+                                  ({ brandId }) => brandId === entry.section.brandId,
+                                )?.brandName ?? 'Brand'}
+                                {' · '}
+                                {entry.items.length}{' '}
+                                {entry.items.length === 1 ? 'item' : 'items'}
+                              </p>
+                            </div>
+                            <div className="creatorManageCollectionActions">
+                              <label
+                                className="creatorLiveToggle"
+                                title={
+                                  hiddenCollectionIds.includes(entry.section.id)
+                                    ? 'Show collection'
+                                    : 'Hide collection'
+                                }
+                              >
+                                <input
+                                  checked={
+                                    !hiddenCollectionIds.includes(entry.section.id)
+                                  }
+                                  onChange={(event) =>
+                                    void toggleVisibility(
+                                      'collection',
+                                      entry.section.id,
+                                      event.target.checked,
+                                    )
+                                  }
+                                  type="checkbox"
+                                />
+                                <span />
+                                {hiddenCollectionIds.includes(entry.section.id)
+                                  ? 'Off'
+                                  : 'On'}
+                              </label>
+                              {profile ? (
+                                <Link
+                                  href={`/${profile.handle}/pages/${entry.section.id}`}
+                                  target="_blank"
+                                >
+                                  View page
+                                </Link>
+                              ) : null}
+                              <button
+                                aria-label={`Edit ${entry.section.title} collection`}
+                                disabled={saving}
+                                onClick={() => setEditingCollectionId(entry.section.id)}
+                                title="Edit collection"
+                                type="button"
+                              >
+                                <Pencil aria-hidden="true" size={16} />
+                              </button>
+                              <button
+                                aria-label={`Delete ${entry.section.title} collection`}
+                                disabled={saving}
+                                onClick={() => {
                                   if (
                                     !window.confirm(
                                       `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
@@ -2574,30 +3516,37 @@ export function CreatorDashboard() {
                                     if (saved) setEditingCollectionId(null);
                                   });
                                 }}
-                                onEditItem={editProduct}
-                                onToggleItem={(item) =>
-                                  toggleVisibility(
-                                    'recommendation',
-                                    item.id,
-                                    !hiddenRecommendationIds.includes(item.id),
-                                  )
-                                }
-                                isItemVisible={(item) =>
-                                  !hiddenRecommendationIds.includes(item.id)
-                                }
-                                visible={!hiddenCollectionIds.includes(entry.section.id)}
-                                onToggleVisibility={(visible) =>
-                                  toggleVisibility(
-                                    'collection',
-                                    entry.section.id,
-                                    visible,
-                                  )
-                                }
-                                onEditState={(editing) =>
-                                  setEditingCollectionId(
-                                    editing ? entry.section.id : null,
-                                  )
-                                }
+                                title="Delete collection"
+                                type="button"
+                              >
+                                <Trash2 aria-hidden="true" size={16} />
+                              </button>
+                            </div>
+                          </header>
+                          {editingCollectionId === entry.section.id ? (
+                            <div className="creatorManageCollectionEditor">
+                              <CuratedSectionForm
+                                brands={brands}
+                                discounts={discounts}
+                                initial={entry.section}
+                                kind="collection"
+                                onCancel={() => setEditingCollectionId(null)}
+                                onCreateBrand={async (input) => {
+                                  const created = await apiRequest<CreatorBrand>(
+                                    '/creator/brands',
+                                    {
+                                      body: JSON.stringify(input),
+                                      idempotent: true,
+                                      method: 'POST',
+                                    },
+                                  );
+                                  setBrands((current) => [
+                                    ...current.filter(({ id }) => id !== created.id),
+                                    created,
+                                  ]);
+                                  return created;
+                                }}
+                                onSaveCollectionDiscount={saveCollectionDiscount}
                                 onSave={(updated) =>
                                   saveCuratedSections(
                                     curatedSections.map((section) =>
@@ -2605,239 +3554,74 @@ export function CreatorDashboard() {
                                     ),
                                   )
                                 }
-                                profileHandle={profile?.handle}
                                 recommendations={activeRecommendations}
                                 saving={saving}
                               />
-                            ))}
-                            {brandItems.length ? (
-                              <details className="creatorBrandStandaloneItems creatorManageDisclosure">
-                                <summary>
-                                  Individual items <span>({brandItems.length})</span>
-                                </summary>
-                                {brandItems.map((item) => (
-                                  <RecommendationManageCard
-                                    item={item}
-                                    key={item.id}
-                                    onToggle={() =>
-                                      void toggleVisibility(
-                                        'recommendation',
-                                        item.id,
-                                        !hiddenRecommendationIds.includes(item.id),
+                            </div>
+                          ) : entry.items.length ? (
+                            <div className="creatorManageCollectionItems">
+                              {entry.items.map((item) => (
+                                <RecommendationManageCard
+                                  item={item}
+                                  key={item.id}
+                                  onToggle={() =>
+                                    void toggleVisibility(
+                                      'recommendation',
+                                      item.id,
+                                      !hiddenRecommendationIds.includes(item.id),
+                                    )
+                                  }
+                                  visible={!hiddenRecommendationIds.includes(item.id)}
+                                  onArchive={() => {
+                                    if (
+                                      window.confirm(
+                                        'Remove this recommendation from your storefront?',
                                       )
-                                    }
-                                    visible={!hiddenRecommendationIds.includes(item.id)}
-                                    onArchive={() => {
-                                      if (
-                                        window.confirm(
-                                          'Remove this recommendation from your storefront?',
-                                        )
-                                      )
-                                        void recommendationCommand(item, 'archive');
-                                    }}
-                                    onEdit={() => editProduct(item)}
-                                  />
-                                ))}
-                              </details>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <p className="creatorManageCollectionEmpty">
-                            No recommendations have been added to this brand yet.
-                          </p>
-                        )}
-                      </div>
-                    </section>
-                  ),
-                )}
-                {ungroupedEntries.map((entry) =>
-                  entry.kind === 'collection' ? (
-                    <section
-                      aria-label={`${entry.section.title} collection`}
-                      className="creatorManageCollection"
-                      key={entry.section.id}
-                    >
-                      <header className="creatorManageCollectionHeader">
-                        <div>
-                          <span className="eyebrow">COLLECTION</span>
-                          <h3>{entry.section.title}</h3>
-                          <p>
-                            {activeRecommendations.find(
-                              ({ brandId }) => brandId === entry.section.brandId,
-                            )?.brandName ?? 'Brand'}
-                            {' · '}
-                            {entry.items.length}{' '}
-                            {entry.items.length === 1 ? 'item' : 'items'}
-                          </p>
-                        </div>
-                        <div className="creatorManageCollectionActions">
-                          <label
-                            className="creatorLiveToggle"
-                            title={
-                              hiddenCollectionIds.includes(entry.section.id)
-                                ? 'Show collection'
-                                : 'Hide collection'
-                            }
-                          >
-                            <input
-                              checked={!hiddenCollectionIds.includes(entry.section.id)}
-                              onChange={(event) =>
-                                void toggleVisibility(
-                                  'collection',
-                                  entry.section.id,
-                                  event.target.checked,
-                                )
-                              }
-                              type="checkbox"
-                            />
-                            <span />
-                            {hiddenCollectionIds.includes(entry.section.id)
-                              ? 'Off'
-                              : 'On'}
-                          </label>
-                          {profile ? (
-                            <Link
-                              href={`/${profile.handle}/pages/${entry.section.id}`}
-                              target="_blank"
-                            >
-                              View page
-                            </Link>
-                          ) : null}
-                          <button
-                            aria-label={`Edit ${entry.section.title} collection`}
-                            disabled={saving}
-                            onClick={() => setEditingCollectionId(entry.section.id)}
-                            title="Edit collection"
-                            type="button"
-                          >
-                            <Pencil aria-hidden="true" size={16} />
-                          </button>
-                          <button
-                            aria-label={`Delete ${entry.section.title} collection`}
-                            disabled={saving}
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `Delete the ${entry.section.title} collection? Its products will remain in your recommendations.`,
-                                )
+                                    )
+                                      void recommendationCommand(item, 'archive');
+                                  }}
+                                  onEdit={() => editProduct(item)}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="creatorManageCollectionEmpty">
+                              No active products in this collection. Edit it to add one.
+                            </p>
+                          )}
+                        </section>
+                      ) : entry.kind === 'recommendation' ? (
+                        <RecommendationManageCard
+                          item={entry.item}
+                          key={entry.item.id}
+                          onToggle={() =>
+                            void toggleVisibility(
+                              'recommendation',
+                              entry.item.id,
+                              !hiddenRecommendationIds.includes(entry.item.id),
+                            )
+                          }
+                          visible={!hiddenRecommendationIds.includes(entry.item.id)}
+                          onArchive={() => {
+                            if (
+                              window.confirm(
+                                'Remove this recommendation from your storefront?',
                               )
-                                return;
-                              void saveCuratedSections(
-                                curatedSections
-                                  .filter(({ id }) => id !== entry.section.id)
-                                  .map((section) =>
-                                    section.parentCollectionId === entry.section.id
-                                      ? { ...section, parentCollectionId: null }
-                                      : section,
-                                  ),
-                              ).then((saved) => {
-                                if (saved) setEditingCollectionId(null);
-                              });
-                            }}
-                            title="Delete collection"
-                            type="button"
-                          >
-                            <Trash2 aria-hidden="true" size={16} />
-                          </button>
-                        </div>
-                      </header>
-                      {editingCollectionId === entry.section.id ? (
-                        <div className="creatorManageCollectionEditor">
-                          <CuratedSectionForm
-                            brands={brands}
-                            initial={entry.section}
-                            kind="collection"
-                            onCancel={() => setEditingCollectionId(null)}
-                            onCreateBrand={async (input) => {
-                              const created = await apiRequest<CreatorBrand>(
-                                '/creator/brands',
-                                {
-                                  body: JSON.stringify(input),
-                                  idempotent: true,
-                                  method: 'POST',
-                                },
-                              );
-                              setBrands((current) => [
-                                ...current.filter(({ id }) => id !== created.id),
-                                created,
-                              ]);
-                              return created;
-                            }}
-                            onSave={(updated) =>
-                              saveCuratedSections(
-                                curatedSections.map((section) =>
-                                  section.id === entry.section.id ? updated : section,
-                                ),
-                              )
-                            }
-                            recommendations={activeRecommendations}
-                            saving={saving}
-                          />
-                        </div>
-                      ) : entry.items.length ? (
-                        <div className="creatorManageCollectionItems">
-                          {entry.items.map((item) => (
-                            <RecommendationManageCard
-                              item={item}
-                              key={item.id}
-                              onToggle={() =>
-                                void toggleVisibility(
-                                  'recommendation',
-                                  item.id,
-                                  !hiddenRecommendationIds.includes(item.id),
-                                )
-                              }
-                              visible={!hiddenRecommendationIds.includes(item.id)}
-                              onArchive={() => {
-                                if (
-                                  window.confirm(
-                                    'Remove this recommendation from your storefront?',
-                                  )
-                                )
-                                  void recommendationCommand(item, 'archive');
-                              }}
-                              onEdit={() => editProduct(item)}
-                            />
-                          ))}
-                        </div>
+                            )
+                              void recommendationCommand(entry.item, 'archive');
+                          }}
+                          onEdit={() => editProduct(entry.item)}
+                        />
                       ) : (
-                        <p className="creatorManageCollectionEmpty">
-                          No active products in this collection. Edit it to add one.
-                        </p>
-                      )}
-                    </section>
-                  ) : entry.kind === 'recommendation' ? (
-                    <RecommendationManageCard
-                      item={entry.item}
-                      key={entry.item.id}
-                      onToggle={() =>
-                        void toggleVisibility(
-                          'recommendation',
-                          entry.item.id,
-                          !hiddenRecommendationIds.includes(entry.item.id),
-                        )
-                      }
-                      visible={!hiddenRecommendationIds.includes(entry.item.id)}
-                      onArchive={() => {
-                        if (
-                          window.confirm(
-                            'Remove this recommendation from your storefront?',
-                          )
-                        )
-                          void recommendationCommand(entry.item, 'archive');
-                      }}
-                      onEdit={() => editProduct(entry.item)}
-                    />
-                  ) : (
-                    <DiscountManageCard
-                      item={entry.item}
-                      key={entry.item.id}
-                      onArchive={() => void archiveDiscount(entry.item)}
-                      onEdit={() => editDiscount(entry.item)}
-                      onToggle={() => void toggleDiscount(entry.item)}
-                    />
-                  ),
-                )}
+                        <DiscountManageCard
+                          item={entry.item}
+                          key={entry.item.id}
+                          onArchive={() => void archiveDiscount(entry.item)}
+                          onEdit={() => editDiscount(entry.item)}
+                          onToggle={() => void toggleDiscount(entry.item)}
+                        />
+                      ),
+                    )}
                 {!loading && !manageEntries.length ? (
                   <div className="creatorEmpty">
                     No recommendations yet. Add your first one above.
@@ -2876,11 +3660,13 @@ export function CreatorDashboard() {
 
 function CollectionManageCard({
   brands,
+  discounts = [],
   editing,
   entry,
   nested = false,
   onArchiveItem,
   onCreateBrand,
+  onSaveCollectionDiscount,
   onDelete,
   onEditItem,
   onToggleItem,
@@ -2894,11 +3680,16 @@ function CollectionManageCard({
   saving,
 }: {
   brands: CreatorBrand[];
+  discounts?: CreatorDiscountCode[];
   editing: boolean;
   entry: CollectionManageEntry;
   nested?: boolean;
   onArchiveItem: (item: CreatorRecommendation) => void;
   onCreateBrand: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
+  onSaveCollectionDiscount: (
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) => Promise<boolean>;
   onDelete: () => void;
   onEditItem: (item: CreatorRecommendation) => void;
   onToggleItem: (item: CreatorRecommendation) => Promise<boolean> | void;
@@ -2970,10 +3761,12 @@ function CollectionManageCard({
           <div className="creatorManageCollectionEditor">
             <CuratedSectionForm
               brands={brands}
+              discounts={discounts}
               initial={entry.section}
               kind="collection"
               onCancel={() => onEditState(false)}
               onCreateBrand={onCreateBrand}
+              onSaveCollectionDiscount={onSaveCollectionDiscount}
               onSave={onSave}
               recommendations={recommendations}
               saving={saving}
@@ -3106,7 +3899,12 @@ function StorefrontLabelsEditor({
     <section className="creatorLabelsEditor">
       <div className="creatorSectionHeading">
         <div>
-          <h2>Storefront labels</h2>
+          <div className="creatorLabelsHeadingTitle">
+            <span aria-hidden="true" className="creatorLabelsHeadingMark">
+              <Tag size={16} />
+            </span>
+            <h2>Storefront labels</h2>
+          </div>
           <p>Add category filters or create your own groups such as My favorites.</p>
         </div>
         <button
@@ -3459,7 +4257,8 @@ function ProductForm({
             <input
               id="creator-product-link"
               required={isLinkCard}
-              type="url"
+              inputMode="url"
+              type="text"
               value={editor.productUrl}
               onChange={(event) => update('productUrl', event.target.value)}
               placeholder="https://www.terminalx.com/..."
@@ -3641,7 +4440,7 @@ function ProductForm({
                 </label>
                 <input
                   aria-label="Primary image link"
-                  type="url"
+                  type="text"
                   value={editor.imageAssetId ? '' : editor.imageUrl}
                   onChange={(event) =>
                     onChange({
@@ -3898,7 +4697,7 @@ function ProductForm({
               <input
                 inputMode="url"
                 placeholder="https://www.instagram.com/stories/..."
-                type="url"
+                type="text"
                 value={editor.instagramStoryUrl}
                 onChange={(event) =>
                   update('instagramStoryUrl', event.target.value.trim())
@@ -3952,7 +4751,7 @@ function ProductForm({
               ) : null}
               <span className="creatorInlineField">
                 <input
-                  type="url"
+                  type="text"
                   value={editor.storyLink}
                   onChange={(event) => update('storyLink', event.target.value)}
                   placeholder="…or paste a video link (https://)"
@@ -4338,28 +5137,35 @@ function DiscountManageCard({
 function CuratedSectionForm({
   brands = [],
   collections = [],
+  discounts = [],
+  featuredMedia = [],
   initial,
   kind,
   onCancel,
-  onAddNewItem,
   onCreateBrand,
+  onSaveCollectionDiscount,
   onSave,
   recommendations,
   saving,
 }: {
   brands?: CreatorBrand[];
   collections?: CuratedSection[];
+  discounts?: CreatorDiscountCode[];
+  featuredMedia?: FeaturedMedia[];
   initial?: CuratedSection;
   kind: CuratedSection['kind'];
   onCancel: () => void;
-  onAddNewItem?: (section: CuratedSection, brandName: string) => Promise<boolean>;
   onCreateBrand?: (input: { name: string; websiteUrl: string }) => Promise<CreatorBrand>;
+  onSaveCollectionDiscount?: (
+    section: CuratedSection,
+    draft: CollectionDiscountDraft | null,
+  ) => Promise<boolean>;
   onSave: (section: CuratedSection) => Promise<boolean>;
   recommendations: CreatorRecommendation[];
   saving: boolean;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
-  const [availableBrands, setAvailableBrands] = useState(brands);
+  const [createdBrands, setCreatedBrands] = useState<CreatorBrand[]>([]);
   const [brandId, setBrandId] = useState(initial?.brandId ?? '');
   const [creatingBrand, setCreatingBrand] = useState(false);
   const [newBrandName, setNewBrandName] = useState('');
@@ -4374,16 +5180,58 @@ function CuratedSectionForm({
   const [recommendationIds, setRecommendationIds] = useState<string[]>(
     initial?.recommendationIds ?? [],
   );
+  const displayStyle: CuratedSection['displayStyle'] =
+    initial?.displayStyle ?? 'horizontal';
+  const [contentItems, setContentItems] = useState<CuratedSection['contentItems']>(
+    initial?.contentItems?.length
+      ? initial.contentItems
+      : (initial?.recommendationIds ?? []).map((id) => ({
+          id,
+          kind: 'recommendation' as const,
+        })),
+  );
   const [showItemsIndividually, setShowItemsIndividually] = useState(
     initial?.showItemsIndividually ?? false,
   );
   const [selectionError, setSelectionError] = useState('');
+  const existingCollectionDiscount = discounts.find(
+    (discount) => discount.scopeKind === 'collection' && discount.scopeId === sectionId,
+  );
+  const [useBrandDiscount, setUseBrandDiscount] = useState(!existingCollectionDiscount);
+  const [collectionDiscountDraft, setCollectionDiscountDraft] =
+    useState<CollectionDiscountDraft>({
+      code: existingCollectionDiscount?.code ?? '',
+      discountPercent: existingCollectionDiscount?.discountPercent?.toString() ?? '',
+      expiresAt: existingCollectionDiscount?.expiresAt?.slice(0, 10) ?? '',
+    });
   const [draggingRecommendationId, setDraggingRecommendationId] = useState<string | null>(
     null,
   );
-  const visibleRecommendations = brandId
-    ? recommendations.filter((item) => item.brandId === brandId)
-    : recommendations;
+  const [draggingContentKey, setDraggingContentKey] = useState<string | null>(null);
+  const availableBrands = useMemo(
+    () => [
+      ...brands,
+      ...createdBrands.filter((created) => !brands.some(({ id }) => id === created.id)),
+    ],
+    [brands, createdBrands],
+  );
+  const visibleRecommendations =
+    kind === 'collection'
+      ? brandId
+        ? recommendations.filter((item) => item.brandId === brandId)
+        : []
+      : brandId
+        ? recommendations.filter((item) => item.brandId === brandId)
+        : recommendations;
+  const selectedBrand = availableBrands.find((brand) => brand.brandId === brandId);
+  const brandDiscount =
+    kind === 'collection' && brandId
+      ? discounts.find(
+          (discount) =>
+            discount.scopeKind === 'brand' && discount.brandId === selectedBrand?.id,
+        )
+      : undefined;
+  const displayedDiscount = brandDiscount ?? existingCollectionDiscount;
   const recommendationGroups = Array.from(
     visibleRecommendations.reduce((groups, item) => {
       const key = item.brandId || `unassigned:${item.brandName}`;
@@ -4396,18 +5244,57 @@ function CuratedSectionForm({
       return groups;
     }, new Map<string, { name: string; items: CreatorRecommendation[] }>()),
   );
+  const selectedSectionRecommendationIds = contentItems
+    .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+    .map(({ id }) => id);
+  function toggleSectionContent(item: {
+    id: string;
+    kind: 'recommendation' | 'media' | 'brand' | 'collection';
+  }) {
+    setSelectionError('');
+    setContentItems((current) =>
+      current.some(({ id, kind }) => id === item.id && kind === item.kind)
+        ? current.filter(({ id, kind }) => id !== item.id || kind !== item.kind)
+        : current.length >= 40
+          ? current
+          : [...current, item],
+    );
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!recommendationIds.length) {
+    if (kind === 'collection' && !brandId) {
+      setSelectionError('Choose a brand before selecting products.');
+      return;
+    }
+    if (kind !== 'section' && !recommendationIds.length) {
       setSelectionError('Choose at least one product.');
       return;
     }
+    if (
+      kind === 'collection' &&
+      recommendationIds.some(
+        (id) => recommendations.find((item) => item.id === id)?.brandId !== brandId,
+      )
+    ) {
+      setSelectionError(
+        'Every product in a collection must belong to its selected brand.',
+      );
+      return;
+    }
+    const nextContentItems =
+      kind === 'section'
+        ? contentItems
+        : recommendationIds.map((id) => ({ id, kind: 'recommendation' as const }));
     const saved = await onSave({
       id: sectionId,
       kind,
       brandId: brandId || null,
-      recommendationIds,
+      contentItems: nextContentItems,
+      displayStyle: kind === 'section' ? 'horizontal' : displayStyle,
+      recommendationIds: nextContentItems
+        .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+        .map(({ id }) => id),
       showItemsIndividually,
       title: title.trim(),
       description: kind === 'page' ? description.trim() : (initial?.description ?? ''),
@@ -4417,6 +5304,27 @@ function CuratedSectionForm({
           ? parentCollectionId || null
           : (initial?.parentCollectionId ?? null),
     });
+    if (saved && kind === 'collection' && onSaveCollectionDiscount) {
+      const discountSaved = await onSaveCollectionDiscount(
+        {
+          id: sectionId,
+          kind,
+          brandId: brandId || null,
+          contentItems: nextContentItems,
+          displayStyle,
+          recommendationIds: nextContentItems
+            .filter(({ kind: contentKind }) => contentKind === 'recommendation')
+            .map(({ id }) => id),
+          showItemsIndividually,
+          title: title.trim(),
+          description: initial?.description ?? '',
+          imageUrl: imageUrl || null,
+          parentCollectionId: initial?.parentCollectionId ?? null,
+        },
+        useBrandDiscount ? null : collectionDiscountDraft,
+      );
+      if (!discountSaved) return;
+    }
     if (saved) onCancel();
   }
 
@@ -4427,7 +5335,7 @@ function CuratedSectionForm({
           ? 'Collection name'
           : kind === 'page'
             ? 'Page title'
-            : 'Section name'}
+            : 'Carousel name'}
         <input
           maxLength={80}
           onChange={(event) => setTitle(event.target.value)}
@@ -4442,6 +5350,13 @@ function CuratedSectionForm({
           value={title}
         />
       </label>
+      {kind === 'section' ? (
+        <div className="creatorCuratedModeNote">
+          <span>Layout</span>
+          <strong>Horizontal carousel</strong>
+          <small>Items will appear in one swipeable row on your storefront.</small>
+        </div>
+      ) : null}
       {kind === 'collection' ? (
         <label>
           Brand
@@ -4450,6 +5365,7 @@ function CuratedSectionForm({
             value={brandId}
             onChange={(event) => {
               setBrandId(event.target.value);
+              setUseBrandDiscount(true);
               if (event.target.value) setCreatingBrand(false);
               setRecommendationIds((ids) =>
                 ids.filter(
@@ -4460,14 +5376,14 @@ function CuratedSectionForm({
               );
             }}
           >
-            <option value="">All brands — browse products</option>
+            <option value="">Choose a brand first</option>
             {availableBrands.map((brand) => (
               <option key={brand.brandId} value={brand.brandId}>
                 {brand.name}
               </option>
             ))}
           </select>
-          {brandId && availableBrands.find((item) => item.brandId === brandId) ? (
+          {brandId && selectedBrand ? (
             <small>Using this brand&apos;s saved name and website.</small>
           ) : null}
           {onCreateBrand ? (
@@ -4480,6 +5396,89 @@ function CuratedSectionForm({
             </button>
           ) : null}
         </label>
+      ) : null}
+      {kind === 'collection' && brandId && displayedDiscount ? (
+        <div className="creatorDiscountInheritance">
+          <label className="creatorCheckboxField">
+            <input
+              checked={useBrandDiscount}
+              onChange={(event) => {
+                const checked = event.target.checked;
+                setUseBrandDiscount(checked);
+                if (!checked && !collectionDiscountDraft.code && displayedDiscount) {
+                  setCollectionDiscountDraft({
+                    code: displayedDiscount.code ?? '',
+                    discountPercent: displayedDiscount.discountPercent?.toString() ?? '',
+                    expiresAt: displayedDiscount.expiresAt?.slice(0, 10) ?? '',
+                  });
+                }
+              }}
+              type="checkbox"
+            />
+            <span>
+              <strong>
+                Use the same discount as {selectedBrand?.name ?? 'this brand'}
+              </strong>
+              <small>
+                {displayedDiscount.code ? `${displayedDiscount.code} · ` : ''}
+                {displayedDiscount.discountPercent
+                  ? `${displayedDiscount.discountPercent}% off`
+                  : displayedDiscount.discountAmountMinor
+                    ? `${(displayedDiscount.discountAmountMinor / 100).toFixed(2)} off`
+                    : 'Brand discount'}
+                {displayedDiscount.expiresAt
+                  ? ` · ends ${new Date(displayedDiscount.expiresAt).toLocaleDateString()}`
+                  : ''}
+              </small>
+            </span>
+          </label>
+          {!useBrandDiscount ? (
+            <div className="creatorCollectionDiscountFields">
+              <label>
+                Code
+                <input
+                  maxLength={50}
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      code: event.target.value,
+                    }))
+                  }
+                  value={collectionDiscountDraft.code}
+                />
+              </label>
+              <label>
+                Discount %
+                <input
+                  inputMode="numeric"
+                  max="100"
+                  min="1"
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      discountPercent: event.target.value,
+                    }))
+                  }
+                  type="number"
+                  value={collectionDiscountDraft.discountPercent}
+                />
+              </label>
+              <label>
+                Expires
+                <input
+                  onChange={(event) =>
+                    setCollectionDiscountDraft((current) => ({
+                      ...current,
+                      expiresAt: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={collectionDiscountDraft.expiresAt}
+                />
+              </label>
+            </div>
+          ) : null}
+        </div>
       ) : null}
       {kind === 'collection' ? (
         <label>
@@ -4544,7 +5543,7 @@ function CuratedSectionForm({
                 websiteUrl: newBrandUrl.trim(),
               })
                 .then((created) => {
-                  setAvailableBrands((current) => [
+                  setCreatedBrands((current) => [
                     ...current.filter(({ id }) => id !== created.id),
                     created,
                   ]);
@@ -4589,49 +5588,173 @@ function CuratedSectionForm({
           </label>
         </>
       ) : null}
-      <fieldset>
-        <legend>Products in this {kind}</legend>
-        {recommendations.length ? (
-          <div className="creatorCuratedChoices">
-            {recommendationGroups.map(([id, group]) => (
-              <section className="creatorCuratedBrandGroup" key={id}>
-                {!brandId ? <h3>{group.name}</h3> : null}
-                {group.items.map((item) => (
-                  <label key={item.id}>
+      {kind === 'section' ? (
+        <>
+          <fieldset>
+            <legend>Brands</legend>
+            {brands.length ? (
+              <div className="creatorCuratedChoices">
+                {brands.map((brand) => (
+                  <label key={brand.id}>
                     <input
-                      checked={recommendationIds.includes(item.id)}
+                      checked={contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'brand' && id === brand.id,
+                      )}
                       type="checkbox"
-                      disabled={
-                        recommendationIds.length >= 20 &&
-                        !recommendationIds.includes(item.id)
+                      onChange={() =>
+                        toggleSectionContent({ id: brand.id, kind: 'brand' })
                       }
-                      onChange={(event) => {
-                        setSelectionError('');
-                        setRecommendationIds((current) =>
-                          event.target.checked
-                            ? [...current, item.id]
-                            : current.filter((id) => id !== item.id),
-                        );
-                      }}
                     />
-                    <span className="creatorCuratedProductThumb">
-                      {item.imageUrl ? (
-                        <Image alt="" fill sizes="44px" src={item.imageUrl} unoptimized />
-                      ) : null}
-                    </span>
-                    <span>
-                      {item.productName}
-                      {!brandId ? <small>{item.brandName}</small> : null}
-                    </span>
+                    <span>{brand.name}</span>
                   </label>
                 ))}
-              </section>
-            ))}
-          </div>
-        ) : (
-          <p>Add a product recommendation first.</p>
-        )}
-      </fieldset>
+              </div>
+            ) : (
+              <p>No brands yet.</p>
+            )}
+          </fieldset>
+          <fieldset>
+            <legend>Collections</legend>
+            {collections.length ? (
+              <div className="creatorCuratedChoices">
+                {collections.map((collection) => (
+                  <label key={collection.id}>
+                    <input
+                      checked={contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'collection' && id === collection.id,
+                      )}
+                      type="checkbox"
+                      onChange={() =>
+                        toggleSectionContent({ id: collection.id, kind: 'collection' })
+                      }
+                    />
+                    <span>{collection.title}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p>No collections yet.</p>
+            )}
+          </fieldset>
+        </>
+      ) : null}
+      <>
+        <fieldset>
+          <legend>
+            {kind === 'section' ? 'Recommendations' : `Products in this ${kind}`}
+          </legend>
+          {kind === 'collection' && !brandId ? (
+            <p>Choose a brand above to see its products.</p>
+          ) : recommendations.length ? (
+            <div className="creatorCuratedChoices">
+              {recommendationGroups.map(([id, group]) => (
+                <section className="creatorCuratedBrandGroup" key={id}>
+                  {!brandId ? <h3>{group.name}</h3> : null}
+                  {group.items.map((item) => (
+                    <label key={item.id}>
+                      <input
+                        checked={
+                          kind === 'section'
+                            ? contentItems.some(
+                                ({ id, kind: contentKind }) =>
+                                  contentKind === 'recommendation' && id === item.id,
+                              )
+                            : recommendationIds.includes(item.id)
+                        }
+                        type="checkbox"
+                        disabled={
+                          (kind === 'section'
+                            ? selectedSectionRecommendationIds.length
+                            : recommendationIds.length) >= 20 &&
+                          !(kind === 'section'
+                            ? selectedSectionRecommendationIds.includes(item.id)
+                            : recommendationIds.includes(item.id))
+                        }
+                        onChange={(event) => {
+                          setSelectionError('');
+                          if (kind === 'section') {
+                            toggleSectionContent({ id: item.id, kind: 'recommendation' });
+                          } else {
+                            setRecommendationIds((current) =>
+                              event.target.checked
+                                ? [...current, item.id]
+                                : current.filter((id) => id !== item.id),
+                            );
+                          }
+                        }}
+                      />
+                      <span className="creatorCuratedProductThumb">
+                        {item.imageUrl ? (
+                          <Image
+                            alt=""
+                            fill
+                            sizes="44px"
+                            src={item.imageUrl}
+                            unoptimized
+                          />
+                        ) : null}
+                      </span>
+                      <span>
+                        {item.productName}
+                        {!brandId ? <small>{item.brandName}</small> : null}
+                      </span>
+                    </label>
+                  ))}
+                </section>
+              ))}
+            </div>
+          ) : (
+            <p>Add a product recommendation first.</p>
+          )}
+        </fieldset>
+      </>
+      {kind === 'section' ? (
+        <fieldset>
+          <legend>Featured Content</legend>
+          {featuredMedia.length ? (
+            <div className="creatorCuratedChoices">
+              {featuredMedia.map((media) => (
+                <label key={media.id}>
+                  <input
+                    checked={contentItems.some(
+                      ({ id, kind: contentKind }) =>
+                        contentKind === 'media' && id === media.id,
+                    )}
+                    disabled={
+                      contentItems.length >= 40 &&
+                      !contentItems.some(
+                        ({ id, kind: contentKind }) =>
+                          contentKind === 'media' && id === media.id,
+                      )
+                    }
+                    type="checkbox"
+                    onChange={() => toggleSectionContent({ id: media.id, kind: 'media' })}
+                  />
+                  <span className="creatorCuratedProductThumb">
+                    {media.thumbnailUrl ? (
+                      <Image
+                        alt=""
+                        fill
+                        sizes="44px"
+                        src={media.thumbnailUrl}
+                        unoptimized
+                      />
+                    ) : null}
+                  </span>
+                  <span>
+                    {media.title}
+                    <small>{media.provider.replace('_', ' ')}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p>No media yet. Add it from Media first.</p>
+          )}
+        </fieldset>
+      ) : null}
       {kind === 'collection' ? (
         <label className="creatorCheckboxField">
           <input
@@ -4642,35 +5765,7 @@ function CuratedSectionForm({
           Also show these items as individual recommendations
         </label>
       ) : null}
-      {kind === 'collection' && onAddNewItem ? (
-        <button
-          className="creatorInlineAction"
-          disabled={saving || !title.trim() || !brandId}
-          onClick={() => {
-            const selectedBrand = availableBrands.find(
-              (item) => item.brandId === brandId,
-            );
-            void onAddNewItem(
-              {
-                id: sectionId,
-                kind: 'collection',
-                brandId,
-                recommendationIds,
-                title: title.trim(),
-                description: '',
-                imageUrl: imageUrl || null,
-                parentCollectionId: null,
-                showItemsIndividually,
-              },
-              selectedBrand?.name ?? '',
-            ).catch((cause: unknown) => setSelectionError(messageFor(cause)));
-          }}
-          type="button"
-        >
-          + Save collection and create a new item
-        </button>
-      ) : null}
-      {recommendationIds.length > 1 ? (
+      {kind !== 'section' && recommendationIds.length > 1 ? (
         <div className="creatorCuratedOrder">
           <p>Product order in this {kind}</p>
           <ol>
@@ -4681,6 +5776,7 @@ function CuratedSectionForm({
               if (!item) return null;
               return (
                 <li
+                  className={draggingRecommendationId === id ? 'isDragging' : ''}
                   key={id}
                   onDragOver={(event: DragEvent<HTMLLIElement>) => {
                     if (!draggingRecommendationId || saving) return;
@@ -4709,27 +5805,72 @@ function CuratedSectionForm({
                   >
                     <GripVertical size={16} />
                   </span>
+                  <span aria-hidden="true" className="creatorCuratedOrderNumber">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <span>{item.productName}</span>
-                  <button
-                    aria-label={`Move ${item.productName} up`}
-                    disabled={index === 0 || saving}
-                    onClick={() =>
-                      setRecommendationIds(move(recommendationIds, index, index - 1))
-                    }
-                    type="button"
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      ) : null}
+      {kind === 'section' && contentItems.length ? (
+        <div className="creatorCuratedOrder">
+          <p>Carousel order</p>
+          <small className="creatorCuratedOrderHint">
+            Drag items to set the order they appear on your storefront.
+          </small>
+          <ol>
+            {contentItems.map((content, index) => {
+              const label =
+                content.kind === 'media'
+                  ? (featuredMedia.find(({ id }) => id === content.id)?.title ?? 'Media')
+                  : content.kind === 'brand'
+                    ? (brands.find(({ id }) => id === content.id)?.name ?? 'Brand')
+                    : content.kind === 'collection'
+                      ? (collections.find(({ id }) => id === content.id)?.title ??
+                        'Collection')
+                      : (recommendations.find(({ id }) => id === content.id)
+                          ?.productName ?? 'Recommendation');
+              const contentKey = `${content.kind}:${content.id}`;
+              return (
+                <li
+                  className={draggingContentKey === contentKey ? 'isDragging' : ''}
+                  key={contentKey}
+                  onDragOver={(event: DragEvent<HTMLLIElement>) => {
+                    if (!draggingContentKey || saving) return;
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event: DragEvent<HTMLLIElement>) => {
+                    event.preventDefault();
+                    const sourceKey = event.dataTransfer.getData('text/plain');
+                    const from = contentItems.findIndex(
+                      (item) => `${item.kind}:${item.id}` === sourceKey,
+                    );
+                    setDraggingContentKey(null);
+                    if (saving || from < 0 || from === index) return;
+                    setContentItems(move(contentItems, from, index));
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="creatorLayerDragHandle"
+                    draggable={!saving}
+                    onDragEnd={() => setDraggingContentKey(null)}
+                    onDragStart={(event: DragEvent<HTMLSpanElement>) => {
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('text/plain', contentKey);
+                      setDraggingContentKey(contentKey);
+                    }}
                   >
-                    <ArrowUp size={15} />
-                  </button>
-                  <button
-                    aria-label={`Move ${item.productName} down`}
-                    disabled={index === recommendationIds.length - 1 || saving}
-                    onClick={() =>
-                      setRecommendationIds(move(recommendationIds, index, index + 1))
-                    }
-                    type="button"
-                  >
-                    <ArrowDown size={15} />
-                  </button>
+                    <GripVertical size={16} />
+                  </span>
+                  <span aria-hidden="true" className="creatorCuratedOrderNumber">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span>{label}</span>
                 </li>
               );
             })}
@@ -4744,10 +5885,16 @@ function CuratedSectionForm({
       <div className="creatorCuratedActions">
         <button
           className="button primary"
-          disabled={saving || !recommendations.length}
+          disabled={saving || (kind !== 'section' && !recommendations.length)}
           type="submit"
         >
-          {saving ? 'Saving...' : initial ? 'Save changes' : `Create ${kind}`}
+          {saving
+            ? 'Saving...'
+            : initial
+              ? 'Save changes'
+              : kind === 'section'
+                ? 'Create carousel'
+                : `Create ${kind}`}
         </button>
         <button className="button secondary" onClick={onCancel} type="button">
           Cancel
@@ -4851,6 +5998,12 @@ function detectFeaturedMedia(value: string): {
     if (host === 'instagram.com' && /^\/(?:p|reel)\//u.test(url.pathname)) {
       return { provider: 'instagram', thumbnailUrl: null, title: 'Instagram post' };
     }
+    if (
+      ['tiktok.com', 'm.tiktok.com'].includes(host) &&
+      /^\/@[^/]+\/video\/\d+/u.test(url.pathname)
+    ) {
+      return { provider: 'tiktok', thumbnailUrl: null, title: 'TikTok video' };
+    }
     if (host === 'open.spotify.com' || host === 'spotify.link') {
       return { provider: 'spotify', thumbnailUrl: null, title: 'Spotify content' };
     }
@@ -4862,6 +6015,100 @@ function detectFeaturedMedia(value: string): {
       };
     }
     return null;
+  } catch {
+    return null;
+  }
+}
+
+async function enrichMediaDraft(
+  url: string,
+  detected: {
+    provider: FeaturedMedia['provider'];
+    thumbnailUrl: string | null;
+    title: string;
+  },
+): Promise<{ title: string; thumbnailUrl: string | null } | null> {
+  // Metadata services provide the real cover art and a useful short label for
+  // music/video links. The manually entered title remains the source of truth.
+  try {
+    let title = detected.title;
+    let thumbnailUrl = detected.thumbnailUrl;
+    const encodedUrl = encodeURIComponent(url.trim());
+    if (detected.provider === 'youtube') {
+      const response = await fetch(
+        `https://www.youtube.com/oembed?url=${encodedUrl}&format=json`,
+      );
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+        author_name?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'tiktok') {
+      const response = await fetch(`https://www.tiktok.com/oembed?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'spotify') {
+      const response = await fetch(`https://open.spotify.com/oembed?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        title?: string;
+        thumbnail_url?: string;
+      };
+      title = metadata.title || title;
+      thumbnailUrl = metadata.thumbnail_url || thumbnailUrl;
+    } else if (detected.provider === 'apple_music') {
+      const response = await fetch(`https://itunes.apple.com/lookup?url=${encodedUrl}`);
+      if (!response.ok) return null;
+      const metadata = (await response.json()) as {
+        results?: Array<{
+          artistName?: string;
+          trackName?: string;
+          collectionName?: string;
+          artworkUrl100?: string;
+        }>;
+      };
+      const result = metadata.results?.[0];
+      if (result) {
+        title =
+          [result.artistName, result.trackName || result.collectionName]
+            .filter(Boolean)
+            .join(' — ') || title;
+        thumbnailUrl =
+          result.artworkUrl100?.replace('100x100', '600x600') || thumbnailUrl;
+      }
+    } else {
+      return null;
+    }
+    return { title, thumbnailUrl };
+  } catch {
+    // Metadata is an enhancement; saving the original link should still work.
+    return null;
+  }
+}
+
+function normalizeMapUrl(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== 'https:') return null;
+    const host = url.hostname.toLowerCase();
+    if (
+      host !== 'google.com' &&
+      host !== 'www.google.com' &&
+      host !== 'maps.google.com' &&
+      host !== 'www.google.co.il' &&
+      host !== 'maps.app.goo.gl'
+    )
+      return null;
+    if (!host.includes('google') && host !== 'maps.app.goo.gl') return null;
+    return url.toString();
   } catch {
     return null;
   }

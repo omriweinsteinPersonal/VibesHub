@@ -17,7 +17,7 @@ const claimsSchema = z.object({
   sub: z.uuid(),
 });
 
-export interface TokenVerifier {
+interface TokenVerifier {
   verify(accessToken: string): Promise<VerifiedIdentity | null>;
 }
 

@@ -745,3 +745,29 @@
     padding: 6px 8px;
   }
 }
+
+.logoutButton {
+  align-items: center;
+  background: #fff5f3;
+  border: 1px solid #e7b8ad;
+  border-radius: 9px;
+  color: #ad3f2f;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 6px;
+  min-height: 42px;
+  padding: 0 16px;
+  width: 100%;
+}
+.logoutButton:hover {
+  background: #fde8e3;
+  border-color: #ce8c7e;
+}
+.logoutButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}

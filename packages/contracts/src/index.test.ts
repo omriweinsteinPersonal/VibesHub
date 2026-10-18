@@ -38,13 +38,22 @@ describe('shared API contracts', () => {
     ).toMatchObject({ direction: 'rtl', language: 'he' });
   });
 
-  it('normalizes creator handles and rejects insecure social links', () => {
+  it('preserves creator handles and rejects insecure social links', () => {
     expect(
       creatorApplicationInputSchema.parse({
         requestedHandle: ' Noa_Levi ',
         socialLinks: [{ platform: 'instagram', url: 'https://instagram.com/noa' }],
       }).requestedHandle,
-    ).toBe('noa_levi');
+    ).toBe('Noa_Levi');
+
+    expect(
+      creatorApplicationInputSchema.parse({
+        socialLinks: [
+          { platform: 'spotify', url: 'https://open.spotify.com/user/noa' },
+          { platform: 'apple_music', url: 'https://music.apple.com/profile/noa' },
+        ],
+      }).socialLinks,
+    ).toHaveLength(2);
 
     expect(() =>
       creatorApplicationInputSchema.parse({
@@ -290,7 +299,9 @@ describe('shared API contracts', () => {
       {
         ...section,
         brandId: null,
+        contentItems: [],
         description: '',
+        displayStyle: 'horizontal',
         imageUrl: null,
         parentCollectionId: null,
         showItemsIndividually: false,

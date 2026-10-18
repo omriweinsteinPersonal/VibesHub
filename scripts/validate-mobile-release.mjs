@@ -1,12 +1,21 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 
 const appConfig = JSON.parse(await readFile('apps/mobile/app.json', 'utf8')).expo;
 const mobilePackage = JSON.parse(await readFile('apps/mobile/package.json', 'utf8'));
+const supabaseConfig = await readFile('supabase/config.toml', 'utf8');
 const loginSource = await readFile('apps/mobile/app/login.tsx', 'utf8');
 const accountSource = await readFile('apps/mobile/app/account.tsx', 'utf8');
+const studioSource = await readFile('apps/mobile/app/studio.tsx', 'utf8');
 const authSource = await readFile('apps/mobile/lib/auth.ts', 'utf8');
 const rootLayoutSource = await readFile('apps/mobile/app/_layout.tsx', 'utf8');
 const storefrontSource = await readFile('apps/mobile/app/[handle].tsx', 'utf8');
+const notFoundSource = await readFile('apps/mobile/app/+not-found.tsx', 'utf8');
+const productDetailSource = await readFile('apps/mobile/app/products/[id].tsx', 'utf8');
+const collectionPageSource = await readFile(
+  'apps/mobile/app/[handle]/pages/[pageId].tsx',
+  'utf8',
+);
+const mobileSources = await readSourceTree('apps/mobile');
 const reportControllerSource = await readFile(
   'apps/api/src/reports/report.controller.ts',
   'utf8',
@@ -24,6 +33,10 @@ function requireValue(condition, message) {
 requireValue(appConfig.name === 'Swavii', 'The native app name must be Swavii.');
 requireValue(appConfig.slug === 'swavii', 'The Expo slug must be swavii.');
 requireValue(appConfig.scheme === 'swavii', 'The auth/deep-link scheme must be swavii.');
+requireValue(
+  supabaseConfig.includes('"swavii://**"'),
+  'Supabase redirect URLs must allow the native swavii:// scheme.',
+);
 requireValue(/^\d+\.\d+\.\d+$/.test(appConfig.version), 'App version must use x.y.z.');
 requireValue(
   appConfig.ios?.bundleIdentifier === 'com.swavii.app',
@@ -102,10 +115,27 @@ for (const path of ['/privacy', '/terms']) {
     `${path} must be linked before login.`,
   );
 }
-for (const path of ['/privacy', '/terms', '/support', '/creator-home']) {
+for (const path of ['/privacy', '/terms', '/support']) {
   requireValue(
     accountSource.includes(`https://swavii.com${path}`),
     `${path} must be linked from Account.`,
+  );
+}
+requireValue(
+  accountSource.includes("router.push('/studio')") &&
+    !accountSource.includes('https://swavii.com/creator-home'),
+  'Creator Studio must open as a native route, not an external website.',
+);
+for (const capability of [
+  'getCreatorStudioBundle',
+  'saveCreatorBrand',
+  'saveStorefrontConfiguration',
+  'transitionCreatorRecommendation',
+  'updateCreatorProfile',
+]) {
+  requireValue(
+    studioSource.includes(capability),
+    `The native Creator Studio must retain ${capability}.`,
   );
 }
 requireValue(
@@ -134,6 +164,33 @@ requireValue(
   mobilePackage.scripts?.['eas-build-post-install']?.includes('validate:build-env'),
   'EAS builds must validate their public environment before bundling.',
 );
+requireValue(
+  !Object.keys(mobilePackage.dependencies ?? {}).some((name) =>
+    name.toLowerCase().includes('webview'),
+  ),
+  'The native app must not depend on a WebView package.',
+);
+for (const [name, source] of mobileSources) {
+  requireValue(
+    !/@expo\/dom-webview|react-native-webview|<WebView\b/u.test(source),
+    `${name} must not embed a WebView.`,
+  );
+}
+requireValue(
+  !notFoundSource.includes('openExternalWebPage') &&
+    !notFoundSource.includes('Continue on swavii.com'),
+  'Unknown native routes must stay in the app instead of falling back to the website.',
+);
+requireValue(
+  productDetailSource.includes('getPublicRecommendation') &&
+    productDetailSource.includes('Shop product'),
+  'Public product links must resolve to a native product-detail screen.',
+);
+requireValue(
+  collectionPageSource.includes('getPublicStorefront') &&
+    collectionPageSource.includes('getStorefrontRecommendations'),
+  'Public storefront collection links must resolve to a native collection screen.',
+);
 
 if (errors.length > 0) {
   console.error('Mobile release validation failed:\n');
@@ -141,4 +198,19 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log('Mobile release configuration is valid.');
+}
+
+async function readSourceTree(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const sources = [];
+  for (const entry of entries) {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) {
+      if (['.expo', 'dist', 'node_modules'].includes(entry.name)) continue;
+      sources.push(...(await readSourceTree(path)));
+    } else if (/\.(?:js|jsx|ts|tsx)$/u.test(entry.name)) {
+      sources.push([path, await readFile(path, 'utf8')]);
+    }
+  }
+  return sources;
 }

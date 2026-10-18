@@ -23,7 +23,7 @@ The migration strategy assumes Supabase-managed PostgreSQL and standard SQL migr
 Committed SQL migration files are the only source of truth for the Swave application schema.
 
 ```text
-packages/database/
+supabase/
   migrations/
     202608060001_extensions_and_schemas.sql
     202608060002_identity.sql
@@ -37,16 +37,12 @@ packages/database/
     202608060010_operations.sql
     202608060011_search.sql
     202608060012_grants_and_rls.sql
-  seeds/
-    reference.sql
-    development.sql
-  tests/
-    constraints/
-    permissions/
-    migrations/
+  seed.sql
 ```
 
-This directory is created during repository scaffolding. The sequence above is a logical starting order, not permission to put the entire schema into one unreviewable migration.
+The checked-in `supabase/migrations/` history is the deployed source of truth. The
+sequence above is a logical illustration, not permission to put the entire schema
+into one unreviewable migration.
 
 ## 3. Migration ownership and permissions
 

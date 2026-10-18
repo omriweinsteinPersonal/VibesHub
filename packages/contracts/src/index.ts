@@ -85,7 +85,7 @@ export const creatorCardSchema = z
       .max(100)
       .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }).nullable(),
     recommendationCount: z.int().nonnegative(),
     verificationStatus: z.enum(['unverified', 'verified']),
   })
@@ -552,6 +552,10 @@ export const creatorRecommendationSchema = recommendationCardSchema
 const storefrontColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const defaultStorefrontTheme = {
+  templateId: 'classic',
+  headerStyle: 'classic',
+  labelsFrame: true,
+  bioAlign: 'center',
   profileBackground: '#fbf6ec',
   profileImageUrl: '',
   recommendationsBackground: '#ffffff',
@@ -561,10 +565,30 @@ export const defaultStorefrontTheme = {
   collectionBackground: '#fbf9f6',
   accentColor: '#b77856',
   textColor: '#30251f',
+  headingFont: 'display',
+  bodyFont: 'aptos',
 } as const;
 
 export const storefrontThemeSchema = z
   .object({
+    // Optional for existing storefront themes. Missing values render as the
+    // original Classic shell until a creator explicitly selects a template.
+    templateId: z
+      .enum([
+        'classic',
+        'editorial-frame',
+        'citrus-glow',
+        'midnight-electric',
+        'clay-editorial',
+        'forest-glass',
+        'aurora-veil',
+        'desert-rose',
+        'glacier-current',
+      ])
+      .optional(),
+    headerStyle: z.enum(['classic', 'circular']).default('classic'),
+    labelsFrame: z.boolean().default(true),
+    bioAlign: z.enum(['left', 'center', 'right']).default('center'),
     profileBackground: storefrontColorSchema,
     // Optional so existing storefront themes remain valid when the Hero image
     // feature is introduced. The client only renders safe http(s) URLs.
@@ -576,6 +600,8 @@ export const storefrontThemeSchema = z
     collectionBackground: storefrontColorSchema,
     accentColor: storefrontColorSchema,
     textColor: storefrontColorSchema,
+    headingFont: z.enum(['display', 'sans', 'editorial']).default('display'),
+    bodyFont: z.enum(['aptos', 'sans', 'serif']).default('aptos'),
     // Layout lives alongside the visual design in the existing theme JSON.
     // Optional for older clients and storefronts that retain their default order.
     layout: z
@@ -657,7 +683,14 @@ export type StorefrontTitle = z.infer<typeof storefrontTitleSchema>;
 export const featuredMediaSchema = z
   .object({
     id: idSchema,
-    provider: z.enum(['youtube', 'instagram', 'spotify', 'apple_music']),
+    provider: z.enum([
+      'youtube',
+      'instagram',
+      'tiktok',
+      'spotify',
+      'apple_music',
+      'maps',
+    ]),
     url: z.url({ protocol: /^https$/ }).max(2_048),
     title: z.string().trim().min(1).max(160),
     thumbnailUrl: z
@@ -665,6 +698,7 @@ export const featuredMediaSchema = z
       .max(2_048)
       .nullable()
       .default(null),
+    location: z.string().trim().max(160).optional(),
     displayMode: z.enum(['embed', 'link']).default('embed'),
     visible: z.boolean().default(true),
   })
@@ -688,7 +722,7 @@ export const creatorStorefrontSchema = z
       .max(100)
       .regex(/^(?!.*[/?#%\\\p{Cc}]).+$/u),
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }),
+    primaryCategory: categoryCardSchema.pick({ name: true, slug: true }).nullable(),
     recommendationCount: z.int().nonnegative(),
     brands: z
       .array(
@@ -717,6 +751,18 @@ export const creatorStorefrontSchema = z
             id: idSchema,
             kind: z.enum(['section', 'collection', 'page']),
             brandId: idSchema.nullable().default(null),
+            contentItems: z
+              .array(
+                z
+                  .object({
+                    id: idSchema,
+                    kind: z.enum(['recommendation', 'media', 'brand', 'collection']),
+                  })
+                  .strict(),
+              )
+              .max(40)
+              .default([]),
+            displayStyle: z.enum(['horizontal', 'vertical']).default('horizontal'),
             title: z.string().trim().min(1).max(80),
             description: z.string().trim().max(240).default(''),
             imageUrl: publicAssetUrlSchema.nullable().default(null),
@@ -785,6 +831,8 @@ export const creatorStorefrontSchema = z
             'youtube',
             'facebook',
             'pinterest',
+            'spotify',
+            'apple_music',
             'website',
           ]),
           url: z.url({ protocol: /^https$/ }).max(2_048),
@@ -955,6 +1003,8 @@ export const socialPlatformSchema = z.enum([
   'youtube',
   'facebook',
   'pinterest',
+  'spotify',
+  'apple_music',
   'website',
 ]);
 
@@ -985,11 +1035,15 @@ export const creatorApplicationInputSchema = z
     requestedHandle: z
       .string()
       .trim()
-      .toLowerCase()
-      .regex(/^[a-z0-9][a-z0-9_-]{1,29}$/)
+      .min(2)
+      .max(100)
+      .refine(
+        (value) => !/[/?#%\\\p{Cc}]/u.test(value),
+        'Handle cannot contain URL separators or control characters',
+      )
       .nullable()
       .optional(),
-    socialLinks: z.array(creatorApplicationSocialLinkSchema).max(8).optional(),
+    socialLinks: z.array(creatorApplicationSocialLinkSchema).max(10).optional(),
   })
   .strict();
 
@@ -1026,8 +1080,10 @@ export const creatorProfileSettingsSchema = z
     displayName: z.string().trim().min(1).max(100),
     handle: creatorCardSchema.shape.handle,
     id: idSchema,
-    primaryCategory: categoryCardSchema.pick({ id: true, name: true, slug: true }),
-    socialLinks: z.array(creatorProfileSocialLinkSchema).max(8),
+    primaryCategory: categoryCardSchema
+      .pick({ id: true, name: true, slug: true })
+      .nullable(),
+    socialLinks: z.array(creatorProfileSocialLinkSchema).max(10),
     version: z.int().positive(),
   })
   .strict();
@@ -1048,7 +1104,7 @@ export const creatorProfilePatchSchema = z
     primaryCategoryId: idSchema.optional(),
     socialLinks: z
       .array(creatorProfileSocialLinkSchema)
-      .max(8)
+      .max(10)
       .refine(
         (links) => new Set(links.map(({ platform }) => platform)).size === links.length,
         'Use each social platform at most once',
@@ -1071,6 +1127,18 @@ export const storefrontSectionSchema = z
 export const curatedSectionSchema = z
   .object({
     brandId: idSchema.nullable().default(null),
+    contentItems: z
+      .array(
+        z
+          .object({
+            id: idSchema,
+            kind: z.enum(['recommendation', 'media', 'brand', 'collection']),
+          })
+          .strict(),
+      )
+      .max(40)
+      .default([]),
+    displayStyle: z.enum(['horizontal', 'vertical']).default('horizontal'),
     id: idSchema,
     kind: z.enum(['section', 'collection', 'page']),
     title: z.string().trim().min(1).max(80),

@@ -1,33 +1,32 @@
-import { usePathname, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { openExternalWebPage } from '../lib/external-browser';
-
 export default function NotFoundScreen() {
-  const pathname = usePathname();
   const router = useRouter();
-  const webUrl = `https://swavii.com${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       <Text style={styles.logo}>swavii</Text>
       <View style={styles.body}>
-        <Text style={styles.title}>Continue on swavii.com</Text>
+        <Text style={styles.title}>Page not found</Text>
         <Text style={styles.copy}>
-          This page is available on the web while we finish bringing it into the app.
+          This link does not match a page in the Swavii app.
         </Text>
         <Pressable
-          accessibilityRole="link"
-          onPress={() => void openExternalWebPage(webUrl)}
+          accessibilityRole="button"
+          onPress={() => router.replace('/')}
           style={styles.primaryButton}
         >
-          <Text style={styles.primaryText}>Open in browser</Text>
+          <Text style={styles.primaryText}>Go home</Text>
         </Pressable>
-        <Pressable onPress={() => router.replace('/')} style={styles.secondaryButton}>
-          <Text style={styles.secondaryText}>Go home</Text>
+        <Pressable
+          onPress={() => router.replace('/creators')}
+          style={styles.secondaryButton}
+        >
+          <Text style={styles.secondaryText}>Browse Swavii</Text>
         </Pressable>
       </View>
     </SafeAreaView>

@@ -5,6 +5,7 @@ import { getSupabaseBrowserClient } from './supabase-browser';
 interface ProblemDetails {
   detail?: string;
   errors?: Array<{ field?: string; message?: string }>;
+  message?: string;
   title?: string;
 }
 
@@ -34,7 +35,17 @@ export async function apiRequest<T>(path: string, init: ApiRequestInit = {}): Pr
   if (init.body) headers.set('content-type', 'application/json');
   if (init.idempotent) headers.set('idempotency-key', randomUuid());
 
-  return request<T>(path, { ...init, headers }, init.timeoutMs);
+  // Vercel treats the standard If-Match header as a CDN precondition before a
+  // same-origin route handler gets a chance to forward the request. Carry the
+  // application version through a private header instead; the backend proxy
+  // restores If-Match when it calls the API.
+  const apiUrl = getApiUrl();
+  if (apiUrl.startsWith('/') && headers.has('if-match')) {
+    headers.set('x-swavii-if-match', headers.get('if-match')!);
+    headers.delete('if-match');
+  }
+
+  return request<T>(path, { ...init, headers }, init.timeoutMs, apiUrl);
 }
 
 export async function apiCollectionRequest<T>(path: string): Promise<{
@@ -69,12 +80,14 @@ async function collectionRequest<T>(
   page: { hasMore: boolean; nextCursor: string | null };
 }> {
   const response = await fetchWithTimeout(`${getApiUrl()}/v1${path}`, init);
-  const body = (await response.json()) as {
-    data?: T[];
-    page?: { hasMore: boolean; nextCursor: string | null };
-  } & ProblemDetails;
+  const body = await parseResponseBody<
+    {
+      data?: T[];
+      page?: { hasMore: boolean; nextCursor: string | null };
+    } & ProblemDetails
+  >(response);
   if (!response.ok) {
-    throw new ApiError(problemMessage(body), response.status);
+    throw new ApiError(problemMessage(body, response), response.status);
   }
   return {
     data: body.data ?? [],
@@ -86,14 +99,32 @@ async function request<T>(
   path: string,
   init?: ApiRequestInit,
   timeoutMs = defaultRequestTimeoutMs,
+  apiUrl = getApiUrl(),
 ): Promise<T> {
-  const response = await fetchWithTimeout(`${getApiUrl()}/v1${path}`, init, timeoutMs);
+  const response = await fetchWithTimeout(`${apiUrl}/v1${path}`, init, timeoutMs);
   if (response.status === 204) return undefined as T;
-  const body = (await response.json()) as { data?: T } & ProblemDetails;
+  const body = await parseResponseBody<{ data?: T } & ProblemDetails>(response);
   if (!response.ok) {
-    throw new ApiError(problemMessage(body), response.status);
+    throw new ApiError(problemMessage(body, response), response.status);
   }
   return body.data as T;
+}
+
+async function parseResponseBody<T extends object>(
+  response: Response,
+): Promise<Partial<T>> {
+  const text = await response.text();
+  if (!text.trim()) return {};
+
+  try {
+    const value: unknown = JSON.parse(text);
+    return value && typeof value === 'object' ? (value as T) : {};
+  } catch {
+    if (!response.ok) {
+      return { detail: text.trim().slice(0, 500) } as unknown as Partial<T>;
+    }
+    throw new ApiError('The server returned an invalid response. Please try again.', 502);
+  }
 }
 
 async function fetchWithTimeout(
@@ -123,10 +154,17 @@ async function fetchWithTimeout(
   }
 }
 
-function problemMessage(body: ProblemDetails): string {
+function problemMessage(body: Partial<ProblemDetails>, response: Response): string {
   const issue = body.errors?.[0];
   if (issue?.message) {
     return `${issue.field ? `${issue.field}: ` : ''}${issue.message}`;
   }
-  return body.detail ?? body.title ?? 'The request failed.';
+  return (
+    body.detail ??
+    body.message ??
+    body.title ??
+    (response.statusText
+      ? `The request failed: ${response.statusText}.`
+      : 'The request failed.')
+  );
 }

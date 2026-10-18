@@ -201,11 +201,7 @@ export class MediaService {
         'The uploaded video size does not match the requested upload',
       );
     }
-    await this.storage.publishVerifiedVideoStream(
-      asset.objectPath,
-      asset.contentType,
-      inspected.size,
-    );
+    await this.storage.publishVerifiedVideoCopy(asset.objectPath);
     const ready = await this.media.markReady(
       asset.id,
       userId,

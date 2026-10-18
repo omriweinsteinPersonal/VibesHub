@@ -4,19 +4,25 @@
 
 ## Cross-platform impact
 
-> Golden rule: a user-facing change is complete only after mobile web, Android, and iOS
-> have each been implemented or explicitly evaluated with a documented reason.
+> Golden rule: a change is complete only after mobile web, Android, and iOS have each
+> been implemented or explicitly evaluated with a documented reason. This applies in
+> both directions: web changes must consider native, and native changes must consider
+> mobile web.
 
-- [ ] I evaluated this change for responsive mobile web.
-- [ ] I evaluated this change for the native iOS app.
-- [ ] I evaluated this change for the native Android app.
+- [ ] I evaluated and updated responsive mobile web where required.
+- [ ] I evaluated and updated the native iOS app where required.
+- [ ] I evaluated and updated the native Android app where required.
 - [ ] Shared contracts, API behavior, validation, copy, analytics, and design tokens are
       consistent where applicable.
 
 ### Implementation decision
 
-<!-- Describe what changed on mobile web and native. If a surface is intentionally not
-affected, explain why and record the follow-up/parity decision. -->
+<!-- For each surface, describe what changed. If no code change is needed, explain why.
+Do not leave a surface unmentioned. -->
+
+- Mobile web:
+- iOS:
+- Android:
 
 ## UX states reviewed
 
@@ -35,3 +41,7 @@ Android devices/emulators used. -->
 - iOS:
 - Android:
 - Automated checks:
+
+## Remaining limitations
+
+<!-- State known limitations and follow-up work, or write "None". -->

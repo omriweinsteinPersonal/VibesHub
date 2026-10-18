@@ -60,7 +60,13 @@ export class CreatorStudioService {
       throw problem(422, 'VALIDATION_FAILED', 'Choose active storefront categories');
     }
     if (result.kind === 'invalid_recommendations') {
-      throw problem(422, 'VALIDATION_FAILED', 'Choose your active recommendations');
+      throw problem(
+        422,
+        'VALIDATION_FAILED',
+        result.reason
+          ? `Storefront content is invalid: ${result.reason}`
+          : 'Choose your active recommendations',
+      );
     }
     if (result.kind === 'version_conflict') {
       throw problem(

@@ -20,7 +20,7 @@ export interface CreatorApplicationRecord {
   version: number;
 }
 
-export interface CreatorApplicationFeedbackRecord {
+interface CreatorApplicationFeedbackRecord {
   createdAt: string;
   decision: 'changes_requested' | 'approved' | 'rejected';
   publicMessage: string;
