@@ -38,13 +38,13 @@ describe('shared API contracts', () => {
     ).toMatchObject({ direction: 'rtl', language: 'he' });
   });
 
-  it('normalizes creator handles and rejects insecure social links', () => {
+  it('preserves creator handles and rejects insecure social links', () => {
     expect(
       creatorApplicationInputSchema.parse({
         requestedHandle: ' Noa_Levi ',
         socialLinks: [{ platform: 'instagram', url: 'https://instagram.com/noa' }],
       }).requestedHandle,
-    ).toBe('noa_levi');
+    ).toBe('Noa_Levi');
 
     expect(
       creatorApplicationInputSchema.parse({
