@@ -75,8 +75,7 @@ export function CreatorStudioDemo() {
   const step = frame;
   const tone = toneOverride ?? (frame >= 5 ? 2 : frame === 4 ? 1 : 0);
   const label =
-    labelOverride ??
-    (frame === 7 ? 'My closet' : frame === 8 ? 'Random' : 'All');
+    labelOverride ?? (frame === 7 ? 'My closet' : frame === 8 ? 'Random' : 'All');
   const indices =
     label === 'My closet'
       ? [0, 1, 2, 7]
@@ -159,7 +158,10 @@ export function CreatorStudioDemo() {
               <div className={styles.demoModalHeader}>
                 <div>
                   <h4>Add item</h4>
-                  <p>Add the details yourself, or paste a link to fill them in automatically.</p>
+                  <p>
+                    Add the details yourself, or paste a link to fill them in
+                    automatically.
+                  </p>
                 </div>
                 <X aria-hidden="true" size={15} />
               </div>
@@ -167,38 +169,141 @@ export function CreatorStudioDemo() {
                 <>
                   <div className={styles.changeType}>← &nbsp; Change type</div>
                   <div className={styles.field}>
-                    <span>Item link <small>Optional</small></span>
-                    <div className={styles.inputFilled}>https://footlocker.co.il/products/f356680008</div>
+                    <span>
+                      Item link <small>Optional</small>
+                    </span>
+                    <div className={styles.inputFilled}>
+                      https://footlocker.co.il/products/f356680008
+                    </div>
                   </div>
                   <button className={styles.fetchButton} type="button" onClick={advance}>
                     <Sparkles aria-hidden="true" size={14} /> Fetch details
                   </button>
-                  <p className={styles.helper}>Select Fetch details to fill in details from a link. A photo is optional.</p>
-                  <div className={styles.saveHint}>Add the item details, then save. <button type="button" onClick={advance}>Save recommendation</button></div>
+                  <p className={styles.helper}>
+                    Select Fetch details to fill in details from a link. A photo is
+                    optional.
+                  </p>
+                  <div className={styles.saveHint}>
+                    Add the item details, then save.{' '}
+                    <button type="button" onClick={advance}>
+                      Save recommendation
+                    </button>
+                  </div>
                 </>
               ) : step === 1 ? (
                 <>
-                  <div className={styles.successBanner}><Check aria-hidden="true" size={15} /> Product details fetched. Review them, then save.</div>
-                  <div className={styles.twoFields}>
-                    <div className={styles.field}><span>Item name</span><div className={styles.inputFilled}>740 sneakers</div></div>
-                    <div className={styles.field}><span>Brand</span><div className={styles.inputFilled}>Footlocker</div></div>
+                  <div className={styles.successBanner}>
+                    <Check aria-hidden="true" size={15} /> Product details fetched. Review
+                    them, then save.
                   </div>
-                  <div className={styles.field}><span>Product photos</span><small className={styles.helper}>A photo is optional. Add one if you want the recommendation to include product imagery.</small><div className={styles.photoGrid}>{products.slice(1,4).map((product,index)=><div className={styles.photoTile} key={product.name}><Image src={product.image} alt="" fill sizes="90px"/><button type="button" aria-label={`Remove photo ${index+1}`}><X size={11}/></button></div>)}</div></div>
-                  <div className={styles.twoFields}><div className={styles.field}><span>Price (₪) <small>Optional</small></span><div className={styles.inputFilled}>669</div></div><div className={styles.field}><span>Categories <small>Optional</small></span><div className={styles.inputFilled}>Fashion <span className={styles.chevron}>⌄</span></div></div></div>
-                  <button className={styles.primary} type="button" onClick={advance}>Continue <ArrowRight size={15}/></button>
+                  <div className={styles.twoFields}>
+                    <div className={styles.field}>
+                      <span>Item name</span>
+                      <div className={styles.inputFilled}>740 sneakers</div>
+                    </div>
+                    <div className={styles.field}>
+                      <span>Brand</span>
+                      <div className={styles.inputFilled}>Footlocker</div>
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <span>Product photos</span>
+                    <small className={styles.helper}>
+                      A photo is optional. Add one if you want the recommendation to
+                      include product imagery.
+                    </small>
+                    <div className={styles.photoGrid}>
+                      {products.slice(1, 4).map((product, index) => (
+                        <div className={styles.photoTile} key={product.name}>
+                          <Image src={product.image} alt="" fill sizes="90px" />
+                          <button type="button" aria-label={`Remove photo ${index + 1}`}>
+                            <X size={11} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.twoFields}>
+                    <div className={styles.field}>
+                      <span>
+                        Price (₪) <small>Optional</small>
+                      </span>
+                      <div className={styles.inputFilled}>669</div>
+                    </div>
+                    <div className={styles.field}>
+                      <span>
+                        Categories <small>Optional</small>
+                      </span>
+                      <div className={styles.inputFilled}>
+                        Fashion <span className={styles.chevron}>⌄</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button className={styles.primary} type="button" onClick={advance}>
+                    Continue <ArrowRight size={15} />
+                  </button>
                 </>
               ) : step === 2 ? (
                 <>
-                  <div className={styles.field}><span>Review <small>Optional</small></span><div className={styles.textareaFilled} dir="ltr">A clean everyday sneaker with that perfect retro shape.</div></div>
-                  <div className={styles.field}><span>Instagram story or Highlight link <small>(optional)</small></span><div className={styles.inputFilled}>https://instagram.com/stories/elad</div></div>
-                  <div className={styles.field}><span>Story clips <small>(optional)</small></span><p className={styles.helper}>Attach short videos like your Instagram stories. They appear on this recommendation card in order.</p><div className={styles.uploadBox}><Upload aria-hidden="true" size={14}/><div><b>Upload videos</b><small>Short clips from your product story</small></div></div></div>
-                  <button className={styles.primary} type="button" onClick={advance}>Save recommendation <ArrowRight size={15}/></button>
+                  <div className={styles.field}>
+                    <span>
+                      Review <small>Optional</small>
+                    </span>
+                    <div className={styles.textareaFilled} dir="ltr">
+                      A clean everyday sneaker with that perfect retro shape.
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <span>
+                      Instagram story or Highlight link <small>(optional)</small>
+                    </span>
+                    <div className={styles.inputFilled}>
+                      https://instagram.com/stories/elad
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <span>
+                      Story clips <small>(optional)</small>
+                    </span>
+                    <p className={styles.helper}>
+                      Attach short videos like your Instagram stories. They appear on this
+                      recommendation card in order.
+                    </p>
+                    <div className={styles.uploadBox}>
+                      <Upload aria-hidden="true" size={14} />
+                      <div>
+                        <b>Upload videos</b>
+                        <small>Short clips from your product story</small>
+                      </div>
+                    </div>
+                  </div>
+                  <button className={styles.primary} type="button" onClick={advance}>
+                    Save recommendation <ArrowRight size={15} />
+                  </button>
                 </>
               ) : (
                 <>
-                  <div className={styles.successBanner}><Check aria-hidden="true" size={15}/> Recommendation saved to your storefront.</div>
-                  <div className={styles.savedRecommendation}><Image src={products[1].image} alt="New Balance 740" width={82} height={96}/><div><span className={styles.eyebrow}>NEW BALANCE</span><strong>740 sneakers</strong><small>₪669 · Foot Locker</small><span className={styles.savedTag}>Live on storefront</span></div></div>
-                  <button className={styles.primary} type="button" onClick={advance}>View storefront <ExternalLink aria-hidden="true" size={15}/></button>
+                  <div className={styles.successBanner}>
+                    <Check aria-hidden="true" size={15} /> Recommendation saved to your
+                    storefront.
+                  </div>
+                  <div className={styles.savedRecommendation}>
+                    <Image
+                      src={products[1].image}
+                      alt="New Balance 740"
+                      width={82}
+                      height={96}
+                    />
+                    <div>
+                      <span className={styles.eyebrow}>NEW BALANCE</span>
+                      <strong>740 sneakers</strong>
+                      <small>₪669 · Foot Locker</small>
+                      <span className={styles.savedTag}>Live on storefront</span>
+                    </div>
+                  </div>
+                  <button className={styles.primary} type="button" onClick={advance}>
+                    View storefront <ExternalLink aria-hidden="true" size={15} />
+                  </button>
                 </>
               )}
             </div>
