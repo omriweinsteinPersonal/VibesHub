@@ -290,6 +290,7 @@ export default function CreatorApplicationScreen() {
                 {step === 1 ? (
                   <ImageStep
                     avatarUri={avatarUri}
+                    handle={handle}
                     imageLayout={imageLayout}
                     onChoose={chooseAvatar}
                     onLayoutChange={setImageLayout}
@@ -440,11 +441,13 @@ function ProfileStep({
 }
 function ImageStep({
   avatarUri,
+  handle,
   imageLayout,
   onChoose,
   onLayoutChange,
 }: {
   avatarUri: string | null;
+  handle: string;
   imageLayout: ImageLayout;
   onChoose: () => void;
   onLayoutChange: (value: ImageLayout) => void;
@@ -487,15 +490,33 @@ function ImageStep({
               style={[
                 styles.layoutPreview,
                 layout === 'full-bleed' && styles.layoutPreviewBleed,
+                layout === 'central' && styles.layoutPreviewCentral,
               ]}
             >
-              <View style={styles.layoutPreviewHero}>
+              <View
+                style={[
+                  styles.layoutPreviewHero,
+                  layout === 'central' && styles.layoutPreviewHeroCentral,
+                ]}
+              >
                 {avatarUri ? (
                   <Image
                     contentFit="cover"
                     source={{ uri: avatarUri }}
                     style={styles.layoutPreviewImage}
                   />
+                ) : null}
+                {layout === 'full-bleed' ? (
+                  <Svg height="100%" style={StyleSheet.absoluteFill} width="100%">
+                    <Defs>
+                      <LinearGradient id="fullBleedFade" x1="0" x2="0" y1="0" y2="1">
+                        <Stop offset="0" stopColor="#d89573" stopOpacity="0" />
+                        <Stop offset="0.78" stopColor="#d89573" stopOpacity="0.32" />
+                        <Stop offset="1" stopColor="#d89573" stopOpacity="1" />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect fill="url(#fullBleedFade)" height="100%" width="100%" />
+                  </Svg>
                 ) : null}
               </View>
               {layout === 'central' ? (
@@ -509,10 +530,20 @@ function ImageStep({
                   ) : null}
                 </View>
               ) : null}
-              <View style={styles.layoutPreviewLines}>
-                <View style={styles.layoutPreviewLine} />
-                <View style={styles.layoutPreviewLine} />
-                <View style={styles.layoutPreviewLine} />
+              <Text style={styles.layoutPreviewName}>@{handle || 'your_handle'}</Text>
+              <Text style={styles.layoutPreviewBio}>Really love sharing finds</Text>
+              <View style={styles.layoutPreviewSocials}>
+                <SocialPlatformIcon platform="instagram" size={14} />
+                <SocialPlatformIcon platform="youtube" size={14} />
+                <SocialPlatformIcon platform="apple_music" size={14} />
+                <SocialPlatformIcon platform="tiktok" size={14} />
+              </View>
+              <View style={styles.layoutPreviewTabs}>
+                <Text style={styles.layoutPreviewTabActive}>All</Text>
+                <Text style={styles.layoutPreviewTab}>Fashion</Text>
+                <Text style={styles.layoutPreviewTab}>Sports</Text>
+                <Text style={styles.layoutPreviewTab}>Random</Text>
+                <Text style={styles.layoutPreviewTab}>Food</Text>
               </View>
             </View>
             <Text style={styles.layoutTitle}>
@@ -923,7 +954,7 @@ const styles = StyleSheet.create({
   },
   layoutCardSelected: { borderColor: colors.accent, borderWidth: 2 },
   layoutPreview: {
-    backgroundColor: '#fffdfa',
+    backgroundColor: '#d89573',
     borderColor: colors.border,
     borderRadius: 8,
     height: 112,
@@ -932,23 +963,57 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   layoutPreviewHero: {
-    backgroundColor: '#ead6c5',
-    height: 48,
+    backgroundColor: '#b98d79',
+    height: 72,
     overflow: 'hidden',
   },
   layoutPreviewBleed: { borderColor: colors.accent, borderWidth: 1 },
+  layoutPreviewCentral: { backgroundColor: '#d89573' },
+  layoutPreviewHeroCentral: { display: 'none' },
   layoutPreviewImage: { height: '100%', width: '100%' },
   layoutPreviewAvatar: {
-    backgroundColor: '#ead6c5',
+    backgroundColor: '#d89573',
     borderColor: colors.white,
-    borderRadius: 18,
+    borderRadius: 22,
     borderWidth: 2,
-    height: 36,
-    left: 12,
+    height: 44,
+    marginTop: 10,
     overflow: 'hidden',
-    position: 'absolute',
-    top: 30,
-    width: 36,
+    width: 44,
+  },
+  layoutPreviewName: {
+    color: '#173d38',
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 3,
+  },
+  layoutPreviewBio: { color: '#173d38', fontSize: 7, marginTop: 2 },
+  layoutPreviewSocials: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 5,
+  },
+  layoutPreviewTabs: {
+    alignItems: 'center',
+    borderColor: 'rgba(23, 61, 56, 0.4)',
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 7,
+    marginHorizontal: 7,
+    marginTop: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  layoutPreviewTab: { color: '#173d38', fontSize: 6 },
+  layoutPreviewTabActive: {
+    backgroundColor: '#f8dfd0',
+    borderRadius: 8,
+    color: '#173d38',
+    fontSize: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
   },
   layoutPreviewLines: {
     gap: 4,
