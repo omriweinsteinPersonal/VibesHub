@@ -1783,6 +1783,10 @@ textarea:disabled {
   position: relative;
 }
 
+.imageStyleHero.full_bleed {
+  height: 248px;
+}
+
 .imageStylePagePreview {
   align-items: center;
   color: #173d38;
