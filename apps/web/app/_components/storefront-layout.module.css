@@ -1025,10 +1025,11 @@
   background-image:
     linear-gradient(
       180deg,
-      rgb(243 95 51 / 0%) 24%,
-      rgb(243 95 51 / 7%) 42%,
-      rgb(243 95 51 / 78%) 72%,
-      #f35f33 93%
+      rgb(243 95 51 / 0%) 44%,
+      rgb(243 95 51 / 3%) 56%,
+      rgb(243 95 51 / 28%) 72%,
+      rgb(243 95 51 / 82%) 87%,
+      #f35f33 100%
     ),
     var(--sf-profile-image, none);
   background-position:
@@ -1166,5 +1167,56 @@
     font-size: 0.72rem;
     min-height: 31px;
     padding-inline: 11px;
+  }
+}
+
+/* Circular keeps the Food Journal palette but switches the image treatment to
+   the creator's profile photo, matching the circular header control. */
+.layout[data-template='food-journal'][data-header-style='circular'] .profile.hero {
+  background: #f35f33;
+  min-height: 0;
+  padding: 32px 5vw 14px;
+}
+.layout[data-template='food-journal'][data-header-style='circular']
+  .profile.hero
+  :global(.referenceStorefrontInner) {
+  gap: 12px;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+}
+.layout[data-template='food-journal'][data-header-style='circular']
+  .profile.hero
+  :global(.referenceStorefrontAvatar) {
+  background-color: #fff8f0;
+  border: 4px solid #fff8f0;
+  box-shadow: 0 8px 22px rgb(108 36 19 / 20%);
+  display: grid;
+  height: 108px;
+  width: 108px;
+}
+.layout[data-template='food-journal'][data-header-style='circular']
+  .profile.hero
+  :global(.referenceStorefrontName h1) {
+  color: #102f3c;
+  text-shadow: none;
+}
+.layout[data-template='food-journal'][data-header-style='circular']
+  .profile:not(.hero)
+  :global(.referenceStorefrontBio) {
+  color: #102f3c;
+}
+.layout[data-template='food-journal'][data-header-style='circular'] .socials {
+  padding-top: 2px;
+}
+@media (max-width: 620px) {
+  .layout[data-template='food-journal'][data-header-style='circular'] .profile.hero {
+    padding: 28px 18px 12px;
+  }
+  .layout[data-template='food-journal'][data-header-style='circular']
+    .profile.hero
+    :global(.referenceStorefrontAvatar) {
+    height: 92px;
+    width: 92px;
   }
 }
