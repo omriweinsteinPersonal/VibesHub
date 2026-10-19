@@ -4677,8 +4677,8 @@ function ProfileEditor({
           <View style={styles.actionCopy}>
             <Text style={styles.cardTitle}>Media kit</Text>
             <Text style={styles.cardMeta}>
-              Private collaboration details for brands. These are not shown on your
-              public storefront.
+              Private collaboration details for brands. These are not shown on your public
+              storefront.
             </Text>
           </View>
           <Pressable
