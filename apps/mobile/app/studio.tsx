@@ -1155,6 +1155,37 @@ function Recommendations({
     }
   }
 
+  async function fetchBrandDetails() {
+    const rawUrl = brandUrl.trim();
+    if (!rawUrl) {
+      onError('Add the brand website first.');
+      return;
+    }
+    setFetchingDetails(true);
+    onError('');
+    try {
+      const url = normalizeUrl(rawUrl);
+      const metadata = await fetchCreatorProductDetails(url);
+      setBrandName((current) =>
+        current.trim() ? current : metadata.brandName || brandNameFromUrl(url),
+      );
+      if (!brandLogoAssetId) {
+        setBrandLogoUrl(
+          (current) => metadata.imageUrl || current || brandLogoFromUrl(url),
+        );
+      }
+      onNotice(
+        metadata.imageUrl
+          ? 'Brand name and image fetched. Review them before saving.'
+          : 'Brand name fetched. You can choose a logo before saving.',
+      );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setFetchingDetails(false);
+    }
+  }
+
   async function chooseItemImage() {
     onError('');
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -2509,6 +2540,18 @@ function Recommendations({
             onChangeText={setBrandUrl}
             value={brandUrl}
           />
+          <Pressable
+            accessibilityRole="button"
+            disabled={fetchingDetails || !brandUrl.trim()}
+            onPress={() => void fetchBrandDetails()}
+            style={styles.fetchButton}
+          >
+            {fetchingDetails ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <Text style={styles.fetchButtonText}>Fetch name and image</Text>
+            )}
+          </Pressable>
           <Text style={styles.fieldLabelStandalone}>Brand logo</Text>
           {brandLogoUrl ? (
             <Image source={{ uri: brandLogoUrl }} style={styles.brandLogoPreview} />
@@ -4617,6 +4660,25 @@ function normalizeUrl(value: string): string {
   return /^https:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed.replace(/^\/+/, '')}`;
+}
+
+function brandNameFromUrl(value: string): string {
+  try {
+    const hostname = new URL(value).hostname.replace(/^www\./i, '');
+    const name = hostname.split('.')[0]?.replaceAll('-', ' ').trim() ?? '';
+    return name.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  } catch {
+    return '';
+  }
+}
+
+function brandLogoFromUrl(value: string): string {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'https:' ? `${parsed.origin}/favicon.ico` : '';
+  } catch {
+    return '';
+  }
 }
 
 function lifecycleLabel(value: CreatorRecommendation['lifecycle']): string {
