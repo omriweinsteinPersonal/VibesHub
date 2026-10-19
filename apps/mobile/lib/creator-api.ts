@@ -4,6 +4,7 @@ import {
   creatorBrandSchema,
   creatorDiscountCodeSchema,
   creatorHandleAvailabilitySchema,
+  creatorMediaKitSchema,
   creatorProfileSettingsSchema,
   creatorProductMetadataSchema,
   creatorRecommendationSchema,
@@ -18,6 +19,8 @@ import type {
   CreatorBrandInput,
   CreatorDiscountCode,
   CreatorDiscountCodeInput,
+  CreatorMediaKit,
+  CreatorMediaKitInput,
   CreatorProfilePatch,
   CreatorProfileSettings,
   CreatorProductMetadata,
@@ -47,6 +50,7 @@ export interface CreatorStudioBundle {
   categories: CategoryCard[];
   configuration: CreatorStorefrontConfiguration;
   discounts: CreatorDiscountCode[];
+  mediaKit: CreatorMediaKit;
   profile: CreatorProfileSettings;
   recommendations: CreatorRecommendation[];
   summary: CreatorStudioSummary;
@@ -97,6 +101,7 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     brands,
     categories,
     discounts,
+    mediaKit,
     recommendations,
     configuration,
     analytics,
@@ -113,6 +118,7 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     creatorRequest('/v1/creator/discount-codes', (value) =>
       creatorDiscountCodeSchema.array().parse(value),
     ),
+    creatorRequest('/v1/creator/studio/media-kit', creatorMediaKitSchema.parse),
     creatorCollectionRequest('/v1/creator/recommendations?limit=48', (value) =>
       creatorRecommendationSchema.array().parse(value),
     ),
@@ -136,11 +142,23 @@ async function loadCreatorStudioBundle(days: number): Promise<CreatorStudioBundl
     categories,
     configuration,
     discounts,
+    mediaKit,
     profile,
     recommendations,
     summary,
     theme,
   };
+}
+
+export function saveCreatorMediaKit(
+  mediaKit: CreatorMediaKit,
+  input: CreatorMediaKitInput,
+): Promise<CreatorMediaKit> {
+  return creatorRequest('/v1/creator/studio/media-kit', creatorMediaKitSchema.parse, {
+    body: JSON.stringify(input),
+    headers: { 'if-match': `"${mediaKit.version}"` },
+    method: 'PUT',
+  });
 }
 
 export function saveCreatorDiscount(

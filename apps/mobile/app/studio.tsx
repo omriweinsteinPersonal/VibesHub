@@ -47,6 +47,7 @@ import {
   newStudioId,
   saveCreatorBrand,
   saveCreatorDiscount,
+  saveCreatorMediaKit,
   saveCreatorRecommendation,
   saveStorefrontConfiguration,
   saveStorefrontTheme,
@@ -59,6 +60,14 @@ import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle
 import { openExternalWebPage } from '../lib/external-browser';
 import { uploadCreatorImage } from '../lib/creator-media';
 import { featuredMediaProvider } from '../lib/featured-media';
+import {
+  formatMediaKitCount,
+  mediaKitDraftFrom,
+  mediaKitInput,
+  type MediaKitContentType,
+  type MediaKitDraft,
+  type MediaKitPlatform,
+} from '../lib/media-kit-editor';
 import {
   emptyRecommendationDraft,
   recommendationDraftFromItem,
@@ -4354,6 +4363,31 @@ function formatAnalyticsDate(value: string) {
   });
 }
 
+const mediaKitPlatforms: readonly { label: string; value: MediaKitPlatform }[] = [
+  { label: 'Instagram', value: 'instagram' },
+  { label: 'TikTok', value: 'tiktok' },
+  { label: 'YouTube', value: 'youtube' },
+];
+
+const mediaKitContentTypes: readonly {
+  label: string;
+  value: MediaKitContentType;
+}[] = [
+  { label: 'Stories', value: 'stories' },
+  { label: 'Reels', value: 'reels' },
+  { label: 'Posts', value: 'posts' },
+];
+
+const mediaKitGenderOptions: readonly {
+  label: string;
+  value: MediaKitDraft['audienceGender'];
+}[] = [
+  { label: 'Not specified', value: 'not_specified' },
+  { label: 'Mostly women', value: 'female' },
+  { label: 'Mostly men', value: 'male' },
+  { label: 'Mixed', value: 'mixed' },
+];
+
 function ProfileEditor({
   bundle,
   onBundle,
@@ -4386,6 +4420,11 @@ function ProfileEditor({
       ) as Record<CreatorProfileSocialLink['platform'], string>,
   );
   const [saving, setSaving] = useState(false);
+  const [editingMediaKit, setEditingMediaKit] = useState(false);
+  const [mediaKitDraft, setMediaKitDraft] = useState(() =>
+    mediaKitDraftFrom(bundle.mediaKit),
+  );
+  const [savingMediaKit, setSavingMediaKit] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [handleResult, setHandleResult] = useState<{
     handle: string;
@@ -4510,6 +4549,47 @@ function ProfileEditor({
     }
   }
 
+  function updateMediaKit<K extends keyof MediaKitDraft>(
+    key: K,
+    value: MediaKitDraft[K],
+  ) {
+    setMediaKitDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function toggleMediaKitValue<K extends 'contentTypes' | 'platforms'>(
+    key: K,
+    value: MediaKitDraft[K][number],
+  ) {
+    setMediaKitDraft((current) => {
+      const values = current[key] as readonly string[];
+      return {
+        ...current,
+        [key]: values.includes(value)
+          ? values.filter((item) => item !== value)
+          : [...values, value],
+      };
+    });
+  }
+
+  async function saveMediaKit() {
+    setSavingMediaKit(true);
+    onError('');
+    try {
+      const mediaKit = await saveCreatorMediaKit(
+        bundle.mediaKit,
+        mediaKitInput(mediaKitDraft),
+      );
+      onBundle((current) => (current ? { ...current, mediaKit } : current));
+      setMediaKitDraft(mediaKitDraftFrom(mediaKit));
+      setEditingMediaKit(false);
+      onNotice('Your private media kit has been updated.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setSavingMediaKit(false);
+    }
+  }
+
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / ACCOUNT</Text>
@@ -4592,6 +4672,170 @@ function ProfileEditor({
           )}
         </Pressable>
       </View>
+      <View style={styles.editorCard}>
+        <View style={styles.sectionHeadingRow}>
+          <View style={styles.actionCopy}>
+            <Text style={styles.cardTitle}>Media kit</Text>
+            <Text style={styles.cardMeta}>
+              Private collaboration details for brands. These are not shown on your
+              public storefront.
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setEditingMediaKit((current) => !current)}
+            style={styles.statusButton}
+          >
+            <Text style={styles.statusButtonText}>
+              {editingMediaKit ? 'Close' : 'Edit'}
+            </Text>
+          </Pressable>
+        </View>
+        <View style={styles.mediaKitMetrics}>
+          <MediaKitMetric
+            label="Followers"
+            value={formatMediaKitCount(bundle.mediaKit.followers)}
+          />
+          <MediaKitMetric
+            label="Engagement"
+            value={
+              bundle.mediaKit.engagementRate === null
+                ? '—'
+                : `${bundle.mediaKit.engagementRate}%`
+            }
+          />
+          <MediaKitMetric
+            label="Story views"
+            value={formatMediaKitCount(bundle.mediaKit.averageStoryViews)}
+          />
+        </View>
+        {editingMediaKit ? (
+          <View style={styles.mediaKitEditor}>
+            <Field
+              keyboardType="number-pad"
+              label="Followers"
+              onChangeText={(value) => updateMediaKit('followers', value)}
+              value={mediaKitDraft.followers}
+            />
+            <Field
+              keyboardType="decimal-pad"
+              label="Engagement rate (%)"
+              onChangeText={(value) => updateMediaKit('engagementRate', value)}
+              value={mediaKitDraft.engagementRate}
+            />
+            <Field
+              keyboardType="number-pad"
+              label="Average story views"
+              onChangeText={(value) => updateMediaKit('averageStoryViews', value)}
+              value={mediaKitDraft.averageStoryViews}
+            />
+            <Field
+              keyboardType="number-pad"
+              label="Average reel views"
+              onChangeText={(value) => updateMediaKit('averageReelViews', value)}
+              value={mediaKitDraft.averageReelViews}
+            />
+            <Field
+              keyboardType="number-pad"
+              label="Audience age from"
+              onChangeText={(value) => updateMediaKit('audienceAgeFrom', value)}
+              value={mediaKitDraft.audienceAgeFrom}
+            />
+            <Field
+              keyboardType="number-pad"
+              label="Audience age to"
+              onChangeText={(value) => updateMediaKit('audienceAgeTo', value)}
+              value={mediaKitDraft.audienceAgeTo}
+            />
+            <Field
+              keyboardType="decimal-pad"
+              label="Rate per post (₪)"
+              onChangeText={(value) => updateMediaKit('ratePerPostIls', value)}
+              value={mediaKitDraft.ratePerPostIls}
+            />
+            <Field
+              keyboardType="decimal-pad"
+              label="Rate per story (₪)"
+              onChangeText={(value) => updateMediaKit('ratePerStoryIls', value)}
+              value={mediaKitDraft.ratePerStoryIls}
+            />
+            <Text style={styles.fieldLabelStandalone}>Audience gender</Text>
+            <View style={styles.choiceWrap}>
+              {mediaKitGenderOptions.map((option) => (
+                <ChoicePill
+                  key={option.value}
+                  label={option.label}
+                  onPress={() => updateMediaKit('audienceGender', option.value)}
+                  selected={mediaKitDraft.audienceGender === option.value}
+                />
+              ))}
+            </View>
+            <Field
+              label="Audience location"
+              onChangeText={(value) => updateMediaKit('audienceLocation', value)}
+              value={mediaKitDraft.audienceLocation}
+            />
+            <Text style={styles.fieldLabelStandalone}>Platforms</Text>
+            <View style={styles.choiceWrap}>
+              {mediaKitPlatforms.map((option) => (
+                <ChoicePill
+                  key={option.value}
+                  label={option.label}
+                  onPress={() => toggleMediaKitValue('platforms', option.value)}
+                  selected={mediaKitDraft.platforms.includes(option.value)}
+                />
+              ))}
+            </View>
+            <Text style={styles.fieldLabelStandalone}>Content types</Text>
+            <View style={styles.choiceWrap}>
+              {mediaKitContentTypes.map((option) => (
+                <ChoicePill
+                  key={option.value}
+                  label={option.label}
+                  onPress={() => toggleMediaKitValue('contentTypes', option.value)}
+                  selected={mediaKitDraft.contentTypes.includes(option.value)}
+                />
+              ))}
+            </View>
+            <Field
+              autoCapitalize="none"
+              keyboardType="email-address"
+              label="Booking email"
+              onChangeText={(value) => updateMediaKit('bookingEmail', value)}
+              value={mediaKitDraft.bookingEmail}
+            />
+            <Field
+              label="Agent / agency name"
+              onChangeText={(value) => updateMediaKit('agentAgencyName', value)}
+              value={mediaKitDraft.agentAgencyName}
+            />
+            <Field
+              autoCapitalize="none"
+              keyboardType="email-address"
+              label="Agent email"
+              onChangeText={(value) => updateMediaKit('agentEmail', value)}
+              value={mediaKitDraft.agentEmail}
+            />
+            <Field
+              keyboardType="phone-pad"
+              label="Agent phone"
+              onChangeText={(value) => updateMediaKit('agentPhone', value)}
+              value={mediaKitDraft.agentPhone}
+            />
+            <Pressable
+              disabled={savingMediaKit}
+              onPress={() => void saveMediaKit()}
+              style={styles.primaryButton}
+            >
+              {savingMediaKit ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Save media kit</Text>
+              )}
+            </Pressable>
+          </View>
+        ) : null}
+      </View>
       <Pressable
         accessibilityRole="button"
         onPress={() => router.push('/account')}
@@ -4631,6 +4875,15 @@ function handleStatusMessage(status: CreatorHandleStatus): string {
   if (status === 'unavailable') return 'That storefront address is already taken.';
   if (status === 'invalid') return 'Use at least two characters without /, ?, # or %.';
   return 'Choose the address visitors will use to open your storefront.';
+}
+
+function MediaKitMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.mediaKitMetric}>
+      <Text style={styles.mediaKitMetricValue}>{value}</Text>
+      <Text style={styles.mediaKitMetricLabel}>{label}</Text>
+    </View>
+  );
 }
 
 function Field({
@@ -5193,6 +5446,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   actionCopy: { flex: 1 },
+  sectionHeadingRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   actionTitle: { color: colors.ink, fontSize: 17, fontWeight: '700' },
   actionDescription: { color: colors.muted, lineHeight: 20, marginTop: 3 },
   chevron: { color: '#2f5960', fontSize: 28, marginLeft: spacing.md },
@@ -5203,6 +5457,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: spacing.xl,
     padding: spacing.lg,
+  },
+  mediaKitMetrics: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: spacing.lg,
+  },
+  mediaKitMetric: {
+    backgroundColor: '#f7f1ea',
+    borderRadius: radii.control,
+    flex: 1,
+    minHeight: 74,
+    padding: spacing.sm,
+  },
+  mediaKitMetricValue: { color: colors.ink, fontSize: 18, fontWeight: '800' },
+  mediaKitMetricLabel: { color: colors.muted, fontSize: 11, marginTop: 5 },
+  mediaKitEditor: {
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  choiceWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
   },
   insetEditor: {
     borderColor: colors.border,
