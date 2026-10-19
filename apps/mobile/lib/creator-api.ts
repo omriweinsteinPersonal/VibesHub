@@ -245,6 +245,29 @@ export function saveCreatorBrand(
   );
 }
 
+export async function archiveCreatorBrand(
+  brand: CreatorBrand,
+  archiveRecommendations: boolean,
+): Promise<void> {
+  await creatorRequest(
+    `/v1/creator/brands/${brand.id}?archiveRecommendations=${String(archiveRecommendations)}`,
+    (value) => {
+      if (
+        !value ||
+        typeof value !== 'object' ||
+        !('deleted' in value) ||
+        value.deleted !== true
+      ) {
+        throw new Error('Unexpected brand archive response');
+      }
+    },
+    {
+      headers: { 'if-match': `"${brand.version}"` },
+      method: 'DELETE',
+    },
+  );
+}
+
 export function transitionCreatorRecommendation(
   recommendation: CreatorRecommendation,
   command: 'archive' | 'publish' | 'unpublish' | 'restore',

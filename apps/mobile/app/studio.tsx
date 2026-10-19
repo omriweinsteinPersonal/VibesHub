@@ -36,6 +36,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '../lib/api';
 import {
+  archiveCreatorBrand,
   cacheCreatorStudioBundle,
   createCreatorCategory,
   fetchCreatorProductDetails,
@@ -1380,6 +1381,56 @@ function Recommendations({
     }
   }
 
+  function removeBrand(brand: CreatorBrand) {
+    const itemCopy = brand.itemCount === 1 ? '1 recommendation' : `${brand.itemCount} recommendations`;
+    Alert.alert(
+      `Remove ${brand.name}?`,
+      brand.itemCount
+        ? `${itemCopy} currently belong to this brand. You can keep them or archive them with the brand.`
+        : 'The brand will be removed from your dashboard and storefront.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        ...(brand.itemCount
+          ? [
+              {
+                onPress: () => void confirmRemoveBrand(brand, true),
+                style: 'destructive' as const,
+                text: 'Remove brand & items',
+              },
+            ]
+          : []),
+        {
+          onPress: () => void confirmRemoveBrand(brand, false),
+          style: 'destructive',
+          text: brand.itemCount ? 'Keep items' : 'Remove',
+        },
+      ],
+    );
+  }
+
+  async function confirmRemoveBrand(
+    brand: CreatorBrand,
+    archiveRecommendations: boolean,
+  ) {
+    setBusyId(brand.id);
+    onError('');
+    try {
+      await archiveCreatorBrand(brand, archiveRecommendations);
+      const refreshed = await getCreatorStudioBundle(30, { forceRefresh: true });
+      onBundle(refreshed);
+      if (editingBrand?.id === brand.id) setEditingBrand(undefined);
+      onNotice(
+        archiveRecommendations
+          ? 'Brand and its recommendations archived.'
+          : 'Brand archived.',
+      );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function transition(item: CreatorRecommendation) {
     const command =
       item.lifecycle === 'published'
@@ -2535,6 +2586,14 @@ function Recommendations({
             </Pressable>
             <Pressable onPress={() => openBrand(brand)}>
               <Text style={styles.editLabel}>Edit</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={`Remove ${brand.name}`}
+              accessibilityRole="button"
+              disabled={busyId === brand.id}
+              onPress={() => removeBrand(brand)}
+            >
+              <Text style={styles.removeText}>Remove</Text>
             </Pressable>
           </View>
         </View>
