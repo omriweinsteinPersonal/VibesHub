@@ -1545,22 +1545,39 @@ function Recommendations({
           </Text>
         </View>
         <View style={styles.headingActions}>
-          <Pressable onPress={() => openItem()} style={styles.compactButton}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => openItem()}
+            style={[styles.compactButton, styles.headingActionButton]}
+          >
             <Text style={styles.compactButtonText}>+ Item</Text>
           </Pressable>
-          <Pressable onPress={() => openBrand()} style={styles.compactButtonSecondary}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => openBrand()}
+            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+          >
             <Text style={styles.compactButtonSecondaryText}>+ Brand</Text>
           </Pressable>
           <Pressable
+            accessibilityRole="button"
             onPress={() => openCollection()}
-            style={styles.compactButtonSecondary}
+            style={[styles.compactButtonSecondary, styles.headingActionButton]}
           >
             <Text style={styles.compactButtonSecondaryText}>+ Collection</Text>
           </Pressable>
-          <Pressable onPress={() => openCarousel()} style={styles.compactButtonSecondary}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => openCarousel()}
+            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+          >
             <Text style={styles.compactButtonSecondaryText}>+ Carousel</Text>
           </Pressable>
-          <Pressable onPress={() => openDiscount()} style={styles.compactButtonSecondary}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => openDiscount()}
+            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+          >
             <Text style={styles.compactButtonSecondaryText}>+ Discount</Text>
           </Pressable>
         </View>
@@ -4584,9 +4601,20 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   lede: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: spacing.sm },
-  headingRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
-  headingCopy: { flex: 1 },
-  headingActions: { gap: 8, marginTop: spacing.lg },
+  headingRow: { gap: spacing.md },
+  headingCopy: { width: '100%' },
+  headingActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  headingActionButton: {
+    alignItems: 'center',
+    flexBasis: '47%',
+    flexGrow: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+  },
   compactButton: {
     backgroundColor: colors.accent,
     borderRadius: radii.control,
