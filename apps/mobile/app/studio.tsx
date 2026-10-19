@@ -1486,6 +1486,42 @@ function Recommendations({
     }
   }
 
+  async function toggleManagedVisibility(
+    kind: 'brand' | 'collection' | 'recommendation',
+    id: string,
+  ) {
+    if (busyId) return;
+    const key =
+      kind === 'brand'
+        ? 'hiddenBrandIds'
+        : kind === 'collection'
+          ? 'hiddenCollectionIds'
+          : 'hiddenRecommendationIds';
+    const hiddenIds = configuration[key];
+    const nextHiddenIds = hiddenIds.includes(id)
+      ? hiddenIds.filter((hiddenId) => hiddenId !== id)
+      : [...hiddenIds, id];
+    const next = { ...configuration, [key]: nextHiddenIds };
+    setBusyId(`visibility-${kind}-${id}`);
+    onError('');
+    try {
+      const saved = await saveStorefrontConfiguration(
+        configuration,
+        configurationInput(next),
+      );
+      onBundle((current) => (current ? { ...current, configuration: saved } : current));
+      onNotice(
+        nextHiddenIds.includes(id)
+          ? `${kind === 'recommendation' ? 'Item' : kind} hidden from your storefront.`
+          : `${kind === 'recommendation' ? 'Item' : kind} is visible on your storefront.`,
+      );
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   const matchingItemBrand = brands.find(
     (brand) =>
       brand.name.toLocaleLowerCase() === itemDraft.brandName.trim().toLocaleLowerCase(),
@@ -2421,11 +2457,7 @@ function Recommendations({
 
       <Text style={styles.sectionTitle}>Brands</Text>
       {brands.map((brand) => (
-        <Pressable
-          key={brand.id}
-          onPress={() => openBrand(brand)}
-          style={styles.listCard}
-        >
+        <View key={brand.id} style={styles.listCard}>
           {brand.logoUrl ? (
             <Image source={{ uri: brand.logoUrl }} style={styles.brandLogoThumbnail} />
           ) : null}
@@ -2435,8 +2467,21 @@ function Recommendations({
               {brand.collectionCount} collections · {brand.itemCount} items
             </Text>
           </View>
-          <Text style={styles.editLabel}>Edit</Text>
-        </Pressable>
+          <View style={styles.itemActions}>
+            <Pressable
+              disabled={Boolean(busyId)}
+              onPress={() => void toggleManagedVisibility('brand', brand.id)}
+              style={styles.statusButton}
+            >
+              <Text style={styles.statusButtonText}>
+                {configuration.hiddenBrandIds.includes(brand.id) ? 'Off' : 'On'}
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => openBrand(brand)}>
+              <Text style={styles.editLabel}>Edit</Text>
+            </Pressable>
+          </View>
+        </View>
       ))}
 
       {configuration.curatedSections.filter(({ kind }) => kind === 'collection')
@@ -2460,6 +2505,19 @@ function Recommendations({
                   </Text>
                 </View>
                 <View style={styles.itemActions}>
+                  <Pressable
+                    disabled={Boolean(busyId)}
+                    onPress={() =>
+                      void toggleManagedVisibility('collection', collection.id)
+                    }
+                    style={styles.statusButton}
+                  >
+                    <Text style={styles.statusButtonText}>
+                      {configuration.hiddenCollectionIds.includes(collection.id)
+                        ? 'Off'
+                        : 'On'}
+                    </Text>
+                  </Pressable>
                   <MoveButtons
                     disabled={Boolean(busyId)}
                     onDown={() =>
@@ -2495,6 +2553,19 @@ function Recommendations({
                   </Text>
                 </View>
                 <View style={styles.itemActions}>
+                  <Pressable
+                    disabled={Boolean(busyId)}
+                    onPress={() =>
+                      void toggleManagedVisibility('collection', carousel.id)
+                    }
+                    style={styles.statusButton}
+                  >
+                    <Text style={styles.statusButtonText}>
+                      {configuration.hiddenCollectionIds.includes(carousel.id)
+                        ? 'Off'
+                        : 'On'}
+                    </Text>
+                  </Pressable>
                   <MoveButtons
                     disabled={Boolean(busyId)}
                     onDown={() => void moveDashboardContent(carousel.id, 'section', 1)}
@@ -2523,6 +2594,19 @@ function Recommendations({
               <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
             </View>
             <View style={styles.itemActions}>
+              {item.lifecycle === 'published' ? (
+                <Pressable
+                  disabled={Boolean(busyId)}
+                  onPress={() => void toggleManagedVisibility('recommendation', item.id)}
+                  style={styles.statusButton}
+                >
+                  <Text style={styles.statusButtonText}>
+                    {configuration.hiddenRecommendationIds.includes(item.id)
+                      ? 'Off'
+                      : 'On'}
+                  </Text>
+                </Pressable>
+              ) : null}
               {configuration.contentOrder.some(
                 ({ id, kind }) => kind === 'recommendation' && id === item.id,
               ) ? (
@@ -2552,7 +2636,7 @@ function Recommendations({
                 ) : (
                   <Text style={styles.statusButtonText}>
                     {item.lifecycle === 'published'
-                      ? 'Hide'
+                      ? 'Unpublish'
                       : item.lifecycle === 'archived'
                         ? 'Restore'
                         : 'Publish'}
