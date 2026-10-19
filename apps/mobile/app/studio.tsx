@@ -1394,25 +1394,35 @@ function Recommendations({
     setBusyId(editingBrand?.id ?? 'new-brand');
     onError('');
     try {
-      const saved = await saveCreatorBrand(
-        {
-          logoAssetId: brandLogoAssetId,
-          logoUrl: brandLogoUrl,
-          name: brandName.trim(),
-          websiteUrl: normalizeUrl(brandUrl),
-        },
-        editingBrand ?? undefined,
-      );
-      onBundle((current) =>
-        current
-          ? {
-              ...current,
-              brands: editingBrand
-                ? current.brands.map((item) => (item.id === saved.id ? saved : item))
-                : [...current.brands, saved],
-            }
-          : current,
-      );
+      const input = {
+        logoAssetId: brandLogoAssetId,
+        logoUrl: brandLogoUrl,
+        name: brandName.trim(),
+        websiteUrl: normalizeUrl(brandUrl),
+      };
+      let refreshedBundle: CreatorStudioBundle | null = null;
+      let saved: CreatorBrand;
+      try {
+        saved = await saveCreatorBrand(input, editingBrand ?? undefined);
+      } catch (cause) {
+        if (!(cause instanceof ApiError) || cause.status !== 412 || !editingBrand) {
+          throw cause;
+        }
+        refreshedBundle = await getCreatorStudioBundle(30, { forceRefresh: true });
+        const latest = refreshedBundle.brands.find(({ id }) => id === editingBrand.id);
+        if (!latest) throw cause;
+        saved = await saveCreatorBrand(input, latest);
+      }
+      onBundle((current) => {
+        const source = refreshedBundle ?? current;
+        if (!source) return current;
+        return {
+          ...source,
+          brands: editingBrand
+            ? source.brands.map((item) => (item.id === saved.id ? saved : item))
+            : [...source.brands, saved],
+        };
+      });
       setEditingBrand(undefined);
       onNotice(editingBrand ? 'Brand updated.' : 'Brand added.');
     } catch (cause) {
