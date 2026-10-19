@@ -1433,7 +1433,8 @@ function Recommendations({
   }
 
   function removeBrand(brand: CreatorBrand) {
-    const itemCopy = brand.itemCount === 1 ? '1 recommendation' : `${brand.itemCount} recommendations`;
+    const itemCopy =
+      brand.itemCount === 1 ? '1 recommendation' : `${brand.itemCount} recommendations`;
     Alert.alert(
       `Remove ${brand.name}?`,
       brand.itemCount
