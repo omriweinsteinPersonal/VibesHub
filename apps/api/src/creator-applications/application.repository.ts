@@ -283,12 +283,7 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
       if (!application || application.status !== expectedStatus) {
         throw new Error('INVALID_APPLICATION_STATE');
       }
-      if (
-        !application.requestedHandle ||
-        !application.displayName ||
-        !application.bioText ||
-        !application.primaryCategoryId
-      ) {
+      if (!application.requestedHandle || !application.displayName) {
         throw new Error('INCOMPLETE_APPLICATION');
       }
 
@@ -298,18 +293,20 @@ export class ApplicationRepository implements ApplicationRepositoryPort {
           primary_category_id, status, published_at
         ) values (
           ${application.userId}, ${id}, ${application.requestedHandle},
-          ${application.displayName}, ${application.bioText}, 'he',
+          ${application.displayName}, ${application.bioText ?? ''}, 'he',
           ${application.primaryCategoryId}, 'approved', statement_timestamp()
         )
         returning id
       `;
       if (!creator) throw new Error('Creator profile was not created');
 
-      await transaction`
-        insert into app.creator_categories (creator_id, category_id, sort_order)
-        values (${creator.id}, ${application.primaryCategoryId}, 0)
-        on conflict do nothing
-      `;
+      if (application.primaryCategoryId) {
+        await transaction`
+          insert into app.creator_categories (creator_id, category_id, sort_order)
+          values (${creator.id}, ${application.primaryCategoryId}, 0)
+          on conflict do nothing
+        `;
+      }
       await transaction`
         insert into app.creator_social_links (
           creator_id, platform, url, handle, sort_order

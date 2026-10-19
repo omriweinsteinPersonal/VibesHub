@@ -11,9 +11,9 @@ interface CreatorProfileRow {
   avatarAssetId: string | null;
   avatarUrl: string | null;
   bioHe: string;
-  categoryId: string;
-  categoryName: string;
-  categorySlug: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  categorySlug: string | null;
   displayName: string;
   handle: string;
   id: string;
@@ -61,7 +61,7 @@ export class CreatorProfileRepository {
           '[]'::jsonb
         ) as "socialLinks"
       from app.creator_profiles creator
-      join app.categories category on category.id = creator.primary_category_id
+      left join app.categories category on category.id = creator.primary_category_id
       left join app.media_assets avatar
         on avatar.id = creator.avatar_media_asset_id
        and avatar.status = 'ready'
@@ -111,7 +111,7 @@ export class CreatorProfileRepository {
           displayName: string;
           handle: string;
           id: string;
-          primaryCategoryId: string;
+          primaryCategoryId: string | null;
           version: number;
         }[]
       >`
@@ -256,7 +256,7 @@ export class CreatorProfileRepository {
             '[]'::jsonb
           ) as "socialLinks"
         from app.creator_profiles creator
-        join app.categories category on category.id = creator.primary_category_id
+        left join app.categories category on category.id = creator.primary_category_id
         left join app.media_assets avatar
           on avatar.id = creator.avatar_media_asset_id
          and avatar.status = 'ready'
@@ -278,11 +278,10 @@ function mapProfile(row: CreatorProfileRow): CreatorProfileSettings {
     displayName: row.displayName,
     handle: row.handle,
     id: row.id,
-    primaryCategory: {
-      id: row.categoryId,
-      name: row.categoryName,
-      slug: row.categorySlug,
-    },
+    primaryCategory:
+      row.categoryId && row.categoryName && row.categorySlug
+        ? { id: row.categoryId, name: row.categoryName, slug: row.categorySlug }
+        : null,
     socialLinks: row.socialLinks,
     version: row.version,
   };

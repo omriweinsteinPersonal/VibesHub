@@ -46,7 +46,7 @@ describe('creator application policy', () => {
     expect(canTransitionCreatorApplication('approved', 'withdraw')).toBe(false);
   });
 
-  it('requires a Hebrew bio and complete discovery identity before submission', () => {
+  it('requires a display identity and one public link before submission', () => {
     expect(
       canSubmitCreatorApplication({
         bioText: 'Beauty products I use',
@@ -57,16 +57,12 @@ describe('creator application policy', () => {
       }),
     ).toEqual({
       allowed: false,
-      reasons: [
-        'bio_hebrew_required',
-        'primary_category_required',
-        'social_link_required',
-      ],
+      reasons: ['social_link_required'],
     });
 
     expect(
       canSubmitCreatorApplication({
-        bioText: 'המלצות אמיתיות על מוצרים שאני אוהבת',
+        bioText: null,
         displayName: 'Noa Levi',
         primaryCategoryId: 'category-id',
         requestedHandle: 'noa-levi',

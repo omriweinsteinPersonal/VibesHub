@@ -15,8 +15,8 @@ import {
 interface CreatorCardRow {
   avatarUrl: string | null;
   bioText: string;
-  categoryName: string;
-  categorySlug: string;
+  categoryName: string | null;
+  categorySlug: string | null;
   displayName: string;
   followerCount: number;
   handle: string;
@@ -77,13 +77,13 @@ export class CreatorDirectoryRepository {
             and recommendation.deleted_at is null
         ) as "recommendationCount"
       from app.creator_profiles creator
-      join app.categories category on category.id = creator.primary_category_id
+      left join app.categories category on category.id = creator.primary_category_id
       left join app.media_assets avatar
         on avatar.id = creator.avatar_media_asset_id
        and avatar.status = 'ready'
       where creator.status = 'approved'
         and creator.published_at is not null
-        and category.is_active = true
+        and (category.id is null or category.is_active = true)
         and (${query.category ?? null}::text is null or category.slug::text = ${query.category ?? null})
         and (
           ${searchPattern}::text is null
@@ -229,7 +229,7 @@ export class CreatorDirectoryRepository {
             and recommendation.deleted_at is null
         ) as "recommendationCount"
       from app.creator_profiles creator
-      join app.categories category on category.id = creator.primary_category_id
+      left join app.categories category on category.id = creator.primary_category_id
       left join app.media_assets avatar
         on avatar.id = creator.avatar_media_asset_id
        and avatar.status = 'ready'
@@ -242,7 +242,7 @@ export class CreatorDirectoryRepository {
         )
         and creator.status = 'approved'
         and creator.published_at is not null
-        and category.is_active = true
+        and (category.id is null or category.is_active = true)
     `;
     return row
       ? {
@@ -273,7 +273,10 @@ function mapCreatorCard(row: CreatorCardRow): CreatorCard {
     followerCount: row.followerCount,
     handle: row.handle,
     id: row.id,
-    primaryCategory: { name: row.categoryName, slug: row.categorySlug },
+    primaryCategory:
+      row.categoryName && row.categorySlug
+        ? { name: row.categoryName, slug: row.categorySlug }
+        : null,
     recommendationCount: row.recommendationCount,
     verificationStatus: row.isVerified ? 'verified' : 'unverified',
   };

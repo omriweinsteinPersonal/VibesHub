@@ -57,9 +57,7 @@ export type CreatorApplicationSubmissionDecision =
   | {
       allowed: false;
       reasons: Array<
-        | 'bio_hebrew_required'
         | 'display_name_required'
-        | 'primary_category_required'
         | 'requested_handle_required'
         | 'social_link_required'
       >;
@@ -74,10 +72,6 @@ export function canSubmitCreatorApplication(
   >['reasons'] = [];
   if (!input.requestedHandle) reasons.push('requested_handle_required');
   if (!input.displayName?.trim()) reasons.push('display_name_required');
-  if (!input.bioText?.trim() || !/[\u0590-\u05ff]/u.test(input.bioText)) {
-    reasons.push('bio_hebrew_required');
-  }
-  if (!input.primaryCategoryId) reasons.push('primary_category_required');
   if (input.socialLinkCount < 1) reasons.push('social_link_required');
   return reasons.length === 0 ? { allowed: true } : { allowed: false, reasons };
 }
