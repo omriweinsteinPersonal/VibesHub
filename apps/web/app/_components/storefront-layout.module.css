@@ -1038,7 +1038,7 @@
   background-size:
     100% 100%,
     cover;
-  min-height: clamp(320px, 42vw, 500px);
+  min-height: 280px;
   padding: 0;
 }
 .layout[data-template='food-journal']
@@ -1052,7 +1052,7 @@
   flex-direction: column;
   justify-content: flex-end;
   max-width: none;
-  min-height: clamp(320px, 42vw, 500px);
+  min-height: 280px;
   padding: 24px 5vw 18px;
   text-align: center;
   width: 100%;
@@ -1155,7 +1155,7 @@
 @media (max-width: 620px) {
   .layout[data-template='food-journal'] .profile.hero,
   .layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontInner) {
-    min-height: 304px;
+    min-height: 248px;
   }
   .layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontInner) {
     padding-inline: 18px;
@@ -1174,8 +1174,8 @@
    the creator's profile photo, matching the circular header control. */
 .layout[data-template='food-journal'][data-header-style='circular'] .profile.hero {
   background: #f35f33;
-  min-height: 0;
-  padding: 32px 5vw 14px;
+  min-height: 280px;
+  padding: 28px 5vw 24px;
 }
 .layout[data-template='food-journal'][data-header-style='circular']
   .profile.hero
@@ -1192,7 +1192,7 @@
   border: 4px solid #fff8f0;
   box-shadow: 0 8px 22px rgb(108 36 19 / 20%);
   display: grid;
-  height: 108px;
+  height: 92px;
   width: 108px;
 }
 .layout[data-template='food-journal'][data-header-style='circular']
@@ -1211,7 +1211,8 @@
 }
 @media (max-width: 620px) {
   .layout[data-template='food-journal'][data-header-style='circular'] .profile.hero {
-    padding: 28px 18px 12px;
+    min-height: 248px;
+    padding: 28px 18px 24px;
   }
   .layout[data-template='food-journal'][data-header-style='circular']
     .profile.hero
