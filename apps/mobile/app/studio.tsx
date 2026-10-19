@@ -752,6 +752,45 @@ function Recommendations({
     }
   }
 
+  function archiveDiscount(discount: CreatorDiscountCode) {
+    Alert.alert(
+      `Remove ${discount.code || discount.label || 'this offer'}?`,
+      'The discount will be archived and removed from your storefront.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => void confirmArchiveDiscount(discount),
+          style: 'destructive',
+          text: 'Remove',
+        },
+      ],
+    );
+  }
+
+  async function confirmArchiveDiscount(discount: CreatorDiscountCode) {
+    setBusyId(discount.id);
+    onError('');
+    try {
+      const saved = await transitionCreatorDiscount(discount, 'archive');
+      onBundle((current) =>
+        current
+          ? {
+              ...current,
+              discounts: current.discounts.map((item) =>
+                item.id === saved.id ? saved : item,
+              ),
+            }
+          : current,
+      );
+      if (editingDiscount?.id === saved.id) setEditingDiscount(undefined);
+      onNotice('Discount archived.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   function toggleCollectionItem(id: string) {
     setCollectionItemIds((current) =>
       current.includes(id)
@@ -2688,6 +2727,14 @@ function Recommendations({
               <View style={styles.itemActions}>
                 <Pressable onPress={() => openDiscount(discount)}>
                   <Text style={styles.editLabel}>Edit</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={`Remove ${discount.code || discount.label || 'discount'}`}
+                  accessibilityRole="button"
+                  disabled={busyId === discount.id}
+                  onPress={() => archiveDiscount(discount)}
+                >
+                  <Text style={styles.removeText}>Remove</Text>
                 </Pressable>
                 <Pressable
                   disabled={busyId === discount.id}
