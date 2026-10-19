@@ -176,10 +176,14 @@ export default function CreatorApplicationScreen() {
       return;
     }
     setError('');
-    setStep((current) => Math.min(current + 1, 4));
+    setStep((current) => Math.min(current + 1, 3));
   }
   function back() {
     setError('');
+    if (step === 3 && tourSlide > 0) {
+      setTourSlide((current) => current - 1);
+      return;
+    }
     setStep((current) => Math.max(current - 1, 0));
   }
 
@@ -260,13 +264,9 @@ export default function CreatorApplicationScreen() {
           ) : (
             <>
               <Text style={styles.eyebrow}>CREATOR SETUP</Text>
-              <Text style={styles.title}>
-                {step === 4 ? 'Here is your page' : 'Build your Swavii page'}
-              </Text>
+              <Text style={styles.title}>Build your Swavii page</Text>
               <Text style={styles.lede}>
-                {step === 4
-                  ? 'This is how your storefront will look to your audience.'
-                  : 'A short journey to make your creator page feel like you.'}
+                A short journey to make your creator page feel like you.
               </Text>
               <Progress step={step} />
               <View style={styles.formCard}>
@@ -316,15 +316,6 @@ export default function CreatorApplicationScreen() {
                     onPrevious={() => setTourSlide((current) => Math.max(current - 1, 0))}
                   />
                 ) : null}
-                {step === 4 ? (
-                  <PreviewStep
-                    avatar={avatarUri ? { uri: avatarUri } : null}
-                    bio={bio}
-                    displayName={displayName}
-                    imageLayout={imageLayout}
-                    links={socialLinks}
-                  />
-                ) : null}
                 {error ? <Text style={styles.error}>{error}</Text> : null}
                 <View style={styles.actions}>
                   {step > 0 ? (
@@ -336,13 +327,25 @@ export default function CreatorApplicationScreen() {
                       <Text style={styles.backButtonText}>Back</Text>
                     </Pressable>
                   ) : null}
-                  {step < 4 ? (
+                  {step < 3 ? (
                     <Pressable
                       disabled={submitting}
                       onPress={next}
                       style={styles.primaryButton}
                     >
                       <Text style={styles.primaryButtonText}>Continue</Text>
+                    </Pressable>
+                  ) : tourSlide < TOUR_SLIDES.length - 1 ? (
+                    <Pressable
+                      disabled={submitting}
+                      onPress={() =>
+                        setTourSlide((current) =>
+                          Math.min(current + 1, TOUR_SLIDES.length - 1),
+                        )
+                      }
+                      style={styles.primaryButton}
+                    >
+                      <Text style={styles.primaryButtonText}>Next</Text>
                     </Pressable>
                   ) : (
                     <Pressable
@@ -370,8 +373,8 @@ export default function CreatorApplicationScreen() {
 
 function Progress({ step }: { step: number }) {
   return (
-    <View accessibilityLabel={`Step ${step + 1} of 5`} style={styles.progressRow}>
-      {[0, 1, 2, 3, 4].map((item) => (
+    <View accessibilityLabel={`Step ${step + 1} of 4`} style={styles.progressRow}>
+      {[0, 1, 2, 3].map((item) => (
         <View
           key={item}
           style={[styles.progressDot, item <= step && styles.progressDotActive]}
@@ -750,48 +753,6 @@ function TourStep({
         >
           <Text style={styles.tourArrowText}>›</Text>
         </Pressable>
-      </View>
-    </View>
-  );
-}
-function PreviewStep({
-  avatar,
-  bio,
-  displayName,
-  imageLayout,
-  links,
-}: {
-  avatar: { uri: string } | null;
-  bio: string;
-  displayName: string;
-  imageLayout: ImageLayout;
-  links: SocialLink[];
-}) {
-  const visibleLinks = useMemo(() => links.filter((link) => link.url.trim()), [links]);
-  return (
-    <View style={styles.previewCard}>
-      <View
-        style={[
-          styles.previewImage,
-          imageLayout === 'full-bleed' && styles.previewImageBleed,
-        ]}
-      >
-        {avatar ? (
-          <Image contentFit="cover" source={avatar} style={styles.previewImageAsset} />
-        ) : (
-          <Text style={styles.previewImageFallback}>Your image</Text>
-        )}
-      </View>
-      <View style={styles.previewContent}>
-        <Text style={styles.previewName}>{displayName || 'Your name'}</Text>
-        <Text style={styles.previewBio}>{bio || 'Your short bio will appear here.'}</Text>
-        <View style={styles.previewLinks}>
-          {visibleLinks.map((link) => (
-            <View key={link.platform} style={styles.previewLink}>
-              <Text style={styles.previewLinkText}>{link.platform}</Text>
-            </View>
-          ))}
-        </View>
       </View>
     </View>
   );

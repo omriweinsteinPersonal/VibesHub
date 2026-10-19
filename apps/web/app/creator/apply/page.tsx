@@ -54,7 +54,7 @@ interface CreatorApplication {
 interface CreatorProfile {
   version: number;
 }
-type Step = 1 | 2 | 3 | 4 | 5;
+type Step = 1 | 2 | 3 | 4;
 type SocialLink = { followerCount?: number | null; platform: string; url: string };
 type ImageLayout = 'full_bleed' | 'central';
 
@@ -175,10 +175,7 @@ export default function CreatorApplicationPage() {
   const latestFeedback = application?.feedback.at(-1);
   const canContinueProfile = Boolean(displayName.trim() && requestedHandle.trim());
   const stepLabel = useMemo(
-    () =>
-      ['Your profile', 'Image style', 'Social links', 'A quick tour', 'Your page'][
-        step - 1
-      ],
+    () => ['Your profile', 'Image style', 'Social links', 'A quick tour'][step - 1],
     [step],
   );
 
@@ -271,7 +268,7 @@ export default function CreatorApplicationPage() {
     setSaving(true);
     try {
       if ([1, 3].includes(step)) await saveDraft();
-      setStep((current) => (current < 5 ? ((current + 1) as Step) : current));
+      setStep((current) => (current < 4 ? ((current + 1) as Step) : current));
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -323,6 +320,10 @@ export default function CreatorApplicationPage() {
 
   function goBack() {
     setError('');
+    if (step === 4 && tourSlide > 0) {
+      setTourSlide((current) => current - 1);
+      return;
+    }
     setStep((current) => (current > 1 ? ((current - 1) as Step) : current));
   }
 
@@ -342,14 +343,14 @@ export default function CreatorApplicationPage() {
       <section className="onboardingShell">
         <div className="onboardingIntro">
           <p className="eyebrow">CREATOR ONBOARDING</p>
-          <h1>{step === 5 ? 'Your page is taking shape.' : 'Let’s build your page.'}</h1>
+          <h1>Let’s build your page.</h1>
           <p>
             Set up your Swavii space in a few thoughtful steps. You can keep shaping it
             from your studio.
           </p>
         </div>
-        <div aria-label={`Step ${step} of 5`} className="onboardingProgress">
-          {[1, 2, 3, 4, 5].map((item) => (
+        <div aria-label={`Step ${step} of 4`} className="onboardingProgress">
+          {[1, 2, 3, 4].map((item) => (
             <span className={item <= step ? 'active' : ''} key={item}>
               <b>{item < step ? <Check aria-hidden="true" size={14} /> : item}</b>
               {item === step ? stepLabel : null}
@@ -415,17 +416,7 @@ export default function CreatorApplicationPage() {
               <TourStep
                 slide={tourSlides[tourSlide] ?? tourSlides[0]}
                 slideIndex={tourSlide}
-                onSkip={() => setStep(5)}
-              />
-            ) : null}
-            {step === 5 ? (
-              <PagePreviewStep
-                displayName={displayName}
-                handle={requestedHandle}
-                bioText={bioText}
-                avatarPreview={avatarPreview}
-                imageLayout={imageLayout}
-                socialLinks={socialLinks}
+                onSkip={() => setTourSlide(tourSlides.length - 1)}
               />
             ) : null}
             {error ? (
@@ -449,17 +440,21 @@ export default function CreatorApplicationPage() {
               )}
               {step === 4 ? (
                 <span className="tourActions">
-                  <button
-                    className="button primary"
-                    onClick={() => {
-                      if (tourSlide === tourSlides.length - 1) setStep(5);
-                      else setTourSlide((value) => value + 1);
-                    }}
-                    type="button"
-                  >
-                    {tourSlide === tourSlides.length - 1 ? 'See my page' : 'Next'}
-                    <ArrowRight aria-hidden="true" size={16} />
-                  </button>
+                  {tourSlide === tourSlides.length - 1 ? (
+                    <button className="button primary" disabled={saving} type="submit">
+                      {saving ? 'Creating your storefront…' : 'Create my storefront'}
+                      <ArrowRight aria-hidden="true" size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      className="button primary"
+                      onClick={() => setTourSlide((value) => value + 1)}
+                      type="button"
+                    >
+                      Next
+                      <ArrowRight aria-hidden="true" size={16} />
+                    </button>
+                  )}
                 </span>
               ) : null}
               {step < 4 ? (
@@ -470,12 +465,6 @@ export default function CreatorApplicationPage() {
                   type="button"
                 >
                   {saving ? 'Saving…' : 'Continue'}
-                  <ArrowRight aria-hidden="true" size={16} />
-                </button>
-              ) : null}
-              {step === 5 ? (
-                <button className="button primary" disabled={saving} type="submit">
-                  {saving ? 'Opening your studio…' : 'Open my studio'}
                   <ArrowRight aria-hidden="true" size={16} />
                 </button>
               ) : null}
@@ -1161,81 +1150,6 @@ function RecommendationTourVisual() {
     </div>
   );
 }
-
-function PagePreviewStep({
-  displayName,
-  handle,
-  bioText,
-  avatarPreview,
-  imageLayout,
-  socialLinks,
-}: {
-  displayName: string;
-  handle: string;
-  bioText: string;
-  avatarPreview: string;
-  imageLayout: ImageLayout;
-  socialLinks: SocialLink[];
-}) {
-  return (
-    <section aria-labelledby="onboarding-preview-title" className="previewStep">
-      <p className="eyebrow">05 / YOUR PAGE</p>
-      <h2 id="onboarding-preview-title">See your page.</h2>
-      <p className="onboardingLead">
-        This is how your Swavii creator page will look with your links and
-        recommendations.
-      </p>
-      <div className={`creatorPagePreview ${imageLayout}`}>
-        <div className="creatorPreviewHeader">
-          <span>swavii</span>
-          <span>⋯</span>
-        </div>
-        <div className="creatorPreviewHero">
-          {avatarPreview ? (
-            <Image alt="" fill sizes="100%" src={avatarPreview} unoptimized />
-          ) : (
-            <span>{displayName.slice(0, 1).toUpperCase() || 'S'}</span>
-          )}
-        </div>
-        <div className="creatorPreviewBody">
-          <div className="creatorPreviewIdentity">
-            <span className="creatorPreviewAvatar">
-              {avatarPreview ? (
-                <Image alt="" fill sizes="64px" src={avatarPreview} unoptimized />
-              ) : (
-                displayName.slice(0, 1).toUpperCase() || 'S'
-              )}
-            </span>
-            <div>
-              <strong>{displayName || 'Your name'}</strong>
-              <small>@{handle || 'yourhandle'}</small>
-            </div>
-          </div>
-          <div className="creatorPreviewSocials">
-            {socialLinks.slice(0, 4).map((link) => (
-              <span key={link.platform}>
-                <ConnectorIcon platform={link.platform} size={16} />
-              </span>
-            ))}
-          </div>
-          <p>{bioText || 'Your bio will appear here.'}</p>
-          <div className="creatorPreviewSection">
-            <div>
-              <strong>My recommendations</strong>
-              <small>See all →</small>
-            </div>
-            <div className="creatorPreviewCards">
-              <span />
-              <span />
-              <span />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function handleMessage(status: CreatorHandleStatus, handle: string): string {
   if (!handle) return 'This becomes your public address on Swavii.';
   if (status === 'checking') return 'Checking address availability…';
