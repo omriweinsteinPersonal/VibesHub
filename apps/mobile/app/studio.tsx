@@ -56,6 +56,7 @@ import {
   type CreatorStudioBundle,
 } from '../lib/creator-api';
 import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
+import { openExternalWebPage } from '../lib/external-browser';
 import { uploadCreatorImage } from '../lib/creator-media';
 import { featuredMediaProvider } from '../lib/featured-media';
 import {
@@ -539,6 +540,15 @@ function Recommendations({
   const [discountScopeTarget, setDiscountScopeTarget] = useState('brand');
   const [discountStackable, setDiscountStackable] = useState(false);
   const [discountStartsAt, setDiscountStartsAt] = useState('');
+
+  async function openExternalLink(url: string) {
+    onError('');
+    try {
+      await openExternalWebPage(url);
+    } catch {
+      onError('Could not open this link. Please try again.');
+    }
+  }
 
   function openBrand(brand?: CreatorBrand) {
     setEditingItem(undefined);
@@ -2631,6 +2641,13 @@ function Recommendations({
               <Text style={styles.editLabel}>Edit</Text>
             </Pressable>
             <Pressable
+              accessibilityLabel={`Open ${brand.name} website`}
+              accessibilityRole="link"
+              onPress={() => void openExternalLink(brand.websiteUrl)}
+            >
+              <Text style={styles.editLabel}>Visit</Text>
+            </Pressable>
+            <Pressable
               accessibilityLabel={`Remove ${brand.name}`}
               accessibilityRole="button"
               disabled={busyId === brand.id}
@@ -2774,6 +2791,15 @@ function Recommendations({
                   onUp={() => void moveDashboardContent(item.id, 'recommendation', -1)}
                 />
               ) : null}
+              {item.productUrl.startsWith('https://') ? (
+                <Pressable
+                  accessibilityLabel={`Open ${item.productName} link`}
+                  accessibilityRole="link"
+                  onPress={() => void openExternalLink(item.productUrl)}
+                >
+                  <Text style={styles.editLabel}>Visit</Text>
+                </Pressable>
+              ) : null}
               {item.lifecycle !== 'archived' ? (
                 <>
                   <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
@@ -2829,6 +2855,13 @@ function Recommendations({
               <View style={styles.itemActions}>
                 <Pressable onPress={() => openDiscount(discount)}>
                   <Text style={styles.editLabel}>Edit</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel="Open discount merchant website"
+                  accessibilityRole="link"
+                  onPress={() => void openExternalLink(discount.merchantUrl)}
+                >
+                  <Text style={styles.editLabel}>Visit</Text>
                 </Pressable>
                 <Pressable
                   accessibilityLabel={`Remove ${discount.code || discount.label || 'discount'}`}
