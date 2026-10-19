@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ImagePlus } from 'lucide-react-native';
 import { Circle, Defs, LinearGradient, Path, Rect, Stop, Svg } from 'react-native-svg';
 import {
