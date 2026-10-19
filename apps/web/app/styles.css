@@ -10494,6 +10494,11 @@ dt {
 .storefrontTemplateSwatch-clay-editorial {
   background: #d99a78;
 }
+.storefrontTemplateSwatch-food-journal {
+  background:
+    linear-gradient(180deg, transparent 0 46%, #f35f33 73%),
+    linear-gradient(135deg, #f6c7a2 0 48%, #ee7953 49% 100%);
+}
 .storefrontTemplateSwatch-forest-glass {
   background:
     url('/images/storefront/forest-glass-waves.svg') center / cover no-repeat,
@@ -10546,6 +10551,13 @@ dt {
       rgb(122 62 40 / 6%) 35px 37px
     );
 }
+.creatorStorefrontCanvas[data-template='food-journal'] {
+  background-color: #f35f33;
+  background-image:
+    radial-gradient(circle at 12% 12%, rgb(255 220 184 / 18%), transparent 26%),
+    radial-gradient(circle at 88% 80%, rgb(172 48 24 / 16%), transparent 30%),
+    linear-gradient(180deg, #f35f33 0%, #f66a3b 100%);
+}
 .creatorStorefrontCanvas[data-template='forest-glass'] {
   background-color: #123f3b;
   background-image:
@@ -10559,6 +10571,7 @@ dt {
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
     [data-template='clay-editorial'],
+    [data-template='food-journal'],
     [data-template='forest-glass'],
     [data-template='aurora-veil'],
     [data-template='desert-rose'],
@@ -10575,6 +10588,7 @@ dt {
 .creatorStorefrontCanvas:is(
     [data-template='citrus-glow'],
     [data-template='clay-editorial'],
+    [data-template='food-journal'],
     [data-template='forest-glass'],
     [data-template='aurora-veil'],
     [data-template='desert-rose'],

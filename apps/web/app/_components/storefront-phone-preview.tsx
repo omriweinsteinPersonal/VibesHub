@@ -85,6 +85,22 @@ const templatePresets = [
     description: 'Warm terracotta, soft cream, and an editorial feel.',
     colors: { recommendationsBackground: '#d99a78' },
   },
+  {
+    id: 'food-journal',
+    title: 'Food Journal',
+    description: 'A vivid, image-led layout for food and lifestyle creators.',
+    colors: {
+      accentColor: '#102f3c',
+      collectionBackground: '#fff8f0',
+      dividerColor: '#df4f30',
+      discountBackground: '#fff8f0',
+      headerStyle: 'classic',
+      productBackground: '#f7f3ea',
+      profileBackground: '#f35f33',
+      recommendationsBackground: '#f35f33',
+      textColor: '#102f3c',
+    },
+  },
 ] as const;
 
 function subscribe(callback: () => void) {

@@ -580,6 +580,7 @@ export const storefrontThemeSchema = z
         'citrus-glow',
         'midnight-electric',
         'clay-editorial',
+        'food-journal',
         'forest-glass',
         'aurora-veil',
         'desert-rose',

@@ -107,6 +107,21 @@ const storefrontTemplates: readonly {
     id: 'clay-editorial',
     title: 'Clay Editorial',
   },
+  {
+    colors: {
+      accentColor: '#102f3c',
+      collectionBackground: '#fff8f0',
+      dividerColor: '#df4f30',
+      discountBackground: '#fff8f0',
+      headerStyle: 'classic',
+      productBackground: '#f7f3ea',
+      profileBackground: '#f35f33',
+      recommendationsBackground: '#f35f33',
+      textColor: '#102f3c',
+    },
+    id: 'food-journal',
+    title: 'Food Journal',
+  },
 ];
 
 export default function CreatorStudioScreen() {

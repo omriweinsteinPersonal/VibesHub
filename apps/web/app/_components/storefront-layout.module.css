@@ -1006,3 +1006,165 @@
   background-color: transparent;
   background-image: none;
 }
+
+/* Food Journal is an image-led creator template: the photo carries the top
+   of the page, then dissolves into the coral canvas instead of sitting in a
+   separate header card. */
+.layout[data-template='food-journal'] {
+  background: #f35f33;
+  color: #102f3c;
+  padding-bottom: 22px;
+}
+.layout[data-template='food-journal'] .profile,
+.layout[data-template='food-journal'] .socials,
+.layout[data-template='food-journal'] .content:global(.referenceStorefrontProducts) {
+  background: transparent;
+}
+.layout[data-template='food-journal'] .profile.hero {
+  background-color: #f35f33;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgb(243 95 51 / 0%) 24%,
+      rgb(243 95 51 / 7%) 42%,
+      rgb(243 95 51 / 78%) 72%,
+      #f35f33 93%
+    ),
+    var(--sf-profile-image, none);
+  background-position:
+    center,
+    center top;
+  background-size:
+    100% 100%,
+    cover;
+  min-height: clamp(320px, 42vw, 500px);
+  padding: 0;
+}
+.layout[data-template='food-journal']
+  .profile.hero
+  :global(.referenceStorefrontHeroImage) {
+  display: none;
+}
+.layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontInner) {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-width: none;
+  min-height: clamp(320px, 42vw, 500px);
+  padding: 24px 5vw 18px;
+  text-align: center;
+  width: 100%;
+}
+.layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontAvatar) {
+  display: none;
+}
+.layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontName) {
+  align-self: center;
+  max-width: min(92vw, 760px);
+}
+.layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontName h1) {
+  color: #fffaf2;
+  font-family: var(--font-vh-body), Arial, sans-serif;
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  text-shadow: 0 2px 20px rgb(88 32 18 / 18%);
+}
+.layout[data-template='food-journal'] .profile:not(.hero) {
+  padding: 0 5vw 8px;
+  text-align: center;
+}
+.layout[data-template='food-journal']
+  .profile:not(.hero)
+  :global(.referenceStorefrontBio) {
+  color: #fffaf2;
+  font-size: clamp(0.88rem, 1.8vw, 1.05rem);
+  line-height: 1.35;
+  margin: 0 auto;
+  max-width: 44ch;
+}
+.layout[data-template='food-journal'] .socials {
+  gap: 8px;
+  padding: 0 5vw 16px;
+}
+.layout[data-template='food-journal'] .socials :global(.referenceConnectorLink) {
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: #102f3c;
+  height: 34px;
+  width: 34px;
+}
+.layout[data-template='food-journal'] .socials :global(.referenceConnectorLink:hover),
+.layout[data-template='food-journal']
+  .socials
+  :global(.referenceConnectorLink:focus-visible) {
+  background: rgb(255 250 242 / 32%);
+  color: #fffaf2;
+}
+.layout[data-template='food-journal'] .labels {
+  background: rgb(255 250 242 / 35%);
+  border: 1px solid rgb(16 47 60 / 23%);
+  border-radius: 999px;
+  box-shadow: 0 5px 16px rgb(119 41 22 / 13%);
+  margin-inline: 12px;
+  padding: 4px;
+}
+.layout[data-template='food-journal'] .labels :global(button[aria-pressed]) {
+  border-radius: 999px;
+  color: #102f3c;
+  font-size: 0.82rem;
+  min-height: 34px;
+  padding-inline: 15px;
+}
+.layout[data-template='food-journal'] .labels :global(button[aria-pressed='true']) {
+  background: #fffaf2;
+  color: #102f3c;
+  box-shadow: 0 2px 8px rgb(100 44 26 / 12%);
+}
+.layout[data-template='food-journal'] .firstContent:global(.referenceStorefrontProducts) {
+  background: linear-gradient(180deg, rgb(243 95 51 / 0%) 0, #f35f33 30px);
+  margin-top: -2px;
+  padding-top: 18px;
+}
+.layout[data-template='food-journal']
+  .content:global(.referenceStorefrontProducts)
+  > header
+  label {
+  background: rgb(255 250 242 / 38%);
+  border-color: rgb(16 47 60 / 24%);
+  color: #102f3c;
+}
+.layout[data-template='food-journal'] :global(.referenceCollectionFrame),
+.layout[data-template='food-journal'] :global(.referenceDiscountLayer article),
+.layout[data-template='food-journal'] :global(.storeProductCard),
+.layout[data-template='food-journal'] :global(.storefrontContentBlock) {
+  border-color: rgb(16 47 60 / 18%);
+  box-shadow: 0 8px 18px rgb(118 41 22 / 10%);
+}
+.layout[data-template='food-journal'] :global(.referenceCollectionFrame) {
+  background: #fff8f0;
+}
+.layout[data-template='food-journal'] :global(.referenceCollectionFrame > header h3),
+.layout[data-template='food-journal'] :global(.referenceCollectionFrame > header p) {
+  color: #102f3c;
+}
+@media (max-width: 620px) {
+  .layout[data-template='food-journal'] .profile.hero,
+  .layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontInner) {
+    min-height: 304px;
+  }
+  .layout[data-template='food-journal'] .profile.hero :global(.referenceStorefrontInner) {
+    padding-inline: 18px;
+  }
+  .layout[data-template='food-journal'] .labels {
+    margin-inline: 9px;
+  }
+  .layout[data-template='food-journal'] .labels :global(button[aria-pressed]) {
+    font-size: 0.72rem;
+    min-height: 31px;
+    padding-inline: 11px;
+  }
+}
