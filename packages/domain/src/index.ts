@@ -57,9 +57,7 @@ export type CreatorApplicationSubmissionDecision =
   | {
       allowed: false;
       reasons: Array<
-        | 'display_name_required'
-        | 'requested_handle_required'
-        | 'social_link_required'
+        'display_name_required' | 'requested_handle_required' | 'social_link_required'
       >;
     };
 
