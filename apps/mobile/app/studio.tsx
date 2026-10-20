@@ -1742,6 +1742,31 @@ function Recommendations({
       discount.lifecycle === 'published' &&
       discount.code,
   );
+  const activeEditor =
+    editingItem !== undefined
+      ? 'item'
+      : editingBrand !== undefined
+        ? 'brand'
+        : editingCollection !== undefined
+          ? 'collection'
+          : editingCarousel !== undefined
+            ? 'carousel'
+            : editingDiscount !== undefined
+              ? 'discount'
+              : null;
+
+  function actionButtonStyles(action: typeof activeEditor) {
+    return [
+      action === activeEditor ? styles.compactButton : styles.compactButtonSecondary,
+      styles.headingActionButton,
+    ];
+  }
+
+  function actionButtonTextStyle(action: typeof activeEditor) {
+    return action === activeEditor
+      ? styles.compactButtonText
+      : styles.compactButtonSecondaryText;
+  }
 
   return (
     <>
@@ -1756,38 +1781,43 @@ function Recommendations({
         <View style={styles.headingActions}>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: activeEditor === 'item' }}
             onPress={() => openItem()}
-            style={[styles.compactButton, styles.headingActionButton]}
+            style={actionButtonStyles('item')}
           >
-            <Text style={styles.compactButtonText}>+ Item</Text>
+            <Text style={actionButtonTextStyle('item')}>+ Item</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: activeEditor === 'brand' }}
             onPress={() => openBrand()}
-            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+            style={actionButtonStyles('brand')}
           >
-            <Text style={styles.compactButtonSecondaryText}>+ Brand</Text>
+            <Text style={actionButtonTextStyle('brand')}>+ Brand</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: activeEditor === 'collection' }}
             onPress={() => openCollection()}
-            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+            style={actionButtonStyles('collection')}
           >
-            <Text style={styles.compactButtonSecondaryText}>+ Collection</Text>
+            <Text style={actionButtonTextStyle('collection')}>+ Collection</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: activeEditor === 'carousel' }}
             onPress={() => openCarousel()}
-            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+            style={actionButtonStyles('carousel')}
           >
-            <Text style={styles.compactButtonSecondaryText}>+ Carousel</Text>
+            <Text style={actionButtonTextStyle('carousel')}>+ Carousel</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: activeEditor === 'discount' }}
             onPress={() => openDiscount()}
-            style={[styles.compactButtonSecondary, styles.headingActionButton]}
+            style={actionButtonStyles('discount')}
           >
-            <Text style={styles.compactButtonSecondaryText}>+ Discount</Text>
+            <Text style={actionButtonTextStyle('discount')}>+ Discount</Text>
           </Pressable>
         </View>
       </View>
