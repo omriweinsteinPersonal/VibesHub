@@ -58,7 +58,11 @@ import {
 } from '../lib/creator-api';
 import { isCreatorHandle, type CreatorHandleStatus } from '../lib/creator-handle';
 import { openExternalWebPage } from '../lib/external-browser';
-import { uploadCreatorImage } from '../lib/creator-media';
+import {
+  storyVideoMimeType,
+  uploadCreatorImage,
+  uploadCreatorStoryVideo,
+} from '../lib/creator-media';
 import { featuredMediaProvider } from '../lib/featured-media';
 import {
   formatMediaKitCount,
@@ -523,6 +527,7 @@ function Recommendations({
   const [customCategoryName, setCustomCategoryName] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingStoryVideo, setUploadingStoryVideo] = useState(false);
   const [editingCollection, setEditingCollection] = useState<
     CreatorStorefrontConfiguration['curatedSections'][number] | null | undefined
   >();
@@ -1300,6 +1305,44 @@ function Recommendations({
       storyClips: [...itemDraft.storyClips, { mediaAssetId: '', url }],
       storyLink: '',
     });
+  }
+
+  async function chooseStoryVideo() {
+    if (itemDraft.storyClips.length >= 10) return;
+    onError('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      onError('Allow photo access to choose a story video.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      quality: 1,
+      videoMaxDuration: 90,
+    });
+    if (result.canceled) return;
+    const selected = result.assets[0];
+    if (!selected) return;
+    const mimeType = storyVideoMimeType(selected.mimeType, selected.fileName);
+    setUploadingStoryVideo(true);
+    try {
+      const asset = await uploadCreatorStoryVideo({
+        fileSize: selected.fileSize ?? 0,
+        mimeType,
+        uri: selected.uri,
+      });
+      updateItem({
+        storyClips: [
+          ...itemDraft.storyClips,
+          { mediaAssetId: asset.id, url: asset.publicUrl },
+        ],
+      });
+      onNotice('Story video uploaded. Save the item to publish it.');
+    } catch (cause) {
+      onError(messageFor(cause));
+    } finally {
+      setUploadingStoryVideo(false);
+    }
   }
 
   async function chooseBrandLogo() {
@@ -2519,6 +2562,17 @@ function Recommendations({
                 onChangeText={(storyLink) => updateItem({ storyLink })}
                 value={itemDraft.storyLink}
               />
+              <Pressable
+                disabled={uploadingStoryVideo || itemDraft.storyClips.length >= 10}
+                onPress={() => void chooseStoryVideo()}
+                style={styles.fetchButton}
+              >
+                {uploadingStoryVideo ? (
+                  <ActivityIndicator color={colors.accent} />
+                ) : (
+                  <Text style={styles.fetchButtonText}>Upload story video</Text>
+                )}
+              </Pressable>
               <Pressable
                 disabled={
                   !itemDraft.storyLink.trim() || itemDraft.storyClips.length >= 10
