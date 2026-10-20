@@ -2260,15 +2260,90 @@ textarea:disabled {
 }
 
 .recommendationTourVisual {
-  background: #efe9df;
-  border: 1px solid #e2d6c9;
+  background: #f7f1eb;
+  border: 1px solid #e4d7ca;
   border-radius: 24px;
-  box-shadow: 0 14px 30px rgb(46 33 27 / 8%);
+  box-shadow: 0 18px 36px rgb(46 33 27 / 11%);
   margin: 22px auto 20px;
-  max-width: 520px;
+  max-width: 352px;
   overflow: hidden;
-  padding: 0 14px 13px;
-  text-align: left;
+  padding: 12px;
+  text-align: center;
+}
+
+.recommendationTourFilm {
+  aspect-ratio: 9 / 16;
+  background: #fffaf6 url('/videos/add-recommendation-tour-poster.jpg') center / cover;
+  border: 1px solid #d8c6b8;
+  border-radius: 17px;
+  overflow: hidden;
+  position: relative;
+}
+
+.recommendationTourFilm video {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.recommendationTourFallback {
+  align-items: center;
+  background: linear-gradient(180deg, rgb(16 47 60 / 14%), rgb(16 47 60 / 88%));
+  color: #fffaf6;
+  display: grid;
+  gap: 8px;
+  inset: 0;
+  justify-items: center;
+  padding: 28px;
+  position: absolute;
+}
+
+.recommendationTourFallback strong {
+  font-size: 1.1rem;
+}
+
+.recommendationTourFallback span {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  max-width: 220px;
+}
+
+.recommendationTourReplay {
+  align-items: center;
+  background: #102f3c;
+  border: 0;
+  border-radius: 999px;
+  bottom: 16px;
+  color: #fffaf6;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  gap: 6px;
+  left: 50%;
+  padding: 10px 14px;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.recommendationTourReplay:focus-visible {
+  outline: 3px solid #ff633f;
+  outline-offset: 3px;
+}
+
+.recommendationTourCaption {
+  color: #63554d;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  margin: 11px 8px 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recommendationTourFilm video {
+    display: none;
+  }
 }
 
 .recommendationTourChrome {

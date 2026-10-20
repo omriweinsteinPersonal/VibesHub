@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useState } from 'react';
 import { ImagePlus } from 'lucide-react-native';
 import { Circle, Defs, LinearGradient, Path, Rect, Stop, Svg } from 'react-native-svg';
@@ -718,42 +719,118 @@ function TourStep({
   const [title, copy] = TOUR_SLIDES[slide];
   return (
     <View style={styles.tourWrap}>
-      <View style={styles.tourIllustration}>
-        <View style={styles.tourScreen}>
-          <View style={styles.tourScreenHeader}>
-            <Text style={styles.tourScreenHeaderText}>swavii studio</Text>
-            <View style={styles.tourScreenAvatar} />
-          </View>
-          <View style={styles.tourScreenBody}>
-            <View style={styles.tourScreenTitleRow}>
-              <Text style={styles.tourScreenTitle}>{TOUR_SLIDES[slide][0]}</Text>
-              <Text style={styles.tourScreenPlus}>+</Text>
+      {slide === 0 ? (
+        <RecommendationTourVideo />
+      ) : (
+        <View style={styles.tourIllustration}>
+          <View style={styles.tourScreen}>
+            <View style={styles.tourScreenHeader}>
+              <Text style={styles.tourScreenHeaderText}>swavii studio</Text>
+              <View style={styles.tourScreenAvatar} />
             </View>
-            <View style={styles.tourScreenRows}>
-              <View style={styles.tourScreenRow} />
-              <View style={styles.tourScreenRow} />
-              <View style={styles.tourScreenRow} />
+            <View style={styles.tourScreenBody}>
+              <View style={styles.tourScreenTitleRow}>
+                <Text style={styles.tourScreenTitle}>{TOUR_SLIDES[slide][0]}</Text>
+                <Text style={styles.tourScreenPlus}>+</Text>
+              </View>
+              <View style={styles.tourScreenRows}>
+                <View style={styles.tourScreenRow} />
+                <View style={styles.tourScreenRow} />
+                <View style={styles.tourScreenRow} />
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      )}
       <Text style={styles.sectionTitle}>{title}</Text>
       <Text style={styles.sectionCopy}>{copy}</Text>
-      <View style={styles.tourControls}>
-        <Pressable disabled={slide === 0} onPress={onPrevious} style={styles.tourArrow}>
-          <Text style={styles.tourArrowText}>‹</Text>
-        </Pressable>
-        <Text style={styles.tourCount}>
-          {slide + 1} / {TOUR_SLIDES.length}
-        </Text>
+      {slide > 0 ? (
+        <View style={styles.tourControls}>
+          <Pressable disabled={slide === 0} onPress={onPrevious} style={styles.tourArrow}>
+            <Text style={styles.tourArrowText}>‹</Text>
+          </Pressable>
+          <Text style={styles.tourCount}>
+            {slide + 1} / {TOUR_SLIDES.length}
+          </Text>
+          <Pressable
+            disabled={slide === TOUR_SLIDES.length - 1}
+            onPress={onNext}
+            style={styles.tourArrow}
+          >
+            <Text style={styles.tourArrowText}>›</Text>
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function RecommendationTourVideo() {
+  const [firstFrameRendered, setFirstFrameRendered] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const player = useVideoPlayer(
+    require('../assets/videos/add-recommendation-tour.mp4'),
+    (videoPlayer) => {
+      videoPlayer.loop = false;
+      videoPlayer.muted = true;
+      videoPlayer.play();
+    },
+  );
+
+  useEffect(() => {
+    const endSubscription = player.addListener('playToEnd', () => setFinished(true));
+    const statusSubscription = player.addListener('statusChange', ({ status }) => {
+      if (status === 'error') setFailed(true);
+    });
+    return () => {
+      endSubscription.remove();
+      statusSubscription.remove();
+    };
+  }, [player]);
+
+  function replay() {
+    setFinished(false);
+    player.replay();
+  }
+
+  return (
+    <View style={styles.recommendationTourFilm}>
+      <Image
+        contentFit="cover"
+        source={require('../assets/videos/add-recommendation-tour-poster.jpg')}
+        style={[
+          styles.recommendationTourPoster,
+          firstFrameRendered && !failed && styles.recommendationTourPosterHidden,
+        ]}
+      />
+      <VideoView
+        contentFit="contain"
+        nativeControls={false}
+        onFirstFrameRender={() => setFirstFrameRendered(true)}
+        player={player}
+        playsInline
+        style={styles.recommendationTourVideo}
+      />
+      {failed ? (
+        <View style={styles.recommendationTourFallback}>
+          <Text style={styles.recommendationTourFallbackTitle}>
+            Add a recommendation in one flow.
+          </Text>
+          <Text style={styles.recommendationTourFallbackCopy}>
+            Paste a link, review the details, then publish it to your storefront.
+          </Text>
+        </View>
+      ) : null}
+      {finished ? (
         <Pressable
-          disabled={slide === TOUR_SLIDES.length - 1}
-          onPress={onNext}
-          style={styles.tourArrow}
+          accessibilityLabel="Replay recommendation walkthrough"
+          onPress={replay}
+          style={styles.recommendationTourReplay}
         >
-          <Text style={styles.tourArrowText}>›</Text>
+          <Text style={styles.recommendationTourReplayText}>↻ Replay</Text>
         </Pressable>
-      </View>
+      ) : null}
     </View>
   );
 }
@@ -1066,6 +1143,60 @@ const styles = StyleSheet.create({
   },
   addLinkText: { color: colors.ink, fontWeight: '700' },
   tourWrap: { alignItems: 'center', paddingVertical: spacing.md },
+  recommendationTourFilm: {
+    aspectRatio: 9 / 16,
+    backgroundColor: '#fffaf6',
+    borderColor: '#d8c6b8',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: spacing.xl,
+    overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
+  },
+  recommendationTourPoster: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  recommendationTourPosterHidden: { opacity: 0 },
+  recommendationTourVideo: { height: '100%', width: '100%' },
+  recommendationTourFallback: {
+    alignItems: 'center',
+    backgroundColor: 'rgb(16, 47, 60)',
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    padding: spacing.xl,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  recommendationTourFallbackTitle: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  recommendationTourFallbackCopy: {
+    color: colors.white,
+    lineHeight: 20,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  recommendationTourReplay: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: colors.ink,
+    borderRadius: 999,
+    bottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 10,
+    position: 'absolute',
+  },
+  recommendationTourReplayText: { color: colors.white, fontWeight: '800' },
   tourIllustration: {
     alignItems: 'center',
     backgroundColor: '#f5e4d7',
