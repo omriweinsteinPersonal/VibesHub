@@ -251,10 +251,12 @@ function AuthExperience() {
         <Link aria-label="swavii home" className={styles.wordmark} href="/">
           swavii
         </Link>
-        <Link className={styles.backLink} href="/">
-          <span aria-hidden="true">←</span> Back to homepage
-        </Link>
       </header>
+      <div className={styles.backRow}>
+        <Link className={styles.backLink} href="/">
+          <span aria-hidden="true">←</span> Back
+        </Link>
+      </div>
       <main className={styles.main}>
         <div className={styles.visual}>
           <Image

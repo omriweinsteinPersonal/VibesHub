@@ -31,14 +31,21 @@
 }
 
 .backLink {
-  color: inherit;
+  color: var(--auth-muted);
   font-size: 0.83rem;
   font-weight: 500;
   text-decoration: none;
 }
 
+.backRow {
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 18px clamp(20px, 3.5vw, 56px) 0;
+}
+
 .backLink:hover,
 .backLink:focus-visible {
+  color: var(--auth-ink);
   text-decoration: underline;
 }
 
@@ -300,6 +307,10 @@
 
   .backLink {
     font-size: 0.75rem;
+  }
+
+  .backRow {
+    padding: 16px 20px 0;
   }
 
   .main {
