@@ -4465,13 +4465,13 @@
     object-position: center 20%;
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
-    object-position: center 14%;
+    object-position: center 8%;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cover img {
-    object-position: center 22%;
+    object-position: center 72%;
   }
   .creatorRail > .creatorCard[data-theme='noah'] .cover img {
-    object-position: center 18%;
+    object-position: center 25%;
   }
   .creatorRail > .creatorCard .cardFeed {
     gap: 6px;
