@@ -1642,6 +1642,20 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
+.header .wordmark img {
+  display: none;
+}
+.header .wordmark::after {
+  content: 'swavii';
+  display: block;
+  color: #fff;
+  font:
+    800 39px var(--font-vh-body),
+    sans-serif;
+  letter-spacing: -0.08em;
+  line-height: 43px;
+  white-space: nowrap;
+}
 .hero,
 .split,
 .contentTypes,
@@ -2410,6 +2424,10 @@
   }
   .header .wordmark {
     width: 126px;
+  }
+  .header .wordmark::after {
+    font-size: 34px;
+    line-height: 43px;
   }
   .hero,
   .split,
@@ -4500,14 +4518,6 @@
   .creatorRail > .creatorCard[data-theme='mia'] .identity,
   .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
     color: #fff;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cardTabs,
-  .creatorRail > .creatorCard[data-theme='rotem'] .cardFeed {
-    background: #fff7ee;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cardTabs,
-  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
-    background: #f7f9f2;
   }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
