@@ -3547,12 +3547,6 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--creator-ink) 10%, transparent);
 }
-.creatorRail > .creatorCard[data-theme='mia'] .socialIcons {
-  width: 100%;
-  margin: 0;
-  padding: 8px 0;
-  background: #f8f5ed;
-}
 .creatorRail > .creatorCard[data-theme='noah'] .socialIcons img {
   filter: brightness(0) invert(1);
 }
@@ -4588,6 +4582,36 @@
     width: 58px !important;
     height: 58px !important;
     flex-basis: 58px;
+  }
+}
+
+/* Let Mia's cover run naturally behind her social links before it resolves to green. */
+.creatorRail > .creatorCard[data-theme='mia'] .socialIcons {
+  margin: 10px auto 11px;
+  padding: 0;
+  width: auto;
+  background: transparent;
+}
+
+@media (min-width: 761px) {
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    height: 168px;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
+    inset: 90% 0 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    height: 168px;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
+    inset: 90% 0 0;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] {
+    height: 656px;
+    max-height: 656px;
   }
 }
 
