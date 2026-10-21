@@ -4463,16 +4463,16 @@
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover,
   .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 96px;
+    height: 76px;
   }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
-    object-position: center 16%;
+    object-position: center 12%;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cover img {
-    object-position: center 34%;
+    object-position: center 28%;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cardTabs {
     border-color: #243e3642;
