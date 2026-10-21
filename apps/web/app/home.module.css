@@ -4489,6 +4489,12 @@
   .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
     inset: 82% 0 0;
   }
+  .creatorRail > .creatorCard[data-theme='rotem'] .identity,
+  .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
+  .creatorRail > .creatorCard[data-theme='mia'] .identity,
+  .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
+    color: #fff;
+  }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
   }
