@@ -4445,8 +4445,8 @@
     align-items: flex-start;
   }
   .creatorRail > .creatorCard {
-    height: 700px;
-    max-height: 700px;
+    height: 600px;
+    max-height: 600px;
     min-height: 0;
     overflow: hidden;
     border: 8px solid #202827;
@@ -4459,24 +4459,35 @@
     display: none;
   }
   .creatorRail > .creatorCard .cover {
-    height: 136px;
+    height: 112px;
   }
   .creatorRail > .creatorCard .cardFeed {
-    gap: 7px;
-    padding-top: 10px;
+    gap: 6px;
+    padding-top: 8px;
+  }
+  .creatorRail > .creatorCard .brandRecommendation {
+    padding: 8px;
+  }
+  .creatorRail > .creatorCard .productPhoto {
+    aspect-ratio: 1.35;
   }
   .creatorRail > .creatorCard .creatorVideoPreview {
-    height: 102px;
+    height: 84px;
   }
   .creatorRail > .creatorCard .mapArtwork {
-    height: 68px;
+    height: 56px;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
     flex: initial;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
-    min-height: 118px;
+    min-height: 94px;
     height: auto;
     flex: none;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
+    width: 64px !important;
+    height: 64px !important;
+    flex-basis: 64px;
   }
 }
