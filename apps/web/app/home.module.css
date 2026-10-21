@@ -4574,6 +4574,14 @@
     max-height: 600px;
     min-height: 0;
     overflow: hidden;
+    border: 8px solid #202827;
+    border-radius: 30px;
+    box-shadow:
+      0 18px 34px #2028272e,
+      inset 0 0 0 1px #ffffff33;
+  }
+  .creatorRail > .creatorCard::before {
+    display: none;
   }
   .creatorRail > .creatorCard .cover {
     height: 112px;
