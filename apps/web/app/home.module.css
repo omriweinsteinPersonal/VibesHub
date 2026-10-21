@@ -1628,7 +1628,7 @@
   display: block;
   width: 132px;
   height: 43px;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
@@ -2402,9 +2402,9 @@
     font-size: 13px;
   }
   .headerActions > a {
-    border: 0 !important;
-    border-radius: 0;
-    padding: 8px 0;
+    border: 1px solid #ffffffa8 !important;
+    border-radius: 9px;
+    padding: 8px 15px;
     background: transparent;
     box-shadow: none;
   }
