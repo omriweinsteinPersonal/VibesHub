@@ -3547,6 +3547,12 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--creator-ink) 10%, transparent);
 }
+.creatorRail > .creatorCard[data-theme='mia'] .socialIcons {
+  width: 100%;
+  margin: 0;
+  padding: 8px 0;
+  background: #f8f5ed;
+}
 .creatorRail > .creatorCard[data-theme='noah'] .socialIcons img {
   filter: brightness(0) invert(1);
 }
