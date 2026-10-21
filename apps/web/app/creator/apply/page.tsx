@@ -7,12 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ImagePlus,
   Link2,
-  MapPin,
-  RotateCcw,
-  ShoppingBag,
-  Tag,
 } from 'lucide-react';
 import {
   type ChangeEvent,
@@ -51,15 +46,9 @@ interface CreatorApplication {
 interface CreatorProfile {
   version: number;
 }
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3;
 type SocialLink = { followerCount?: number | null; platform: string; url: string };
 type ImageLayout = 'full_bleed' | 'central';
-
-const defaultSocialLinks: SocialLink[] = [
-  { platform: 'instagram', url: '' },
-  { platform: 'tiktok', url: '' },
-  { platform: 'apple_music', url: '' },
-];
 
 const connectorIconSources: Record<string, string> = {
   apple_music: '/connectors/apple-music.svg',
@@ -82,40 +71,6 @@ function ConnectorIcon({ platform, size = 22 }: { platform: string; size?: numbe
   );
 }
 
-const tourSlides = [
-  {
-    title: 'Add a recommendation',
-    description:
-      'Share a product or place with a photo, a short note and one clear link.',
-    icon: ShoppingBag,
-    kind: 'recommendations',
-    visual: 'Add recommendation',
-  },
-  {
-    title: 'Add a brand',
-    description:
-      'Keep the brands you work with in one place for your audience to discover.',
-    icon: Tag,
-    kind: 'brands',
-    visual: 'Add brand',
-  },
-  {
-    title: 'Add media',
-    description: 'Bring your recommendations to life with photos and short videos.',
-    icon: ImagePlus,
-    kind: 'media',
-    visual: 'Add media',
-  },
-  {
-    title: 'Add a place',
-    description:
-      'Turn a favourite location into a recommendation your audience can open in Maps.',
-    icon: MapPin,
-    kind: 'maps',
-    visual: 'Add a place',
-  },
-] as const;
-
 export default function CreatorApplicationPage() {
   const router = useRouter();
   const [application, setApplication] = useState<CreatorApplication | null>(null);
@@ -123,9 +78,8 @@ export default function CreatorApplicationPage() {
   const [requestedHandle, setRequestedHandle] = useState('');
   const [handleEdited, setHandleEdited] = useState(false);
   const [bioText, setBioText] = useState('');
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(defaultSocialLinks);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [step, setStep] = useState<Step>(1);
-  const [tourSlide, setTourSlide] = useState(0);
   const [imageLayout, setImageLayout] = useState<ImageLayout>('full_bleed');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
@@ -147,9 +101,7 @@ export default function CreatorApplicationPage() {
         setRequestedHandle(current.requestedHandle ?? '');
         setHandleEdited(Boolean(current.requestedHandle));
         setBioText(current.bioText ?? '');
-        setSocialLinks(
-          current.socialLinks.length ? current.socialLinks : defaultSocialLinks,
-        );
+        setSocialLinks(current.socialLinks);
       })
       .catch((cause: unknown) => setError(messageFor(cause)))
       .finally(() => setLoading(false));
@@ -171,10 +123,7 @@ export default function CreatorApplicationPage() {
     !application || ['draft', 'changes_requested'].includes(application.status);
   const latestFeedback = application?.feedback.at(-1);
   const canContinueProfile = Boolean(displayName.trim() && requestedHandle.trim());
-  const stepLabel = useMemo(
-    () => ['Your profile', 'Image style', 'Social links', 'A quick tour'][step - 1],
-    [step],
-  );
+  const stepLabel = useMemo(() => ['Your profile', 'Image style', 'Social links'][step - 1], [step]);
 
   function chooseAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -264,8 +213,8 @@ export default function CreatorApplicationPage() {
     }
     setSaving(true);
     try {
-      if ([1, 3].includes(step)) await saveDraft();
-      setStep((current) => (current < 4 ? ((current + 1) as Step) : current));
+      if (step === 1) await saveDraft();
+      setStep((current) => (current < 3 ? ((current + 1) as Step) : current));
     } catch (cause) {
       setError(messageFor(cause));
     } finally {
@@ -279,11 +228,6 @@ export default function CreatorApplicationPage() {
     if (!canContinueProfile) {
       setStep(1);
       setError('Add a display name and a storefront address to continue.');
-      return;
-    }
-    if (socialLinks.some((link) => !link.url.trim())) {
-      setStep(3);
-      setError('Complete or remove each social link before continuing.');
       return;
     }
     setSaving(true);
@@ -317,10 +261,6 @@ export default function CreatorApplicationPage() {
 
   function goBack() {
     setError('');
-    if (step === 4 && tourSlide > 0) {
-      setTourSlide((current) => current - 1);
-      return;
-    }
     setStep((current) => (current > 1 ? ((current - 1) as Step) : current));
   }
 
@@ -346,8 +286,8 @@ export default function CreatorApplicationPage() {
             from your studio.
           </p>
         </div>
-        <div aria-label={`Step ${step} of 4`} className="onboardingProgress">
-          {[1, 2, 3, 4].map((item) => (
+        <div aria-label={`Step ${step} of 3`} className="onboardingProgress">
+          {[1, 2, 3].map((item) => (
             <span className={item <= step ? 'active' : ''} key={item}>
               <b>{item < step ? <Check aria-hidden="true" size={14} /> : item}</b>
               {item === step ? stepLabel : null}
@@ -409,13 +349,6 @@ export default function CreatorApplicationPage() {
                 onUpdate={updateSocial}
               />
             ) : null}
-            {step === 4 ? (
-              <TourStep
-                slide={tourSlides[tourSlide] ?? tourSlides[0]}
-                slideIndex={tourSlide}
-                onSkip={() => setTourSlide(tourSlides.length - 1)}
-              />
-            ) : null}
             {error ? (
               <p className="formError" role="alert">
                 {error}
@@ -435,26 +368,7 @@ export default function CreatorApplicationPage() {
               ) : (
                 <span />
               )}
-              {step === 4 ? (
-                <span className="tourActions">
-                  {tourSlide === tourSlides.length - 1 ? (
-                    <button className="button primary" disabled={saving} type="submit">
-                      {saving ? 'Creating your storefront…' : 'Create my storefront'}
-                      <ArrowRight aria-hidden="true" size={16} />
-                    </button>
-                  ) : (
-                    <button
-                      className="button primary"
-                      onClick={() => setTourSlide((value) => value + 1)}
-                      type="button"
-                    >
-                      Next
-                      <ArrowRight aria-hidden="true" size={16} />
-                    </button>
-                  )}
-                </span>
-              ) : null}
-              {step < 4 ? (
+              {step < 3 ? (
                 <button
                   className="button primary"
                   disabled={saving || (step === 1 && handleStatus !== 'available')}
@@ -462,6 +376,12 @@ export default function CreatorApplicationPage() {
                   type="button"
                 >
                   {saving ? 'Saving…' : 'Continue'}
+                  <ArrowRight aria-hidden="true" size={16} />
+                </button>
+              ) : null}
+              {step === 3 ? (
+                <button className="button primary" disabled={saving} type="submit">
+                  {saving ? 'Opening your studio…' : 'Open my studio'}
                   <ArrowRight aria-hidden="true" size={16} />
                 </button>
               ) : null}
@@ -879,7 +799,8 @@ function SocialStep({
       <p className="eyebrow">03 / SOCIAL LINKS</p>
       <h2 id="onboarding-links-title">Connect your audience.</h2>
       <p className="onboardingLead">
-        Add the places where people already follow your work.
+        Add the places where people already follow your work. You can also skip this
+        and add them later from your studio.
       </p>
       {socialLinks.length ? (
         <div className="onboardingSocialList">
@@ -915,7 +836,6 @@ function SocialStep({
                       (connector) => connector.platform === link.platform,
                     )?.placeholder
                   }
-                  required
                   type="url"
                   value={link.url}
                 />
@@ -944,108 +864,6 @@ function SocialStep({
   );
 }
 
-function TourStep({
-  slide,
-  slideIndex,
-  onSkip,
-}: {
-  slide: (typeof tourSlides)[number];
-  slideIndex: number;
-  onSkip: () => void;
-}) {
-  return (
-    <section aria-labelledby="onboarding-tour-title" className="tourStep">
-      <div className="tourMeta">
-        <span>0{slideIndex + 1} / 04</span>
-        <button className="textButton" onClick={onSkip} type="button">
-          Skip tour
-        </button>
-      </div>
-      {slide.kind === 'recommendations' ? (
-        <RecommendationTourVisual />
-      ) : (
-        <div className={`tourIllustration ${slide.kind}`}>
-          <div className="tourScreen">
-            <div className="tourScreenHeader">
-              <span>swavii studio</span>
-              <span className="tourScreenAvatar" />
-            </div>
-            <div className="tourScreenBody">
-              <div className="tourScreenTitle">
-                <strong>{slide.visual}</strong>
-                <span>+</span>
-              </div>
-              <div className="tourScreenRows">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <h2 id="onboarding-tour-title">{slide.title}</h2>
-      <p className="onboardingLead">{slide.description}</p>
-      <div className="tourDots" aria-hidden="true">
-        {tourSlides.map((item, index) => (
-          <span className={index === slideIndex ? 'active' : ''} key={item.kind} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function RecommendationTourVisual() {
-  const video = useRef<HTMLVideoElement>(null);
-  const [failed, setFailed] = useState(false);
-  const [finished, setFinished] = useState(false);
-
-  function replay() {
-    const element = video.current;
-    if (!element) return;
-    element.currentTime = 0;
-    setFinished(false);
-    void element.play().catch(() => setFailed(true));
-  }
-
-  return (
-    <div
-      className="recommendationTourVisual"
-      aria-label="Video walkthrough for adding a recommendation"
-    >
-      <div className="recommendationTourFilm">
-        <video
-          autoPlay
-          muted
-          onEnded={() => setFinished(true)}
-          onError={() => setFailed(true)}
-          playsInline
-          poster="/videos/add-recommendation-tour-poster.jpg"
-          preload="metadata"
-          ref={video}
-        >
-          <source src="/videos/add-recommendation-tour.mp4" type="video/mp4" />
-        </video>
-        {failed ? (
-          <div className="recommendationTourFallback">
-            <strong>Add a recommendation in one flow.</strong>
-            <span>
-              Paste a link, review the details, then publish it to your storefront.
-            </span>
-          </div>
-        ) : null}
-        {finished ? (
-          <button className="recommendationTourReplay" onClick={replay} type="button">
-            <RotateCcw aria-hidden="true" size={15} /> Replay
-          </button>
-        ) : null}
-      </div>
-      <p className="recommendationTourCaption">
-        Paste one link, make it yours, then see it live on your storefront.
-      </p>
-    </div>
-  );
-}
 function handleMessage(status: CreatorHandleStatus, handle: string): string {
   if (!handle) return 'This becomes your public address on Swavii.';
   if (status === 'checking') return 'Checking address availability…';
