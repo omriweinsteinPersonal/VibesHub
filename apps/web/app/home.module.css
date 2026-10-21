@@ -4501,6 +4501,14 @@
   .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
     color: #fff;
   }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cardTabs,
+  .creatorRail > .creatorCard[data-theme='rotem'] .cardFeed {
+    background: #fff7ee;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cardTabs,
+  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
+    background: #f7f9f2;
+  }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
   }
