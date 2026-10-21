@@ -4477,17 +4477,17 @@
   .creatorRail > .creatorCard[data-theme='mia'] .cover {
     -webkit-mask-image: linear-gradient(
       to bottom,
-      #000 68%,
-      #000000d9 84%,
+      #000 82%,
+      #000000d9 94%,
       transparent 100%
     );
-    mask-image: linear-gradient(to bottom, #000 68%, #000000d9 84%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 82%, #000000d9 94%, transparent 100%);
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover::after {
     inset: 82% 0 0;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 68% 0 0;
+    inset: 82% 0 0;
   }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
