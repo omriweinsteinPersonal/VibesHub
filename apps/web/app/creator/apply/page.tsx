@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Check, Link2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ImagePlus, Link2 } from 'lucide-react';
 import {
   type ChangeEvent,
   type FormEvent,
