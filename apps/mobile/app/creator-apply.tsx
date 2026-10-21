@@ -4,7 +4,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useState } from 'react';
 import { ImagePlus } from 'lucide-react-native';
 import { Circle, Defs, LinearGradient, Path, Rect, Stop, Svg } from 'react-native-svg';
@@ -49,27 +48,6 @@ const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string }[] = [
   { id: 'spotify', label: 'Spotify' },
   { id: 'website', label: 'Website' },
 ];
-const DEFAULT_SOCIAL_LINKS: SocialLink[] = [
-  { platform: 'instagram', url: '' },
-  { platform: 'tiktok', url: '' },
-  { platform: 'apple_music', url: '' },
-];
-const TOUR_SLIDES = [
-  [
-    'Add a recommendation',
-    'Share a product or place with a photo, a short note and one clear link.',
-  ],
-  [
-    'Add a brand',
-    'Keep the brands you work with in one place for your audience to discover.',
-  ],
-  ['Add media', 'Bring your recommendations to life with photos and short videos.'],
-  [
-    'Add a place',
-    'Turn a favourite location into a recommendation your audience can open in Maps.',
-  ],
-] as const;
-
 export default function CreatorApplicationScreen() {
   const router = useRouter();
   const [application, setApplication] = useState<CreatorApplication | null>(null);
@@ -78,10 +56,9 @@ export default function CreatorApplicationScreen() {
   const [handle, setHandle] = useState('');
   const [handleEdited, setHandleEdited] = useState(false);
   const [bio, setBio] = useState('');
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(DEFAULT_SOCIAL_LINKS);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [imageLayout, setImageLayout] = useState<ImageLayout>('full-bleed');
-  const [tourSlide, setTourSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -103,13 +80,11 @@ export default function CreatorApplicationScreen() {
         setHandleEdited(Boolean(current.requestedHandle));
         setBio(current.bioText ?? '');
         setSocialLinks(
-          current.socialLinks.length
-            ? current.socialLinks.map((link) => ({
-                followerCount: link.followerCount,
-                platform: link.platform as SocialPlatform,
-                url: link.url,
-              }))
-            : DEFAULT_SOCIAL_LINKS,
+          current.socialLinks.map((link) => ({
+            followerCount: link.followerCount,
+            platform: link.platform as SocialPlatform,
+            url: link.url,
+          })),
         );
       }
     } catch (cause) {
@@ -162,9 +137,6 @@ export default function CreatorApplicationScreen() {
         return 'Add a short bio in Hebrew for your storefront.';
     }
     if (step === 2) {
-      const instagram = socialLinks.find((link) => link.platform === 'instagram');
-      if (!instagram || !normalizeHttpsUrl(instagram.url))
-        return 'Add a valid HTTPS Instagram profile URL.';
       if (socialLinks.some((link) => link.url.trim() && !normalizeHttpsUrl(link.url)))
         return 'Check that each social link is a valid HTTPS URL.';
     }
@@ -177,14 +149,10 @@ export default function CreatorApplicationScreen() {
       return;
     }
     setError('');
-    setStep((current) => Math.min(current + 1, 3));
+    setStep((current) => Math.min(current + 1, 2));
   }
   function back() {
     setError('');
-    if (step === 3 && tourSlide > 0) {
-      setTourSlide((current) => current - 1);
-      return;
-    }
     setStep((current) => Math.max(current - 1, 0));
   }
 
@@ -306,17 +274,6 @@ export default function CreatorApplicationScreen() {
                     submitting={submitting}
                   />
                 ) : null}
-                {step === 3 ? (
-                  <TourStep
-                    slide={tourSlide}
-                    onNext={() =>
-                      setTourSlide((current) =>
-                        Math.min(current + 1, TOUR_SLIDES.length - 1),
-                      )
-                    }
-                    onPrevious={() => setTourSlide((current) => Math.max(current - 1, 0))}
-                  />
-                ) : null}
                 {error ? <Text style={styles.error}>{error}</Text> : null}
                 <View style={styles.actions}>
                   {step > 0 ? (
@@ -328,25 +285,13 @@ export default function CreatorApplicationScreen() {
                       <Text style={styles.backButtonText}>Back</Text>
                     </Pressable>
                   ) : null}
-                  {step < 3 ? (
+                  {step < 2 ? (
                     <Pressable
                       disabled={submitting}
                       onPress={next}
                       style={styles.primaryButton}
                     >
                       <Text style={styles.primaryButtonText}>Continue</Text>
-                    </Pressable>
-                  ) : tourSlide < TOUR_SLIDES.length - 1 ? (
-                    <Pressable
-                      disabled={submitting}
-                      onPress={() =>
-                        setTourSlide((current) =>
-                          Math.min(current + 1, TOUR_SLIDES.length - 1),
-                        )
-                      }
-                      style={styles.primaryButton}
-                    >
-                      <Text style={styles.primaryButtonText}>Next</Text>
                     </Pressable>
                   ) : (
                     <Pressable
@@ -374,8 +319,8 @@ export default function CreatorApplicationScreen() {
 
 function Progress({ step }: { step: number }) {
   return (
-    <View accessibilityLabel={`Step ${step + 1} of 4`} style={styles.progressRow}>
-      {[0, 1, 2, 3].map((item) => (
+    <View accessibilityLabel={`Step ${step + 1} of 3`} style={styles.progressRow}>
+      {[0, 1, 2].map((item) => (
         <View
           key={item}
           style={[styles.progressDot, item <= step && styles.progressDotActive]}
@@ -705,133 +650,6 @@ function SocialStep({
         </Pressable>
       ) : null}
     </>
-  );
-}
-function TourStep({
-  slide,
-  onNext,
-  onPrevious,
-}: {
-  slide: number;
-  onNext: () => void;
-  onPrevious: () => void;
-}) {
-  const [title, copy] = TOUR_SLIDES[slide];
-  return (
-    <View style={styles.tourWrap}>
-      {slide === 0 ? (
-        <RecommendationTourVideo />
-      ) : (
-        <View style={styles.tourIllustration}>
-          <View style={styles.tourScreen}>
-            <View style={styles.tourScreenHeader}>
-              <Text style={styles.tourScreenHeaderText}>swavii studio</Text>
-              <View style={styles.tourScreenAvatar} />
-            </View>
-            <View style={styles.tourScreenBody}>
-              <View style={styles.tourScreenTitleRow}>
-                <Text style={styles.tourScreenTitle}>{TOUR_SLIDES[slide][0]}</Text>
-                <Text style={styles.tourScreenPlus}>+</Text>
-              </View>
-              <View style={styles.tourScreenRows}>
-                <View style={styles.tourScreenRow} />
-                <View style={styles.tourScreenRow} />
-                <View style={styles.tourScreenRow} />
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionCopy}>{copy}</Text>
-      {slide > 0 ? (
-        <View style={styles.tourControls}>
-          <Pressable disabled={slide === 0} onPress={onPrevious} style={styles.tourArrow}>
-            <Text style={styles.tourArrowText}>‹</Text>
-          </Pressable>
-          <Text style={styles.tourCount}>
-            {slide + 1} / {TOUR_SLIDES.length}
-          </Text>
-          <Pressable
-            disabled={slide === TOUR_SLIDES.length - 1}
-            onPress={onNext}
-            style={styles.tourArrow}
-          >
-            <Text style={styles.tourArrowText}>›</Text>
-          </Pressable>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-function RecommendationTourVideo() {
-  const [firstFrameRendered, setFirstFrameRendered] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const player = useVideoPlayer(
-    require('../assets/videos/add-recommendation-tour.mp4'),
-    (videoPlayer) => {
-      videoPlayer.loop = false;
-      videoPlayer.muted = true;
-      videoPlayer.play();
-    },
-  );
-
-  useEffect(() => {
-    const endSubscription = player.addListener('playToEnd', () => setFinished(true));
-    const statusSubscription = player.addListener('statusChange', ({ status }) => {
-      if (status === 'error') setFailed(true);
-    });
-    return () => {
-      endSubscription.remove();
-      statusSubscription.remove();
-    };
-  }, [player]);
-
-  function replay() {
-    setFinished(false);
-    player.replay();
-  }
-
-  return (
-    <View style={styles.recommendationTourFilm}>
-      <Image
-        contentFit="cover"
-        source={require('../assets/videos/add-recommendation-tour-poster.jpg')}
-        style={[
-          styles.recommendationTourPoster,
-          firstFrameRendered && !failed && styles.recommendationTourPosterHidden,
-        ]}
-      />
-      <VideoView
-        contentFit="contain"
-        nativeControls={false}
-        onFirstFrameRender={() => setFirstFrameRendered(true)}
-        player={player}
-        playsInline
-        style={styles.recommendationTourVideo}
-      />
-      {failed ? (
-        <View style={styles.recommendationTourFallback}>
-          <Text style={styles.recommendationTourFallbackTitle}>
-            Add a recommendation in one flow.
-          </Text>
-          <Text style={styles.recommendationTourFallbackCopy}>
-            Paste a link, review the details, then publish it to your storefront.
-          </Text>
-        </View>
-      ) : null}
-      {finished ? (
-        <Pressable
-          accessibilityLabel="Replay recommendation walkthrough"
-          onPress={replay}
-          style={styles.recommendationTourReplay}
-        >
-          <Text style={styles.recommendationTourReplayText}>↻ Replay</Text>
-        </Pressable>
-      ) : null}
-    </View>
   );
 }
 function FieldLabel({ text }: { text: string }) {
