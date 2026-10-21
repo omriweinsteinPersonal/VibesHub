@@ -4501,13 +4501,6 @@
     background: #f8faf4;
     color: #243e36;
   }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cardTabs,
-  .creatorRail > .creatorCard[data-theme='rotem'] .cardFeed {
-    background: #fff7ee;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
-    background: #f7f9f2;
-  }
   .creatorRail > .creatorCard[data-theme='noah'] .cover img {
     object-position: center 25%;
   }
