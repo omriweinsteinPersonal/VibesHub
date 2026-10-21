@@ -4461,14 +4461,18 @@
   .creatorRail > .creatorCard .cover {
     height: 112px;
   }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    height: 96px;
+  }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
-    object-position: center 8%;
+    object-position: center 16%;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cover img {
-    object-position: center 72%;
+    object-position: center 48%;
   }
   .creatorRail > .creatorCard[data-theme='noah'] .cover img {
     object-position: center 25%;
