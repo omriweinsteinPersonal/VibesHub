@@ -1626,9 +1626,9 @@
 }
 .wordmark {
   display: block;
-  width: 117px;
+  width: 132px;
   height: 43px;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   flex-shrink: 0;
 }
@@ -2402,8 +2402,14 @@
     font-size: 13px;
   }
   .headerActions > a {
-    border: 0;
+    border: 0 !important;
+    border-radius: 0;
     padding: 8px 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .header .wordmark {
+    width: 126px;
   }
   .hero,
   .split,
