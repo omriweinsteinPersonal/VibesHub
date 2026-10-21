@@ -4469,14 +4469,14 @@
   }
 }
 
-/* Keep the desktop previews compact while preserving the full mobile composition. */
+/* Original full-length storefront previews. */
 @media (min-width: 761px) {
   .creatorRail {
     align-items: flex-start;
   }
   .creatorRail > .creatorCard {
-    height: 600px;
-    max-height: 600px;
+    height: 700px;
+    max-height: 700px;
     min-height: 0;
     overflow: hidden;
     border: 8px solid #202827;
@@ -4489,230 +4489,24 @@
     display: none;
   }
   .creatorRail > .creatorCard .cover {
-    height: 112px;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 140px;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 90%,
-      #000000d9 98%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(to bottom, #000 90%, #000000d9 98%, transparent 100%);
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 90%,
-      #000000d9 98%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(to bottom, #000 90%, #000000d9 98%, transparent 100%);
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after {
-    inset: 70% 0 0;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
-      var(--creator-background) 100%
-    );
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 78% 0 0;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
-      var(--creator-background) 100%
-    );
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .identity,
-  .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
-  .creatorRail > .creatorCard[data-theme='mia'] .identity,
-  .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
-    color: #fff;
-  }
-  .creatorRail > .creatorCard .cover img {
-    object-position: center 20%;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
-    object-position: center 12%;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover img {
-    object-position: center 28%;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cardTabs {
-    border-color: #243e3642;
-    background: #f8faf4;
-    color: #243e36;
-  }
-  .creatorRail > .creatorCard[data-theme='noah'] .cover img {
-    object-position: center 25%;
+    height: 136px;
   }
   .creatorRail > .creatorCard .cardFeed {
-    gap: 6px;
-    padding-top: 8px;
-  }
-  .creatorRail > .creatorCard .brandRecommendation {
-    padding: 8px;
-  }
-  .creatorRail > .creatorCard .productPhoto {
-    aspect-ratio: 1.65;
+    gap: 7px;
+    padding-top: 10px;
   }
   .creatorRail > .creatorCard .creatorVideoPreview {
-    height: 76px;
+    height: 102px;
   }
   .creatorRail > .creatorCard .mapArtwork {
-    height: 50px;
+    height: 68px;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
     flex: initial;
   }
   .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
-    min-height: 86px;
+    min-height: 118px;
     height: auto;
     flex: none;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
-    width: 58px !important;
-    height: 58px !important;
-    flex-basis: 58px;
-  }
-}
-
-/* Let Mia's cover run naturally behind her social links before it resolves to green. */
-.creatorRail > .creatorCard[data-theme='mia'] .socialIcons {
-  margin: 10px auto 11px;
-  padding: 0;
-  width: auto;
-  background: transparent;
-}
-
-@media (min-width: 761px) {
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 168px;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 90% 0 0;
-  }
-}
-
-@media (max-width: 760px) {
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 168px;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 90% 0 0;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] {
-    height: 656px;
-    max-height: 656px;
-  }
-}
-
-/* Match the compact storefront composition on narrow screens too. */
-@media (max-width: 760px) {
-  .creatorRail > .creatorCard {
-    height: 600px;
-    max-height: 600px;
-    min-height: 0;
-    overflow: hidden;
-    border: 8px solid #202827;
-    border-radius: 30px;
-    box-shadow:
-      0 18px 34px #2028272e,
-      inset 0 0 0 1px #ffffff33;
-  }
-  .creatorRail > .creatorCard::before {
-    display: none;
-  }
-  .creatorRail > .creatorCard .cover {
-    height: 112px;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 140px;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
-  .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 90%,
-      #000000d9 98%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(to bottom, #000 90%, #000000d9 98%, transparent 100%);
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after,
-  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
-      var(--creator-background) 100%
-    );
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after {
-    inset: 70% 0 0;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 78% 0 0;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .identity,
-  .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
-  .creatorRail > .creatorCard[data-theme='mia'] .identity,
-  .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
-    color: #fff;
-  }
-  .creatorRail > .creatorCard .cover img {
-    object-position: center 20%;
-  }
-  .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
-    object-position: center 12%;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cover img {
-    object-position: center 28%;
-  }
-  .creatorRail > .creatorCard[data-theme='noah'] .cover img {
-    object-position: center 25%;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cardTabs {
-    border-color: #243e3642;
-    background: #f8faf4;
-    color: #243e36;
-  }
-  .creatorRail > .creatorCard .cardFeed {
-    gap: 6px;
-    padding-top: 8px;
-  }
-  .creatorRail > .creatorCard .brandRecommendation {
-    padding: 8px;
-  }
-  .creatorRail > .creatorCard .productPhoto {
-    aspect-ratio: 1.65;
-  }
-  .creatorRail > .creatorCard .creatorVideoPreview {
-    height: 76px;
-  }
-  .creatorRail > .creatorCard .mapArtwork {
-    height: 50px;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
-    flex: initial;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
-    min-height: 86px;
-    height: auto;
-    flex: none;
-  }
-  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
-    width: 58px !important;
-    height: 58px !important;
-    flex-basis: 58px;
   }
 }
