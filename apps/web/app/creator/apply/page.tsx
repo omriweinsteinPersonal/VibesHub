@@ -3,12 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Link2,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Link2 } from 'lucide-react';
 import {
   type ChangeEvent,
   type FormEvent,
@@ -123,7 +118,10 @@ export default function CreatorApplicationPage() {
     !application || ['draft', 'changes_requested'].includes(application.status);
   const latestFeedback = application?.feedback.at(-1);
   const canContinueProfile = Boolean(displayName.trim() && requestedHandle.trim());
-  const stepLabel = useMemo(() => ['Your profile', 'Image style', 'Social links'][step - 1], [step]);
+  const stepLabel = useMemo(
+    () => ['Your profile', 'Image style', 'Social links'][step - 1],
+    [step],
+  );
 
   function chooseAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -799,8 +797,8 @@ function SocialStep({
       <p className="eyebrow">03 / SOCIAL LINKS</p>
       <h2 id="onboarding-links-title">Connect your audience.</h2>
       <p className="onboardingLead">
-        Add the places where people already follow your work. You can also skip this
-        and add them later from your studio.
+        Add the places where people already follow your work. You can also skip this and
+        add them later from your studio.
       </p>
       {socialLinks.length ? (
         <div className="onboardingSocialList">
