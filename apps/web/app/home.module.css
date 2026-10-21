@@ -4514,10 +4514,22 @@
     mask-image: linear-gradient(to bottom, #000 90%, #000000d9 98%, transparent 100%);
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover::after {
-    inset: 62% 0 0;
+    inset: 70% 0 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
+      var(--creator-background) 100%
+    );
   }
   .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 62% 0 0;
+    inset: 78% 0 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
+      var(--creator-background) 100%
+    );
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .identity,
   .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
@@ -4608,7 +4620,18 @@
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover::after,
   .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
-    inset: 62% 0 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--creator-background) 55%, transparent) 48%,
+      var(--creator-background) 100%
+    );
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after {
+    inset: 70% 0 0;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
+    inset: 78% 0 0;
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .identity,
   .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
