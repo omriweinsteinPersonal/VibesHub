@@ -4566,3 +4566,86 @@
     flex-basis: 58px;
   }
 }
+
+/* Match the compact storefront composition on narrow screens too. */
+@media (max-width: 760px) {
+  .creatorRail > .creatorCard {
+    height: 600px;
+    max-height: 600px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .creatorRail > .creatorCard .cover {
+    height: 112px;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    height: 140px;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover,
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 90%,
+      #000000d9 98%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to bottom, #000 90%, #000000d9 98%, transparent 100%);
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after,
+  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
+    inset: 90% 0 0;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .identity,
+  .creatorRail > .creatorCard[data-theme='rotem'] .creatorBio,
+  .creatorRail > .creatorCard[data-theme='mia'] .identity,
+  .creatorRail > .creatorCard[data-theme='mia'] .creatorBio {
+    color: #fff;
+  }
+  .creatorRail > .creatorCard .cover img {
+    object-position: center 20%;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover img {
+    object-position: center 12%;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cover img {
+    object-position: center 28%;
+  }
+  .creatorRail > .creatorCard[data-theme='noah'] .cover img {
+    object-position: center 25%;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cardTabs {
+    border-color: #243e3642;
+    background: #f8faf4;
+    color: #243e36;
+  }
+  .creatorRail > .creatorCard .cardFeed {
+    gap: 6px;
+    padding-top: 8px;
+  }
+  .creatorRail > .creatorCard .brandRecommendation {
+    padding: 8px;
+  }
+  .creatorRail > .creatorCard .productPhoto {
+    aspect-ratio: 1.65;
+  }
+  .creatorRail > .creatorCard .creatorVideoPreview {
+    height: 76px;
+  }
+  .creatorRail > .creatorCard .mapArtwork {
+    height: 50px;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cardFeed {
+    flex: initial;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview {
+    min-height: 86px;
+    height: auto;
+    flex: none;
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .podcastPreview > img {
+    width: 58px !important;
+    height: 58px !important;
+    flex-basis: 58px;
+  }
+}
