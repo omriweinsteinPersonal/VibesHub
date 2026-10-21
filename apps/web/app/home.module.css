@@ -4463,7 +4463,29 @@
   }
   .creatorRail > .creatorCard[data-theme='rotem'] .cover,
   .creatorRail > .creatorCard[data-theme='mia'] .cover {
-    height: 76px;
+    height: 140px;
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 68%,
+      #000000d9 84%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to bottom, #000 68%, #000000d9 84%, transparent 100%);
+  }
+  .creatorRail > .creatorCard[data-theme='mia'] .cover {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 68%,
+      #000000d9 84%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to bottom, #000 68%, #000000d9 84%, transparent 100%);
+  }
+  .creatorRail > .creatorCard[data-theme='rotem'] .cover::after,
+  .creatorRail > .creatorCard[data-theme='mia'] .cover::after {
+    inset: 68% 0 0;
   }
   .creatorRail > .creatorCard .cover img {
     object-position: center 20%;
