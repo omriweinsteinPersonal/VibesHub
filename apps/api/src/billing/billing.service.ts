@@ -15,7 +15,10 @@ export class BillingService {
   ) {}
 
   getSummary(userId: string): Promise<BillingSummary> {
-    return this.billing.getSummary(userId);
+    return this.billing.getSummary(
+      userId,
+      parseApiConfig(process.env).revenueCatAllowedEnvironment,
+    );
   }
 
   async handleRevenueCatWebhook(input: {

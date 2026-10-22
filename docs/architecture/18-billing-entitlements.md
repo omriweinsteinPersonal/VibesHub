@@ -66,7 +66,11 @@ References: [purchases](https://www.revenuecat.com/docs/getting-started/making-p
    request bytes, applies a five-minute replay window, deduplicates the event ID, and
    ignores events from the disallowed environment.
 7. The API updates normalized subscriptions and entitlements only when the incoming
-   event is at least as new as the stored event.
+   event is at least as new as that subscription's stored event. It locks the billing
+   account during reconciliation and derives access from all current subscriptions
+   for the same entitlement and environment. Expiration in one store cannot revoke
+   another store's valid subscription. Scheduled product changes do not grant access.
+   Sandbox-derived entitlements are excluded from production billing summaries.
 
 Clients never receive webhook secrets, store credentials, database credentials, or a
 RevenueCat secret API key. The `EXPO_PUBLIC_REVENUECAT_*_API_KEY` values are public SDK

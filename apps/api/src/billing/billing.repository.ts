@@ -29,13 +29,20 @@ interface SubscriptionRow {
   id: string;
 }
 
+interface ActiveSubscriptionRow extends SubscriptionRow {
+  expiresAt: string;
+}
+
 export type WebhookProcessingResult = 'duplicate' | 'ignored' | 'processed';
 
 @Injectable()
 export class BillingRepository {
   constructor(private readonly database: Database) {}
 
-  async getSummary(userId: string): Promise<BillingSummary> {
+  async getSummary(
+    userId: string,
+    environment: 'production' | 'sandbox',
+  ): Promise<BillingSummary> {
     return this.database.sql.begin(async (transaction) => {
       const sql = transaction as unknown as DatabaseClient;
       const [account] = await sql<BillingAccountRow[]>`
@@ -48,15 +55,17 @@ export class BillingRepository {
 
       const rows = await sql<EntitlementRow[]>`
         select
-          entitlement_key as "entitlementKey",
+          e.entitlement_key as "entitlementKey",
           (
-            is_active
-            and (active_until is null or active_until > statement_timestamp())
+            e.is_active
+            and (e.active_until is null or e.active_until > statement_timestamp())
           ) as "isActive",
-          active_until as "activeUntil"
-        from billing.entitlements
-        where user_id = ${userId}
-        order by entitlement_key
+          e.active_until as "activeUntil"
+        from billing.entitlements e
+        left join billing.subscriptions s on s.id = e.source_subscription_id
+        where e.user_id = ${userId}
+          and (e.source_provider = 'manual' or s.environment = ${environment})
+        order by e.entitlement_key
       `;
       return {
         customerId: account.customerId,
@@ -121,7 +130,9 @@ export class BillingRepository {
         select user_id as "userId"
         from billing.accounts
         where external_customer_id::text = any(${sql.array([...new Set(identityIds)])}::text[])
+        order by user_id
         limit 2
+        for update
       `;
       if (users.length !== 1) {
         await this.finishReceipt(sql, input.event.id, eventEnvironment, 'ignored');
@@ -148,6 +159,7 @@ export class BillingRepository {
           environment,
           provider_subscription_id,
           product_id,
+          entitlement_key,
           status,
           current_period_expires_at,
           cancel_at_period_end,
@@ -159,6 +171,7 @@ export class BillingRepository {
           ${eventEnvironment},
           ${providerSubscriptionId},
           ${productId},
+          ${input.entitlementId},
           ${lifecycle.status},
           ${expiresAt},
           ${lifecycle.cancelAtPeriodEnd},
@@ -168,6 +181,7 @@ export class BillingRepository {
           user_id = excluded.user_id,
           store = excluded.store,
           product_id = excluded.product_id,
+          entitlement_key = excluded.entitlement_key,
           status = excluded.status,
           current_period_expires_at = excluded.current_period_expires_at,
           cancel_at_period_end = excluded.cancel_at_period_end,
@@ -177,6 +191,20 @@ export class BillingRepository {
       `;
 
       if (subscription) {
+        // Account row locking serializes events from different stores. Derive
+        // access from all current subscriptions instead of the latest event's
+        // active flag: an old iOS expiry must not cancel an active Android plan.
+        const [activeSubscription] = await sql<ActiveSubscriptionRow[]>`
+          select id, current_period_expires_at as "expiresAt"
+          from billing.subscriptions
+          where user_id = ${user.userId}
+            and environment = ${eventEnvironment}
+            and entitlement_key = ${input.entitlementId}
+            and status in ('active', 'canceled', 'past_due')
+            and current_period_expires_at > statement_timestamp()
+          order by current_period_expires_at desc, id
+          limit 1
+        `;
         await sql`
           insert into billing.entitlements (
             user_id,
@@ -189,10 +217,10 @@ export class BillingRepository {
           ) values (
             ${user.userId},
             ${input.entitlementId},
-            ${lifecycle.active},
+            ${Boolean(activeSubscription)},
             'revenuecat',
-            ${subscription.id},
-            ${expiresAt},
+            ${activeSubscription?.id ?? subscription.id},
+            ${activeSubscription?.expiresAt ?? expiresAt},
             ${eventAt}
           )
           on conflict (user_id, entitlement_key) do update set
@@ -200,8 +228,7 @@ export class BillingRepository {
             source_provider = excluded.source_provider,
             source_subscription_id = excluded.source_subscription_id,
             active_until = excluded.active_until,
-            last_event_at = excluded.last_event_at
-          where excluded.last_event_at >= billing.entitlements.last_event_at
+            last_event_at = greatest(excluded.last_event_at, billing.entitlements.last_event_at)
         `;
       }
 
@@ -280,7 +307,6 @@ function mapLifecycle(type: string): {
 } | null {
   switch (type) {
     case 'INITIAL_PURCHASE':
-    case 'PRODUCT_CHANGE':
     case 'REFUND_REVERSED':
     case 'RENEWAL':
     case 'SUBSCRIPTION_EXTENDED':

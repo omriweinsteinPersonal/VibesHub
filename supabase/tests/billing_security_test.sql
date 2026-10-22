@@ -1,11 +1,13 @@
 BEGIN;
-SELECT plan(10);
+SELECT plan(12);
 
 SELECT has_schema('billing');
 SELECT has_table('billing', 'accounts');
 SELECT has_table('billing', 'subscriptions');
 SELECT has_table('billing', 'entitlements');
 SELECT has_table('ops', 'webhook_receipts');
+SELECT has_column('billing', 'subscriptions', 'entitlement_key');
+SELECT has_index('billing', 'subscriptions', 'billing_subscriptions_access_idx');
 
 SELECT ok(
   (SELECT relrowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
