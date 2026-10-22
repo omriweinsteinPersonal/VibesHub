@@ -19,7 +19,7 @@ export class BillingController {
 
   @Post('webhooks/revenuecat')
   @Public()
-  @HttpCode(204)
+  @HttpCode(200)
   async revenueCatWebhook(
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-revenuecat-webhook-signature') signature: string | undefined,
