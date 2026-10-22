@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getNativePlans,
+  configureNativeBilling,
   purchaseNativePlan,
   resetNativeBilling,
   restoreNativePurchases,
@@ -124,4 +125,46 @@ describe.each(['ios', 'android'])('native checkout on %s', (platform) => {
       expect(mocks.purchasePackage).not.toHaveBeenCalled();
     },
   );
+  it('rejects a checkout whose account signs out during loading', async () => {
+    let resolveSummary!: (value: { customerId: string }) => void;
+    let started!: () => void;
+    const loading = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    mocks.summary.mockImplementationOnce(() => {
+      started();
+      return new Promise((resolve) => {
+        resolveSummary = resolve;
+      });
+    });
+    const purchase = purchaseNativePlan(selection);
+    const rejected = expect(purchase).rejects.toThrow('account changed');
+    await loading;
+    const reset = resetNativeBilling();
+    resolveSummary({ customerId: 'old-customer' });
+    await rejected;
+    await reset;
+    expect(mocks.purchasePackage).not.toHaveBeenCalled();
+  });
+  it('keeps the store identity stable until an open purchase completes', async () => {
+    let complete!: (value: unknown) => void;
+    let started!: () => void;
+    const purchasing = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    mocks.purchasePackage.mockImplementationOnce(() => {
+      started();
+      return new Promise((resolve) => {
+        complete = resolve;
+      });
+    });
+    const purchase = purchaseNativePlan(selection);
+    await purchasing;
+    const nextAccount = configureNativeBilling('next-customer');
+    expect(mocks.logIn).not.toHaveBeenCalledWith('next-customer');
+    complete({ customerInfo: { entitlements: { active: { creator_pro: {} } } } });
+    await purchase;
+    await nextAccount;
+    expect(mocks.logIn).toHaveBeenLastCalledWith('next-customer');
+  });
 });

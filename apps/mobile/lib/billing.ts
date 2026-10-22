@@ -6,6 +6,20 @@ import { getBillingSummary } from './api';
 import { resolveRevenueCatApiKey } from './billing-config';
 
 let configuredCustomerId: string | undefined;
+let identityRevision = 0;
+let operations: Promise<unknown> = Promise.resolve();
+
+function serialize<T>(operation: () => Promise<T>): Promise<T> {
+  const result = operations.then(operation);
+  operations = result.catch(() => undefined);
+  return result;
+}
+
+function requireCurrentIdentity(revision: number): void {
+  if (revision !== identityRevision) {
+    throw new Error('Your account changed. Open subscription details again to continue.');
+  }
+}
 export const creatorProEntitlement = creatorProMonthlyPlan.entitlementId;
 
 export interface NativePlanSelection {
@@ -39,26 +53,41 @@ export function isNativeCheckoutEnabled(): boolean {
 }
 
 async function connectedPurchases() {
+  const revision = identityRevision;
   if (!getRevenueCatApiKey())
     throw new Error('Purchases are not available in this build.');
   const summary = await getBillingSummary();
-  await configureNativeBilling(summary.customerId);
+  requireCurrentIdentity(revision);
+  await configureCustomer(summary.customerId);
+  requireCurrentIdentity(revision);
   return (await import('react-native-purchases')).default;
 }
 
 export async function getNativePlans(): Promise<PurchasesPackage[]> {
   if (!isNativeCheckoutEnabled()) return [];
-  const Purchases = await connectedPurchases();
-  const offerings = await Purchases.getOfferings();
-  return offerings.current?.availablePackages.filter(isApprovedPlan) ?? [];
+  return serialize(async () => {
+    const revision = identityRevision;
+    const Purchases = await connectedPurchases();
+    const offerings = await Purchases.getOfferings();
+    requireCurrentIdentity(revision);
+    return offerings.current?.availablePackages.filter(isApprovedPlan) ?? [];
+  });
 }
 
 export async function purchaseNativePlan(
   selection: NativePlanSelection,
 ): Promise<'cancelled' | 'pending' | 'active'> {
   if (!isNativeCheckoutEnabled()) throw new Error('Subscriptions are not available yet.');
+  return serialize(() => purchaseSelectedPlan(selection));
+}
+
+async function purchaseSelectedPlan(
+  selection: NativePlanSelection,
+): Promise<'cancelled' | 'pending' | 'active'> {
+  const revision = identityRevision;
   const Purchases = await connectedPurchases();
   const offerings = await Purchases.getOfferings();
+  requireCurrentIdentity(revision);
   const plan = offerings.current?.availablePackages.find(
     (item) => item.identifier === selection.packageIdentifier && isApprovedPlan(item),
   );
@@ -91,8 +120,10 @@ export async function purchaseNativePlan(
 }
 
 export async function manageNativeSubscription(): Promise<void> {
-  const Purchases = await connectedPurchases();
-  await Purchases.showManageSubscriptions();
+  return serialize(async () => {
+    const Purchases = await connectedPurchases();
+    await Purchases.showManageSubscriptions();
+  });
 }
 
 export function isNativeBillingConfigured(): boolean {
@@ -100,6 +131,13 @@ export function isNativeBillingConfigured(): boolean {
 }
 
 export async function configureNativeBilling(customerId: string): Promise<void> {
+  const revision = ++identityRevision;
+  return serialize(async () => {
+    if (revision === identityRevision) await configureCustomer(customerId);
+  });
+}
+
+async function configureCustomer(customerId: string): Promise<void> {
   const apiKey = getRevenueCatApiKey();
   if (!apiKey || configuredCustomerId === customerId) return;
   const Purchases = (await import('react-native-purchases')).default;
@@ -113,17 +151,24 @@ export async function configureNativeBilling(customerId: string): Promise<void> 
 }
 
 export async function resetNativeBilling(): Promise<void> {
-  if (!configuredCustomerId) return;
-  const Purchases = (await import('react-native-purchases')).default;
-  if (!(await Purchases.isConfigured())) return;
-  await Purchases.logOut();
-  configuredCustomerId = undefined;
+  ++identityRevision;
+  return serialize(async () => {
+    if (!configuredCustomerId) return;
+    const Purchases = (await import('react-native-purchases')).default;
+    try {
+      if (await Purchases.isConfigured()) await Purchases.logOut();
+    } finally {
+      configuredCustomerId = undefined;
+    }
+  });
 }
 
 export async function restoreNativePurchases(): Promise<boolean> {
-  const Purchases = await connectedPurchases();
-  const customerInfo = await Purchases.restorePurchases();
-  return Boolean(customerInfo.entitlements.active[creatorProEntitlement]);
+  return serialize(async () => {
+    const Purchases = await connectedPurchases();
+    const customerInfo = await Purchases.restorePurchases();
+    return Boolean(customerInfo.entitlements.active[creatorProEntitlement]);
+  });
 }
 
 function getRevenueCatApiKey(): string | undefined {
