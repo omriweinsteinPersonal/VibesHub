@@ -35,13 +35,23 @@ export default function SubscriptionScreen() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const actionInProgress = useRef(false);
+  const refreshRevision = useRef(0);
   const refresh = useCallback(async () => {
+    const revision = refreshRevision.current + 1;
+    refreshRevision.current = revision;
+    let loadedSummary = false;
     try {
-      setSummary(await getBillingSummary());
-      setPlans(await getNativePlans());
+      const current = await getBillingSummary();
+      if (revision !== refreshRevision.current) return;
+      loadedSummary = true;
+      setSummary(current);
+      const availablePlans = hasCreatorProAccess(current) ? [] : await getNativePlans();
+      if (revision !== refreshRevision.current) return;
+      setPlans(availablePlans);
       setError('');
     } catch (cause) {
-      setSummary(null);
+      if (revision !== refreshRevision.current) return;
+      if (!loadedSummary) setSummary(null);
       setPlans([]);
       setError(
         cause instanceof Error
@@ -49,7 +59,7 @@ export default function SubscriptionScreen() {
           : 'Subscription details could not be loaded.',
       );
     } finally {
-      setLoading(false);
+      if (revision === refreshRevision.current) setLoading(false);
     }
   }, []);
   useEffect(() => {
@@ -58,6 +68,7 @@ export default function SubscriptionScreen() {
       if (state === 'active') void refresh();
     });
     return () => {
+      ++refreshRevision.current;
       clearTimeout(initialLoad);
       listener.remove();
     };
