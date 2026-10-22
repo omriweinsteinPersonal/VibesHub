@@ -187,7 +187,7 @@ export default function AccountScreen() {
             <Text style={styles.sectionTitle}>Purchases</Text>
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.push('/subscription')}
+              onPress={() => router.push('/account/subscription')}
               style={styles.secondaryButton}
             >
               <Text style={styles.secondaryButtonText}>Subscription details</Text>

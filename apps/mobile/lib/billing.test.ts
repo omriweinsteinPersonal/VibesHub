@@ -63,6 +63,19 @@ describe.each(['ios', 'android'])('native checkout on %s', (platform) => {
     mocks.purchasePackage.mockRejectedValue({ userCancelled: true });
     expect(await purchaseNativePlan('monthly')).toBe('cancelled');
   });
+  it('only offers the approved monthly period', async () => {
+    mocks.getOfferings.mockResolvedValue({
+      current: {
+        availablePackages: [
+          plan,
+          { identifier: 'yearly', product: { subscriptionPeriod: 'P1Y' } },
+        ],
+      },
+    });
+    expect(await getNativePlans()).toEqual([plan]);
+    await expect(purchaseNativePlan('yearly')).rejects.toThrow('no longer available');
+    expect(mocks.purchasePackage).not.toHaveBeenCalled();
+  });
   it('does not report unrelated entitlements as Swavii Pro', async () => {
     mocks.restorePurchases.mockResolvedValue({
       entitlements: { active: { unrelated: {} } },

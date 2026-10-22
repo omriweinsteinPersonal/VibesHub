@@ -22,7 +22,7 @@ This integration is deliberately sandbox-only:
 
 ## Subscription flow
 
-The native Account screen links to `/subscription` when billing is configured. It
+The native Account screen links to `/account/subscription` when billing is configured. It
 loads the authenticated creator's opaque customer ID before loading the current
 RevenueCat offering, purchasing, restoring, or opening store subscription management.
 Prices and renewal periods come from the store package, never a hard-coded price.
@@ -30,15 +30,21 @@ Checkout is currently restricted to development builds using a RevenueCat Test S
 key. Release checkout remains disabled, including when production SDK keys are present.
 The existing free-release build environment checks remain in force.
 
-The website's Account page links to `/subscription` and reads the same authenticated
+The website's Account page links to `/account/subscription` and reads the same authenticated
 `GET /v1/billing` status. There is no web checkout or external checkout link in native.
 SDK purchase success does not grant server access: the verified webhook must update
 the entitlement first. Creators can refresh while that asynchronous update arrives.
 Restore reports only `creator_pro`, rather than an unrelated active entitlement.
 Webhook deliveries return HTTP 200 after processing, as RevenueCat requires.
 
-Before live activation, decide the paid benefits, monthly/yearly prices and support
-policy. Create corresponding Apple/Google subscription products, associate both with
+The initial catalog is **Swavii Pro monthly, USD 12.00/month**, with no annual plan.
+`creatorProMonthlyPlan` in `packages/contracts/src/billing.ts` records the base price,
+product ID `swavii_creator_pro_monthly`, period `P1M`, and entitlement `creator_pro`.
+Configure that base price in both stores and the RevenueCat Test Store. Localized store
+prices and taxes may vary. The client only offers packages with a one-month period.
+
+Before live activation, decide the paid benefits and support
+policy. Create corresponding Apple/Google monthly subscription products, associate both with
 `creator_pro` in RevenueCat, complete store agreements/tax/banking and credentials,
 verify signed webhook delivery and both sandbox store purchase/renewal/cancellation
 flows, then deliberately change the release gate and billing environment. D-U-N-S

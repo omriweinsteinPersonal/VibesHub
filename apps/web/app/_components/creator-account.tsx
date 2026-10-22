@@ -347,7 +347,7 @@ export function CreatorAccount() {
           <p className={styles.eyebrow}>CREATOR STUDIO / ACCOUNT</p>
           <h1>Your account.</h1>
           <p>The details behind your page and your collaborations.</p>
-          <Link href="/subscription">Subscription details</Link>
+          <Link href="/account/subscription">Subscription details</Link>
         </div>
       </header>
 

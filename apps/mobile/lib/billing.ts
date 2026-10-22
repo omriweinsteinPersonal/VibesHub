@@ -1,11 +1,12 @@
 import { Platform } from 'react-native';
+import { creatorProMonthlyPlan } from '@vibeshub/contracts';
 import type { PurchasesPackage } from 'react-native-purchases';
 
 import { getBillingSummary } from './api';
 import { resolveRevenueCatApiKey } from './billing-config';
 
 let configuredCustomerId: string | undefined;
-export const creatorProEntitlement = 'creator_pro';
+export const creatorProEntitlement = creatorProMonthlyPlan.entitlementId;
 
 // Keep checkout opt-in while product benefits and store agreements are finalized.
 export function isNativeCheckoutEnabled(): boolean {
@@ -25,8 +26,9 @@ export async function getNativePlans(): Promise<PurchasesPackage[]> {
   const Purchases = await connectedPurchases();
   const offerings = await Purchases.getOfferings();
   return (
-    offerings.current?.availablePackages.filter((plan) =>
-      Boolean(plan.product.subscriptionPeriod),
+    offerings.current?.availablePackages.filter(
+      (plan) =>
+        plan.product.subscriptionPeriod === creatorProMonthlyPlan.subscriptionPeriod,
     ) ?? []
   );
 }
@@ -38,7 +40,9 @@ export async function purchaseNativePlan(
   const Purchases = await connectedPurchases();
   const offerings = await Purchases.getOfferings();
   const plan = offerings.current?.availablePackages.find(
-    (item) => item.identifier === identifier && Boolean(item.product.subscriptionPeriod),
+    (item) =>
+      item.identifier === identifier &&
+      item.product.subscriptionPeriod === creatorProMonthlyPlan.subscriptionPeriod,
   );
   if (!plan) throw new Error('This plan is no longer available. Refresh and try again.');
   try {

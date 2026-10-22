@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { apiRequest } from '../../lib/api';
+import { creatorProMonthlyPlan } from '@vibeshub/contracts';
+import { apiRequest } from '../../../lib/api';
 
 interface BillingSummary {
   entitlements: { key: string; active: boolean; expiresAt: string | null }[];
@@ -32,7 +33,7 @@ export default function SubscriptionPage() {
     return () => clearTimeout(initialLoad);
   }, [refresh]);
   const active = summary?.entitlements.some(
-    (entry) => entry.key === 'creator_pro' && entry.active,
+    (entry) => entry.key === creatorProMonthlyPlan.entitlementId && entry.active,
   );
   return (
     <main

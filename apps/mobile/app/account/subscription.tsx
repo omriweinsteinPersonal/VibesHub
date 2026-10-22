@@ -13,7 +13,7 @@ import {
 import type { PurchasesPackage } from 'react-native-purchases';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getBillingSummary, type BillingSummary } from '../lib/api';
+import { getBillingSummary, type BillingSummary } from '../../lib/api';
 import {
   creatorProEntitlement,
   getNativePlans,
@@ -21,9 +21,9 @@ import {
   manageNativeSubscription,
   purchaseNativePlan,
   restoreNativePurchases,
-} from '../lib/billing';
-import { openExternalWebPage } from '../lib/external-browser';
-import { billingPeriodLabel } from '../lib/billing-period';
+} from '../../lib/billing';
+import { openExternalWebPage } from '../../lib/external-browser';
+import { billingPeriodLabel } from '../../lib/billing-period';
 
 export default function SubscriptionScreen() {
   const router = useRouter();
