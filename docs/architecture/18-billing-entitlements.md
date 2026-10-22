@@ -20,6 +20,34 @@ This integration is deliberately sandbox-only:
 - The RevenueCat webhook accepts `SANDBOX` events by default and ignores production
   events until the allowed environment is changed intentionally.
 
+## Subscription flow
+
+The native Account screen links to `/subscription` when billing is configured. It
+loads the authenticated creator's opaque customer ID before loading the current
+RevenueCat offering, purchasing, restoring, or opening store subscription management.
+Prices and renewal periods come from the store package, never a hard-coded price.
+Checkout is currently restricted to development builds using a RevenueCat Test Store
+key. Release checkout remains disabled, including when production SDK keys are present.
+The existing free-release build environment checks remain in force.
+
+The website's Account page links to `/subscription` and reads the same authenticated
+`GET /v1/billing` status. There is no web checkout or external checkout link in native.
+SDK purchase success does not grant server access: the verified webhook must update
+the entitlement first. Creators can refresh while that asynchronous update arrives.
+Restore reports only `creator_pro`, rather than an unrelated active entitlement.
+Webhook deliveries return HTTP 200 after processing, as RevenueCat requires.
+
+Before live activation, decide the paid benefits, monthly/yearly prices and support
+policy. Create corresponding Apple/Google subscription products, associate both with
+`creator_pro` in RevenueCat, complete store agreements/tax/banking and credentials,
+verify signed webhook delivery and both sandbox store purchase/renewal/cancellation
+flows, then deliberately change the release gate and billing environment. D-U-N-S
+verification blocks Google account setup but does not block development Test Store work.
+
+References: [purchases](https://www.revenuecat.com/docs/getting-started/making-purchases),
+[restore](https://www.revenuecat.com/docs/getting-started/restoring-purchases),
+[webhooks](https://www.revenuecat.com/docs/integrations/webhooks).
+
 ## Data flow
 
 1. An authenticated, approved creator calls `GET /v1/billing`.

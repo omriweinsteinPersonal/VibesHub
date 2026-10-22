@@ -185,6 +185,13 @@ export default function AccountScreen() {
         {isNativeBillingConfigured() ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Purchases</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/subscription')}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Subscription details</Text>
+            </Pressable>
             <Text style={styles.sectionCopy}>
               Already subscribed with this Apple ID or Google Play account? Restore your
               access here.
