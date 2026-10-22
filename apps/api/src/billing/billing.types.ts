@@ -32,13 +32,4 @@ export const revenueCatWebhookSchema = z
 type RevenueCatWebhook = z.infer<typeof revenueCatWebhookSchema>;
 export type RevenueCatWebhookEvent = RevenueCatWebhook['event'];
 
-interface BillingEntitlementSummary {
-  active: boolean;
-  expiresAt: string | null;
-  key: string;
-}
-
-export interface BillingSummary {
-  customerId: string;
-  entitlements: BillingEntitlementSummary[];
-}
+export type { BillingSummary } from '@vibeshub/contracts';

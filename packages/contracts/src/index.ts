@@ -1,5 +1,10 @@
 import { z } from 'zod';
-export { creatorProMonthlyPlan } from './billing.js';
+export {
+  creatorProMonthlyPlan,
+  billingSummarySchema,
+  hasCreatorProAccess,
+} from './billing.js';
+export type { BillingSummary } from './billing.js';
 
 export const idSchema = z.uuid();
 

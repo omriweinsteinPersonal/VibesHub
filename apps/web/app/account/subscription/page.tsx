@@ -3,12 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { creatorProMonthlyPlan } from '@vibeshub/contracts';
-import { apiRequest } from '../../../lib/api';
-
-interface BillingSummary {
-  entitlements: { key: string; active: boolean; expiresAt: string | null }[];
-}
+import { hasCreatorProAccess, type BillingSummary } from '@vibeshub/contracts';
+import { getBillingSummary } from '../../../lib/billing';
 
 export default function SubscriptionPage() {
   const [summary, setSummary] = useState<BillingSummary | null>(null);
@@ -16,9 +12,10 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const refresh = useCallback(async () => {
     try {
-      setSummary(await apiRequest<BillingSummary>('/v1/billing'));
+      setSummary(await getBillingSummary());
       setError('');
     } catch (cause) {
+      setSummary(null);
       setError(
         cause instanceof Error
           ? cause.message
@@ -32,9 +29,7 @@ export default function SubscriptionPage() {
     const initialLoad = setTimeout(() => void refresh(), 0);
     return () => clearTimeout(initialLoad);
   }, [refresh]);
-  const active = summary?.entitlements.some(
-    (entry) => entry.key === creatorProMonthlyPlan.entitlementId && entry.active,
-  );
+  const active = summary ? hasCreatorProAccess(summary) : false;
   return (
     <main
       style={{

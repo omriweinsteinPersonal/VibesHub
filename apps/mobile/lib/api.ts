@@ -1,4 +1,5 @@
 import {
+  billingSummarySchema,
   creatorCardSchema,
   creatorStorefrontSchema,
   publicRecommendationDetailSchema,
@@ -7,6 +8,7 @@ import {
 } from '@vibeshub/contracts';
 import type {
   ContentReportInput,
+  BillingSummary,
   ContentReportReceipt,
   CreatorCard,
   CreatorStorefront,
@@ -23,14 +25,7 @@ interface ApiProblem {
   title?: string;
 }
 
-export interface BillingSummary {
-  customerId: string;
-  entitlements: {
-    active: boolean;
-    expiresAt: string | null;
-    key: string;
-  }[];
-}
+export type { BillingSummary } from '@vibeshub/contracts';
 
 const defaultRequestTimeoutMs = 20_000;
 const publicCacheLifetimeMs = 2 * 60_000;
@@ -85,8 +80,14 @@ export async function createContentReport(
 export async function getBillingSummary(): Promise<BillingSummary> {
   const response = await authenticatedRequest('/v1/billing');
   if (!response.ok) throw await apiError(response, 'Billing status could not be loaded.');
-  const body = (await response.json()) as { data: BillingSummary };
-  return body.data;
+  const body = (await response.json()) as { data?: unknown };
+  const parsed = billingSummarySchema.safeParse(body.data);
+  if (!parsed.success)
+    throw new ApiError(
+      'Subscription details could not be verified. Please try again.',
+      502,
+    );
+  return parsed.data;
 }
 
 export async function getCreators(

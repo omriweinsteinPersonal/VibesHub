@@ -1,4 +1,5 @@
 import { colors, spacing } from '@vibeshub/design-tokens';
+import { hasCreatorProAccess } from '@vibeshub/contracts';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -15,7 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBillingSummary, type BillingSummary } from '../../lib/api';
 import {
-  creatorProEntitlement,
   getNativePlans,
   isNativeCheckoutEnabled,
   manageNativeSubscription,
@@ -62,9 +62,7 @@ export default function SubscriptionScreen() {
       listener.remove();
     };
   }, [refresh]);
-  const active = summary?.entitlements.some(
-    (entry) => entry.key === creatorProEntitlement && entry.active,
-  );
+  const active = summary ? hasCreatorProAccess(summary) : false;
   async function perform(action: () => Promise<void>) {
     if (actionInProgress.current) return;
     actionInProgress.current = true;
