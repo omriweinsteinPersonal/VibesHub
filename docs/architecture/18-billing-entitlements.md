@@ -41,7 +41,26 @@ The initial catalog is **Swavii Pro monthly, USD 12.00/month**, with no annual p
 `creatorProMonthlyPlan` in `packages/contracts/src/billing.ts` records the base price,
 product ID `swavii_creator_pro_monthly`, period `P1M`, and entitlement `creator_pro`.
 Configure that base price in both stores and the RevenueCat Test Store. Localized store
-prices and taxes may vary. The client only offers packages with a one-month period.
+prices and taxes may vary. The client only offers the approved product with a one-month
+period and requires another review if its price or currency changes before checkout.
+
+Store identity changes are serialized with purchase, restore and management operations.
+Auth changes invalidate checkout requests that are still loading. Management uses the
+native App Store sheet on iOS and Google Play's subscriptions page on Android. Test
+Store subscriptions must be managed in RevenueCat rather than a real store account.
+
+### Remaining provider setup
+
+The repository catalog does not create a product in the RevenueCat dashboard. The legacy
+Test Store `monthly`/`yearly` catalog must be replaced in the current offering by the
+approved `swavii_creator_pro_monthly` product, period one month, base price USD 12.00,
+attached to `creator_pro`. Leave the production checkout gate disabled throughout testing.
+
+Using a development build signed in as an approved test creator, verify purchase,
+the signed webhook, active status on native and web, restore after reinstall, renewal,
+cancellation until period end, expiration and another store subscription remaining active.
+Also verify account switching, cancelled checkout and failed/slow network recovery.
+Automated SDK mocks and native exports do not replace these provider/device checks.
 
 Before live activation, decide the paid benefits and support
 policy. Create corresponding Apple/Google monthly subscription products, associate both with

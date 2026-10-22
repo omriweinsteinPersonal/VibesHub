@@ -63,6 +63,7 @@ export class BillingRepository {
           e.active_until as "activeUntil"
         from billing.entitlements e
         left join billing.subscriptions s on s.id = e.source_subscription_id
+          and s.user_id = e.user_id and s.entitlement_key = e.entitlement_key
         where e.user_id = ${userId}
           and (e.source_provider = 'manual' or s.environment = ${environment})
         order by e.entitlement_key

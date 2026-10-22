@@ -80,8 +80,8 @@ export async function createContentReport(
 export async function getBillingSummary(): Promise<BillingSummary> {
   const response = await authenticatedRequest('/v1/billing');
   if (!response.ok) throw await apiError(response, 'Billing status could not be loaded.');
-  const body = (await response.json()) as { data?: unknown };
-  const parsed = billingSummarySchema.safeParse(body.data);
+  const body = (await response.json().catch(() => null)) as { data?: unknown } | null;
+  const parsed = billingSummarySchema.safeParse(body?.data);
   if (!parsed.success)
     throw new ApiError(
       'Subscription details could not be verified. Please try again.',
@@ -190,7 +190,7 @@ async function authenticatedRequest(
   } = await supabase.auth.getSession();
   if (!session) throw new Error('Please log in again.');
 
-  return fetch(`${getApiUrl()}${path}`, {
+  return fetchWithTimeout(`${getApiUrl()}${path}`, {
     ...init,
     headers: {
       ...init.headers,
