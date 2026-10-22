@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import { creatorProMonthlyPlan } from '@vibeshub/contracts';
 import type { PurchasesPackage } from 'react-native-purchases';
 
@@ -120,9 +120,16 @@ async function purchaseSelectedPlan(
 }
 
 export async function manageNativeSubscription(): Promise<void> {
+  if (getRevenueCatApiKey()?.startsWith('test_')) {
+    throw new Error('Test subscriptions are managed in the RevenueCat Test Store.');
+  }
   return serialize(async () => {
     const Purchases = await connectedPurchases();
-    await Purchases.showManageSubscriptions();
+    if (Platform.OS === 'android') {
+      await Linking.openURL('https://play.google.com/store/account/subscriptions');
+    } else {
+      await Purchases.showManageSubscriptions();
+    }
   });
 }
 

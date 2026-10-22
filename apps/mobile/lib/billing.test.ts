@@ -6,6 +6,7 @@ import {
   purchaseNativePlan,
   resetNativeBilling,
   restoreNativePurchases,
+  manageNativeSubscription,
   selectNativePlan,
 } from './billing';
 import type { PurchasesPackage } from 'react-native-purchases';
@@ -20,8 +21,13 @@ const mocks = vi.hoisted(() => ({
   getOfferings: vi.fn(),
   purchasePackage: vi.fn(),
   restorePurchases: vi.fn(),
+  showManageSubscriptions: vi.fn(),
+  openURL: vi.fn(),
 }));
-vi.mock('react-native', () => ({ Platform: mocks.platform }));
+vi.mock('react-native', () => ({
+  Platform: mocks.platform,
+  Linking: { openURL: mocks.openURL },
+}));
 vi.mock('./api', () => ({ getBillingSummary: mocks.summary }));
 vi.mock('react-native-purchases', () => ({ default: mocks }));
 
@@ -166,5 +172,25 @@ describe.each(['ios', 'android'])('native checkout on %s', (platform) => {
     await purchase;
     await nextAccount;
     expect(mocks.logIn).toHaveBeenLastCalledWith('next-customer');
+  });
+  it('opens subscription management using the correct platform', async () => {
+    vi.stubEnv('EXPO_PUBLIC_REVENUECAT_TEST_STORE_API_KEY', '');
+    vi.stubEnv('EXPO_PUBLIC_REVENUECAT_IOS_API_KEY', 'appl_store');
+    vi.stubEnv('EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY', 'goog_store');
+    await manageNativeSubscription();
+    if (platform === 'android') {
+      expect(mocks.openURL).toHaveBeenCalledWith(
+        'https://play.google.com/store/account/subscriptions',
+      );
+      expect(mocks.showManageSubscriptions).not.toHaveBeenCalled();
+    } else {
+      expect(mocks.showManageSubscriptions).toHaveBeenCalledOnce();
+      expect(mocks.openURL).not.toHaveBeenCalled();
+    }
+  });
+  it('does not open a real store to manage a Test Store subscription', async () => {
+    await expect(manageNativeSubscription()).rejects.toThrow('Test Store');
+    expect(mocks.openURL).not.toHaveBeenCalled();
+    expect(mocks.showManageSubscriptions).not.toHaveBeenCalled();
   });
 });
