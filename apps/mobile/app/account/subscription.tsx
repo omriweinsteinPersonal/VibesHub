@@ -21,6 +21,7 @@ import {
   manageNativeSubscription,
   purchaseNativePlan,
   restoreNativePurchases,
+  selectNativePlan,
 } from '../../lib/billing';
 import { openExternalWebPage } from '../../lib/external-browser';
 import { billingPeriodLabel } from '../../lib/billing-period';
@@ -82,7 +83,7 @@ export default function SubscriptionScreen() {
   }
   function buy(plan: PurchasesPackage) {
     void perform(async () => {
-      const result = await purchaseNativePlan(plan.identifier);
+      const result = await purchaseNativePlan(selectNativePlan(plan));
       if (result !== 'cancelled')
         setMessage(
           'Your purchase is being confirmed. Refresh shortly to see your updated access.',

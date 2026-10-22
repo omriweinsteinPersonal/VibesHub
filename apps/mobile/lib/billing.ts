@@ -8,6 +8,31 @@ import { resolveRevenueCatApiKey } from './billing-config';
 let configuredCustomerId: string | undefined;
 export const creatorProEntitlement = creatorProMonthlyPlan.entitlementId;
 
+export interface NativePlanSelection {
+  packageIdentifier: string;
+  productIdentifier: string;
+  price: number;
+  currencyCode: string;
+  subscriptionPeriod: string | null;
+}
+
+export function selectNativePlan(plan: PurchasesPackage): NativePlanSelection {
+  return {
+    packageIdentifier: plan.identifier,
+    productIdentifier: plan.product.identifier,
+    price: plan.product.price,
+    currencyCode: plan.product.currencyCode,
+    subscriptionPeriod: plan.product.subscriptionPeriod,
+  };
+}
+
+function isApprovedPlan(plan: PurchasesPackage): boolean {
+  return (
+    plan.product.identifier === creatorProMonthlyPlan.productId &&
+    plan.product.subscriptionPeriod === creatorProMonthlyPlan.subscriptionPeriod
+  );
+}
+
 // Keep checkout opt-in while product benefits and store agreements are finalized.
 export function isNativeCheckoutEnabled(): boolean {
   return __DEV__ && Boolean(getRevenueCatApiKey()?.startsWith('test_'));
@@ -25,26 +50,30 @@ export async function getNativePlans(): Promise<PurchasesPackage[]> {
   if (!isNativeCheckoutEnabled()) return [];
   const Purchases = await connectedPurchases();
   const offerings = await Purchases.getOfferings();
-  return (
-    offerings.current?.availablePackages.filter(
-      (plan) =>
-        plan.product.subscriptionPeriod === creatorProMonthlyPlan.subscriptionPeriod,
-    ) ?? []
-  );
+  return offerings.current?.availablePackages.filter(isApprovedPlan) ?? [];
 }
 
 export async function purchaseNativePlan(
-  identifier: string,
+  selection: NativePlanSelection,
 ): Promise<'cancelled' | 'pending' | 'active'> {
   if (!isNativeCheckoutEnabled()) throw new Error('Subscriptions are not available yet.');
   const Purchases = await connectedPurchases();
   const offerings = await Purchases.getOfferings();
   const plan = offerings.current?.availablePackages.find(
-    (item) =>
-      item.identifier === identifier &&
-      item.product.subscriptionPeriod === creatorProMonthlyPlan.subscriptionPeriod,
+    (item) => item.identifier === selection.packageIdentifier && isApprovedPlan(item),
   );
   if (!plan) throw new Error('This plan is no longer available. Refresh and try again.');
+  const current = selectNativePlan(plan);
+  if (
+    current.productIdentifier !== selection.productIdentifier ||
+    current.price !== selection.price ||
+    current.currencyCode !== selection.currencyCode ||
+    current.subscriptionPeriod !== selection.subscriptionPeriod
+  ) {
+    throw new Error(
+      'This plan has changed. Refresh and review its price before subscribing.',
+    );
+  }
   try {
     const { customerInfo } = await Purchases.purchasePackage(plan);
     return customerInfo.entitlements.active[creatorProEntitlement] ? 'active' : 'pending';
