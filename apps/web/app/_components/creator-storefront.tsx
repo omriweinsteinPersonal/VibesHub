@@ -25,7 +25,6 @@ import {
   BadgeCheck,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   MapPinned,
   Music2,
   Play,
@@ -1159,21 +1158,16 @@ function FeaturedMediaBlock({
 
 function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
   return (
-    <article className="featuredMapCard">
+    <a
+      aria-label={`Open ${media.title} in Google Maps`}
+      className="featuredMapCard"
+      href={media.url}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
       <div className="featuredMapCopy" dir="auto">
         <strong>{media.title}</strong>
         {media.location ? <span>{media.location}</span> : null}
-        <a
-          aria-label={`Open ${media.title} in Google Maps`}
-          className="featuredMapLink"
-          href={media.url}
-          rel="noopener noreferrer"
-          target="_blank"
-          title="Open in Google Maps"
-        >
-          <span>Open map</span>
-          <ExternalLink aria-hidden="true" size={13} />
-        </a>
       </div>
       <div className="featuredMapArtwork" aria-hidden="true">
         {media.thumbnailUrl ? (
@@ -1182,7 +1176,7 @@ function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
           <MapPinned size={28} />
         )}
       </div>
-    </article>
+    </a>
   );
 }
 
