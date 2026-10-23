@@ -706,6 +706,7 @@ export const featuredMediaSchema = z
       .nullable()
       .default(null),
     location: z.string().trim().max(160).optional(),
+    review: z.string().trim().max(1_000).optional(),
     displayMode: z.enum(['embed', 'link']).default('embed'),
     visible: z.boolean().default(true),
   })

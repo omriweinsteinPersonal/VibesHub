@@ -1,14 +1,10 @@
 'use client';
 
-import type {
-  CreatorMediaKit,
-  CreatorMediaKitInput,
-  CreatorProfileSettings,
-} from '@vibeshub/contracts';
+import type { CreatorProfileSettings } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpRight, Copy, LogOut, Upload } from 'lucide-react';
+import { LogOut, Upload } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 import { ApiError, apiRequest } from '../../lib/api';
@@ -35,9 +31,6 @@ interface AccountSummary {
 }
 
 type UploadStage = 'idle' | 'authorizing' | 'uploading' | 'validating' | 'ready';
-type Platform = CreatorMediaKit['platforms'][number];
-type ContentType = CreatorMediaKit['contentTypes'][number];
-
 interface ProfileEditor {
   avatarAssetId: string;
   avatarUrl: string;
@@ -47,61 +40,25 @@ interface ProfileEditor {
   instagramUrl: string;
 }
 
-interface MediaKitEditor {
-  agentAgencyName: string;
-  agentEmail: string;
-  agentPhone: string;
-  audienceAgeFrom: string;
-  audienceAgeTo: string;
-  audienceGender: CreatorMediaKit['audienceGender'];
-  audienceLocation: string;
-  averageReelViews: string;
-  averageStoryViews: string;
-  bookingEmail: string;
-  contentTypes: ContentType[];
-  engagementRate: string;
-  followers: string;
-  platforms: Platform[];
-  ratePerPostIls: string;
-  ratePerStoryIls: string;
-}
-
-const platformOptions: Array<{ label: string; value: Platform }> = [
-  { label: 'Instagram', value: 'instagram' },
-  { label: 'TikTok', value: 'tiktok' },
-  { label: 'YouTube', value: 'youtube' },
-];
-
-const contentTypeOptions: Array<{ label: string; value: ContentType }> = [
-  { label: 'Stories', value: 'stories' },
-  { label: 'Reels', value: 'reels' },
-  { label: 'Posts', value: 'posts' },
-];
-
 export function CreatorAccount() {
   const router = useRouter();
   const { clearStorefrontHref, setCreatorProfile } = useCreatorNavigation();
   const [email, setEmail] = useState('');
   const [profile, setProfile] = useState<CreatorProfileSettings | null>(null);
   const [profileEditor, setProfileEditor] = useState<ProfileEditor | null>(null);
-  const [mediaKit, setMediaKit] = useState<CreatorMediaKit | null>(null);
-  const [mediaEditor, setMediaEditor] = useState<MediaKitEditor | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingMedia, setSavingMedia] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [editingMedia, setEditingMedia] = useState(false);
   const [uploadStage, setUploadStage] = useState<UploadStage>('idle');
   const stagedAssetRef = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
     void (async () => {
-      const [accountResult, profileResult, mediaKitResult] = await Promise.allSettled([
+      const [accountResult, profileResult] = await Promise.allSettled([
         apiRequest<AccountSummary>('/me'),
         apiRequest<CreatorProfileSettings>('/creator/profile'),
-        apiRequest<CreatorMediaKit>('/creator/studio/media-kit'),
       ] as const);
 
       if (!active) return;
@@ -116,20 +73,14 @@ export function CreatorAccount() {
         return;
       }
 
-      const rejected = [profileResult, mediaKitResult].find(
-        (result) => result.status === 'rejected',
-      );
-      if (rejected?.status === 'rejected') throw rejected.reason;
+      if (profileResult.status === 'rejected') throw profileResult.reason;
 
-      if (profileResult.status === 'fulfilled' && mediaKitResult.status === 'fulfilled') {
+      if (profileResult.status === 'fulfilled') {
         const loadedProfile = profileResult.value;
-        const loadedMediaKit = mediaKitResult.value;
         if (!active) return;
         setEmail(account.email ?? '');
         setProfile(loadedProfile);
         setProfileEditor(toProfileEditor(loadedProfile));
-        setMediaKit(loadedMediaKit);
-        setMediaEditor(toMediaKitEditor(loadedMediaKit));
         setUploadStage(loadedProfile.avatar ? 'ready' : 'idle');
       }
     })().catch((cause: unknown) => {
@@ -156,10 +107,6 @@ export function CreatorAccount() {
 
   function updateProfile<K extends keyof ProfileEditor>(key: K, value: ProfileEditor[K]) {
     setProfileEditor((current) => (current ? { ...current, [key]: value } : current));
-  }
-
-  function updateMedia<K extends keyof MediaKitEditor>(key: K, value: MediaKitEditor[K]) {
-    setMediaEditor((current) => (current ? { ...current, [key]: value } : current));
   }
 
   async function selectImage(event: ChangeEvent<HTMLInputElement>) {
@@ -264,66 +211,9 @@ export function CreatorAccount() {
     }
   }
 
-  async function saveMediaKit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!mediaKit || !mediaEditor) return;
-    setSavingMedia(true);
-    setError('');
-    setNotice('');
-    try {
-      const input: CreatorMediaKitInput = {
-        agentAgencyName: nullableText(mediaEditor.agentAgencyName),
-        agentEmail: nullableText(mediaEditor.agentEmail),
-        agentPhone: nullableText(mediaEditor.agentPhone),
-        audienceAgeFrom: nullableInteger(mediaEditor.audienceAgeFrom),
-        audienceAgeTo: nullableInteger(mediaEditor.audienceAgeTo),
-        audienceGender: mediaEditor.audienceGender,
-        audienceLocation: nullableText(mediaEditor.audienceLocation),
-        averageReelViews: nullableInteger(mediaEditor.averageReelViews),
-        averageStoryViews: nullableInteger(mediaEditor.averageStoryViews),
-        bookingEmail: nullableText(mediaEditor.bookingEmail),
-        contentTypes: mediaEditor.contentTypes,
-        engagementRate: nullableDecimal(mediaEditor.engagementRate),
-        followers: nullableInteger(mediaEditor.followers),
-        platforms: mediaEditor.platforms,
-        ratePerPostMinor: nullableMoney(mediaEditor.ratePerPostIls),
-        ratePerStoryMinor: nullableMoney(mediaEditor.ratePerStoryIls),
-      };
-      const updated = await apiRequest<CreatorMediaKit>('/creator/studio/media-kit', {
-        body: JSON.stringify(input),
-        headers: { 'if-match': `"${mediaKit.version}"` },
-        method: 'PUT',
-      });
-      setMediaKit(updated);
-      setMediaEditor(toMediaKitEditor(updated));
-      setEditingMedia(false);
-      setNotice('Your media kit has been updated.');
-    } catch (cause) {
-      setError(messageFor(cause));
-    } finally {
-      setSavingMedia(false);
-    }
-  }
-
   const imageIsUploading = ['authorizing', 'uploading', 'validating'].includes(
     uploadStage,
   );
-
-  async function copyPageLink() {
-    if (!profile) return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/${encodeURIComponent(profile.handle)}`,
-      );
-      setError('');
-      setNotice('Page link copied.');
-    } catch {
-      setError('Could not copy the link. Open your page to copy its address instead.');
-    }
-  }
-
-  const creatorHref = profile ? `/creator/${encodeURIComponent(profile.handle)}` : '';
-  const instagram = profileEditor?.instagramUrl.trim() ?? '';
 
   async function signOut() {
     setSigningOut(true);
@@ -346,7 +236,7 @@ export function CreatorAccount() {
         <div>
           <p className={styles.eyebrow}>CREATOR STUDIO / ACCOUNT</p>
           <h1>Your account.</h1>
-          <p>The details behind your page and your collaborations.</p>
+          <p>The details behind your public page and account access.</p>
           <Link href="/account/subscription">Subscription details</Link>
         </div>
       </header>
@@ -361,11 +251,11 @@ export function CreatorAccount() {
           {notice}
         </p>
       ) : null}
-      {!profileEditor || !mediaEditor ? (
+      {!profileEditor ? (
         <DelayedLoading>Opening your account…</DelayedLoading>
       ) : null}
 
-      {profile && profileEditor && mediaKit && mediaEditor ? (
+      {profile && profileEditor ? (
         <>
           <div className={styles.layout}>
             <div className={styles.stack}>
@@ -475,245 +365,6 @@ export function CreatorAccount() {
               <section className={styles.card}>
                 <div className={styles.sectionHeading}>
                   <div>
-                    <h2>Media kit</h2>
-                    <p>
-                      Keep collaboration details organized, separate from your public
-                      page.
-                    </p>
-                  </div>
-                  <span className={styles.privateBadge}>Not on your public page</span>
-                </div>
-                <div className={styles.kitMetrics}>
-                  <div>
-                    <strong>{formatCount(mediaKit.followers)}</strong>
-                    <span>Followers</span>
-                  </div>
-                  <div>
-                    <strong>
-                      {mediaKit.engagementRate === null
-                        ? '—'
-                        : `${mediaKit.engagementRate}%`}
-                    </strong>
-                    <span>Engagement</span>
-                  </div>
-                  <div>
-                    <strong>{formatCount(mediaKit.averageStoryViews)}</strong>
-                    <span>Avg. story views</span>
-                  </div>
-                </div>
-                <div className={styles.kitFooter}>
-                  <div className={styles.platforms}>
-                    {mediaKit.platforms.length ? (
-                      mediaKit.platforms.map((platform) => (
-                        <span key={platform}>
-                          {
-                            platformOptions.find((option) => option.value === platform)
-                              ?.label
-                          }
-                        </span>
-                      ))
-                    ) : (
-                      <span>No platforms added</span>
-                    )}
-                  </div>
-                  <button
-                    aria-expanded={editingMedia}
-                    className={styles.outlineButton}
-                    onClick={() => setEditingMedia((current) => !current)}
-                    type="button"
-                  >
-                    {editingMedia ? 'Close editor' : 'Edit media kit'}
-                  </button>
-                </div>
-                {editingMedia ? (
-                  <form className={styles.mediaForm} onSubmit={saveMediaKit}>
-                    <p>
-                      These details help brands understand your audience and collaboration
-                      options.
-                    </p>
-                    <div className={styles.mediaGrid}>
-                      <NumberField
-                        label="Followers"
-                        value={mediaEditor.followers}
-                        onChange={(value) => updateMedia('followers', value)}
-                      />
-                      <NumberField
-                        label="Engagement rate (%)"
-                        value={mediaEditor.engagementRate}
-                        onChange={(value) => updateMedia('engagementRate', value)}
-                        step="0.01"
-                      />
-                      <NumberField
-                        label="Average story views"
-                        value={mediaEditor.averageStoryViews}
-                        onChange={(value) => updateMedia('averageStoryViews', value)}
-                      />
-                      <NumberField
-                        label="Average reel views"
-                        value={mediaEditor.averageReelViews}
-                        onChange={(value) => updateMedia('averageReelViews', value)}
-                      />
-                      <NumberField
-                        label="Audience age from"
-                        value={mediaEditor.audienceAgeFrom}
-                        onChange={(value) => updateMedia('audienceAgeFrom', value)}
-                      />
-                      <NumberField
-                        label="Audience age to"
-                        value={mediaEditor.audienceAgeTo}
-                        onChange={(value) => updateMedia('audienceAgeTo', value)}
-                      />
-                      <NumberField
-                        label="Rate per post (₪)"
-                        value={mediaEditor.ratePerPostIls}
-                        onChange={(value) => updateMedia('ratePerPostIls', value)}
-                        step="0.01"
-                      />
-                      <NumberField
-                        label="Rate per story (₪)"
-                        value={mediaEditor.ratePerStoryIls}
-                        onChange={(value) => updateMedia('ratePerStoryIls', value)}
-                        step="0.01"
-                      />
-                      <label>
-                        Audience gender
-                        <select
-                          value={mediaEditor.audienceGender ?? 'not_specified'}
-                          onChange={(event) =>
-                            updateMedia(
-                              'audienceGender',
-                              event.target.value as CreatorMediaKit['audienceGender'],
-                            )
-                          }
-                        >
-                          <option value="not_specified">Not specified</option>
-                          <option value="female">Mostly women</option>
-                          <option value="male">Mostly men</option>
-                          <option value="mixed">Mixed</option>
-                        </select>
-                      </label>
-                      <label>
-                        Audience location
-                        <input
-                          value={mediaEditor.audienceLocation}
-                          onChange={(event) =>
-                            updateMedia('audienceLocation', event.target.value)
-                          }
-                          placeholder="Israel"
-                        />
-                      </label>
-                    </div>
-                    <ChoiceGroup
-                      label="Platforms"
-                      options={platformOptions}
-                      selected={mediaEditor.platforms}
-                      onToggle={(value) =>
-                        updateMedia('platforms', toggle(mediaEditor.platforms, value))
-                      }
-                    />
-                    <ChoiceGroup
-                      label="Content types"
-                      options={contentTypeOptions}
-                      selected={mediaEditor.contentTypes}
-                      onToggle={(value) =>
-                        updateMedia(
-                          'contentTypes',
-                          toggle(mediaEditor.contentTypes, value),
-                        )
-                      }
-                    />
-                    <div className={styles.mediaGrid}>
-                      <label>
-                        Booking email
-                        <input
-                          type="email"
-                          value={mediaEditor.bookingEmail}
-                          onChange={(event) =>
-                            updateMedia('bookingEmail', event.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        Agent / agency name
-                        <input
-                          value={mediaEditor.agentAgencyName}
-                          onChange={(event) =>
-                            updateMedia('agentAgencyName', event.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        Agent email
-                        <input
-                          type="email"
-                          value={mediaEditor.agentEmail}
-                          onChange={(event) =>
-                            updateMedia('agentEmail', event.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        Agent phone
-                        <input
-                          type="tel"
-                          value={mediaEditor.agentPhone}
-                          onChange={(event) =>
-                            updateMedia('agentPhone', event.target.value)
-                          }
-                        />
-                      </label>
-                    </div>
-                    <button
-                      className={styles.primaryButton}
-                      disabled={savingMedia}
-                      type="submit"
-                    >
-                      {savingMedia ? 'Saving…' : 'Save media kit'}
-                    </button>
-                  </form>
-                ) : null}
-              </section>
-            </div>
-            <aside className={styles.aside}>
-              <section className={styles.card}>
-                <p className={styles.asideEyebrow}>YOUR PAGE, AT A GLANCE</p>
-                <div className={styles.preview}>
-                  <div className={styles.previewTop}>
-                    <Avatar
-                      name={profileEditor.displayName}
-                      url={profileEditor.avatarUrl}
-                    />
-                    <strong>{profileEditor.displayName || 'Your name'}</strong>
-                    <small>{profile.primaryCategory?.name ?? 'Creator'}</small>
-                  </div>
-                  <div className={styles.previewBody}>
-                    <p>{profileEditor.bioHe || 'Your bio will appear here.'}</p>
-                    {instagram ? (
-                      <div className={styles.previewLink}>
-                        Instagram <ArrowUpRight aria-hidden="true" size={14} />
-                      </div>
-                    ) : null}
-                    <span className={styles.previewCaption}>
-                      More of your page lives in Storefront
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.previewActions}>
-                  <button
-                    className={styles.outlineButton}
-                    onClick={copyPageLink}
-                    type="button"
-                  >
-                    <Copy aria-hidden="true" size={15} /> Copy link
-                  </button>
-                  <Link className={styles.outlineButton} href={creatorHref}>
-                    Open storefront
-                  </Link>
-                </div>
-              </section>
-              <section className={styles.card}>
-                <div className={styles.sectionHeading}>
-                  <div>
                     <h2>Account access</h2>
                     <p>Private sign-in details for your Swavii account.</p>
                   </div>
@@ -734,7 +385,7 @@ export function CreatorAccount() {
                   </Link>
                 </div>
               </section>
-            </aside>
+            </div>
           </div>
           <button
             className={styles.logoutButton}
@@ -763,74 +414,6 @@ function Avatar({ name, url }: { name: string; url: string }) {
   );
 }
 
-function formatCount(value: number | null): string {
-  if (value === null) return '—';
-  if (value >= 10_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
-  return new Intl.NumberFormat('en-US').format(value);
-}
-
-function NumberField({
-  label,
-  onChange,
-  step = '1',
-  value,
-}: {
-  label: string;
-  onChange: (value: string) => void;
-  step?: string;
-  value: string;
-}) {
-  return (
-    <label className={styles.field}>
-      {label}
-      <input
-        min="0"
-        onChange={(event) => onChange(event.target.value)}
-        step={step}
-        type="number"
-        value={value}
-      />
-    </label>
-  );
-}
-
-function ChoiceGroup<T extends string>({
-  label,
-  onToggle,
-  options,
-  selected,
-}: {
-  label: string;
-  onToggle: (value: T) => void;
-  options: Array<{ label: string; value: T }>;
-  selected: T[];
-}) {
-  return (
-    <fieldset className={styles.choiceGroup}>
-      <legend>{label}</legend>
-      <div>
-        {options.map((option) => (
-          <button
-            aria-pressed={selected.includes(option.value)}
-            className={selected.includes(option.value) ? styles.choiceActive : ''}
-            key={option.value}
-            onClick={() => onToggle(option.value)}
-            type="button"
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-function toggle<T>(values: T[], value: T): T[] {
-  return values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
-}
-
 function toProfileEditor(profile: CreatorProfileSettings): ProfileEditor {
   return {
     avatarAssetId: profile.avatar?.assetId ?? '',
@@ -840,27 +423,6 @@ function toProfileEditor(profile: CreatorProfileSettings): ProfileEditor {
     handle: profile.handle,
     instagramUrl:
       profile.socialLinks.find(({ platform }) => platform === 'instagram')?.url ?? '',
-  };
-}
-
-function toMediaKitEditor(mediaKit: CreatorMediaKit): MediaKitEditor {
-  return {
-    agentAgencyName: mediaKit.agentAgencyName ?? '',
-    agentEmail: mediaKit.agentEmail ?? '',
-    agentPhone: mediaKit.agentPhone ?? '',
-    audienceAgeFrom: show(mediaKit.audienceAgeFrom),
-    audienceAgeTo: show(mediaKit.audienceAgeTo),
-    audienceGender: mediaKit.audienceGender ?? 'not_specified',
-    audienceLocation: mediaKit.audienceLocation ?? 'Israel',
-    averageReelViews: show(mediaKit.averageReelViews),
-    averageStoryViews: show(mediaKit.averageStoryViews),
-    bookingEmail: mediaKit.bookingEmail ?? '',
-    contentTypes: mediaKit.contentTypes,
-    engagementRate: show(mediaKit.engagementRate),
-    followers: show(mediaKit.followers),
-    platforms: mediaKit.platforms,
-    ratePerPostIls: showMoney(mediaKit.ratePerPostMinor),
-    ratePerStoryIls: showMoney(mediaKit.ratePerStoryMinor),
   };
 }
 
@@ -880,24 +442,6 @@ function accountHandleMessage(status: CreatorHandleStatus, handle: string): stri
   return `Public address: swavii.com/${handle}`;
 }
 
-function nullableText(value: string): string | null {
-  return value.trim() || null;
-}
-function nullableInteger(value: string): number | null {
-  return value === '' ? null : Math.round(Number(value));
-}
-function nullableDecimal(value: string): number | null {
-  return value === '' ? null : Number(value);
-}
-function nullableMoney(value: string): number | null {
-  return value === '' ? null : Math.round(Number(value) * 100);
-}
-function show(value: number | null): string {
-  return value === null ? '' : String(value);
-}
-function showMoney(value: number | null): string {
-  return value === null ? '' : String(value / 100);
-}
 function initials(value: string): string {
   return value
     .split(/\s+/)

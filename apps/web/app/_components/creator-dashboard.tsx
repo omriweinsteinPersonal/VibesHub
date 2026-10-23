@@ -70,6 +70,7 @@ type FeaturedMediaDraft = Omit<FeaturedMedia, 'id' | 'visible'>;
 type MapDraft = {
   thumbnailAssetId: string;
   location: string;
+  review: string;
   thumbnailUrl: string;
   title: string;
   url: string;
@@ -315,6 +316,7 @@ export function CreatorDashboard() {
   const [mediaEditorOpen, setMediaEditorOpen] = useState(false);
   const [mapDraft, setMapDraft] = useState<MapDraft>({
     location: '',
+    review: '',
     thumbnailAssetId: '',
     thumbnailUrl: '',
     title: '',
@@ -1857,6 +1859,7 @@ export function CreatorDashboard() {
     setEditingMapId(item?.id ?? null);
     setMapDraft({
       location: item?.location ?? '',
+      review: item?.review ?? '',
       thumbnailAssetId: '',
       thumbnailUrl: item?.thumbnailUrl ?? '',
       title: item?.title ?? '',
@@ -1883,6 +1886,7 @@ export function CreatorDashboard() {
       id: editingMapId ?? randomUuid(),
       location: mapDraft.location.trim() || undefined,
       provider: 'maps',
+      review: mapDraft.review.trim() || undefined,
       thumbnailUrl: mapDraft.thumbnailUrl.trim() || null,
       title,
       url,
@@ -1912,6 +1916,7 @@ export function CreatorDashboard() {
     ) {
       setMapDraft({
         location: '',
+        review: '',
         thumbnailAssetId: '',
         thumbnailUrl: '',
         title: '',
@@ -2476,6 +2481,22 @@ export function CreatorDashboard() {
                       placeholder="Florentin, Tel Aviv"
                     />
                   </label>
+                  <label className="creatorFullField">
+                    Review <span className="fieldOptional">(optional)</span>
+                    <textarea
+                      maxLength={1000}
+                      rows={4}
+                      value={mapDraft.review}
+                      onChange={(event) =>
+                        setMapDraft((current) => ({
+                          ...current,
+                          review: event.target.value,
+                        }))
+                      }
+                      placeholder="Why should your audience visit this place?"
+                    />
+                    <small>Share a quick personal note, tip or recommendation.</small>
+                  </label>
                   <label>
                     Place image <span className="fieldOptional">(optional)</span>
                     <span className="creatorPhotoControls">
@@ -2520,6 +2541,7 @@ export function CreatorDashboard() {
                         setMapEditorOpen(false);
                         setMapDraft({
                           location: '',
+                          review: '',
                           thumbnailAssetId: '',
                           thumbnailUrl: '',
                           title: '',
@@ -2556,6 +2578,7 @@ export function CreatorDashboard() {
                         <small>Maps</small>
                         <h3>{item.title}</h3>
                         {item.location ? <p>{item.location}</p> : null}
+                        {item.review ? <p>{item.review}</p> : null}
                       </div>
                       <label className="creatorLiveToggle">
                         <input

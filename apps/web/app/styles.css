@@ -1504,18 +1504,15 @@ svg.lucide {
   padding: 14px 16px 16px;
 }
 .featuredMapCard {
-  align-items: stretch;
   background: var(--sf-product, #fff);
   border: 1px solid #e2d5c8;
-  border-radius: 18px;
+  border-radius: 12px;
   color: inherit;
   cursor: pointer;
-  display: grid;
-  gap: 12px;
-  grid-template-columns: minmax(0, 1fr) 112px;
-  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
-  padding: 10px;
   text-decoration: none;
   transition:
     border-color 160ms ease,
@@ -1534,15 +1531,13 @@ svg.lucide {
 .featuredMapArtwork {
   align-items: center;
   background: color-mix(in srgb, var(--sf-accent, #b77856) 16%, white);
-  border-radius: 12px;
   color: var(--sf-accent, #b77856);
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1.08;
   display: flex;
-  height: auto;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  width: 112px;
+  width: 100%;
 }
 .featuredMapArtwork img {
   height: 100%;
@@ -1550,43 +1545,66 @@ svg.lucide {
   width: 100%;
 }
 .featuredMapCopy {
-  align-content: center;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
-  padding: 4px 0 4px 4px;
+  padding: 9px 10px 11px;
 }
 .featuredMapCopy strong,
-.featuredMapCopy span {
+.featuredMapCopy span,
+.featuredMapCopy p {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .featuredMapCopy strong {
-  font-size: 0.94rem;
+  font-family: Aptos, 'Aptos Body', var(--font-vh-body), ui-sans-serif, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 400;
+  line-height: 1.28;
+  white-space: nowrap;
 }
 .featuredMapCopy span {
   color: var(--vh-muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.featuredMapCopy p {
+  color: var(--vh-muted);
+  display: -webkit-box;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: 2px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 .referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard,
 .referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard {
-  flex: 0 0 min(100%, 320px);
-  min-width: 0;
-  width: min(100%, 320px);
+  align-self: start;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 0 0 172px;
+  overflow: visible;
+  width: 172px;
+}
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard .featuredMapArtwork,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard .featuredMapArtwork {
+  border-radius: 12px;
+}
+.referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard .featuredMapCopy,
+.referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard .featuredMapCopy {
+  background: transparent;
+  padding: 7px 2px 2px;
 }
 @media (max-width: 620px) {
-  .featuredMapCard {
-    grid-template-columns: minmax(0, 1fr) 104px;
-  }
-  .featuredMapArtwork {
-    width: 104px;
-  }
   .referenceStorefrontRow .referenceStorefrontScroller > .featuredMapCard,
   .referenceCollectionFrame .referenceStorefrontScroller > .featuredMapCard {
-    flex-basis: min(100%, 300px);
-    width: min(100%, 300px);
+    flex-basis: 158px;
+    width: 158px;
   }
 }
 .featuredMediaLink small {

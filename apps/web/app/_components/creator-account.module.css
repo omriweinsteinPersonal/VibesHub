@@ -157,7 +157,8 @@
   align-items: start;
   display: grid;
   gap: 18px;
-  grid-template-columns: minmax(0, 1.55fr) minmax(285px, 0.8fr);
+  grid-template-columns: minmax(0, 760px);
+  max-width: 760px;
 }
 .stack,
 .aside,

@@ -1161,20 +1161,22 @@ function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
     <a
       aria-label={`Open ${media.title} in Google Maps`}
       className="featuredMapCard"
+      data-has-review={Boolean(media.review)}
       href={media.url}
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className="featuredMapCopy" dir="auto">
-        <strong>{media.title}</strong>
-        {media.location ? <span>{media.location}</span> : null}
-      </div>
       <div className="featuredMapArtwork" aria-hidden="true">
         {media.thumbnailUrl ? (
           <Image alt="" fill sizes="112px" src={media.thumbnailUrl} unoptimized />
         ) : (
           <MapPinned size={28} />
         )}
+      </div>
+      <div className="featuredMapCopy" dir="auto">
+        <strong>{media.title}</strong>
+        {media.location ? <span>{media.location}</span> : null}
+        {media.review ? <p>{media.review}</p> : null}
       </div>
     </a>
   );
