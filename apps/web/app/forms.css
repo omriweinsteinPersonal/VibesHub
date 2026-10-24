@@ -1673,22 +1673,14 @@ textarea:disabled {
 }
 
 .onboardingBrand {
+  color: #fff;
   display: block;
-  height: 43px;
-  overflow: hidden;
-  position: relative;
-  width: 117px;
-}
-
-.onboardingBrand img {
-  display: block;
-  height: auto;
-  left: 50%;
-  max-width: none;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 154px;
+  font-family: var(--font-vh-body), Arial, sans-serif;
+  font-size: 39px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 43px;
+  text-decoration: none;
 }
 
 .onboardingShell {
@@ -2746,6 +2738,9 @@ textarea:disabled {
   .onboardingHeader {
     min-height: 64px;
     padding: 0 20px;
+  }
+  .onboardingBrand {
+    font-size: 34px;
   }
   .onboardingShell {
     padding-top: 30px;

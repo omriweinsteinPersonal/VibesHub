@@ -23,10 +23,10 @@
 .wordmark {
   color: inherit;
   font-family: var(--font-vh-body), Arial, sans-serif;
-  font-size: 2rem;
+  font-size: 39px;
   font-weight: 800;
-  letter-spacing: -0.085em;
-  line-height: 1;
+  letter-spacing: -0.08em;
+  line-height: 43px;
   text-decoration: none;
 }
 
@@ -302,7 +302,7 @@
   }
 
   .wordmark {
-    font-size: 1.85rem;
+    font-size: 34px;
   }
 
   .backLink {

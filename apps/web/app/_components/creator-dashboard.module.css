@@ -20,9 +20,10 @@
 .shell :global(.creatorShellHeader .logoWordmark) {
   color: #fff;
   font-family: var(--font-vh-body), Arial, sans-serif;
-  font-size: 2rem;
+  font-size: 39px;
   font-weight: 800;
-  letter-spacing: -0.085em;
+  letter-spacing: -0.08em;
+  line-height: 43px;
 }
 
 .shell :global(.creatorShellHeader .logo > span:last-child) {
@@ -401,7 +402,7 @@
   }
 
   .shell :global(.creatorShellHeader .logoWordmark) {
-    font-size: 1.75rem;
+    font-size: 34px;
   }
 
   .root:global(.creatorDashboardMain) {

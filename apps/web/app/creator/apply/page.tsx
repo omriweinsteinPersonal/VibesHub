@@ -266,13 +266,7 @@ export default function CreatorApplicationPage() {
     <main className="onboardingPage">
       <header className="onboardingHeader">
         <Link className="onboardingBrand" href="/" aria-label="swavii home">
-          <Image
-            src="/images/home/swavii-logo.png"
-            alt="swavii"
-            width={154}
-            height={121}
-            priority
-          />
+          swavii
         </Link>
       </header>
       <section className="onboardingShell">

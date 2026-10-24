@@ -5097,8 +5097,11 @@ dd {
 }
 
 .logo {
-  line-height: 1;
-  font-size: 1.72rem;
+  font-family: var(--font-vh-body), Arial, sans-serif;
+  font-size: 39px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 43px;
   gap: 11px;
   min-width: 0;
   width: fit-content;
@@ -5126,11 +5129,11 @@ dd {
 }
 
 .logoWordmark {
-  font-family: var(--font-vh-display), ui-serif, Georgia, serif;
-  font-size: 2.25rem;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
 }
 
 .logo > span:last-child {
@@ -6163,11 +6166,11 @@ dt {
   }
 
   .logo {
-    font-size: 1.45rem;
+    font-size: 34px;
   }
 
   .logo .logoWordmark {
-    font-size: 2rem;
+    font-size: inherit;
   }
 
   .logoMark {
@@ -12566,25 +12569,6 @@ dt {
   padding-inline: max(5.2vw, calc((100vw - 1480px) / 2));
 }
 
-.legalPage .creatorMarketingHeader .logoWordmarkHome {
-  display: block;
-  height: 43px;
-  overflow: hidden;
-  position: relative;
-  width: 117px;
-}
-
-.legalPage .creatorMarketingHeader .logoWordmarkHome img {
-  display: block;
-  height: auto;
-  left: 50%;
-  max-width: none;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 154px;
-}
-
 .legalPage .creatorMarketingHeader nav a,
 .legalPage .creatorMarketingHeader .loginLink {
   color: #fff;
@@ -13607,21 +13591,11 @@ dt {
   margin-left: -16px;
 }
 
-/* Quiet branding belongs to the visitor page, never the desktop editor shell. */
-.storefrontVisitorHeader .logo .logoWordmark,
-.storefrontDetailHeader .logo .logoWordmark {
-  font-size: 1.5rem;
-}
-
 .storefrontDetailHeader .creatorShellActions {
   display: none;
 }
 
 @media (max-width: 900px) {
-  .storefrontWorkspaceHeader .logo .logoWordmark {
-    font-size: 1.5rem;
-  }
-
   .storefrontWorkspaceHeader .creatorShellActions {
     display: none;
   }
@@ -15122,26 +15096,6 @@ dt {
 .storefrontWorkspaceHeader .creatorShellHeader {
   background: #cd7853;
   border-bottom: 0;
-}
-
-.storefrontWorkspaceHeader .creatorShellHeader .logoWordmarkHome {
-  display: block;
-  flex: 0 0 117px;
-  height: 43px;
-  overflow: hidden;
-  position: relative;
-  width: 117px;
-}
-
-.storefrontWorkspaceHeader .creatorShellHeader .logoWordmarkHome img {
-  display: block;
-  height: auto;
-  left: 50%;
-  max-width: none;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 154px;
 }
 
 .storefrontWorkspaceHeader .creatorShellHeader .logoWordmark,
