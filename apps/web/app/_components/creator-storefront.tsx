@@ -1168,7 +1168,13 @@ function MapRecommendationCard({ media }: { media: FeaturedMedia }) {
     >
       <div className="featuredMapArtwork" aria-hidden="true">
         {media.thumbnailUrl ? (
-          <Image alt="" fill sizes="112px" src={media.thumbnailUrl} unoptimized />
+          <Image
+            alt=""
+            fill
+            sizes="(max-width: 620px) 42vw, 220px"
+            src={media.thumbnailUrl}
+            unoptimized
+          />
         ) : (
           <MapPinned size={28} />
         )}
