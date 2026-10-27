@@ -251,9 +251,7 @@ export function CreatorAccount() {
           {notice}
         </p>
       ) : null}
-      {!profileEditor ? (
-        <DelayedLoading>Opening your account…</DelayedLoading>
-      ) : null}
+      {!profileEditor ? <DelayedLoading>Opening your account…</DelayedLoading> : null}
 
       {profile && profileEditor ? (
         <>

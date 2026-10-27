@@ -14,8 +14,10 @@ overrides:
   fastify: 5.12.5
   find-my-way: 9.9.0
   js-yaml@4: 4.3.2
+  node-forge@1: 1.4.1
   shell-quote: 1.12.0
   source-map-js@1: 1.2.2
+  zod@4: 4.6.6
 
 allowBuilds:
   esbuild: true
@@ -60,6 +62,7 @@ minimumReleaseAgeExclude:
   - expo-dev-menu@57.0.20
   - expo-splash-screen@57.0.10
   - '@expo/metro-runtime@57.0.17'
+  - node-forge@1.4.1
 
 onlyBuiltDependencies:
   - '@nestjs/core'
