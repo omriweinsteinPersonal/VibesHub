@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import { CreatorShellHeader } from './creator-shell-header';
+import { CreatorHomeDesktopSidebar, CreatorShellHeader } from './creator-shell-header';
 import dashboardStyles from './creator-dashboard.module.css';
 import { SiteFooter } from './site-footer';
 
@@ -17,6 +17,7 @@ const workspacePaths = new Set([
 
 export function CreatorWorkspaceFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isCreatorHome = pathname === '/creator-home';
 
   if (!workspacePaths.has(pathname)) return children;
 
@@ -24,8 +25,15 @@ export function CreatorWorkspaceFrame({ children }: { children: ReactNode }) {
     <div
       className={`creatorShellPage${pathname === '/dashboard' || pathname === '/creator-home' || pathname === '/creator/analytics' || pathname === '/analytics' || pathname === '/account' ? ` ${dashboardStyles.shell}` : ''}${pathname === '/creator/analytics' || pathname === '/analytics' || pathname === '/account' ? ` ${dashboardStyles.analyticsShell}` : ''}`}
     >
-      <CreatorShellHeader />
-      {children}
+      <CreatorShellHeader showDesktopNavigation={!isCreatorHome} />
+      {isCreatorHome ? (
+        <div className="creatorHomeDesktopFrame">
+          <CreatorHomeDesktopSidebar />
+          <div className="creatorHomeDesktopContent">{children}</div>
+        </div>
+      ) : (
+        children
+      )}
       <SiteFooter />
     </div>
   );

@@ -274,8 +274,13 @@ svg.lucide {
 }
 
 .creatorShellHeader a[data-pending='true'],
-.creatorBottomBar a[data-pending='true'] {
+.creatorBottomBar a[data-pending='true'],
+.creatorHomeDesktopSidebar a[data-pending='true'] {
   color: var(--vh-accent-strong);
+}
+
+.creatorHomeDesktopSidebar {
+  display: none;
 }
 
 .creatorLoadingDelayed {
@@ -493,6 +498,69 @@ svg.lucide {
   gap: 8px;
   justify-content: center;
   min-width: 86px;
+}
+
+@media (min-width: 901px) {
+  .creatorHomeDesktopFrame {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    min-height: calc(100dvh - 68px);
+  }
+
+  .creatorHomeDesktopSidebar {
+    align-self: start;
+    background: #fff;
+    border-right: 1px solid #e5ddd6;
+    display: block;
+    height: calc(100dvh - 68px);
+    padding: 31px 18px;
+    position: sticky;
+    top: 68px;
+  }
+
+  .creatorHomeDesktopSidebar nav {
+    display: grid;
+    gap: 6px;
+  }
+
+  .creatorHomeDesktopSidebar a {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    color: #606762;
+    display: flex;
+    font-size: 0.86rem;
+    font-weight: 600;
+    gap: 11px;
+    min-height: 46px;
+    padding: 0 12px;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .creatorHomeDesktopSidebar a:hover {
+    background: #fbf2ed;
+    border-color: #ead3c5;
+    color: #8f4e2f;
+  }
+
+  .creatorHomeDesktopSidebar a[aria-current='page'] {
+    background: #f6e5db;
+    border-color: #e7c7b6;
+    color: #8f4e2f;
+  }
+
+  .creatorHomeDesktopSidebar a:focus-visible {
+    outline: 2px solid #a95b3c;
+    outline-offset: 2px;
+  }
+
+  .creatorHomeDesktopContent {
+    min-width: 0;
+  }
 }
 
 .creatorShellActions .button {
