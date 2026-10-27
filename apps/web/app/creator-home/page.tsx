@@ -75,6 +75,7 @@ export default function CreatorHomePage() {
     typeof window === 'undefined'
       ? `https://swavii.com/${summary.handle}`
       : `${window.location.origin}/${summary.handle}`;
+  const shareTitle = `${summary.displayName} on Swavii`;
 
   async function copyStoreUrl() {
     try {
@@ -89,7 +90,7 @@ export default function CreatorHomePage() {
   async function shareStoreUrl() {
     if (navigator.share) {
       await navigator.share({
-        title: `${summary.displayName} on Swavii`,
+        title: shareTitle,
         url: storeUrl,
       });
       return;
