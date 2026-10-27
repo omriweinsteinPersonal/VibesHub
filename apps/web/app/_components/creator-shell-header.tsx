@@ -67,7 +67,7 @@ export function CreatorShellHeader({
   );
 }
 
-export function CreatorHomeDesktopSidebar() {
+export function CreatorDesktopSidebar() {
   const pathname = usePathname();
   const { pendingHref, startNavigation, storefrontHref } = useCreatorNavigation();
   const links = [
@@ -79,7 +79,7 @@ export function CreatorHomeDesktopSidebar() {
   ];
 
   return (
-    <aside className="creatorHomeDesktopSidebar">
+    <aside className="creatorDesktopSidebar">
       <nav aria-label="Creator workspace">
         {links.map(({ href, icon: Icon, label }) => (
           <Link

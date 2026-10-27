@@ -11,7 +11,7 @@ import { ApiError, publicApiCollectionRequest, publicApiRequest } from '../../li
 import { loadStorefrontRecommendations } from '../../lib/storefront-recommendations';
 import { hasCreatorSession } from '../../lib/server-session';
 import { CreatorStorefrontView } from './creator-storefront';
-import { CreatorBottomBar } from './creator-shell-header';
+import { CreatorBottomBar, CreatorDesktopSidebar } from './creator-shell-header';
 import { StorefrontHeader } from './storefront-header';
 import { StorefrontPhonePreview } from './storefront-phone-preview';
 
@@ -91,57 +91,73 @@ async function StorefrontPage({
   return (
     <div className="editorialPage storefrontPage">
       <StorefrontHeader creatorSession={creatorSession} workspace />
-      <main>
-        <StorefrontPhonePreview
-          contentTargets={[
-            { id: 'bio', title: 'Bio', kind: 'bio' },
-            ...storefront.socialLinks.map(({ platform }) => ({
-              id: `social:${platform}`,
-              title: `${platform} link`,
-              kind: 'social',
-            })),
-            ...storefront.brands.map(({ id, name }) => ({
-              id,
-              title: name,
-              kind: 'brand',
-            })),
-            ...storefront.curatedSections
-              .filter(({ brandId, kind }) => !brandId && kind !== 'page')
-              .map(({ id, title }) => ({ id, title })),
-          ]}
-          creatorId={storefront.id}
-          editable
-          previewUrl={`/${encodeURIComponent(handle)}?mobilePreview=1`}
-          theme={storefront.theme ?? defaultStorefrontTheme}
-          title={`${storefront.displayName} mobile storefront`}
-        >
-          <CreatorStorefrontView
-            codes={discountCodes}
-            editable
-            recommendations={recommendations}
-            storefront={storefront}
-          />
-        </StorefrontPhonePreview>
-      </main>
+      <div className="creatorWorkspaceDesktopFrame">
+        <CreatorDesktopSidebar />
+        <div className="creatorWorkspaceDesktopContent">
+          <main>
+            <StorefrontPhonePreview
+              contentTargets={[
+                { id: 'bio', title: 'Bio', kind: 'bio' },
+                ...storefront.socialLinks.map(({ platform }) => ({
+                  id: `social:${platform}`,
+                  title: `${platform} link`,
+                  kind: 'social',
+                })),
+                ...storefront.brands.map(({ id, name }) => ({
+                  id,
+                  title: name,
+                  kind: 'brand',
+                })),
+                ...storefront.curatedSections
+                  .filter(({ brandId, kind }) => !brandId && kind !== 'page')
+                  .map(({ id, title }) => ({ id, title })),
+              ]}
+              creatorId={storefront.id}
+              editable
+              previewUrl={`/${encodeURIComponent(handle)}?mobilePreview=1`}
+              theme={storefront.theme ?? defaultStorefrontTheme}
+              title={`${storefront.displayName} mobile storefront`}
+            >
+              <CreatorStorefrontView
+                codes={discountCodes}
+                editable
+                recommendations={recommendations}
+                storefront={storefront}
+              />
+            </StorefrontPhonePreview>
+          </main>
+        </div>
+      </div>
       {creatorSession ? <CreatorBottomBar /> : null}
     </div>
   );
 }
 
 function UnavailableStorefront({ creatorSession }: { creatorSession: boolean }) {
+  const content = (
+    <main>
+      <section className="directoryHero">
+        <p className="eyebrow">CREATOR STOREFRONT</p>
+        <h1>This storefront is temporarily unavailable</h1>
+        <p className="lede">Please try again in a moment.</p>
+        <Link className="button secondary" href="/creators">
+          Browse creators
+        </Link>
+      </section>
+    </main>
+  );
+
   return (
     <div className="editorialPage storefrontPage">
       <StorefrontHeader creatorSession={creatorSession} workspace />
-      <main>
-        <section className="directoryHero">
-          <p className="eyebrow">CREATOR STOREFRONT</p>
-          <h1>This storefront is temporarily unavailable</h1>
-          <p className="lede">Please try again in a moment.</p>
-          <Link className="button secondary" href="/creators">
-            Browse creators
-          </Link>
-        </section>
-      </main>
+      {creatorSession ? (
+        <div className="creatorWorkspaceDesktopFrame">
+          <CreatorDesktopSidebar />
+          <div className="creatorWorkspaceDesktopContent">{content}</div>
+        </div>
+      ) : (
+        content
+      )}
       {creatorSession ? <CreatorBottomBar /> : null}
     </div>
   );

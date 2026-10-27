@@ -275,11 +275,11 @@ svg.lucide {
 
 .creatorShellHeader a[data-pending='true'],
 .creatorBottomBar a[data-pending='true'],
-.creatorHomeDesktopSidebar a[data-pending='true'] {
+.creatorDesktopSidebar a[data-pending='true'] {
   color: var(--vh-accent-strong);
 }
 
-.creatorHomeDesktopSidebar {
+.creatorDesktopSidebar {
   display: none;
 }
 
@@ -501,13 +501,13 @@ svg.lucide {
 }
 
 @media (min-width: 901px) {
-  .creatorHomeDesktopFrame {
+  .creatorWorkspaceDesktopFrame {
     display: grid;
     grid-template-columns: 236px minmax(0, 1fr);
     min-height: calc(100dvh - 68px);
   }
 
-  .creatorHomeDesktopSidebar {
+  .creatorDesktopSidebar {
     align-self: start;
     background: #fff;
     border-right: 1px solid #e5ddd6;
@@ -518,12 +518,12 @@ svg.lucide {
     top: 68px;
   }
 
-  .creatorHomeDesktopSidebar nav {
+  .creatorDesktopSidebar nav {
     display: grid;
     gap: 6px;
   }
 
-  .creatorHomeDesktopSidebar a {
+  .creatorDesktopSidebar a {
     align-items: center;
     border: 1px solid transparent;
     border-radius: 11px;
@@ -541,24 +541,24 @@ svg.lucide {
       color 160ms ease;
   }
 
-  .creatorHomeDesktopSidebar a:hover {
+  .creatorDesktopSidebar a:hover {
     background: #fbf2ed;
     border-color: #ead3c5;
     color: #8f4e2f;
   }
 
-  .creatorHomeDesktopSidebar a[aria-current='page'] {
+  .creatorDesktopSidebar a[aria-current='page'] {
     background: #f6e5db;
     border-color: #e7c7b6;
     color: #8f4e2f;
   }
 
-  .creatorHomeDesktopSidebar a:focus-visible {
+  .creatorDesktopSidebar a:focus-visible {
     outline: 2px solid #a95b3c;
     outline-offset: 2px;
   }
 
-  .creatorHomeDesktopContent {
+  .creatorWorkspaceDesktopContent {
     min-width: 0;
   }
 }
