@@ -40,7 +40,9 @@ export function CreatorShellHeader({
 
   return (
     <>
-      <header className={`creatorShellHeader${workspaceHeader ? ' creatorWorkspaceHeader' : ''}`}>
+      <header
+        className={`creatorShellHeader${workspaceHeader ? ' creatorWorkspaceHeader' : ''}`}
+      >
         <div className="creatorShellHeaderInner">
           <Brand href="/creator-home" homeLogo={homeLogo} />
           {showDesktopNavigation ? (
@@ -74,7 +76,8 @@ export function CreatorShellHeader({
 
 export function CreatorDesktopSidebar() {
   const pathname = usePathname();
-  const { creatorProfile, pendingHref, startNavigation, storefrontHref } = useCreatorNavigation();
+  const { creatorProfile, pendingHref, startNavigation, storefrontHref } =
+    useCreatorNavigation();
   const links = [
     { href: '/creator-home', icon: House, label: 'Home' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -121,7 +124,11 @@ function CreatorSidebarIdentity({ profile }: { profile: CreatorProfileSettings |
     .toUpperCase();
 
   return (
-    <Link aria-label="Open account settings" className="creatorDesktopSidebarIdentity" href="/account">
+    <Link
+      aria-label="Open account settings"
+      className="creatorDesktopSidebarIdentity"
+      href="/account"
+    >
       <span aria-hidden="true" className="creatorDesktopSidebarAvatar">
         {profile?.avatar ? (
           <Image

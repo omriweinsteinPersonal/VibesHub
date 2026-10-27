@@ -1,6 +1,9 @@
 'use client';
 
-import type { CreatorAnalyticsDashboard, CreatorStudioSummary } from '@vibeshub/contracts';
+import type {
+  CreatorAnalyticsDashboard,
+  CreatorStudioSummary,
+} from '@vibeshub/contracts';
 import Link from 'next/link';
 import { ArrowUpRight, Check, Copy, Eye, MousePointerClick, Share2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -97,7 +100,10 @@ export default function CreatorHomePage() {
   return (
     <main className={styles.main} id="creator-home-main">
       <div className={styles.homeGrid}>
-        <section aria-labelledby="storefront-preview-title" className={styles.storefrontCard}>
+        <section
+          aria-labelledby="storefront-preview-title"
+          className={styles.storefrontCard}
+        >
           <div className={styles.cardHeading}>
             <h2 id="storefront-preview-title">Your storefront</h2>
             <span className={styles.liveStatus}>
@@ -138,7 +144,11 @@ export default function CreatorHomePage() {
           <MiniTrafficChart series={analytics?.series ?? []} />
 
           <div className={styles.metrics}>
-            <Metric icon={Eye} label="Page visits" value={analytics?.summary.storefrontViews ?? 0} />
+            <Metric
+              icon={Eye}
+              label="Page visits"
+              value={analytics?.summary.storefrontViews ?? 0}
+            />
             <Metric
               icon={MousePointerClick}
               label="Link taps"
@@ -160,13 +170,25 @@ export default function CreatorHomePage() {
             <span aria-label="Your storefront address" className={styles.storeUrl}>
               swavii.com/{summary.handle}
             </span>
-            <button className={styles.copyLinkButton} onClick={() => void copyStoreUrl()} type="button">
-              {copied ? <Check aria-hidden="true" size={16} /> : <Copy aria-hidden="true" size={16} />}
+            <button
+              className={styles.copyLinkButton}
+              onClick={() => void copyStoreUrl()}
+              type="button"
+            >
+              {copied ? (
+                <Check aria-hidden="true" size={16} />
+              ) : (
+                <Copy aria-hidden="true" size={16} />
+              )}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
           <div className={styles.shareActions}>
-            <button className={styles.shareButton} onClick={() => void shareStoreUrl()} type="button">
+            <button
+              className={styles.shareButton}
+              onClick={() => void shareStoreUrl()}
+              type="button"
+            >
               <Share2 aria-hidden="true" size={16} /> Share
             </button>
             <div aria-label="Share on a platform" className={styles.platformLinks}>
@@ -243,7 +265,11 @@ function MiniTrafficChart({ series }: { series: Dashboard['series'] }) {
   return (
     <div className={styles.chartWrap}>
       {hasActivity ? (
-        <svg aria-label="Page visits and link taps over the last seven days" role="img" viewBox="0 0 300 96">
+        <svg
+          aria-label="Page visits and link taps over the last seven days"
+          role="img"
+          viewBox="0 0 300 96"
+        >
           <line className={styles.chartGuide} x1="4" x2="296" y1="14" y2="14" />
           <line className={styles.chartGuide} x1="4" x2="296" y1="50" y2="50" />
           <line className={styles.chartGuide} x1="4" x2="296" y1="86" y2="86" />
@@ -274,5 +300,7 @@ function CreatorHomeSkeleton() {
 }
 
 function messageFor(cause: unknown) {
-  return cause instanceof Error ? cause.message : 'The creator studio could not be opened.';
+  return cause instanceof Error
+    ? cause.message
+    : 'The creator studio could not be opened.';
 }
