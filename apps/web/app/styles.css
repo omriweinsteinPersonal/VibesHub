@@ -1534,6 +1534,7 @@ svg.lucide {
   color: var(--sf-accent, #b77856);
   display: flex;
   grid-column: 2;
+  grid-row: 1;
   justify-content: center;
   overflow: hidden;
   position: relative;
@@ -1543,10 +1544,11 @@ svg.lucide {
   object-fit: cover;
 }
 .featuredMapCopy {
-  align-content: center;
+  align-content: start;
   display: grid;
   gap: 5px;
   grid-column: 1;
+  grid-row: 1;
   min-width: 0;
   padding: 14px 17px;
 }
