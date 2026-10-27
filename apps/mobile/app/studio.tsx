@@ -233,7 +233,7 @@ export default function CreatorStudioScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <Pressable
           accessibilityLabel="Account settings"
@@ -359,7 +359,7 @@ function StudioLoadingScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <View style={[styles.skeletonLine, styles.skeletonHeaderAction]} />
         <Text style={styles.wordmark}>swavii</Text>

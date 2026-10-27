@@ -46,6 +46,35 @@ the mobile bundle.
 
 ## Safe rollout sequence
 
+### Local creator smoke checks (no EAS quota)
+
+Use the latest local JavaScript with an installed development client, or a current
+locally built app. Sign in to a dedicated creator test account on each device first.
+The flows below do not create, save, publish or delete content, purchase anything, or
+sign out. Do not run them against an account with unsaved edits: switching tabs closes
+the current editor.
+
+With Maestro installed and the simulator/emulator booted, run each flow separately on
+both platforms, using the device ID from `maestro list-devices`:
+
+```bash
+maestro --platform ios --udid <simulator-id> test --test-output-dir /tmp/swavii-ios-actions .maestro/creator-dashboard-actions.yaml
+maestro --platform android --udid <emulator-id> test --test-output-dir /tmp/swavii-android-actions .maestro/creator-dashboard-actions.yaml
+maestro --platform ios --udid <simulator-id> test --test-output-dir /tmp/swavii-ios-navigation .maestro/creator-navigation.yaml
+maestro --platform android --udid <emulator-id> test --test-output-dir /tmp/swavii-android-navigation .maestro/creator-navigation.yaml
+```
+
+The action flow checks all five editor buttons, their selected accessibility state,
+and reset after leaving the dashboard. The navigation flow checks all creator tabs
+and signed-in session restoration after stopping and relaunching the app. Inspect the
+screenshots as well as the assertions: check selected button contrast, readable status
+bar icons, safe areas, and the absence of browser chrome. These native tests do not
+replace mobile-web checks or device coverage of saves, uploads, OAuth and purchases.
+Keep credentials, screenshots and test output outside Git. Never add test-only auth
+bypasses or server secrets to the app to make a smoke flow pass.
+
+### Release sequence
+
 1. Run tests, type checking, linting, Expo Doctor, and a local Expo export.
 2. Create `development-simulator` and Android `development` builds.
 3. Test authentication, session restoration, account deletion, public browsing, deep

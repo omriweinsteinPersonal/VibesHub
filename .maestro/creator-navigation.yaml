@@ -1,0 +1,30 @@
+appId: com.swavii.app
+name: Creator navigation and session restoration
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: a dedicated creator test account is already signed in.
+# This flow is read-only: it never saves, publishes, purchases or signs out.
+- launchApp
+- tapOn: Home tab
+- assertVisible: CREATOR STUDIO / HOME
+- takeScreenshot: creator-home
+- tapOn: Storefront tab
+- assertVisible: Organize your page
+- takeScreenshot: creator-storefront
+- tapOn: Analytics tab
+- assertVisible: See what resonates
+- takeScreenshot: creator-analytics
+- tapOn: Account tab
+- assertVisible: Profile & links
+- takeScreenshot: creator-profile
+- tapOn: Home tab
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: Dashboard tab
+    timeout: 30000
+- tapOn: Dashboard tab
+- assertVisible: Recommendations
+- takeScreenshot: creator-restored-session

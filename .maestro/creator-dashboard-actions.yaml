@@ -1,0 +1,56 @@
+appId: com.swavii.app
+name: Creator dashboard action selection
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: sign in as a dedicated creator test account. No records are saved.
+- launchApp
+- tapOn: Dashboard tab
+- assertVisible: Recommendations
+- assertVisible:
+    text: Add item
+    selected: false
+- takeScreenshot: dashboard-neutral
+- tapOn: Add item
+- assertVisible:
+    text: Add item
+    selected: true
+- tapOn: Add brand
+- assertVisible:
+    text: Add brand
+    selected: true
+- assertVisible:
+    text: Add item
+    selected: false
+- takeScreenshot: dashboard-brand
+- tapOn: Add collection
+- assertVisible:
+    text: Add collection
+    selected: true
+- assertVisible:
+    text: Add brand
+    selected: false
+- tapOn: Add carousel
+- assertVisible:
+    text: Add carousel
+    selected: true
+- assertVisible:
+    text: Add collection
+    selected: false
+- tapOn: Add discount
+- assertVisible:
+    text: Add discount
+    selected: true
+- assertVisible:
+    text: Add carousel
+    selected: false
+- takeScreenshot: dashboard-discount
+- tapOn: Home tab
+- tapOn: Dashboard tab
+- assertVisible:
+    text: Add discount
+    selected: false
+- assertVisible:
+    text: Add item
+    selected: false
