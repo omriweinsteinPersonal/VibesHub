@@ -1,16 +1,16 @@
 .main {
-  --home-ink: #1e2d2e;
-  --home-cream: #f8f5ef;
+  --home-ink: #1d3233;
+  --home-cream: #fffdf9;
   --home-clay: #c97853;
-  --home-pale-clay: #f2e5dd;
+  --home-blush: #f2d4c5;
   --home-line: #e4ddd4;
   box-sizing: border-box;
   color: var(--home-ink);
   font-family: var(--font-vh-body), Arial, sans-serif;
   margin: 0;
   min-height: 100%;
-  padding: 28px max(18px, env(safe-area-inset-left)) calc(108px + env(safe-area-inset-bottom))
-    max(18px, env(safe-area-inset-right));
+  padding: 20px max(16px, env(safe-area-inset-left)) calc(108px + env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-right));
 }
 
 .main * {
@@ -26,65 +26,39 @@
   outline-offset: 4px;
 }
 
-.greeting {
-  margin-bottom: 21px;
-}
-
-.greeting h1 {
-  color: var(--home-ink);
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: clamp(2.35rem, 10vw, 3.25rem);
-  font-weight: 400;
-  letter-spacing: -0.06em;
-  line-height: 0.94;
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
 .homeGrid {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .storefrontCard,
 .pulseCard {
-  border-radius: 24px;
   overflow: hidden;
 }
 
 .storefrontCard {
   background: var(--home-cream);
   border: 1px solid var(--home-line);
-  padding: 17px 17px 16px;
+  border-radius: 22px;
 }
 
-.cardHeading,
-.pulseHeader {
-  align-items: flex-start;
+.cardHeading {
+  align-items: center;
   display: flex;
-  gap: 12px;
   justify-content: space-between;
+  min-height: 48px;
+  padding: 0 15px;
 }
 
-.kicker {
-  color: #a25c40;
-  font-size: 0.61rem;
+.cardHeading h2 {
+  color: #915138;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.15em;
-  line-height: 1.25;
-  margin: 0 0 7px;
-}
-
-.cardHeading h2,
-.pulseHeader h2 {
-  color: var(--home-ink);
-  font-family: var(--font-vh-display), Georgia, serif;
-  font-size: 1.55rem;
-  font-weight: 400;
-  letter-spacing: -0.047em;
-  line-height: 1.02;
+  letter-spacing: 0.1em;
+  line-height: 1;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .liveStatus,
@@ -93,33 +67,31 @@
   border-radius: 999px;
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 0.67rem;
-  font-weight: 700;
+  font-size: 0.66rem;
+  font-weight: 750;
   gap: 6px;
   line-height: 1;
-  margin-top: 2px;
-  padding: 8px 9px;
+  padding: 7px 8px;
 }
 
 .liveStatus {
-  background: #e6f0e6;
-  color: #3d714a;
+  background: #e9f1e7;
+  color: #3e7149;
 }
 
 .liveStatus i {
   background: currentcolor;
   border-radius: 50%;
   display: block;
-  height: 6px;
-  width: 6px;
+  height: 5px;
+  width: 5px;
 }
 
 .storefrontPreview {
   background: #fff;
-  border-radius: 16px;
+  border-top: 1px solid #eee6df;
   display: block;
-  height: 370px;
-  margin-top: 17px;
+  height: 407px;
   overflow: hidden;
   position: relative;
 }
@@ -137,18 +109,18 @@
 
 .previewFrame {
   border: 0;
-  height: 785px;
+  height: 790px;
   left: 50%;
   pointer-events: none;
   position: absolute;
   top: 0;
-  transform: translateX(-50%) scale(0.87);
+  transform: translateX(-50%) scale(0.92);
   transform-origin: top center;
   width: 430px;
 }
 
 .previewScrim {
-  background: linear-gradient(180deg, transparent 64%, rgb(20 33 32 / 48%) 100%);
+  background: linear-gradient(180deg, transparent 65%, rgb(24 38 37 / 46%) 100%);
   inset: 0;
   pointer-events: none;
   position: absolute;
@@ -156,19 +128,19 @@
 
 .previewAction {
   align-items: center;
-  background: rgb(255 253 249 / 94%);
+  background: rgb(255 253 249 / 95%);
   border: 1px solid rgb(255 255 255 / 92%);
   border-radius: 999px;
-  bottom: 13px;
+  bottom: 12px;
   color: var(--home-ink);
   display: inline-flex;
-  font-size: 0.76rem;
+  font-size: 0.73rem;
   font-weight: 750;
   gap: 7px;
-  min-height: 37px;
-  padding: 0 13px;
+  min-height: 36px;
+  padding: 0 12px;
   position: absolute;
-  right: 13px;
+  right: 12px;
   transition: background-color 160ms ease, transform 160ms ease;
 }
 
@@ -178,70 +150,72 @@
 }
 
 .pulseCard {
-  background: var(--home-ink);
-  color: #f9f5ee;
-  min-height: 336px;
-  padding: 19px 18px 17px;
-  position: relative;
-}
-
-.pulseCard::after {
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 50%;
-  content: '';
-  height: 210px;
-  pointer-events: none;
-  position: absolute;
-  right: -98px;
-  top: -104px;
-  width: 210px;
+  background: var(--home-blush);
+  border: 1px solid #e3baa7;
+  border-radius: 22px;
+  color: var(--home-ink);
+  padding: 18px 16px 17px;
 }
 
 .pulseHeader {
-  position: relative;
-  z-index: 1;
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
 }
 
-.pulseHeader .kicker {
-  color: #e3aa8d;
+.kicker {
+  color: #9b4f33;
+  font-size: 0.61rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  margin: 0 0 7px;
 }
 
 .pulseHeader h2 {
-  color: #fffdf9;
+  color: var(--home-ink);
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 1.72rem;
+  font-weight: 400;
+  letter-spacing: -0.047em;
+  line-height: 0.98;
+  margin: 0;
 }
 
 .range {
-  background: rgb(255 255 255 / 10%);
-  color: #deded6;
+  background: rgb(255 253 249 / 58%);
+  border: 1px solid rgb(140 72 48 / 14%);
+  color: #765040;
   white-space: nowrap;
 }
 
 .chartWrap {
-  height: 125px;
-  margin-top: 25px;
+  height: 122px;
+  margin-top: 22px;
   position: relative;
 }
 
 .chartWrap svg {
   display: block;
-  height: 96px;
+  height: 92px;
   overflow: visible;
   width: 100%;
 }
 
 .chartWrap p {
   align-items: center;
-  color: #c5ceca;
+  color: #74594e;
   display: flex;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   line-height: 1.45;
   margin: 0;
-  min-height: 94px;
-  max-width: 205px;
+  min-height: 89px;
+  max-width: 220px;
 }
 
 .chartGuide {
-  stroke: rgb(255 255 255 / 14%);
+  stroke: rgb(49 64 62 / 18%);
   stroke-dasharray: 2 4;
   stroke-width: 1;
 }
@@ -255,17 +229,17 @@
 }
 
 .chartVisits {
-  stroke: #f3c2a5;
+  stroke: #c36743;
 }
 
 .chartClicks {
-  stroke: #92bbb0;
+  stroke: #2f6866;
 }
 
 .chartLegend {
   align-items: center;
   bottom: 0;
-  color: #c9d0ca;
+  color: #68544c;
   display: flex;
   font-size: 0.65rem;
   gap: 6px;
@@ -282,44 +256,46 @@
 }
 
 .chartLegend i:first-child {
-  background: #f3c2a5;
+  background: #c36743;
   margin-left: 0;
 }
 
 .chartLegend i:nth-child(2) {
-  background: #92bbb0;
+  background: #2f6866;
 }
 
 .metrics {
-  border-top: 1px solid rgb(255 255 255 / 16%);
+  background: rgb(255 253 249 / 48%);
+  border: 1px solid rgb(139 74 49 / 16%);
+  border-radius: 13px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 3px;
-  padding-top: 15px;
+  margin-top: 5px;
+  padding: 10px 11px;
 }
 
 .metric {
   align-items: center;
   display: flex;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
 }
 
 .metric + .metric {
-  border-left: 1px solid rgb(255 255 255 / 16%);
-  padding-left: 12px;
+  border-left: 1px solid rgb(89 72 65 / 17%);
+  padding-left: 10px;
 }
 
 .metricIcon {
   align-items: center;
-  background: rgb(255 255 255 / 10%);
-  border-radius: 9px;
-  color: #f4c9b2;
+  background: #fffaf5;
+  border-radius: 8px;
+  color: #a75434;
   display: inline-flex;
   flex: 0 0 auto;
-  height: 29px;
+  height: 28px;
   justify-content: center;
-  width: 29px;
+  width: 28px;
 }
 
 .metric strong,
@@ -328,36 +304,154 @@
 }
 
 .metric strong {
-  color: #fffdfa;
-  font-size: 1.1rem;
-  letter-spacing: -0.04em;
+  color: var(--home-ink);
+  font-size: 1.04rem;
+  letter-spacing: -0.035em;
   line-height: 1;
 }
 
 .metric small {
-  color: #bec8c2;
-  font-size: 0.66rem;
+  color: #6d5950;
+  font-size: 0.64rem;
   margin-top: 4px;
   white-space: nowrap;
 }
 
 .analyticsLink {
   align-items: center;
-  color: #fffdfa;
+  color: #7d3e29;
   display: inline-flex;
-  font-size: 0.76rem;
-  font-weight: 750;
+  font-size: 0.75rem;
+  font-weight: 800;
   gap: 7px;
-  margin-top: 17px;
+  margin-top: 15px;
 }
 
 .analyticsLink:hover {
-  color: #f3c2a5;
+  color: #512d24;
+}
+
+.shareCard {
+  background: #fffdf9;
+  border: 1px solid var(--home-line);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.shareHeading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.shareHeading .kicker {
+  margin: 0;
+}
+
+.shareHeading h2 {
+  color: var(--home-ink);
+  font-size: 0.87rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.shareUrlRow {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ddd5cc;
+  border-radius: 13px;
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  min-height: 48px;
+  padding: 5px 5px 5px 13px;
+}
+
+.storeUrl {
+  color: #2a3837;
+  font-size: 0.82rem;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyLinkButton,
+.shareButton {
+  align-items: center;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  gap: 6px;
+  justify-content: center;
+  min-height: 36px;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.copyLinkButton {
+  background: var(--home-ink);
+  border: 1px solid var(--home-ink);
+  color: #fffdf9;
+  padding: 0 11px;
+}
+
+.copyLinkButton:hover {
+  background: #304748;
+}
+
+.shareActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.shareButton {
+  background: #f8ede6;
+  border: 1px solid #e4c7b7;
+  color: #8a4a32;
+  padding: 0 12px;
+}
+
+.shareButton:hover {
+  background: #f2dfd3;
+}
+
+.platformLinks {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.platformLinks a {
+  align-items: center;
+  border: 1px solid #e3d9d0;
+  border-radius: 999px;
+  color: #58635e;
+  display: inline-flex;
+  font-size: 0.69rem;
+  font-weight: 700;
+  min-height: 32px;
+  padding: 0 9px;
+}
+
+.platformLinks a:hover {
+  border-color: #cb977d;
+  color: #8a4a32;
 }
 
 .skeleton {
   display: grid;
-  gap: 24px;
+  gap: 16px;
 }
 
 .skeletonGreeting,
@@ -368,44 +462,29 @@
 }
 
 .skeletonGreeting {
-  height: 46px;
-  width: min(250px, 68%);
+  display: none;
 }
 
 .skeletonGrid {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
-.skeletonGrid span {
-  height: 355px;
+.skeletonGrid span:first-child {
+  height: 455px;
+}
+
+.skeletonGrid span:last-child {
+  height: 294px;
 }
 
 @media (min-width: 620px) {
   .main {
-    padding: 44px clamp(30px, 5vw, 72px) 100px;
-  }
-
-  .greeting {
-    margin-bottom: 29px;
-  }
-
-  .greeting h1 {
-    font-size: clamp(3.15rem, 5.2vw, 4.8rem);
-  }
-
-  .storefrontCard {
-    padding: 23px;
-  }
-
-  .cardHeading h2,
-  .pulseHeader h2 {
-    font-size: 1.8rem;
+    padding: 34px clamp(26px, 4vw, 56px) 86px;
   }
 
   .storefrontPreview {
-    height: 485px;
-    margin-top: 22px;
+    height: 492px;
   }
 
   .previewFrame {
@@ -413,105 +492,92 @@
   }
 
   .pulseCard {
-    min-height: 365px;
-    padding: 25px;
-  }
-
-  .chartWrap {
-    margin-top: 31px;
-  }
-
-  .skeletonGrid span {
-    height: 440px;
+    padding: 22px;
   }
 }
 
-@media (min-width: 1050px) {
+@media (min-width: 901px) {
   .main {
-    padding: 52px clamp(38px, 4vw, 76px) 94px;
+    padding: 36px clamp(30px, 4vw, 64px) 72px;
   }
 
   .homeGrid {
-    align-items: stretch;
-    gap: clamp(18px, 2vw, 30px);
-    grid-template-columns: minmax(0, 1.63fr) minmax(340px, 0.83fr);
+    align-items: start;
+    gap: clamp(20px, 2vw, 30px);
+    grid-template-columns: minmax(500px, 670px) minmax(320px, 390px);
+    justify-content: start;
   }
 
   .storefrontCard,
   .pulseCard {
-    border-radius: 28px;
+    border-radius: 24px;
   }
 
-  .storefrontCard {
-    padding: 25px;
+  .cardHeading {
+    min-height: 52px;
+    padding-inline: 18px;
   }
 
   .storefrontPreview {
-    height: 558px;
+    height: 532px;
   }
 
   .previewFrame {
-    transform: translateX(-50%) scale(1.32);
+    transform: translateX(-50%) scale(1.49);
   }
 
   .pulseCard {
-    min-height: 0;
-    padding: 26px;
+    min-height: 330px;
+    padding: 20px;
+  }
+
+  .shareCard {
+    grid-column: 1;
+    padding: 18px;
   }
 
   .chartWrap {
-    margin-top: clamp(34px, 5vh, 72px);
-  }
-
-  .metrics {
-    margin-top: clamp(18px, 4vh, 52px);
-  }
-
-  .analyticsLink {
-    bottom: 27px;
-    margin-top: 0;
-    position: absolute;
+    margin-top: 25px;
   }
 
   .skeletonGrid {
-    gap: clamp(18px, 2vw, 30px);
-    grid-template-columns: 1.63fr 0.83fr;
+    gap: clamp(20px, 2vw, 30px);
+    grid-template-columns: minmax(500px, 670px) minmax(320px, 390px);
   }
 
-  .skeletonGrid span {
-    height: 575px;
+  .skeletonGrid span:first-child {
+    height: 584px;
+  }
+
+  .skeletonGrid span:last-child {
+    height: 330px;
   }
 }
 
 @media (max-width: 360px) {
   .main {
-    padding-inline: 14px;
+    padding-inline: 13px;
   }
 
   .storefrontCard,
   .pulseCard {
-    border-radius: 20px;
-  }
-
-  .storefrontCard {
-    padding: 14px;
-  }
-
-  .cardHeading h2,
-  .pulseHeader h2 {
-    font-size: 1.32rem;
+    border-radius: 19px;
   }
 
   .storefrontPreview {
-    height: 330px;
+    height: 365px;
   }
 
   .previewFrame {
-    transform: translateX(-50%) scale(0.77);
+    transform: translateX(-50%) scale(0.79);
   }
 
   .pulseCard {
-    padding: 16px;
+    padding: 15px;
+  }
+
+  .pulseHeader h2 {
+    font-size: 1.5rem;
   }
 }
 

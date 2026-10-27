@@ -2,7 +2,7 @@
 
 import type { CreatorAnalyticsDashboard, CreatorStudioSummary } from '@vibeshub/contracts';
 import Link from 'next/link';
-import { ArrowUpRight, Eye, MousePointerClick } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Eye, MousePointerClick, Share2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { apiRequest } from '../../lib/api';
@@ -17,6 +17,7 @@ export default function CreatorHomePage() {
   const [summary, setSummary] = useState<CreatorStudioSummary | null>(null);
   const [analytics, setAnalytics] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -65,23 +66,40 @@ export default function CreatorHomePage() {
     );
   }
 
-  const firstName = summary.displayName.trim().split(/\s+/)[0] || summary.displayName;
   const storefrontHref = `/creator/${encodeURIComponent(summary.handle)}`;
   const previewUrl = `/${encodeURIComponent(summary.handle)}?mobilePreview=1`;
+  const storeUrl =
+    typeof window === 'undefined'
+      ? `https://swavii.com/${summary.handle}`
+      : `${window.location.origin}/${summary.handle}`;
+
+  async function copyStoreUrl() {
+    try {
+      await navigator.clipboard.writeText(storeUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2_500);
+    } catch {
+      window.prompt('Copy your storefront link', storeUrl);
+    }
+  }
+
+  async function shareStoreUrl() {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${summary.displayName} on Swavii`,
+        url: storeUrl,
+      });
+      return;
+    }
+    await copyStoreUrl();
+  }
 
   return (
     <main className={styles.main} id="creator-home-main">
-      <header className={styles.greeting}>
-        <h1>Hey, {firstName}.</h1>
-      </header>
-
       <div className={styles.homeGrid}>
         <section aria-labelledby="storefront-preview-title" className={styles.storefrontCard}>
           <div className={styles.cardHeading}>
-            <div>
-              <p className={styles.kicker}>YOUR STOREFRONT</p>
-              <h2 id="storefront-preview-title">Your page, as it is right now.</h2>
-            </div>
+            <h2 id="storefront-preview-title">Your storefront</h2>
             <span className={styles.liveStatus}>
               <i aria-hidden="true" /> Live
             </span>
@@ -131,6 +149,53 @@ export default function CreatorHomePage() {
           <Link className={styles.analyticsLink} href="/analytics">
             Open analytics <ArrowUpRight aria-hidden="true" size={16} />
           </Link>
+        </section>
+
+        <section aria-labelledby="share-storefront-title" className={styles.shareCard}>
+          <div className={styles.shareHeading}>
+            <p className={styles.kicker}>SHARE YOUR STOREFRONT</p>
+            <h2 id="share-storefront-title">Your link, ready to share.</h2>
+          </div>
+          <div className={styles.shareUrlRow}>
+            <span aria-label="Your storefront address" className={styles.storeUrl}>
+              swavii.com/{summary.handle}
+            </span>
+            <button className={styles.copyLinkButton} onClick={() => void copyStoreUrl()} type="button">
+              {copied ? <Check aria-hidden="true" size={16} /> : <Copy aria-hidden="true" size={16} />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          <div className={styles.shareActions}>
+            <button className={styles.shareButton} onClick={() => void shareStoreUrl()} type="button">
+              <Share2 aria-hidden="true" size={16} /> Share
+            </button>
+            <div aria-label="Share on a platform" className={styles.platformLinks}>
+              <a
+                aria-label="Share on WhatsApp"
+                href={`https://wa.me/?text=${encodeURIComponent(storeUrl)}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                WhatsApp
+              </a>
+              <a
+                aria-label="Share on X"
+                href={`https://x.com/intent/post?url=${encodeURIComponent(storeUrl)}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                X
+              </a>
+              <a
+                aria-label="Share on Facebook"
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storeUrl)}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Facebook
+              </a>
+            </div>
+          </div>
         </section>
       </div>
     </main>

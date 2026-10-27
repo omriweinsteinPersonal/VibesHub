@@ -23,7 +23,7 @@ export function CreatorWorkspaceFrame({ children }: { children: ReactNode }) {
     <div
       className={`creatorShellPage${pathname === '/dashboard' || pathname === '/creator-home' || pathname === '/creator/analytics' || pathname === '/analytics' || pathname === '/account' ? ` ${dashboardStyles.shell}` : ''}${pathname === '/creator/analytics' || pathname === '/analytics' || pathname === '/account' ? ` ${dashboardStyles.analyticsShell}` : ''}`}
     >
-      <CreatorShellHeader showDesktopNavigation={false} />
+      <CreatorShellHeader showDesktopNavigation={false} workspaceHeader />
       <div className="creatorWorkspaceDesktopFrame">
         <CreatorDesktopSidebar />
         <div className="creatorWorkspaceDesktopContent">{children}</div>

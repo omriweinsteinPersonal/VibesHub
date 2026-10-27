@@ -503,8 +503,22 @@ svg.lucide {
 @media (min-width: 901px) {
   .creatorWorkspaceDesktopFrame {
     display: grid;
-    grid-template-columns: 236px minmax(0, 1fr);
+    grid-template-columns: 272px minmax(0, 1fr);
     min-height: calc(100dvh - 68px);
+  }
+
+  .creatorWorkspaceHeader .creatorShellHeaderInner {
+    grid-template-columns: 272px minmax(0, 1fr);
+    margin: 0;
+    max-width: none;
+    padding: 0;
+  }
+
+  .creatorWorkspaceHeader .logo {
+    align-items: center;
+    display: inline-flex;
+    height: 68px;
+    padding-left: 30px;
   }
 
   .creatorDesktopSidebar {
@@ -513,27 +527,27 @@ svg.lucide {
     border-right: 1px solid #e5ddd6;
     display: block;
     height: calc(100dvh - 68px);
-    padding: 31px 18px;
+    padding: 22px 18px 31px;
     position: sticky;
     top: 68px;
   }
 
   .creatorDesktopSidebar nav {
     display: grid;
-    gap: 6px;
+    gap: 8px;
   }
 
   .creatorDesktopSidebar a {
     align-items: center;
     border: 1px solid transparent;
-    border-radius: 11px;
+    border-radius: 13px;
     color: #606762;
     display: flex;
-    font-size: 0.86rem;
+    font-size: 0.97rem;
     font-weight: 600;
-    gap: 11px;
-    min-height: 46px;
-    padding: 0 12px;
+    gap: 13px;
+    min-height: 54px;
+    padding: 0 14px;
     text-decoration: none;
     transition:
       background-color 160ms ease,
@@ -556,6 +570,70 @@ svg.lucide {
   .creatorDesktopSidebar a:focus-visible {
     outline: 2px solid #a95b3c;
     outline-offset: 2px;
+  }
+
+  .creatorDesktopSidebarIdentity {
+    align-items: center;
+    border-bottom: 1px solid #eee7df;
+    border-radius: 0 !important;
+    color: #1f2d2e;
+    display: flex;
+    gap: 11px;
+    margin: 0 2px 20px;
+    min-height: 64px !important;
+    padding: 0 0 19px !important;
+  }
+
+  .creatorDesktopSidebarIdentity:hover {
+    background: transparent !important;
+    border-color: #eee7df !important;
+    color: #1f2d2e !important;
+  }
+
+  .creatorDesktopSidebarAvatar {
+    align-items: center;
+    background: #f4e6dd;
+    border: 1px solid #ebd6c9;
+    border-radius: 13px;
+    color: #9a573b;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 0.77rem;
+    font-weight: 800;
+    height: 44px;
+    justify-content: center;
+    overflow: hidden;
+    width: 44px;
+  }
+
+  .creatorDesktopSidebarAvatar img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .creatorDesktopSidebarIdentityCopy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .creatorDesktopSidebarIdentityCopy strong,
+  .creatorDesktopSidebarIdentityCopy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .creatorDesktopSidebarIdentityCopy strong {
+    font-size: 0.9rem;
+    font-weight: 750;
+  }
+
+  .creatorDesktopSidebarIdentityCopy small {
+    color: #7c7770;
+    font-size: 0.72rem;
+    font-weight: 500;
   }
 
   .creatorWorkspaceDesktopContent {

@@ -1,5 +1,7 @@
 'use client';
 
+import type { CreatorProfileSettings } from '@vibeshub/contracts';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChartColumn, House, LayoutDashboard, Store, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -7,15 +9,18 @@ import { useEffect } from 'react';
 
 import { Brand } from './brand';
 import { useCreatorNavigation } from './creator-navigation-provider';
+import { publicAssetUrl } from '../../lib/public-asset-url';
 
 export function CreatorShellHeader({
   showBottomBar = true,
   showDesktopNavigation = true,
   homeLogo = false,
+  workspaceHeader = false,
 }: {
   showBottomBar?: boolean;
   showDesktopNavigation?: boolean;
   homeLogo?: boolean;
+  workspaceHeader?: boolean;
 } = {}) {
   const pathname = usePathname();
   const { ensureStorefrontHref, pendingHref, startNavigation, storefrontHref } =
@@ -35,7 +40,7 @@ export function CreatorShellHeader({
 
   return (
     <>
-      <header className="creatorShellHeader">
+      <header className={`creatorShellHeader${workspaceHeader ? ' creatorWorkspaceHeader' : ''}`}>
         <div className="creatorShellHeaderInner">
           <Brand href="/creator-home" homeLogo={homeLogo} />
           {showDesktopNavigation ? (
@@ -69,7 +74,7 @@ export function CreatorShellHeader({
 
 export function CreatorDesktopSidebar() {
   const pathname = usePathname();
-  const { pendingHref, startNavigation, storefrontHref } = useCreatorNavigation();
+  const { creatorProfile, pendingHref, startNavigation, storefrontHref } = useCreatorNavigation();
   const links = [
     { href: '/creator-home', icon: House, label: 'Home' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -80,6 +85,7 @@ export function CreatorDesktopSidebar() {
 
   return (
     <aside className="creatorDesktopSidebar">
+      <CreatorSidebarIdentity profile={creatorProfile} />
       <nav aria-label="Creator workspace">
         {links.map(({ href, icon: Icon, label }) => (
           <Link
@@ -102,6 +108,39 @@ export function CreatorDesktopSidebar() {
         ))}
       </nav>
     </aside>
+  );
+}
+
+function CreatorSidebarIdentity({ profile }: { profile: CreatorProfileSettings | null }) {
+  const initials = profile?.displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
+  return (
+    <Link aria-label="Open account settings" className="creatorDesktopSidebarIdentity" href="/account">
+      <span aria-hidden="true" className="creatorDesktopSidebarAvatar">
+        {profile?.avatar ? (
+          <Image
+            alt=""
+            height={42}
+            sizes="42px"
+            src={publicAssetUrl(profile.avatar.url)}
+            unoptimized
+            width={42}
+          />
+        ) : (
+          initials || 'S'
+        )}
+      </span>
+      <span className="creatorDesktopSidebarIdentityCopy">
+        <strong>{profile?.displayName || 'Your Swavii'}</strong>
+        <small>{profile ? `swavii.com/${profile.handle}` : 'Your creator page'}</small>
+      </span>
+    </Link>
   );
 }
 
