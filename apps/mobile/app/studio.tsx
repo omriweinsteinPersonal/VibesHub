@@ -34,6 +34,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { RecommendationActions } from '../components/recommendation-actions';
 import { ApiError } from '../lib/api';
 import {
   archiveCreatorBrand,
@@ -1755,19 +1756,6 @@ function Recommendations({
               ? 'discount'
               : null;
 
-  function actionButtonStyles(action: typeof activeEditor) {
-    return [
-      action === activeEditor ? styles.compactButton : styles.compactButtonSecondary,
-      styles.headingActionButton,
-    ];
-  }
-
-  function actionButtonTextStyle(action: typeof activeEditor) {
-    return action === activeEditor
-      ? styles.compactButtonText
-      : styles.compactButtonSecondaryText;
-  }
-
   return (
     <>
       <Text style={styles.eyebrow}>CREATOR STUDIO / DASHBOARD</Text>
@@ -1778,48 +1766,28 @@ function Recommendations({
             Keep your brands, collections and individual picks beautifully organized.
           </Text>
         </View>
-        <View style={styles.headingActions}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeEditor === 'item' }}
-            onPress={() => openItem()}
-            style={actionButtonStyles('item')}
-          >
-            <Text style={actionButtonTextStyle('item')}>+ Item</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeEditor === 'brand' }}
-            onPress={() => openBrand()}
-            style={actionButtonStyles('brand')}
-          >
-            <Text style={actionButtonTextStyle('brand')}>+ Brand</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeEditor === 'collection' }}
-            onPress={() => openCollection()}
-            style={actionButtonStyles('collection')}
-          >
-            <Text style={actionButtonTextStyle('collection')}>+ Collection</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeEditor === 'carousel' }}
-            onPress={() => openCarousel()}
-            style={actionButtonStyles('carousel')}
-          >
-            <Text style={actionButtonTextStyle('carousel')}>+ Carousel</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: activeEditor === 'discount' }}
-            onPress={() => openDiscount()}
-            style={actionButtonStyles('discount')}
-          >
-            <Text style={actionButtonTextStyle('discount')}>+ Discount</Text>
-          </Pressable>
-        </View>
+        <RecommendationActions
+          activeEditor={activeEditor}
+          onSelect={(action) => {
+            switch (action) {
+              case 'item':
+                openItem();
+                break;
+              case 'brand':
+                openBrand();
+                break;
+              case 'collection':
+                openCollection();
+                break;
+              case 'carousel':
+                openCarousel();
+                break;
+              case 'discount':
+                openDiscount();
+                break;
+            }
+          }}
+        />
       </View>
 
       {editingDiscount !== undefined ? (
@@ -5167,18 +5135,6 @@ const styles = StyleSheet.create({
   lede: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: spacing.sm },
   headingRow: { gap: spacing.md },
   headingCopy: { width: '100%' },
-  headingActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  headingActionButton: {
-    alignItems: 'center',
-    flexBasis: '47%',
-    flexGrow: 1,
-    justifyContent: 'center',
-    minHeight: 44,
-  },
   compactButton: {
     backgroundColor: colors.accent,
     borderRadius: radii.control,
