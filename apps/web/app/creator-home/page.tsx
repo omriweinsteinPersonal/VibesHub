@@ -1,55 +1,48 @@
 'use client';
 
-import type { CreatorStudioSummary } from '@vibeshub/contracts';
-import Image from 'next/image';
+import type { CreatorAnalyticsDashboard, CreatorStudioSummary } from '@vibeshub/contracts';
 import Link from 'next/link';
-import {
-  ArrowUpRight,
-  ChartNoAxesCombined,
-  Check,
-  Copy,
-  LayoutTemplate,
-  Link2,
-  Plus,
-  type LucideIcon,
-} from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowUpRight, Eye, MousePointerClick } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { apiRequest } from '../../lib/api';
-import { publicAssetUrl } from '../../lib/public-asset-url';
 import { DelayedLoading } from '../_components/delayed-loading';
 import styles from './creator-home.module.css';
 
+type Dashboard = CreatorAnalyticsDashboard;
+
+const number = new Intl.NumberFormat('en-US');
+
 export default function CreatorHomePage() {
   const [summary, setSummary] = useState<CreatorStudioSummary | null>(null);
+  const [analytics, setAnalytics] = useState<Dashboard | null>(null);
   const [error, setError] = useState('');
-  const [copyError, setCopyError] = useState('');
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    let active = true;
     void apiRequest<CreatorStudioSummary>('/creator/studio')
-      .then(setSummary)
-      .catch((cause: unknown) => setError(messageFor(cause)));
+      .then((value) => {
+        if (active) setSummary(value);
+      })
+      .catch((cause: unknown) => {
+        if (active) setError(messageFor(cause));
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), 2500);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
-
-  async function copyPageLink() {
-    if (!summary) return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/${encodeURIComponent(summary.handle)}`,
-      );
-      setCopied(true);
-      setCopyError('');
-    } catch {
-      setCopyError('Could not copy the link. Open your page to copy its URL.');
-    }
-  }
+    let active = true;
+    void apiRequest<Dashboard>('/creator/analytics?days=7')
+      .then((value) => {
+        if (active) setAnalytics(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (error) {
     return (
@@ -73,162 +66,141 @@ export default function CreatorHomePage() {
   }
 
   const firstName = summary.displayName.trim().split(/\s+/)[0] || summary.displayName;
-  const pageHref = `/${encodeURIComponent(summary.handle)}`;
-  const editorHref = `/creator/${encodeURIComponent(summary.handle)}`;
+  const storefrontHref = `/creator/${encodeURIComponent(summary.handle)}`;
+  const previewUrl = `/${encodeURIComponent(summary.handle)}?mobilePreview=1`;
 
   return (
     <main className={styles.main} id="creator-home-main">
-      <section className={styles.welcome}>
-        <div className={styles.welcomeCopy}>
-          <p className={styles.eyebrow}>CREATOR STUDIO / HOME</p>
-          <h1>
-            Welcome back,
-            <br />
-            {firstName}.
-          </h1>
-          <p>Your page is yours to shape. Pick up wherever inspiration left you.</p>
-        </div>
-        <div className={styles.portrait}>
-          {summary.avatarUrl ? (
-            <Image
-              alt=""
-              fill
-              sizes="(max-width: 600px) 58px, 84px"
-              src={publicAssetUrl(summary.avatarUrl)}
-              unoptimized
-            />
-          ) : (
-            <span aria-hidden="true">
-              {summary.displayName
-                .trim()
-                .split(/\s+/)
-                .slice(0, 2)
-                .map((part) => part[0])
-                .join('')
-                .toUpperCase()}
+      <header className={styles.greeting}>
+        <h1>Hey, {firstName}.</h1>
+      </header>
+
+      <div className={styles.homeGrid}>
+        <section aria-labelledby="storefront-preview-title" className={styles.storefrontCard}>
+          <div className={styles.cardHeading}>
+            <div>
+              <p className={styles.kicker}>YOUR STOREFRONT</p>
+              <h2 id="storefront-preview-title">Your page, as it is right now.</h2>
+            </div>
+            <span className={styles.liveStatus}>
+              <i aria-hidden="true" /> Live
             </span>
-          )}
-        </div>
-      </section>
-
-      <section aria-label="Your storefront" className={styles.pagePanel}>
-        <div className={styles.pagePanelCopy}>
-          <p className={styles.liveLabel}>
-            <span aria-hidden="true" />
-            Your page is live
-          </p>
-          <h2>Your page, ready to share.</h2>
-          <p>Every link, photo and recommendation in a space that feels like you.</p>
-          <span className={styles.pageUrl}>
-            <Link2 aria-hidden="true" size={16} />
-            swavii.com/{summary.handle}
-          </span>
-        </div>
-        <div className={styles.pageActions}>
-          <Link className={styles.viewButton} href={pageHref}>
-            View your page
-            <ArrowUpRight aria-hidden="true" size={16} />
-          </Link>
-          <button
-            className={styles.copyButton}
-            onClick={() => void copyPageLink()}
-            type="button"
-          >
-            {copied ? (
-              <Check aria-hidden="true" size={16} />
-            ) : (
-              <Copy aria-hidden="true" size={16} />
-            )}
-            <span aria-live="polite">{copied ? 'Copied' : 'Copy link'}</span>
-          </button>
-        </div>
-      </section>
-      {copyError ? (
-        <p className={styles.copyError} role="alert">
-          {copyError}
-        </p>
-      ) : null}
-
-      <section aria-labelledby="creator-home-next" className={styles.nextSection}>
-        <div className={styles.nextHeading}>
-          <div>
-            <h2 id="creator-home-next">What would you like to do?</h2>
-            <p>Make a change, add a find, or see what&apos;s getting noticed.</p>
           </div>
-          <Link className={styles.accountLink} href="/account">
-            Account settings <ArrowUpRight aria-hidden="true" size={14} />
+
+          <Link
+            aria-label={`Open ${summary.displayName}'s storefront`}
+            className={styles.storefrontPreview}
+            href={storefrontHref}
+          >
+            <div aria-hidden="true" className={styles.previewViewport}>
+              <iframe
+                className={styles.previewFrame}
+                scrolling="no"
+                src={previewUrl}
+                tabIndex={-1}
+                title={`${summary.displayName}'s live storefront preview`}
+              />
+            </div>
+            <span className={styles.previewScrim} />
+            <span className={styles.previewAction}>
+              Open storefront <ArrowUpRight aria-hidden="true" size={16} />
+            </span>
           </Link>
-        </div>
-        <div className={styles.actionGrid}>
-          <HomeAction
-            action="Open dashboard"
-            href="/dashboard"
-            icon={Plus}
-            title="Add to your page"
-          >
-            Share a new recommendation or build a collection.
-          </HomeAction>
-          <HomeAction
-            action="Edit storefront"
-            href={editorHref}
-            icon={LayoutTemplate}
-            title="Make it yours"
-          >
-            Arrange sections and style the page around your point of view.
-          </HomeAction>
-          <HomeAction
-            action="View analytics"
-            href="/analytics"
-            icon={ChartNoAxesCombined}
-            title="See what connects"
-          >
-            Understand which pages, picks and collections draw attention.
-          </HomeAction>
-        </div>
-      </section>
+        </section>
+
+        <section aria-labelledby="page-pulse-title" className={styles.pulseCard}>
+          <div className={styles.pulseHeader}>
+            <div>
+              <p className={styles.kicker}>PAGE PULSE</p>
+              <h2 id="page-pulse-title">A glance at your week.</h2>
+            </div>
+            <span className={styles.range}>Last 7 days</span>
+          </div>
+
+          <MiniTrafficChart series={analytics?.series ?? []} />
+
+          <div className={styles.metrics}>
+            <Metric icon={Eye} label="Page visits" value={analytics?.summary.storefrontViews ?? 0} />
+            <Metric
+              icon={MousePointerClick}
+              label="Link taps"
+              value={analytics?.summary.shopClicks ?? 0}
+            />
+          </div>
+
+          <Link className={styles.analyticsLink} href="/analytics">
+            Open analytics <ArrowUpRight aria-hidden="true" size={16} />
+          </Link>
+        </section>
+      </div>
     </main>
   );
 }
 
-function HomeAction({
-  action,
-  children,
-  href,
+function Metric({
   icon: Icon,
-  title,
+  label,
+  value,
 }: {
-  action: string;
-  children: ReactNode;
-  href: string;
-  icon: LucideIcon;
-  title: string;
+  icon: typeof Eye;
+  label: string;
+  value: number;
 }) {
   return (
-    <Link className={styles.actionCard} href={href}>
-      <span aria-hidden="true" className={styles.actionIcon}>
-        <Icon size={17} />
+    <div className={styles.metric}>
+      <span aria-hidden="true" className={styles.metricIcon}>
+        <Icon size={15} />
       </span>
-      <span className={styles.actionTitle}>{title}</span>
-      <span className={styles.actionDescription}>{children}</span>
-      <span className={styles.actionFoot}>
-        {action}
-        <ArrowUpRight aria-hidden="true" size={16} />
+      <span>
+        <strong>{number.format(value)}</strong>
+        <small>{label}</small>
       </span>
-    </Link>
+    </div>
+  );
+}
+
+function MiniTrafficChart({ series }: { series: Dashboard['series'] }) {
+  const { clicksPath, hasActivity, viewPath } = useMemo(() => {
+    const values = series.flatMap((item) => [item.storefrontViews, item.shopClicks]);
+    const max = Math.max(4, ...values);
+    const point = (value: number, index: number) => {
+      const x = series.length > 1 ? 4 + (index / (series.length - 1)) * 292 : 150;
+      const y = 86 - (value / max) * 72;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    };
+    return {
+      clicksPath: series.map((item, index) => point(item.shopClicks, index)).join(' '),
+      hasActivity: values.some(Boolean),
+      viewPath: series.map((item, index) => point(item.storefrontViews, index)).join(' '),
+    };
+  }, [series]);
+
+  return (
+    <div className={styles.chartWrap}>
+      {hasActivity ? (
+        <svg aria-label="Page visits and link taps over the last seven days" role="img" viewBox="0 0 300 96">
+          <line className={styles.chartGuide} x1="4" x2="296" y1="14" y2="14" />
+          <line className={styles.chartGuide} x1="4" x2="296" y1="50" y2="50" />
+          <line className={styles.chartGuide} x1="4" x2="296" y1="86" y2="86" />
+          <polyline className={styles.chartVisits} points={viewPath} />
+          <polyline className={styles.chartClicks} points={clicksPath} />
+        </svg>
+      ) : (
+        <p>Share your page to start seeing activity here.</p>
+      )}
+      <span className={styles.chartLegend}>
+        <i aria-hidden="true" /> Visits
+        <i aria-hidden="true" /> Taps
+      </span>
+    </div>
   );
 }
 
 function CreatorHomeSkeleton() {
   return (
     <div aria-hidden="true" className={styles.skeleton}>
-      <div className={styles.skeletonIntro}>
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className={styles.skeletonPanel} />
-      <div className={styles.skeletonCards}>
-        <span />
+      <span className={styles.skeletonGreeting} />
+      <div className={styles.skeletonGrid}>
         <span />
         <span />
       </div>
@@ -237,7 +209,5 @@ function CreatorHomeSkeleton() {
 }
 
 function messageFor(cause: unknown) {
-  return cause instanceof Error
-    ? cause.message
-    : 'The creator studio could not be opened.';
+  return cause instanceof Error ? cause.message : 'The creator studio could not be opened.';
 }
