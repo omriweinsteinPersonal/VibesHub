@@ -32,6 +32,12 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+.storefrontColumn {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
 .storefrontCard,
 .pulseCard {
   overflow: hidden;
@@ -403,7 +409,7 @@
   background: #f8eadb;
   border: 1px solid #e7c7ad;
   border-radius: 22px;
-  padding: 20px;
+  padding: 14px;
 }
 
 .shareHeading {
@@ -428,14 +434,15 @@
   border-radius: 14px;
   display: flex;
   gap: 8px;
-  margin-top: 16px;
-  min-height: 58px;
-  padding: 5px 6px 5px 16px;
+  margin-top: 11px;
+  min-height: 48px;
+  padding: 4px 5px 4px 12px;
 }
 
 .storeUrl {
   color: #2a3837;
-  font-size: 0.94rem;
+  flex: 1 1 auto;
+  font-size: 0.82rem;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -466,8 +473,9 @@
   border: 1px solid #e1e3df;
   border-radius: 10px;
   color: #245c5e;
-  min-height: 44px;
-  padding: 0 14px;
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 11px;
 }
 
 .copyLinkButton:hover {
@@ -479,7 +487,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .shareButton {
@@ -487,8 +495,8 @@
   border: 1px solid #245fd2;
   border-radius: 10px;
   color: #fff;
-  min-height: 42px;
-  padding: 0 18px;
+  min-height: 36px;
+  padding: 0 14px;
 }
 
 .shareButton:hover {
@@ -496,10 +504,7 @@
 }
 
 .platformLinks {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: none;
 }
 
 .platformLinks a {
@@ -585,12 +590,11 @@
 
   .shareCard {
     grid-column: 1;
-    grid-row: 1;
   }
 
-  .storefrontCard {
+  .storefrontColumn {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1 / span 2;
   }
 
   .cardHeading {

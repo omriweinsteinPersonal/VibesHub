@@ -82,92 +82,68 @@ export default function CreatorHomePage() {
   return (
     <main className={styles.main} id="creator-home-main">
       <div className={styles.homeGrid}>
-        <section aria-labelledby="share-storefront-title" className={styles.shareCard}>
-          <div className={styles.shareHeading}>
-            <h2 id="share-storefront-title">Share your storefront</h2>
-          </div>
-          <div className={styles.shareUrlRow}>
-            <span aria-label="Your storefront address" className={styles.storeUrl}>
-              swavii.com/{summary.handle}
-            </span>
-            <button
-              className={styles.copyLinkButton}
-              onClick={() => void copyStoreUrl()}
-              type="button"
-            >
-              {copied ? (
-                <Check aria-hidden="true" size={16} />
-              ) : (
-                <Copy aria-hidden="true" size={16} />
-              )}
-              {copied ? 'Copied' : 'Copy'}
-            </button>
-          </div>
-          <div className={styles.shareActions}>
-            <button
-              className={styles.shareButton}
-              onClick={() => void shareStoreUrl()}
-              type="button"
-            >
-              <Share2 aria-hidden="true" size={16} /> Share
-            </button>
-            <div aria-label="Share on a platform" className={styles.platformLinks}>
-              <a
-                aria-label="Share on WhatsApp"
-                href={`https://wa.me/?text=${encodeURIComponent(storeUrl)}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                WhatsApp
-              </a>
-              <a
-                aria-label="Share on X"
-                href={`https://x.com/intent/post?url=${encodeURIComponent(storeUrl)}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                X
-              </a>
-              <a
-                aria-label="Share on Facebook"
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storeUrl)}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Facebook
-              </a>
+        <div className={styles.storefrontColumn}>
+          <section aria-labelledby="share-storefront-title" className={styles.shareCard}>
+            <div className={styles.shareHeading}>
+              <h2 id="share-storefront-title">Share your storefront</h2>
             </div>
-          </div>
-        </section>
+            <div className={styles.shareUrlRow}>
+              <span aria-label="Your storefront address" className={styles.storeUrl}>
+                swavii.com/{summary.handle}
+              </span>
+              <button
+                className={styles.copyLinkButton}
+                onClick={() => void copyStoreUrl()}
+                type="button"
+              >
+                {copied ? (
+                  <Check aria-hidden="true" size={16} />
+                ) : (
+                  <Copy aria-hidden="true" size={16} />
+                )}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <div className={styles.shareActions}>
+              <button
+                className={styles.shareButton}
+                onClick={() => void shareStoreUrl()}
+                type="button"
+              >
+                <Share2 aria-hidden="true" size={16} /> Share
+              </button>
+            </div>
+          </section>
 
-        <section
-          aria-labelledby="storefront-preview-title"
-          className={styles.storefrontCard}
-        >
-          <div className={styles.cardHeading}>
-            <h2 id="storefront-preview-title">Your storefront</h2>
-          </div>
-
-          <Link
-            aria-label={`Open ${summary.displayName}'s storefront`}
-            className={styles.storefrontPreview}
-            href={storefrontHref}
+          <section
+            aria-labelledby="storefront-preview-title"
+            className={styles.storefrontCard}
           >
-            <div aria-hidden="true" className={styles.previewViewport}>
-              <iframe
-                className={styles.previewFrame}
-                scrolling="no"
-                src={previewUrl}
-                tabIndex={-1}
-                title={`${summary.displayName}'s live storefront preview`}
-              />
+            <div className={styles.cardHeading}>
+              <h2 id="storefront-preview-title">Your storefront</h2>
             </div>
-            <span className={styles.previewScrim} />
-            <span className={styles.previewAction}>
-              Open storefront <ArrowUpRight aria-hidden="true" size={16} />
-            </span>
-          </Link>
-        </section>
+
+            <Link
+              aria-label={`Open ${summary.displayName}'s storefront`}
+              className={styles.storefrontPreview}
+              href={storefrontHref}
+            >
+              <div aria-hidden="true" className={styles.previewViewport}>
+                <iframe
+                  className={styles.previewFrame}
+                  scrolling="no"
+                  src={previewUrl}
+                  tabIndex={-1}
+                  title={`${summary.displayName}'s live storefront preview`}
+                />
+              </div>
+              <span className={styles.previewScrim} />
+              <span className={styles.previewAction}>
+                Open storefront <ArrowUpRight aria-hidden="true" size={16} />
+              </span>
+            </Link>
+          </section>
+        </div>
 
         <section
           aria-labelledby="analytics-feature-title"
