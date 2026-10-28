@@ -159,6 +159,9 @@ export function StorefrontPhonePreview({
   const [bioSaving, setBioSaving] = useState(false);
   const editorVisible = desktopPreview ? desktopEditMode : !previewMode;
   const effectivePreviewMode = desktopPreview ? !desktopEditMode : previewMode;
+  const frameSrc = desktopPreview
+    ? `${previewUrl}${previewUrl.includes('?') ? '&' : '?'}desktopEditor=1`
+    : previewUrl;
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -782,7 +785,7 @@ export function StorefrontPhonePreview({
               )
             }
             ref={frame}
-            src={previewUrl}
+            src={frameSrc}
             title={title}
           />
         </div>

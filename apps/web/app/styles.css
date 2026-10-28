@@ -8456,6 +8456,34 @@ dt {
 .referenceDiscountCodePlaceholder {
   min-width: 62px;
 }
+
+/* The desktop editor renders a narrow storefront inside an iframe. Reserve
+   dedicated columns for the expiry date and code so the badge never covers
+   adjacent recommendation content. The real mobile storefront keeps its
+   existing flex treatment. */
+.creatorStorefrontCanvas[data-desktop-editor='true']
+  .referenceDiscountRecommendation
+  .referenceStandaloneRecommendationOffer {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.creatorStorefrontCanvas[data-desktop-editor='true']
+  .referenceDiscountRecommendation
+  .referenceDiscountExpiry {
+  min-width: 0;
+}
+
+.creatorStorefrontCanvas[data-desktop-editor='true']
+  .referenceDiscountRecommendation
+  .referenceStandaloneRecommendationOffer
+  > strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
+}
 .referenceBrandSingleProductCopy h3 {
   align-self: center;
   color: #30251f;

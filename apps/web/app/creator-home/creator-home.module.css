@@ -406,8 +406,8 @@
 }
 
 .shareCard {
-  background: #f8eadb;
-  border: 1px solid #e7c7ad;
+  background: #fff;
+  border: 1px solid #7a55b5;
   border-radius: 22px;
   padding: 14px;
 }
@@ -418,7 +418,7 @@
 }
 
 .shareHeading h2 {
-  color: #bd6848;
+  color: #111;
   font-size: 0.74rem;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -491,16 +491,16 @@
 }
 
 .shareButton {
-  background: #245fd2;
-  border: 1px solid #245fd2;
+  background: #fff;
+  border: 1px solid #7a55b5;
   border-radius: 10px;
-  color: #fff;
+  color: #7a55b5;
   min-height: 36px;
   padding: 0 14px;
 }
 
 .shareButton:hover {
-  background: #1f54b9;
+  background: #f7f3fc;
 }
 
 .platformLinks {

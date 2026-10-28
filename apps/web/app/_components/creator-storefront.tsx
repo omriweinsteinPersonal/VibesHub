@@ -610,6 +610,12 @@ export function CreatorStorefrontView({
     <>
       <div
         className="creatorStorefrontCanvas"
+        data-desktop-editor={
+          typeof window !== 'undefined' &&
+          new URLSearchParams(window.location.search).has('desktopEditor')
+            ? 'true'
+            : undefined
+        }
         data-mobile-preview={isMobilePreview}
         data-template={previewTheme.templateId ?? 'classic'}
         data-header-style={previewTheme.headerStyle ?? 'classic'}
