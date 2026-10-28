@@ -159,6 +159,7 @@
 }
 
 .analyticsFeatureImage {
+  filter: saturate(1.04) contrast(1.03);
   object-fit: cover;
 }
 
@@ -655,5 +656,31 @@
 @media (prefers-reduced-motion: reduce) {
   .previewAction {
     transition: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .storefrontCard {
+    justify-self: center;
+    max-width: 350px;
+    width: 100%;
+  }
+
+  .storefrontPreview {
+    height: 365px;
+  }
+}
+
+@media (min-width: 901px) {
+  .homeGrid {
+    grid-template-columns: minmax(440px, 590px) minmax(300px, 360px);
+  }
+
+  .storefrontPreview {
+    height: 480px;
+  }
+
+  .previewFrame {
+    transform: translateX(-50%) scale(1.34);
   }
 }

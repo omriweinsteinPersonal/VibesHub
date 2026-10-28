@@ -88,9 +88,6 @@ export default function CreatorHomePage() {
         >
           <div className={styles.cardHeading}>
             <h2 id="storefront-preview-title">Your storefront</h2>
-            <span className={styles.liveStatus}>
-              <i aria-hidden="true" /> Live
-            </span>
           </div>
 
           <Link
@@ -123,6 +120,8 @@ export default function CreatorHomePage() {
             className={styles.analyticsFeatureImage}
             fill
             sizes="(max-width: 900px) 100vw, 390px"
+            priority
+            quality={95}
             src="/images/creator-analytics-feature.jpg"
           />
           <div className={styles.analyticsFeatureShade} />
