@@ -176,14 +176,15 @@
 }
 
 .analyticsFeatureCopy {
-  bottom: 18px;
+  bottom: 0;
   color: #fffdf9;
   display: flex;
   flex-direction: column;
-  left: 17px;
-  max-width: 275px;
+  inset-inline: 0;
+  max-width: none;
+  padding: 17px;
   position: absolute;
-  right: 17px;
+  top: 0;
 }
 
 .analyticsFeatureCopy .kicker {
@@ -209,9 +210,12 @@
   color: var(--home-ink);
   font-size: 0.73rem;
   gap: 7px;
-  margin-top: 15px;
+  margin-top: auto;
   min-height: 36px;
   padding: 0 12px;
+  position: absolute;
+  right: 17px;
+  bottom: 17px;
   transition:
     background-color 160ms ease,
     transform 160ms ease;
@@ -622,13 +626,17 @@
   }
 
   .analyticsFeatureCopy {
-    bottom: 22px;
-    left: 20px;
-    right: 20px;
+    inset: 0;
+    padding: 22px 20px;
   }
 
   .analyticsFeatureCopy h2 {
     font-size: 1.9rem;
+  }
+
+  .analyticsFeature .analyticsLink {
+    bottom: 22px;
+    right: 20px;
   }
 
   .shareCard {
