@@ -82,62 +82,9 @@ export default function CreatorHomePage() {
   return (
     <main className={styles.main} id="creator-home-main">
       <div className={styles.homeGrid}>
-        <section
-          aria-labelledby="storefront-preview-title"
-          className={styles.storefrontCard}
-        >
-          <div className={styles.cardHeading}>
-            <h2 id="storefront-preview-title">Your storefront</h2>
-          </div>
-
-          <Link
-            aria-label={`Open ${summary.displayName}'s storefront`}
-            className={styles.storefrontPreview}
-            href={storefrontHref}
-          >
-            <div aria-hidden="true" className={styles.previewViewport}>
-              <iframe
-                className={styles.previewFrame}
-                scrolling="no"
-                src={previewUrl}
-                tabIndex={-1}
-                title={`${summary.displayName}'s live storefront preview`}
-              />
-            </div>
-            <span className={styles.previewScrim} />
-            <span className={styles.previewAction}>
-              Open storefront <ArrowUpRight aria-hidden="true" size={16} />
-            </span>
-          </Link>
-        </section>
-
-        <section
-          aria-labelledby="analytics-feature-title"
-          className={styles.analyticsFeature}
-        >
-          <Image
-            alt="Swavii creator analytics on a phone"
-            className={styles.analyticsFeatureImage}
-            fill
-            sizes="(max-width: 900px) 100vw, 390px"
-            priority
-            quality={95}
-            src="/images/creator-analytics-feature.jpg"
-          />
-          <div className={styles.analyticsFeatureShade} />
-          <div className={styles.analyticsFeatureCopy}>
-            <p className={styles.kicker}>CREATOR ANALYTICS</p>
-            <h2 id="analytics-feature-title">See what your audience is discovering.</h2>
-            <Link className={styles.analyticsLink} href="/analytics">
-              Open analytics <ArrowUpRight aria-hidden="true" size={16} />
-            </Link>
-          </div>
-        </section>
-
         <section aria-labelledby="share-storefront-title" className={styles.shareCard}>
           <div className={styles.shareHeading}>
-            <p className={styles.kicker}>SHARE YOUR STOREFRONT</p>
-            <h2 id="share-storefront-title">Your link, ready to share.</h2>
+            <h2 id="share-storefront-title">Share your storefront</h2>
           </div>
           <div className={styles.shareUrlRow}>
             <span aria-label="Your storefront address" className={styles.storeUrl}>
@@ -190,6 +137,58 @@ export default function CreatorHomePage() {
                 Facebook
               </a>
             </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="storefront-preview-title"
+          className={styles.storefrontCard}
+        >
+          <div className={styles.cardHeading}>
+            <h2 id="storefront-preview-title">Your storefront</h2>
+          </div>
+
+          <Link
+            aria-label={`Open ${summary.displayName}'s storefront`}
+            className={styles.storefrontPreview}
+            href={storefrontHref}
+          >
+            <div aria-hidden="true" className={styles.previewViewport}>
+              <iframe
+                className={styles.previewFrame}
+                scrolling="no"
+                src={previewUrl}
+                tabIndex={-1}
+                title={`${summary.displayName}'s live storefront preview`}
+              />
+            </div>
+            <span className={styles.previewScrim} />
+            <span className={styles.previewAction}>
+              Open storefront <ArrowUpRight aria-hidden="true" size={16} />
+            </span>
+          </Link>
+        </section>
+
+        <section
+          aria-labelledby="analytics-feature-title"
+          className={styles.analyticsFeature}
+        >
+          <Image
+            alt="Swavii creator analytics on a phone"
+            className={styles.analyticsFeatureImage}
+            fill
+            sizes="(max-width: 900px) 100vw, 390px"
+            priority
+            quality={95}
+            src="/images/creator-analytics-feature.jpg"
+          />
+          <div className={styles.analyticsFeatureShade} />
+          <div className={styles.analyticsFeatureCopy}>
+            <p className={styles.kicker}>CREATOR ANALYTICS</p>
+            <h2 id="analytics-feature-title">See what your audience is discovering.</h2>
+            <Link className={styles.analyticsLink} href="/analytics">
+              Open analytics <ArrowUpRight aria-hidden="true" size={16} />
+            </Link>
           </div>
         </section>
       </div>

@@ -151,13 +151,14 @@ export function StorefrontPhonePreview({
   const [notice, setNotice] = useState('');
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(true);
+  const [desktopEditMode, setDesktopEditMode] = useState(true);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [bioDraft, setBioDraft] = useState<string | null>(null);
   const [bioProfileVersion, setBioProfileVersion] = useState<number | null>(null);
   const [bioLoading, setBioLoading] = useState(false);
   const [bioSaving, setBioSaving] = useState(false);
-  const editorVisible = desktopPreview || !previewMode;
-  const effectivePreviewMode = desktopPreview ? false : previewMode;
+  const editorVisible = desktopPreview ? desktopEditMode : !previewMode;
+  const effectivePreviewMode = desktopPreview ? !desktopEditMode : previewMode;
 
   useEffect(() => {
     if (editable || !showPhone) return;
@@ -389,7 +390,7 @@ export function StorefrontPhonePreview({
     <div
       className={`storefrontDesignWorkspace${canEdit && editorVisible ? ' hasEditor' : ''}`}
     >
-      {canEdit && !desktopPreview ? (
+      {canEdit ? (
         <>
           <div className="storefrontWorkspaceIntro">
             <div className="storefrontPreviewToolbar">
@@ -399,9 +400,13 @@ export function StorefrontPhonePreview({
                 role="group"
               >
                 <button
-                  aria-pressed={previewMode}
+                  aria-pressed={desktopPreview ? !desktopEditMode : previewMode}
                   onClick={() => {
-                    setPreviewMode(true);
+                    if (desktopPreview) {
+                      setDesktopEditMode(false);
+                    } else {
+                      setPreviewMode(true);
+                    }
                     setMobileEditorOpen(false);
                   }}
                   type="button"
@@ -409,9 +414,13 @@ export function StorefrontPhonePreview({
                   <Eye aria-hidden="true" size={16} /> Preview
                 </button>
                 <button
-                  aria-pressed={!previewMode}
+                  aria-pressed={desktopPreview ? desktopEditMode : !previewMode}
                   onClick={() => {
-                    setPreviewMode(false);
+                    if (desktopPreview) {
+                      setDesktopEditMode(true);
+                    } else {
+                      setPreviewMode(false);
+                    }
                     setMobileEditorOpen(true);
                   }}
                   type="button"
@@ -427,7 +436,7 @@ export function StorefrontPhonePreview({
         <aside
           aria-label="Storefront design"
           className="storefrontDesignPanel"
-          data-mobile-open={desktopPreview || mobileEditorOpen}
+          data-mobile-open={desktopPreview ? desktopEditMode : mobileEditorOpen}
         >
           <button
             aria-expanded={mobileEditorOpen}

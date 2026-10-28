@@ -172,6 +172,8 @@
 .analyticsFeatureCopy {
   bottom: 18px;
   color: #fffdf9;
+  display: flex;
+  flex-direction: column;
   left: 17px;
   max-width: 275px;
   position: absolute;
@@ -194,12 +196,25 @@
 }
 
 .analyticsFeature .analyticsLink {
-  color: #fffdf9;
-  margin-top: 12px;
+  align-self: flex-end;
+  background: rgb(255 253 249 / 95%);
+  border: 1px solid rgb(255 255 255 / 92%);
+  border-radius: 999px;
+  color: var(--home-ink);
+  font-size: 0.73rem;
+  gap: 7px;
+  margin-top: 15px;
+  min-height: 36px;
+  padding: 0 12px;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
 }
 
 .analyticsFeature .analyticsLink:hover {
-  color: #f4c1a6;
+  background: #fff;
+  color: var(--home-ink);
+  transform: translateY(-2px);
 }
 
 .pulseCard {
@@ -385,48 +400,43 @@
 }
 
 .shareCard {
-  background: #fffdf9;
-  border: 1px solid var(--home-line);
-  border-radius: 20px;
-  padding: 16px;
+  background: #f8eadb;
+  border: 1px solid #e7c7ad;
+  border-radius: 22px;
+  padding: 20px;
 }
 
 .shareHeading {
-  align-items: baseline;
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-}
-
-.shareHeading .kicker {
-  margin: 0;
 }
 
 .shareHeading h2 {
-  color: var(--home-ink);
-  font-size: 0.87rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
+  color: #bd6848;
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .shareUrlRow {
   align-items: center;
   background: #fff;
-  border: 1px solid #ddd5cc;
-  border-radius: 13px;
+  border: 2px solid #244b4d;
+  border-radius: 14px;
   display: flex;
   gap: 8px;
-  margin-top: 12px;
-  min-height: 48px;
-  padding: 5px 5px 5px 13px;
+  margin-top: 16px;
+  min-height: 58px;
+  padding: 5px 6px 5px 16px;
 }
 
 .storeUrl {
   color: #2a3837;
-  font-size: 0.82rem;
-  font-weight: 650;
+  font-size: 0.94rem;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -452,14 +462,16 @@
 }
 
 .copyLinkButton {
-  background: var(--home-ink);
-  border: 1px solid var(--home-ink);
-  color: #fffdf9;
-  padding: 0 11px;
+  background: #fff;
+  border: 1px solid #e1e3df;
+  border-radius: 10px;
+  color: #245c5e;
+  min-height: 44px;
+  padding: 0 14px;
 }
 
 .copyLinkButton:hover {
-  background: #304748;
+  background: #f3f7f5;
 }
 
 .shareActions {
@@ -467,18 +479,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .shareButton {
-  background: #f8ede6;
-  border: 1px solid #e4c7b7;
-  color: #8a4a32;
-  padding: 0 12px;
+  background: #245fd2;
+  border: 1px solid #245fd2;
+  border-radius: 10px;
+  color: #fff;
+  min-height: 42px;
+  padding: 0 18px;
 }
 
 .shareButton:hover {
-  background: #f2dfd3;
+  background: #1f54b9;
 }
 
 .platformLinks {
@@ -567,6 +581,16 @@
   .storefrontCard,
   .pulseCard {
     border-radius: 24px;
+  }
+
+  .shareCard {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .storefrontCard {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .cardHeading {
