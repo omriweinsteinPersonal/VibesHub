@@ -673,11 +673,11 @@
 
 @media (min-width: 901px) {
   .homeGrid {
-    grid-template-columns: minmax(440px, 590px) minmax(300px, 360px);
+    grid-template-columns: minmax(380px, 450px) minmax(280px, 340px);
   }
 
   .storefrontPreview {
-    height: 480px;
+    height: 410px;
   }
 
   .previewFrame {
