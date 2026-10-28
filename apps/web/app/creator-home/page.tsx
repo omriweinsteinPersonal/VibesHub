@@ -167,6 +167,28 @@ export default function CreatorHomePage() {
             </Link>
           </div>
         </section>
+
+        <Link
+          aria-labelledby="social-feature-title"
+          className={styles.socialFeature}
+          href="/dashboard?section=connectors"
+        >
+          <Image
+            alt="Creators connecting their social platforms"
+            className={styles.socialFeatureImage}
+            fill
+            sizes="(max-width: 900px) 100vw, 390px"
+            src="/images/social-links-feature.jpg"
+          />
+          <span className={styles.socialFeatureShade} />
+          <span className={styles.socialFeatureCopy}>
+            <span className={styles.kicker}>SOCIAL LINKS</span>
+            <strong id="social-feature-title">Bring your audience with you.</strong>
+            <span className={styles.socialFeatureAction}>
+              Add social links <ArrowUpRight aria-hidden="true" size={16} />
+            </span>
+          </span>
+        </Link>
       </div>
     </main>
   );

@@ -337,7 +337,15 @@ export function CreatorDashboard() {
   >('all');
   const [dashboardView, setDashboardView] = useState<
     'recommendations' | 'labels' | 'connectors' | 'media' | 'maps'
-  >('recommendations');
+  >(() => {
+    if (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('section') === 'connectors'
+    ) {
+      return 'connectors';
+    }
+    return 'recommendations';
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
