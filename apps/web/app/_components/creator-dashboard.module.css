@@ -762,3 +762,45 @@
     font-size: 0.62rem;
   }
 }
+
+@media (min-width: 901px) {
+  .root:global(.creatorDashboardMain) {
+    max-width: none;
+    padding: 40px 36px 90px;
+  }
+
+  .root :global(.creatorDashboardWorkspace) {
+    gap: 18px;
+    grid-template-columns: 246px minmax(0, 1fr);
+  }
+
+  .root :global(.creatorDashboardSidebar button) {
+    gap: 13px;
+    grid-template-columns: 32px minmax(0, 1fr) 20px;
+    min-height: 90px;
+    padding: 15px 15px;
+  }
+
+  .root :global(.creatorDashboardNavIcon) {
+    height: 23px;
+    width: 23px;
+  }
+
+  .root :global(.creatorDashboardNavCopy) {
+    gap: 4px;
+  }
+
+  .root :global(.creatorDashboardNavCopy strong) {
+    font-size: 0.97rem;
+  }
+
+  .root :global(.creatorDashboardNavCopy small) {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  .root :global(.creatorDashboardNavArrow) {
+    height: 20px;
+    width: 20px;
+  }
+}
