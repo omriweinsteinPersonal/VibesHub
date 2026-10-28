@@ -151,6 +151,56 @@
   transform: translateY(-2px);
 }
 
+.analyticsFeature {
+  border-radius: 22px;
+  min-height: 245px;
+  overflow: hidden;
+  position: relative;
+}
+
+.analyticsFeatureImage {
+  object-fit: cover;
+}
+
+.analyticsFeatureShade {
+  background: linear-gradient(180deg, rgb(18 38 39 / 5%) 24%, rgb(18 38 39 / 78%) 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.analyticsFeatureCopy {
+  bottom: 18px;
+  color: #fffdf9;
+  left: 17px;
+  max-width: 275px;
+  position: absolute;
+  right: 17px;
+}
+
+.analyticsFeatureCopy .kicker {
+  color: #f4c1a6;
+  margin-bottom: 7px;
+}
+
+.analyticsFeatureCopy h2 {
+  color: #fffdf9;
+  font-family: var(--font-vh-display), Georgia, serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin: 0;
+}
+
+.analyticsFeature .analyticsLink {
+  color: #fffdf9;
+  margin-top: 12px;
+}
+
+.analyticsFeature .analyticsLink:hover {
+  color: #f4c1a6;
+}
+
 .pulseCard {
   background: var(--home-blush);
   border: 1px solid #e3baa7;
@@ -534,6 +584,22 @@
   .pulseCard {
     min-height: 330px;
     padding: 20px;
+  }
+
+  .analyticsFeature {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 330px;
+  }
+
+  .analyticsFeatureCopy {
+    bottom: 22px;
+    left: 20px;
+    right: 20px;
+  }
+
+  .analyticsFeatureCopy h2 {
+    font-size: 1.9rem;
   }
 
   .shareCard {
