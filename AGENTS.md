@@ -73,25 +73,11 @@ pnpm --filter @vibeshub/mobile test
 Run `pnpm check` and `pnpm build` before merging when the local environment supports the
 full workspace.
 
-## Expo/EAS build authorization
+## Expo/EAS build stewardship
 
-Expo Application Services builds consume a limited monthly quota. Do not trigger any
-remote Expo/EAS build unless the user explicitly asks for a new cloud build in the
-current conversation.
-
-- Commands such as `eas build`, `eas build --platform all`, EAS workflows that create
-  builds, and equivalent CI/API calls require explicit user authorization immediately
-  before they are run.
-- General requests such as "continue", "test it", "make it release-ready", "fix the
-  native app", or permission to commit and push do not authorize an EAS build.
-- Authorization for an earlier build does not carry forward to another build, platform,
-  profile, retry, or replacement build. Ask again or wait for an explicit request.
-- Before starting an authorized build, check existing EAS builds and reuse or wait for a
-  matching build when possible. Never start duplicate iOS and Android builds merely to
-  poll, verify, or obtain artifacts.
-- Local validation that does not consume EAS quota remains allowed and expected,
-  including lint, typecheck, tests, Expo Doctor, Metro/Expo development servers,
-  simulator/emulator runs, and native compilation with the locally installed Xcode or
-  Android toolchain.
-- Reporting EAS build status, inspecting logs, canceling an accidental duplicate, and
-  downloading an existing artifact do not require new build authorization.
+Expo Application Services builds consume quota and may incur charges. Agents may start
+cloud builds when appropriate for the task, using judgment about cost and necessity.
+Check existing builds first and reuse or wait for a matching build when practical; do not
+start duplicates just to inspect status or obtain artifacts. Prefer local checks and
+simulator/emulator testing when they provide equivalent evidence. Surface quota, paid
+plan, or unexpected billing requirements to the user before agreeing to new charges.
