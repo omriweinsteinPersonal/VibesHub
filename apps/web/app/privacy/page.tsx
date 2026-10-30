@@ -43,8 +43,7 @@ export default function PrivacyPage() {
               This Privacy Policy applies to swavii&apos;s website, creator tools, public
               storefronts and related mobile applications and services (together, the
               “Service”). In this policy, “swavii,” “we,” “us” and “our” refer to the
-              operator of the Service. We will publish the operator&apos;s formal legal
-              name and registered contact details when they are finalized.
+              operator of the Service, Omri Weinstein, a sole proprietor in Israel.
             </p>
             <p>
               Creators control the content they publish on their storefronts. Merchants

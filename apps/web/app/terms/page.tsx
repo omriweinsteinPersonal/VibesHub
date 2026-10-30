@@ -39,6 +39,7 @@ export default function TermsPage() {
 
           <section>
             <h2>1. Agreement to these terms</h2>
+            <p>Swavii is operated by Omri Weinstein, a sole proprietor in Israel.</p>
             <p>
               By creating an account, signing in or otherwise using the swavii website,
               creator tools, public storefronts or related applications (the “Service”),

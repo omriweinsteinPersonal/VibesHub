@@ -35,9 +35,9 @@ These plans do not establish that subscriptions or affiliate arrangements are li
 
 ## Decisions and evidence required before legal sign-off
 
-- Insert the sole proprietor's exact registered legal name and contact details in the
-  notices; the owner supplied swavii2026@gmail.com as the business contact. Confirm the
-  privacy and deletion contact mailbox receives and answers mail.
+- The owner identifies the sole proprietor as Omri Weinstein and confirms that the
+  business contact mailbox, swavii2026@gmail.com, receives mail. Confirm what additional
+  registered contact and business details applicable law requires in notices and invoices.
 - Confirm where creators and shoppers are targeted, whether minors are in scope, and the
   applicable Israeli, EU/UK, US or other rules. The creator terms say 18+, while the
   registration flow does not currently ask for or verify age. Obtain advice on the
