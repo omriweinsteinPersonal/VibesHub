@@ -35,6 +35,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RecommendationActions } from '../components/recommendation-actions';
+import { visibleAnalyticsDays } from '../lib/analytics-activity';
 import { ApiError } from '../lib/api';
 import {
   archiveCreatorBrand,
@@ -4138,11 +4139,11 @@ function MoveButtons({
 }
 
 function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
-  const initialRange = bundle.analytics.range.days === 7 ? 7 : 30;
   const [analytics, setAnalytics] = useState(bundle.analytics);
-  const [range, setRange] = useState<7 | 30>(initialRange);
+  const range = analytics.range.days === 7 ? 7 : 30;
   const [loading, setLoading] = useState(false);
   const [rangeError, setRangeError] = useState('');
+  const [showAllActivity, setShowAllActivity] = useState(false);
   const [explorerView, setExplorerView] = useState<'brands' | 'categories' | 'products'>(
     'brands',
   );
@@ -4177,11 +4178,11 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
 
   async function selectRange(nextRange: 7 | 30) {
     if (nextRange === range || loading) return;
-    setRange(nextRange);
     setLoading(true);
     setRangeError('');
     try {
       setAnalytics(await getCreatorAnalytics(nextRange));
+      setShowAllActivity(false);
     } catch (cause) {
       setRangeError(messageFor(cause));
     } finally {
@@ -4258,8 +4259,20 @@ function Analytics({ bundle }: { bundle: CreatorStudioBundle }) {
       <Text style={styles.sectionDescription}>
         Daily page views and product clicks for this period.
       </Text>
+      {analytics.series.length > 7 ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showAllActivity }}
+          onPress={() => setShowAllActivity((current) => !current)}
+          style={styles.analyticsShowMore}
+        >
+          <Text style={styles.secondaryButtonText}>
+            {showAllActivity ? 'Show fewer days' : 'Show all days'}
+          </Text>
+        </Pressable>
+      ) : null}
       <View style={styles.analyticsTable}>
-        {[...analytics.series].reverse().map((day) => (
+        {visibleAnalyticsDays(analytics.series, showAllActivity).map((day) => (
           <View key={day.date} style={styles.analyticsTableRow}>
             <Text style={styles.analyticsDate}>{formatAnalyticsDate(day.date)}</Text>
             <View style={styles.analyticsDailyValue}>
@@ -5455,6 +5468,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 58,
     paddingHorizontal: spacing.md,
+  },
+  analyticsShowMore: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
   },
   analyticsDate: { color: colors.ink, flex: 1, fontSize: 14, fontWeight: '700' },
   analyticsDailyValue: { alignItems: 'flex-end', marginLeft: spacing.lg, minWidth: 54 },

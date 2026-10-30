@@ -1,0 +1,18 @@
+appId: com.swavii.app
+name: Creator analytics activity
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: a dedicated creator account is signed in. This flow is read-only.
+- tapOn: Dashboard tab
+- tapOn: Analytics tab
+- tapOn: Last 30 days
+- scrollUntilVisible:
+    element: Show all days
+    direction: DOWN
+    timeout: 30000
+- tapOn: Show all days
+- assertVisible: Show fewer days
+- tapOn: Show fewer days
+- assertVisible: Show all days
