@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  commercialRelationshipDisclosure,
   creatorAnalyticsDashboardSchema,
   creatorRecommendationInputSchema,
   creatorRecommendationMoveInputSchema,
@@ -25,6 +26,13 @@ import {
 } from './index.js';
 
 describe('shared API contracts', () => {
+  it('distinguishes organic recommendations from disclosed commercial relationships', () => {
+    expect(commercialRelationshipDisclosure('organic')).toBeNull();
+    expect(commercialRelationshipDisclosure('affiliate')).toContain('commission');
+    expect(commercialRelationshipDisclosure('sponsored')).toContain('Sponsored');
+    expect(commercialRelationshipDisclosure('gifted')).toContain('free product');
+  });
+
   it('accepts an ILS amount represented in minor units', () => {
     expect(moneySchema.parse({ amountMinor: 12_000, currency: 'ILS' })).toEqual({
       amountMinor: 12_000,

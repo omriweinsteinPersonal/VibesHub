@@ -2,6 +2,7 @@
 
 import type {
   CategoryCard,
+  CommercialRelationship,
   CreatorBrand,
   CreatorDiscountCode,
   CreatorProductMetadata,
@@ -93,6 +94,7 @@ interface ProductEditor {
   categoryId: string;
   categoryIds: string[];
   collectionIds: string[];
+  commercialRelationship: CommercialRelationship;
   contentKind: 'product' | 'link';
   discountCode: string;
   discountExpiresAt: string;
@@ -231,6 +233,7 @@ const emptyProduct: ProductEditor = {
   categoryId: '',
   categoryIds: [],
   collectionIds: [],
+  commercialRelationship: 'organic',
   contentKind: 'product',
   discountCode: '',
   discountExpiresAt: '',
@@ -1098,7 +1101,7 @@ export function CreatorDashboard() {
         categoryIds: product.categoryIds.length
           ? product.categoryIds
           : [product.categoryId],
-        commercialRelationship: 'organic',
+        commercialRelationship: product.commercialRelationship,
         contentKind: product.contentKind,
         discountCode: product.brandDiscountCodeId
           ? null
@@ -1513,6 +1516,7 @@ export function CreatorDashboard() {
       brandName: item.brandName,
       categoryId: item.categoryId,
       categoryIds: item.categoryIds,
+      commercialRelationship: item.commercialRelationship,
       collectionIds: curatedSections
         .filter(
           (section) =>
@@ -4325,6 +4329,27 @@ function ProductForm({
             {fetching ? 'Fetching details…' : saving ? 'Saving…' : saveLabel}
           </button>
         </div>
+        <label className="creatorFullField">
+          Commercial relationship
+          <select
+            value={editor.commercialRelationship}
+            onChange={(event) =>
+              update(
+                'commercialRelationship',
+                event.target.value as CommercialRelationship,
+              )
+            }
+          >
+            <option value="organic">No commercial relationship</option>
+            <option value="affiliate">Affiliate</option>
+            <option value="sponsored">Sponsored</option>
+            <option value="gifted">Gifted</option>
+          </select>
+          <small>
+            Choose the relationship that applies. Affiliate, sponsored and gifted
+            recommendations display a disclosure to shoppers.
+          </small>
+        </label>
         {fetchWarnings.length ? (
           <aside className="creatorFetchWarnings" role="status">
             <strong>Some details need review</strong>

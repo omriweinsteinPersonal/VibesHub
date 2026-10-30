@@ -151,6 +151,22 @@ export const commercialRelationshipSchema = z.enum([
   'gifted',
 ]);
 
+/** Shopper-facing disclosure for a creator-declared commercial relationship. */
+export function commercialRelationshipDisclosure(
+  relationship: z.infer<typeof commercialRelationshipSchema>,
+): string | null {
+  switch (relationship) {
+    case 'affiliate':
+      return 'Affiliate: the creator may earn a commission.';
+    case 'sponsored':
+      return 'Sponsored: this recommendation is a paid or supported promotion.';
+    case 'gifted':
+      return 'Gifted: the creator received a free product or other benefit.';
+    case 'organic':
+      return null;
+  }
+}
+
 export const recommendationLifecycleSchema = z.enum(['draft', 'published', 'archived']);
 
 export const recommendationReviewSchema = z.string().trim().min(1).max(1_000);

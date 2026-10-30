@@ -1,6 +1,7 @@
 'use client';
 
 import type { PublicRecommendationDetail } from '@vibeshub/contracts';
+import { commercialRelationshipDisclosure } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
@@ -132,6 +133,11 @@ export function ProductDetailView({
           <h1 dir={textDirection} style={{ textAlign: 'start' }}>
             {recommendation.productName}
           </h1>
+          {commercialRelationshipDisclosure(recommendation.commercialRelationship) ? (
+            <p className="commercialDisclosure">
+              {commercialRelationshipDisclosure(recommendation.commercialRelationship)}
+            </p>
+          ) : null}
           {recommendation.price.amountMinor > 0 ? (
             <p
               className="productDetailPrice"

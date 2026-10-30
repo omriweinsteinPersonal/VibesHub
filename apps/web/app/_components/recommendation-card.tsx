@@ -1,6 +1,7 @@
 'use client';
 
 import type { RecommendationCard, RecommendationCreator } from '@vibeshub/contracts';
+import { commercialRelationshipDisclosure } from '@vibeshub/contracts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
@@ -59,7 +60,7 @@ export function RecommendationCardView({
           />
         ) : null}
         <a
-          aria-label={`Open ${recommendation.productName}`}
+          aria-label={`Open ${recommendation.productName}. ${commercialRelationshipDisclosure(recommendation.commercialRelationship) ?? ''}`}
           href={recommendation.shopUrl}
           rel="noreferrer"
           target="_blank"
@@ -67,6 +68,11 @@ export function RecommendationCardView({
           <span dir={textDirection}>{recommendation.productName}</span>
           <ExternalLink aria-hidden="true" size={16} />
         </a>
+        {commercialRelationshipDisclosure(recommendation.commercialRelationship) ? (
+          <p className="commercialDisclosure">
+            {commercialRelationshipDisclosure(recommendation.commercialRelationship)}
+          </p>
+        ) : null}
       </article>
     );
   }
@@ -145,6 +151,11 @@ export function RecommendationCardView({
             </span>
           </h3>
         </div>
+        {commercialRelationshipDisclosure(recommendation.commercialRelationship) ? (
+          <p className="commercialDisclosure">
+            {commercialRelationshipDisclosure(recommendation.commercialRelationship)}
+          </p>
+        ) : null}
         {showPrice ? (
           <div className="storePriceRow">
             {recommendation.price.amountMinor > 0 ? (

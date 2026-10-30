@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import {
+  commercialRelationshipDisclosure,
   defaultStorefrontTheme,
   storefrontThemeSchema,
   storefrontTitlesSchema,
@@ -1052,7 +1053,7 @@ function StandaloneRecommendationCard({
   const value = discount ? discountValue(discount) : null;
   return (
     <Link
-      aria-label={`View ${item.productName} at ${brand.name}`}
+      aria-label={`View ${item.productName} at ${brand.name}. ${commercialRelationshipDisclosure(item.commercialRelationship) ?? ''}`}
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
@@ -1077,6 +1078,11 @@ function StandaloneRecommendationCard({
           )}
         </div>
         <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
+        {commercialRelationshipDisclosure(item.commercialRelationship) ? (
+          <small className="commercialDisclosure">
+            {commercialRelationshipDisclosure(item.commercialRelationship)}
+          </small>
+        ) : null}
       </div>
       <div className="referenceStandaloneRecommendationImage">
         <Image
@@ -1398,7 +1404,7 @@ function SingleBrandProductCard({
 }) {
   return (
     <Link
-      aria-label={`View ${item.productName} at ${brand.name}`}
+      aria-label={`View ${item.productName} at ${brand.name}. ${commercialRelationshipDisclosure(item.commercialRelationship) ?? ''}`}
       className="referenceStandaloneRecommendation"
       href={`/products/${encodeURIComponent(item.id)}?from=/${encodeURIComponent(handle)}`}
     >
@@ -1423,6 +1429,11 @@ function SingleBrandProductCard({
           )}
         </div>
         <h3 dir={textDirectionFor(item.productName)}>{item.productName}</h3>
+        {commercialRelationshipDisclosure(item.commercialRelationship) ? (
+          <small className="commercialDisclosure">
+            {commercialRelationshipDisclosure(item.commercialRelationship)}
+          </small>
+        ) : null}
         {offer.details ? <small>{offer.details.value}</small> : null}
       </div>
       <div className="referenceStandaloneRecommendationImage">

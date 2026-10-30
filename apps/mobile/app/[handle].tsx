@@ -4,6 +4,7 @@ import type {
   PublicDiscountCode,
   RecommendationCard,
 } from '@vibeshub/contracts';
+import { commercialRelationshipDisclosure } from '@vibeshub/contracts';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -537,6 +538,11 @@ function ProductCard({
         <Text style={[styles.productName, { color: theme.textColor }]}>
           {recommendation.productName}
         </Text>
+        {commercialRelationshipDisclosure(recommendation.commercialRelationship) ? (
+          <Text style={{ color: theme.textColor, fontSize: 13, marginTop: 6 }}>
+            {commercialRelationshipDisclosure(recommendation.commercialRelationship)}
+          </Text>
+        ) : null}
         <Text style={[styles.price, { color: theme.textColor }]}>
           {formatPrice(recommendation.price.amountMinor)}
         </Text>

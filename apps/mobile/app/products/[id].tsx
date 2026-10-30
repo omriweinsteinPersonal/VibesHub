@@ -1,4 +1,5 @@
 import type { PublicRecommendationDetail } from '@vibeshub/contracts';
+import { commercialRelationshipDisclosure } from '@vibeshub/contracts';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -188,6 +189,12 @@ export default function ProductDetailScreen() {
         {recommendation.price.amountMinor > 0 ? (
           <Text style={styles.price}>
             {formatPrice(recommendation.price.amountMinor)}
+          </Text>
+        ) : null}
+
+        {commercialRelationshipDisclosure(recommendation.commercialRelationship) ? (
+          <Text style={{ color: palette.ink, fontSize: 14, marginVertical: 8 }}>
+            {commercialRelationshipDisclosure(recommendation.commercialRelationship)}
           </Text>
         ) : null}
 

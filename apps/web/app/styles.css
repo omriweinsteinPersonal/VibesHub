@@ -8350,6 +8350,14 @@ dt {
   color: #75685f;
   font-size: 0.68rem;
 }
+.referenceStandaloneRecommendationContent .commercialDisclosure,
+.commercialDisclosure {
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 4px 0;
+}
 .referenceStandaloneRecommendationImage {
   background: #eee7df;
   display: block;
