@@ -18,7 +18,7 @@ export function createSecureAuthStorage(
     async getItem(key: string): Promise<string | null> {
       try {
         const countValue = await nativeStore.getItemAsync(chunkKey(key, 'count'));
-        if (!countValue) return nativeStore.getItemAsync(key);
+        if (!countValue) return await nativeStore.getItemAsync(key);
         const count = Number(countValue);
         const chunks = await Promise.all(
           Array.from({ length: count }, (_, index) =>

@@ -45,4 +45,18 @@ describe('secure auth storage', () => {
     await expect(storage.getItem('swavii-auth')).resolves.toBeNull();
     expect(persistedValues.size).toBe(0);
   });
+
+  it('uses the development fallback when a legacy-key read fails', async () => {
+    const nativeStore = createNativeStore();
+    nativeStore.getItemAsync = async (key) => {
+      if (key.endsWith('.count')) return null;
+      throw new Error('secure storage unavailable');
+    };
+    const storage = createSecureAuthStorage(
+      nativeStore,
+      new Map([['swavii-auth', 'in-memory-session']]),
+    );
+
+    await expect(storage.getItem('swavii-auth')).resolves.toBe('in-memory-session');
+  });
 });
