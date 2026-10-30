@@ -527,6 +527,9 @@ function Recommendations({
   onError: (message: string) => void;
   onNotice: (message: string) => void;
 }) {
+  const [recommendationFilter, setRecommendationFilter] = useState<
+    'all' | 'brands' | 'items' | 'sections'
+  >('all');
   const [editingBrand, setEditingBrand] = useState<CreatorBrand | null | undefined>();
   const [editingItem, setEditingItem] = useState<
     CreatorRecommendation | null | undefined
@@ -2717,52 +2720,81 @@ function Recommendations({
         </View>
       ) : null}
 
-      <Text style={styles.sectionTitle}>Brands</Text>
-      {brands.map((brand) => (
-        <View key={brand.id} style={styles.listCard}>
-          {brand.logoUrl ? (
-            <Image source={{ uri: brand.logoUrl }} style={styles.brandLogoThumbnail} />
-          ) : null}
-          <View style={styles.listCopy}>
-            <Text style={styles.cardTitle}>{brand.name}</Text>
-            <Text style={styles.cardMeta}>
-              {brand.collectionCount} collections · {brand.itemCount} items
-            </Text>
-          </View>
-          <View style={styles.itemActions}>
-            <Pressable
-              disabled={Boolean(busyId)}
-              onPress={() => void toggleManagedVisibility('brand', brand.id)}
-              style={styles.statusButton}
-            >
-              <Text style={styles.statusButtonText}>
-                {configuration.hiddenBrandIds.includes(brand.id) ? 'Off' : 'On'}
-              </Text>
-            </Pressable>
-            <Pressable onPress={() => openBrand(brand)}>
-              <Text style={styles.editLabel}>Edit</Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={`Open ${brand.name} website`}
-              accessibilityRole="link"
-              onPress={() => void openExternalLink(brand.websiteUrl)}
-            >
-              <Text style={styles.editLabel}>Visit</Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel={`Remove ${brand.name}`}
-              accessibilityRole="button"
-              disabled={busyId === brand.id}
-              onPress={() => removeBrand(brand)}
-            >
-              <Text style={styles.removeText}>Remove</Text>
-            </Pressable>
-          </View>
-        </View>
-      ))}
+      <View accessibilityLabel="Filter recommendations" style={styles.wrappedChoices}>
+        {(
+          [
+            ['all', 'All'],
+            ['brands', 'Brands'],
+            ['items', 'Items'],
+            ['sections', 'Carousels'],
+          ] as const
+        ).map(([value, label]) => (
+          <ChoicePill
+            accessibilityLabel={`Filter ${label}`}
+            key={value}
+            label={label}
+            onPress={() => setRecommendationFilter(value)}
+            selected={recommendationFilter === value}
+          />
+        ))}
+      </View>
 
-      {configuration.curatedSections.filter(({ kind }) => kind === 'collection')
-        .length ? (
+      {recommendationFilter === 'all' || recommendationFilter === 'brands' ? (
+        <>
+          <Text style={styles.sectionTitle} testID="recommendations-brands-heading">
+            Brands
+          </Text>
+          {brands.map((brand) => (
+            <View key={brand.id} style={styles.listCard}>
+              {brand.logoUrl ? (
+                <Image
+                  source={{ uri: brand.logoUrl }}
+                  style={styles.brandLogoThumbnail}
+                />
+              ) : null}
+              <View style={styles.listCopy}>
+                <Text style={styles.cardTitle}>{brand.name}</Text>
+                <Text style={styles.cardMeta}>
+                  {brand.collectionCount} collections · {brand.itemCount} items
+                </Text>
+              </View>
+              <View style={styles.itemActions}>
+                <Pressable
+                  disabled={Boolean(busyId)}
+                  onPress={() => void toggleManagedVisibility('brand', brand.id)}
+                  style={styles.statusButton}
+                >
+                  <Text style={styles.statusButtonText}>
+                    {configuration.hiddenBrandIds.includes(brand.id) ? 'Off' : 'On'}
+                  </Text>
+                </Pressable>
+                <Pressable onPress={() => openBrand(brand)}>
+                  <Text style={styles.editLabel}>Edit</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={`Open ${brand.name} website`}
+                  accessibilityRole="link"
+                  onPress={() => void openExternalLink(brand.websiteUrl)}
+                >
+                  <Text style={styles.editLabel}>Visit</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={`Remove ${brand.name}`}
+                  accessibilityRole="button"
+                  disabled={busyId === brand.id}
+                  onPress={() => removeBrand(brand)}
+                >
+                  <Text style={styles.removeText}>Remove</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))}
+          {brands.length === 0 ? <Empty text="No brands yet." /> : null}
+        </>
+      ) : null}
+
+      {(recommendationFilter === 'all' || recommendationFilter === 'sections') &&
+      configuration.curatedSections.filter(({ kind }) => kind === 'collection').length ? (
         <>
           <Text style={styles.sectionTitle}>Collections</Text>
           {configuration.curatedSections
@@ -2816,7 +2848,8 @@ function Recommendations({
         </>
       ) : null}
 
-      {configuration.curatedSections.filter(({ kind }) => kind === 'section').length ? (
+      {(recommendationFilter === 'all' || recommendationFilter === 'sections') &&
+      configuration.curatedSections.filter(({ kind }) => kind === 'section').length ? (
         <>
           <Text style={styles.sectionTitle}>Carousels</Text>
           {configuration.curatedSections
@@ -2859,82 +2892,101 @@ function Recommendations({
             ))}
         </>
       ) : null}
-      <Text style={styles.sectionTitle}>Items</Text>
-      {recommendations.length ? (
-        recommendations.map((item) => (
-          <View key={item.id} style={styles.listCard}>
-            <View style={styles.listCopy}>
-              <Text style={styles.cardEyebrow}>{item.brandName}</Text>
-              <Text numberOfLines={2} style={styles.cardTitle}>
-                {item.productName}
-              </Text>
-              <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
-            </View>
-            <View style={styles.itemActions}>
-              {item.lifecycle === 'published' ? (
-                <Pressable
-                  disabled={Boolean(busyId)}
-                  onPress={() => void toggleManagedVisibility('recommendation', item.id)}
-                  style={styles.statusButton}
-                >
-                  <Text style={styles.statusButtonText}>
-                    {configuration.hiddenRecommendationIds.includes(item.id)
-                      ? 'Off'
-                      : 'On'}
+      {recommendationFilter === 'sections' &&
+      configuration.curatedSections.length === 0 ? (
+        <Empty text="No collections or carousels yet." />
+      ) : null}
+      {recommendationFilter === 'all' || recommendationFilter === 'items' ? (
+        <>
+          <Text style={styles.sectionTitle} testID="recommendations-items-heading">
+            Items
+          </Text>
+          {recommendations.length ? (
+            recommendations.map((item) => (
+              <View key={item.id} style={styles.listCard}>
+                <View style={styles.listCopy}>
+                  <Text style={styles.cardEyebrow}>{item.brandName}</Text>
+                  <Text numberOfLines={2} style={styles.cardTitle}>
+                    {item.productName}
                   </Text>
-                </Pressable>
-              ) : null}
-              {configuration.contentOrder.some(
-                ({ id, kind }) => kind === 'recommendation' && id === item.id,
-              ) ? (
-                <MoveButtons
-                  disabled={Boolean(busyId)}
-                  onDown={() => void moveDashboardContent(item.id, 'recommendation', 1)}
-                  onUp={() => void moveDashboardContent(item.id, 'recommendation', -1)}
-                />
-              ) : null}
-              {item.productUrl.startsWith('https://') ? (
-                <Pressable
-                  accessibilityLabel={`Open ${item.productName} link`}
-                  accessibilityRole="link"
-                  onPress={() => void openExternalLink(item.productUrl)}
-                >
-                  <Text style={styles.editLabel}>Visit</Text>
-                </Pressable>
-              ) : null}
-              {item.lifecycle !== 'archived' ? (
-                <>
-                  <Pressable onPress={() => openItem(item)} style={styles.editItemButton}>
-                    <Text style={styles.editLabel}>Edit</Text>
+                  <Text style={styles.cardMeta}>{lifecycleLabel(item.lifecycle)}</Text>
+                </View>
+                <View style={styles.itemActions}>
+                  {item.lifecycle === 'published' ? (
+                    <Pressable
+                      disabled={Boolean(busyId)}
+                      onPress={() =>
+                        void toggleManagedVisibility('recommendation', item.id)
+                      }
+                      style={styles.statusButton}
+                    >
+                      <Text style={styles.statusButtonText}>
+                        {configuration.hiddenRecommendationIds.includes(item.id)
+                          ? 'Off'
+                          : 'On'}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {configuration.contentOrder.some(
+                    ({ id, kind }) => kind === 'recommendation' && id === item.id,
+                  ) ? (
+                    <MoveButtons
+                      disabled={Boolean(busyId)}
+                      onDown={() =>
+                        void moveDashboardContent(item.id, 'recommendation', 1)
+                      }
+                      onUp={() =>
+                        void moveDashboardContent(item.id, 'recommendation', -1)
+                      }
+                    />
+                  ) : null}
+                  {item.productUrl.startsWith('https://') ? (
+                    <Pressable
+                      accessibilityLabel={`Open ${item.productName} link`}
+                      accessibilityRole="link"
+                      onPress={() => void openExternalLink(item.productUrl)}
+                    >
+                      <Text style={styles.editLabel}>Visit</Text>
+                    </Pressable>
+                  ) : null}
+                  {item.lifecycle !== 'archived' ? (
+                    <>
+                      <Pressable
+                        onPress={() => openItem(item)}
+                        style={styles.editItemButton}
+                      >
+                        <Text style={styles.editLabel}>Edit</Text>
+                      </Pressable>
+                      <Pressable onPress={() => archiveItem(item)}>
+                        <Text style={styles.removeText}>Remove</Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                  <Pressable
+                    disabled={busyId === item.id}
+                    onPress={() => void transition(item)}
+                    style={styles.statusButton}
+                  >
+                    {busyId === item.id ? (
+                      <ActivityIndicator color={colors.accent} />
+                    ) : (
+                      <Text style={styles.statusButtonText}>
+                        {item.lifecycle === 'published'
+                          ? 'Unpublish'
+                          : item.lifecycle === 'archived'
+                            ? 'Restore'
+                            : 'Publish'}
+                      </Text>
+                    )}
                   </Pressable>
-                  <Pressable onPress={() => archiveItem(item)}>
-                    <Text style={styles.removeText}>Remove</Text>
-                  </Pressable>
-                </>
-              ) : null}
-              <Pressable
-                disabled={busyId === item.id}
-                onPress={() => void transition(item)}
-                style={styles.statusButton}
-              >
-                {busyId === item.id ? (
-                  <ActivityIndicator color={colors.accent} />
-                ) : (
-                  <Text style={styles.statusButtonText}>
-                    {item.lifecycle === 'published'
-                      ? 'Unpublish'
-                      : item.lifecycle === 'archived'
-                        ? 'Restore'
-                        : 'Publish'}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
-        ))
-      ) : (
-        <Empty text="No recommendations yet." />
-      )}
+                </View>
+              </View>
+            ))
+          ) : (
+            <Empty text="No recommendations yet." />
+          )}
+        </>
+      ) : null}
 
       <Text style={styles.sectionTitle}>Discounts</Text>
       {discounts.filter(({ lifecycle }) => lifecycle !== 'archived').length ? (
@@ -2997,16 +3049,19 @@ function Recommendations({
 }
 
 function ChoicePill({
+  accessibilityLabel,
   label,
   onPress,
   selected,
 }: {
+  accessibilityLabel?: string;
   label: string;
   onPress: () => void;
   selected: boolean;
 }) {
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
       onPress={onPress}

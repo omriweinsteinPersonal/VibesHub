@@ -1,0 +1,29 @@
+appId: com.swavii.app
+name: Creator dashboard filters
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: a dedicated creator account is signed in. This flow is read-only.
+- tapOn: Dashboard tab
+- scrollUntilVisible:
+    element: Filter All
+    direction: DOWN
+    timeout: 30000
+- tapOn: Filter Brands
+- assertVisible: Filter Brands
+- assertVisible:
+    id: recommendations-brands-heading
+- assertNotVisible:
+    id: recommendations-items-heading
+- tapOn: Filter Items
+- assertVisible:
+    id: recommendations-items-heading
+- assertNotVisible:
+    id: recommendations-brands-heading
+- tapOn: Filter Carousels
+- assertNotVisible:
+    id: recommendations-items-heading
+- tapOn: Filter All
+- assertVisible:
+    id: recommendations-brands-heading
