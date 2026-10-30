@@ -221,7 +221,7 @@ export default function TermsPage() {
             </p>
             <p>
               Questions about these terms can be sent to{' '}
-              <a href="mailto:privacy@swavii.com">privacy@swavii.com</a>.
+              <a href="mailto:swavii2026@gmail.com">swavii2026@gmail.com</a>.
             </p>
           </section>
         </div>

@@ -27,7 +27,7 @@ export default function SupportPage() {
           <section className="legalCallout">
             <h2>Contact Swavii</h2>
             <p>
-              Email <a href="mailto:privacy@swavii.com">privacy@swavii.com</a> with a
+              Email <a href="mailto:swavii2026@gmail.com">swavii2026@gmail.com</a> with a
               short description of the issue. Do not send your password, authentication
               codes or payment details.
             </p>

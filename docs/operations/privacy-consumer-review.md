@@ -28,10 +28,16 @@ contracts, operational practices and legal documents before launch.
    account removal. Verify reconciliation and operational follow-up before representing
    removal as guaranteed. Shared media, logs, analytics and backups need separate review.
 
+The owner describes an intended creator subscription model, with Israel as the initial
+focus and possible later expansion to the UK, US and Europe. Creators may independently
+earn commissions from merchants, but other recommendations have no such arrangement.
+These plans do not establish that subscriptions or affiliate arrangements are live.
+
 ## Decisions and evidence required before legal sign-off
 
 - Insert the sole proprietor's exact registered legal name and contact details in the
-  notices; confirm the privacy and deletion contact mailbox receives and answers mail.
+  notices; the owner supplied swavii2026@gmail.com as the business contact. Confirm the
+  privacy and deletion contact mailbox receives and answers mail.
 - Confirm where creators and shoppers are targeted, whether minors are in scope, and the
   applicable Israeli, EU/UK, US or other rules. The creator terms say 18+, while the
   registration flow does not currently ask for or verify age. Obtain advice on the

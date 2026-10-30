@@ -274,8 +274,8 @@ export default function PrivacyPage() {
             </p>
             <p>
               For privacy questions or requests, email{' '}
-              <a href="mailto:privacy@swavii.com">privacy@swavii.com</a>. For the rules
-              that govern use of the Service, read our{' '}
+              <a href="mailto:swavii2026@gmail.com">swavii2026@gmail.com</a>. For the
+              rules that govern use of the Service, read our{' '}
               <Link href="/terms">Terms of Service</Link>.
             </p>
           </section>

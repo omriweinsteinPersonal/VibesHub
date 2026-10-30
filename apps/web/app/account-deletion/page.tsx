@@ -36,8 +36,8 @@ export default function AccountDeletionPage() {
             <h2>Request deletion without the app</h2>
             <p>
               If you no longer have access to the app, email{' '}
-              <a href="mailto:privacy@swavii.com?subject=Swavii%20account%20deletion%20request">
-                privacy@swavii.com
+              <a href="mailto:swavii2026@gmail.com?subject=Swavii%20account%20deletion%20request">
+                swavii2026@gmail.com
               </a>{' '}
               from the address used for your creator account. Use the subject “Swavii
               account deletion request.” We may ask you to verify control of the account
