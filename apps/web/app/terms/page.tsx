@@ -23,7 +23,7 @@ export default function TermsPage() {
             They are designed for a service where creators publish recommendations and
             shoppers browse without an account.
           </p>
-          <p className="legalUpdated">Effective and last updated: September 30, 2026</p>
+          <p className="legalUpdated">Effective and last updated: October 30, 2026</p>
         </header>
 
         <div className="legalContent">
@@ -106,11 +106,19 @@ export default function TermsPage() {
               responsible for ensuring that product claims are accurate and not
               misleading, and for clearly disclosing affiliate, sponsored, gifted or other
               commercial relationships as required by applicable law and platform rules.
+              Select the accurate commercial relationship for each recommendation and keep
+              the disclosure current. A discount code alone may not explain your
+              relationship to a merchant.
             </p>
             <p>
               Discount codes, prices, availability and merchant offers can change. Do not
               represent that swavii or a merchant guarantees a code or offer unless that
               is expressly confirmed in writing.
+            </p>
+            <p>
+              A displayed code may need to be copied and entered at the merchant&apos;s
+              checkout. The merchant determines whether it applies and the final price;
+              check the merchant&apos;s offer terms before purchasing.
             </p>
           </section>
 
@@ -120,9 +128,10 @@ export default function TermsPage() {
               Swavii is a publishing and discovery service, not the seller or merchant of
               products shown on creator storefronts. When a visitor follows a product
               link, any purchase is made directly from the independent merchant under that
-              merchant&apos;s terms, return policy and privacy policy. Swavii is not
-              responsible for merchant inventory, delivery, product safety, warranties,
-              refunds or customer service.
+              merchant&apos;s terms, return policy and privacy policy. The merchant
+              handles its inventory, delivery, product warranties, returns and customer
+              service. Nothing here limits any rights or responsibilities that apply under
+              law.
             </p>
             <p>
               The Service may link to social networks, merchants and other third parties.

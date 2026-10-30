@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             This policy explains what information swavii handles when creators build a
             public recommendation page and when visitors browse those pages.
           </p>
-          <p className="legalUpdated">Effective and last updated: October 17, 2026</p>
+          <p className="legalUpdated">Effective and last updated: October 30, 2026</p>
         </header>
 
         <div className="legalContent">
@@ -30,10 +30,10 @@ export default function PrivacyPage() {
             <h2>The short version</h2>
             <p>
               Anyone may browse public storefronts, and shoppers do not need an account to
-              view them. People of any age may use the Service, subject to applicable law.
-              We use account data to operate creator pages and privacy-conscious analytics
-              to show creators how their public content performs. We do not sell personal
-              data.
+              view them. Our Terms of Service require creator account holders to be at
+              least 18 years old. We use account data to operate creator pages and
+              privacy-conscious analytics to show creators how their public content
+              performs. We do not sell personal data.
             </p>
           </section>
 
@@ -95,11 +95,12 @@ export default function PrivacyPage() {
                 clicks.
               </li>
               <li>
-                Random anonymous and session identifiers stored in browser storage. Before
+                Random browser and session identifiers stored in browser storage. Before
                 analytics records are stored, these identifiers are transformed into keyed
-                hashes. Raw IP addresses may be processed transiently for rate limiting,
-                abuse prevention and service security; they are not written to
-                creator-facing analytics event records.
+                hashes; these pseudonymous identifiers may still be personal information.
+                Raw IP addresses may be processed transiently for rate limiting, abuse
+                prevention and service security; they are not written to creator-facing
+                analytics event records.
               </li>
             </ul>
             <p>
@@ -107,6 +108,11 @@ export default function PrivacyPage() {
               do not intentionally request a shopper&apos;s name or email through ordinary
               storefront browsing. A visitor may still provide information to a
               third-party destination after following a link from a storefront.
+            </p>
+            <p>
+              Providing creator account details is generally voluntary, but information
+              needed for sign-in and account operation is required to use creator tools.
+              You can browse public storefronts without creating an account.
             </p>
           </section>
 
@@ -172,12 +178,12 @@ export default function PrivacyPage() {
           <section>
             <h2>6. Storage, cookies and international processing</h2>
             <p>
-              We use essential cookies and browser storage to maintain creator sessions,
-              remember security state and create analytics identifiers. On the web, the
-              anonymous analytics identifier is stored in local storage and the session
-              identifier is stored in session storage. Authentication may also use cookies
-              managed through Supabase. We do not currently use Google Analytics, Meta
-              Pixel, TikTok Pixel or third-party advertising cookies in the Swavii web
+              We use cookies and browser storage to maintain creator sessions, remember
+              security state and create analytics identifiers. On the web, the anonymous
+              analytics identifier is stored in local storage and the session identifier
+              is stored in session storage. Authentication may also use cookies managed
+              through Supabase. We do not currently use Google Analytics, Meta Pixel,
+              TikTok Pixel or third-party advertising cookies in the Swavii web
               application.
             </p>
             <p>
@@ -204,16 +210,17 @@ export default function PrivacyPage() {
               <Link href="/account-deletion">account deletion process</Link>. Deletion
               removes the authentication account and associated creator-owned profile,
               storefront, recommendations, videos, discount codes and other account data.
-              Unreferenced creator uploads are removed from storage as part of the
-              deletion process.
+              We attempt to remove unreferenced creator uploads from storage as part of
+              the deletion process. If storage cleanup fails, some files may remain until
+              the issue is resolved; contact us if you need help with a deletion request.
             </p>
             <p>
               Limited records may remain in analytics records, backups, security logs or
               where retention is required for legal, fraud-prevention, dispute or
-              accounting purposes. Shared catalog media may remain when it is lawfully
-              used by another active record and no longer identifies the deleted account
-              owner. We are reviewing and will publish more specific retention periods as
-              the Service and its operational processes are finalized.
+              accounting purposes. Shared catalog media may remain when it is still
+              referenced by another active record. We are reviewing and will publish more
+              specific retention periods as the Service and its operational processes are
+              finalized.
             </p>
           </section>
 
@@ -236,13 +243,14 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2>9. Children and users of all ages</h2>
+            <h2>9. Children and creator accounts</h2>
             <p>
-              Public storefronts and creator accounts are available to users of all ages,
-              subject to applicable law. Swavii does not intentionally request age or date
-              of birth during ordinary registration. Users should not publish passwords,
-              financial information, medical information or other sensitive personal
-              information in public storefront content or free-text fields.
+              Public storefronts may be browsed without an account. Our Terms of Service
+              require creator account holders to be at least 18 years old. Swavii does not
+              currently request age or date of birth during ordinary registration. Users
+              should not publish passwords, financial information, medical information or
+              other sensitive personal information in public storefront content or
+              free-text fields.
             </p>
             <p>
               If a parent or guardian believes that a child provided personal information
