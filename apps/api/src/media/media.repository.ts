@@ -100,10 +100,14 @@ export class MediaRepository {
     return assets.map((asset) => asset.id);
   }
 
-  async deleteUnreferenced(assetIds: string[]): Promise<AccountMediaAsset[]> {
-    if (assetIds.length === 0) return [];
+  async deleteUnreferenced(
+    assetIds: string[],
+    removeObjects: (assets: AccountMediaAsset[]) => Promise<void>,
+  ): Promise<void> {
+    if (assetIds.length === 0) return;
 
-    return this.database.sql<AccountMediaAsset[]>`
+    await this.database.sql.begin(async (transaction) => {
+      const assets = await transaction<AccountMediaAsset[]>`
       delete from app.media_assets media
       where media.id = any(${assetIds}::uuid[])
         and not exists (
@@ -128,6 +132,10 @@ export class MediaRepository {
         media_kind as "mediaKind",
         object_path as "objectPath"
     `;
+      // Keep the rows and their object paths if storage is unavailable. The DELETE
+      // holds row locks until cleanup completes, protecting concurrent references.
+      if (assets.length > 0) await removeObjects(assets);
+    });
   }
 
   async markReady(

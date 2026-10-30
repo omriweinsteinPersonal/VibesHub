@@ -213,12 +213,14 @@ export class MediaStorageGateway {
       }
     }
 
-    await Promise.all(
+    const results = await Promise.allSettled(
       [...removals].map(async ([bucket, objectPaths]) => {
         const { error } = await this.storage.from(bucket).remove(objectPaths);
         if (error) throw new Error(`Storage object deletion failed: ${error.message}`);
       }),
     );
+    const failed = results.find((result) => result.status === 'rejected');
+    if (failed?.status === 'rejected') throw failed.reason;
   }
 
   private async removeFrom(bucket: string, objectPath: string): Promise<void> {

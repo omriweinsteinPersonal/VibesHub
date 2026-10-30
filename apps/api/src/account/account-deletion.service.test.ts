@@ -9,9 +9,18 @@ describe('AccountDeletionService', () => {
     const media = {
       deleteUnreferenced: vi
         .fn()
-        .mockResolvedValue([
-          { mediaKind: 'recommendation_image', objectPath: 'user/image.webp' },
-        ]),
+        .mockImplementation(
+          async (
+            _ids: string[],
+            removeObjects: (
+              assets: { mediaKind: 'recommendation_image'; objectPath: string }[],
+            ) => Promise<void>,
+          ) => {
+            await removeObjects([
+              { mediaKind: 'recommendation_image', objectPath: 'user/image.webp' },
+            ]);
+          },
+        ),
       listOwnedIds: vi.fn().mockResolvedValue(['asset-id']),
     };
     const storage = { removeAccountAssets: vi.fn().mockResolvedValue(undefined) };
@@ -27,7 +36,10 @@ describe('AccountDeletionService', () => {
     expect(media.listOwnedIds).toHaveBeenCalledWith('user-id');
     expect(auth.deleteUser).toHaveBeenCalledWith('user-id');
     expect(apple.revokeAuthorizationCode).not.toHaveBeenCalled();
-    expect(media.deleteUnreferenced).toHaveBeenCalledWith(['asset-id']);
+    expect(media.deleteUnreferenced).toHaveBeenCalledWith(
+      ['asset-id'],
+      expect.any(Function),
+    );
     expect(storage.removeAccountAssets).toHaveBeenCalledWith([
       { mediaKind: 'recommendation_image', objectPath: 'user/image.webp' },
     ]);

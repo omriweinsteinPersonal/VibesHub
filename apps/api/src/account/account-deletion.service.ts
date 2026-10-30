@@ -46,14 +46,16 @@ export class AccountDeletionService {
     // Shared catalog media is intentionally retained without an account owner. Media
     // that is no longer referenced is removed from both Postgres and Storage.
     try {
-      const orphanedAssets = await this.media.deleteUnreferenced(ownedAssetIds);
-      await this.storage.removeAccountAssets(orphanedAssets);
+      await this.media.deleteUnreferenced(ownedAssetIds, (assets) =>
+        this.storage.removeAccountAssets(assets),
+      );
     } catch (error) {
       // The identity and creator data are already gone. Do not turn a completed
       // account deletion into an error screen because best-effort blob cleanup failed.
       logger.warn('Orphaned account media cleanup failed', {
         error: error instanceof Error ? error.message : String(error),
         userId,
+        assetIds: ownedAssetIds.join(','),
       });
     }
   }

@@ -24,9 +24,10 @@ contracts, operational practices and legal documents before launch.
    and future submissions require review; an organic default is not proof of no material
    connection. Terms alone do not replace clear disclosures at the recommendation.
 5. Account deletion removes the Auth account and cascaded creator data. Blob cleanup is
-   best-effort: a storage failure is logged after deletion and currently does not prevent
-   account removal. Verify reconciliation and operational follow-up before representing
-   removal as guaranteed. Shared media, logs, analytics and backups need separate review.
+   best-effort: if storage cleanup fails, the database deletion transaction rolls back,
+   retaining asset records and paths for recovery. The failure is logged after account
+   deletion; there is not yet an automatic retry or a verified recovery workflow. Shared
+   media, logs, analytics and backups need separate review.
 
 The owner describes an intended creator subscription model, with Israel as the initial
 focus and possible later expansion to the UK, US and Europe. Creators may independently
