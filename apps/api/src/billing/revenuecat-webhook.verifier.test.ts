@@ -56,6 +56,54 @@ describe('RevenueCatWebhookVerifier', () => {
       ),
     ).toBe('STALE_WEBHOOK_SIGNATURE');
   });
+
+  it('rejects a signed body when the webhook authorization is incorrect', () => {
+    configureSecrets();
+    const verifier = new RevenueCatWebhookVerifier();
+
+    expect(
+      problemCode(() =>
+        verifier.verify({
+          authorization: 'Bearer wrong-secret',
+          rawBody,
+          signature: signatureFor(rawBody),
+          timestampSeconds: timestamp,
+        }),
+      ),
+    ).toBe('INVALID_WEBHOOK_AUTHORIZATION');
+  });
+
+  it('rejects a modified body even when the original signature is valid', () => {
+    configureSecrets();
+    const verifier = new RevenueCatWebhookVerifier();
+
+    expect(
+      problemCode(() =>
+        verifier.verify({
+          authorization,
+          rawBody: Buffer.from('{"event":{"id":"changed"}}'),
+          signature: signatureFor(rawBody),
+          timestampSeconds: timestamp,
+        }),
+      ),
+    ).toBe('INVALID_WEBHOOK_SIGNATURE');
+  });
+
+  it('rejects a signed request without its exact raw body', () => {
+    configureSecrets();
+    const verifier = new RevenueCatWebhookVerifier();
+
+    expect(
+      problemCode(() =>
+        verifier.verify({
+          authorization,
+          rawBody: undefined,
+          signature: signatureFor(rawBody),
+          timestampSeconds: timestamp,
+        }),
+      ),
+    ).toBe('RAW_BODY_REQUIRED');
+  });
 });
 
 function configureSecrets(): void {

@@ -67,6 +67,31 @@ describe('AccountDeletionService', () => {
     expect(storage.removeAccountAssets).not.toHaveBeenCalled();
   });
 
+  it('reports a completed account deletion even if media cleanup fails', async () => {
+    const auth = { deleteUser: vi.fn().mockResolvedValue(undefined) };
+    const apple = { revokeAuthorizationCode: vi.fn() };
+    const media = {
+      deleteUnreferenced: vi.fn().mockRejectedValue(new Error('storage unavailable')),
+      listOwnedIds: vi.fn().mockResolvedValue(['asset-id']),
+    };
+    const storage = { removeAccountAssets: vi.fn() };
+    const service = new AccountDeletionService(
+      auth as never,
+      apple as never,
+      media as never,
+      storage as never,
+    );
+
+    await expect(
+      service.deleteAccount('user-id', { providers: ['google'] }),
+    ).resolves.toBeUndefined();
+    expect(auth.deleteUser).toHaveBeenCalledWith('user-id');
+    expect(media.deleteUnreferenced).toHaveBeenCalledWith(
+      ['asset-id'],
+      expect.any(Function),
+    );
+  });
+
   it('revokes Apple authorization before deleting an Apple account', async () => {
     const order: string[] = [];
     const auth = {
@@ -118,6 +143,32 @@ describe('AccountDeletionService', () => {
     await expect(
       service.deleteAccount('user-id', { providers: ['apple'] }),
     ).rejects.toMatchObject({ status: 400 });
+    expect(auth.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('does not delete an Apple account when authorization revocation fails', async () => {
+    const auth = { deleteUser: vi.fn() };
+    const apple = {
+      revokeAuthorizationCode: vi.fn().mockRejectedValue(new Error('unavailable')),
+    };
+    const media = {
+      deleteUnreferenced: vi.fn(),
+      listOwnedIds: vi.fn().mockResolvedValue([]),
+    };
+    const storage = { removeAccountAssets: vi.fn() };
+    const service = new AccountDeletionService(
+      auth as never,
+      apple as never,
+      media as never,
+      storage as never,
+    );
+
+    await expect(
+      service.deleteAccount('user-id', {
+        appleAuthorizationCode: 'code',
+        providers: ['apple'],
+      }),
+    ).rejects.toThrow('unavailable');
     expect(auth.deleteUser).not.toHaveBeenCalled();
   });
 });
