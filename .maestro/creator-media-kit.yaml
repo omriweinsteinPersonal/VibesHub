@@ -1,0 +1,16 @@
+appId: com.swavii.app
+name: Creator media kit summary
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: a dedicated creator account is signed in. This flow is read-only.
+- tapOn: Account tab
+- scrollUntilVisible:
+    element: Media kit
+    direction: DOWN
+    timeout: 30000
+- assertVisible: Followers
+- assertVisible: Engagement
+- assertVisible: Story views
+- takeScreenshot: creator-media-kit

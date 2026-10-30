@@ -4758,10 +4758,6 @@ function ProfileEditor({
         <View style={styles.sectionHeadingRow}>
           <View style={styles.actionCopy}>
             <Text style={styles.cardTitle}>Media kit</Text>
-            <Text style={styles.cardMeta}>
-              Private collaboration details for brands. These are not shown on your public
-              storefront.
-            </Text>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -4773,6 +4769,10 @@ function ProfileEditor({
             </Text>
           </Pressable>
         </View>
+        <Text style={styles.cardMeta}>
+          Private collaboration details for brands. These are not shown on your public
+          storefront.
+        </Text>
         <View style={styles.mediaKitMetrics}>
           <MediaKitMetric
             label="Followers"
@@ -5537,14 +5537,27 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   mediaKitMetric: {
+    alignItems: 'center',
     backgroundColor: '#f7f1ea',
     borderRadius: radii.control,
     flex: 1,
+    justifyContent: 'center',
     minHeight: 74,
+    minWidth: 0,
     padding: spacing.sm,
   },
-  mediaKitMetricValue: { color: colors.ink, fontSize: 18, fontWeight: '800' },
-  mediaKitMetricLabel: { color: colors.muted, fontSize: 11, marginTop: 5 },
+  mediaKitMetricValue: {
+    color: colors.ink,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  mediaKitMetricLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    marginTop: 5,
+    textAlign: 'center',
+  },
   mediaKitEditor: {
     borderTopColor: colors.border,
     borderTopWidth: StyleSheet.hairlineWidth,
