@@ -258,6 +258,23 @@ export default function CreatorStudioScreen() {
       </View>
 
       <Animated.View style={[styles.contentPane, { opacity: contentOpacity }]}>
+        {error || notice ? (
+          <View accessibilityLiveRegion="polite" style={styles.feedbackArea}>
+            {error ? <Message kind="error" text={error} /> : null}
+            {notice ? <Message kind="success" text={notice} /> : null}
+            <Pressable
+              accessibilityLabel="Dismiss message"
+              accessibilityRole="button"
+              onPress={() => {
+                setError('');
+                setNotice('');
+              }}
+              style={styles.feedbackDismiss}
+            >
+              <Text style={styles.feedbackDismissText}>Dismiss</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardDismissMode="interactive"
@@ -271,8 +288,6 @@ export default function CreatorStudioScreen() {
             />
           }
         >
-          {error ? <Message kind="error" text={error} /> : null}
-          {notice ? <Message kind="success" text={notice} /> : null}
           {view === 'overview' ? (
             <Overview bundle={bundle} navigate={switchView} />
           ) : view === 'recommendations' ? (
@@ -5087,6 +5102,9 @@ const styles = StyleSheet.create({
   wordmark: { color: colors.white, fontSize: 27, fontWeight: '800' },
   viewPage: { color: colors.white, fontSize: 14, fontWeight: '700' },
   contentPane: { flex: 1 },
+  feedbackArea: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+  feedbackDismiss: { alignSelf: 'flex-end', padding: spacing.sm },
+  feedbackDismissText: { color: colors.accent, fontWeight: '600' },
   skeletonContent: { flex: 1, padding: spacing.lg },
   skeletonLine: { backgroundColor: '#e9e2d9', borderRadius: 999 },
   skeletonHeaderAction: { height: 13, width: 58 },

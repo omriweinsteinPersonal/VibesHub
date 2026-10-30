@@ -1,0 +1,17 @@
+appId: com.swavii.app
+name: Creator form feedback stays visible
+tags:
+  - creator
+  - smoke
+---
+# Prerequisite: a dedicated creator account is signed in. No data is saved.
+- tapOn: Dashboard tab
+- tapOn: Add brand
+- scrollUntilVisible:
+    element: Save brand
+    direction: DOWN
+    timeout: 10000
+- tapOn: Save brand
+- assertVisible: Add both a brand name and website.
+- tapOn: Dismiss message
+- assertNotVisible: Add both a brand name and website.
