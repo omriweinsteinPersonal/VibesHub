@@ -14,7 +14,6 @@ import {
   UserRound,
 } from 'lucide-react';
 import { HomeGallery } from './_components/home-experience';
-import { CreatorStudioDemo } from './_components/creator-studio-demo';
 import {
   organizationStructuredData,
   siteName,
@@ -63,7 +62,6 @@ export default function HomePage() {
           />
         </Link>
         <nav aria-label="Main navigation">
-          <a href="#how-it-works">How it works</a>
           <a href="#features">Features</a>
           <a href="#pricing">Pricing</a>
         </nav>
@@ -108,9 +106,53 @@ export default function HomePage() {
           </div>
           <HomeGallery />
         </section>
+        <section className={styles.editorialFeatures} id="features" aria-labelledby="editorial-features-title">
+          <div className={styles.editorialFeaturesHeading}>
+            <div>
+              <p>BUILD YOUR PAGE</p>
+              <h2 id="editorial-features-title">Everything you love, in one place.</h2>
+              <span>Choose the pieces that make your page feel like you.</span>
+            </div>
+          </div>
+          <div className={styles.editorialFeatureGrid}>
+            <Link className={`${styles.editorialFeatureCard} ${styles.editorialRecommendation}`} href={signup}>
+              <Image
+                className={styles.editorialRecommendationImage}
+                src="/images/home/recommendation-feature-v3.png"
+                alt="Share your products, collections and grow your reach"
+                fill
+                sizes="(max-width: 900px) 100vw, 52vw"
+              />
+            </Link>
+            <Link className={`${styles.editorialFeatureCard} ${styles.editorialContent}`} href={signup}>
+              <span className={styles.editorialCardEyebrow}>MORE WAYS TO SHARE</span>
+              <div>
+                <h3>Share everything that inspires you</h3>
+                <p>Share your favorite places, photos, videos, links and everything your community will love.</p>
+                <span>Explore content types <ArrowRight size={16} aria-hidden="true" /></span>
+              </div>
+              <div className={styles.editorialContentVisual} aria-hidden="true">
+                <Image src="/images/hero-editorial-market.png" alt="" fill sizes="(max-width: 900px) 100vw, 28vw" />
+                <i>●</i><Play className={styles.editorialPlay} size={22} fill="currentColor" />
+              </div>
+            </Link>
+            <Link className={`${styles.editorialFeatureCard} ${styles.editorialSocial}`} href={signup}>
+              <span className={styles.editorialCardEyebrow}>SOCIAL CONNECTIONS</span>
+              <div>
+                <h3>Bring your platforms together</h3>
+                <p>Connect your social accounts to make it easy for your audience to find and follow you, everywhere.</p>
+                <span>Connect accounts <ArrowRight size={16} aria-hidden="true" /></span>
+              </div>
+              <div className={styles.editorialSocialVisual} aria-hidden="true">
+                <div className={styles.editorialPhone}><b>swavii</b><small>Creator profile</small><em /><em /><em /></div>
+                <div className={styles.editorialSocialIcons}><i>◎</i><i>♪</i><i>▶</i><i>●</i><i>♫</i></div>
+              </div>
+            </Link>
+          </div>
+        </section>
         <section
-          className={styles.contentTypes}
-          id="features"
+          className={styles.legacyContentTypes}
+          id="legacy-features"
           aria-labelledby="content-title"
         >
           <div className={styles.contentHeading}>
@@ -119,9 +161,6 @@ export default function HomePage() {
               <h2 id="content-title">Everything you love, in one place.</h2>
               <p>Choose the pieces that make your page feel like you.</p>
             </div>
-            <a href="#how-it-works">
-              See how it works <ArrowRight size={17} aria-hidden="true" />
-            </a>
           </div>
           <div className={styles.contentGrid}>
             <article className={`${styles.contentBlock} ${styles.linkBlock}`}>
@@ -218,56 +257,6 @@ export default function HomePage() {
                 <p>Share your location with ease.</p>
               </div>
             </article>
-          </div>
-        </section>
-        <section
-          className={styles.studioSection}
-          id="how-it-works"
-          aria-labelledby="studio-title"
-        >
-          <div className={styles.split}>
-            <div className={styles.sectionCopy}>
-              <h2 id="studio-title">
-                Make it yours,
-                <br />
-                one detail at a time.
-              </h2>
-              <p>
-                A simple, powerful editor to build a page that feels like you — no tech
-                skills needed.
-              </p>
-              <ol className={styles.studioSteps}>
-                <li>
-                  <span>1</span>
-                  <div>
-                    <strong>Add content</strong>
-                    <small>Links, photos, videos, collections and more.</small>
-                  </div>
-                </li>
-                <li>
-                  <span>2</span>
-                  <div>
-                    <strong>Arrange sections</strong>
-                    <small>Drag, drop and reorder.</small>
-                  </div>
-                </li>
-                <li>
-                  <span>3</span>
-                  <div>
-                    <strong>Style your page</strong>
-                    <small>Choose colors, fonts and a look that fits you.</small>
-                  </div>
-                </li>
-                <li>
-                  <span>4</span>
-                  <div>
-                    <strong>Share it</strong>
-                    <small>Get your link and start sharing everywhere.</small>
-                  </div>
-                </li>
-              </ol>
-            </div>
-            <CreatorStudioDemo />
           </div>
         </section>
         <section
@@ -444,7 +433,6 @@ export default function HomePage() {
         </Link>
         <div data-nosnippet className={styles.footerNoSnippet}>
           <nav aria-label="Footer navigation">
-            <a href="#how-it-works">How it works</a>
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
             <Link href="/privacy">Privacy</Link>
