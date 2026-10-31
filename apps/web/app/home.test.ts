@@ -21,7 +21,7 @@ describe('Swavii homepage', () => {
       /aria-label="Rotem Cohen, example creator page"[\s\S]*?aria-label="Mia Chen, example creator page"/,
     )?.[0];
     expect(rotem).toBeDefined();
-    expect(rotem).toContain('rotem-phone-preview.png');
+    expect(rotem).toContain('rotem-phone-preview.jpg');
     expect(rotem).toContain('Rotem Smith&#x27;s creator storefront preview');
     expect(html).not.toContain('Examples of pages you can make your own.');
   });
