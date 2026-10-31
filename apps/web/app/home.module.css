@@ -4171,6 +4171,14 @@
 .editorialFeatureCard p { font-size: .98rem; line-height: 1.38; margin-top: 18px; max-width: 280px; }
 .editorialFeatureCard > div:first-child > span { border-radius: 999px; font-size: .8rem; margin-top: 26px; padding: 13px 17px; }
 .editorialRecommendation { background: #dec8e5; }
+.editorialRecommendationImage { inset: 0 !important; height: 100% !important; object-fit: cover; object-position: center; position: absolute !important; width: 100% !important; z-index: 1; }
+.editorialRecommendationImage { object-fit: fill !important; }
+.editorialContentImage { inset: 0 !important; height: 100% !important; object-fit: fill !important; position: absolute !important; width: 100% !important; z-index: 1; }
+.editorialContentHeading { max-width: 310px; position: relative; z-index: 3; }
+.editorialContentHeading h3 { color: #191426; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.25rem, 3.15vw, 4rem); font-weight: 500; letter-spacing: -.055em; line-height: .94; margin: 24px 0 0; }
+.editorialFeatures { padding-top: 30px; }
+.editorialRecommendation::after { display: none; }
+@media (max-width: 900px) { .editorialRecommendation { min-height: 0; } }
 .editorialRecommendationBackdrop { inset: 0 0 0 29% !important; height: 100% !important; object-fit: cover; object-position: 50% center; opacity: .96; position: absolute !important; width: 71% !important; z-index: 0; }
 .editorialRecommendation::after { background: linear-gradient(90deg, #dec8e5 0%, #dec8e5 28%, rgb(222 200 229 / 72%) 44%, rgb(222 200 229 / 0%) 68%); content: ''; inset: 0; pointer-events: none; position: absolute; z-index: 1; }
 .editorialRecommendation > div:not(.editorialProductVisual) { z-index: 3; }
@@ -4204,6 +4212,12 @@
 .editorialSocialIcons i { font-size: 1.25rem; height: 40px; width: 40px; }
 @media (max-width: 1100px) { .editorialFeatureCard { min-height: 600px; padding: 27px; } .editorialProductVisual { width: 76%; } }
 @media (max-width: 900px) { .editorialFeatureGrid { grid-template-columns: 1fr; } .editorialFeatureCard { min-height: 520px; } .editorialRecommendation { min-height: 620px; } .editorialContent, .editorialSocial { min-height: 560px; } }
+
+.editorialSocial { overflow: hidden; padding: 0; position: relative; }
+.editorialSocialImage { inset: 0 !important; height: 100% !important; object-fit: cover !important; object-position: center !important; position: absolute !important; transform: scale(1.16); width: 100% !important; z-index: 1; }
+@media (min-width: 901px) { .editorialSocialImage { transform: scale(1.17); } }
+@media (max-width: 900px) { .editorialSocialImage { object-position: center top !important; transform: scale(1.16); } }
+@media (max-width: 900px) { .editorialRecommendation { aspect-ratio: 3 / 2; min-height: 0; } .editorialRecommendationImage { object-fit: contain; } }
 @media (max-width: 760px) { .editorialFeatures { padding: 55px 16px 60px; } .editorialFeaturesHeading h2 { font-size: clamp(2.8rem, 12vw, 4rem); } .editorialFeatureCard { min-height: 500px; } .editorialRecommendation { min-height: 590px; } .editorialRecommendationBackdrop { inset: 36% 0 0 !important; height: 64% !important; width: 100% !important; } .editorialRecommendation::after { background: linear-gradient(180deg, #dec8e5 0%, #dec8e5 33%, rgb(222 200 229 / 0%) 63%); } .editorialProductVisual { bottom: 0; height: 57%; right: 0; width: 97%; } .editorialProductTile { height: 122px; width: 108px; } .editorialProductTile img { height: 77px !important; } .editorialCollectionTile { left: 48%; min-height: 122px; transform: scale(.84) rotate(-3deg); transform-origin: left center; } }
 
 /* Recommendation collage: a deliberate product field with one unmistakable collection card. */
