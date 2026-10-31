@@ -185,6 +185,24 @@ const creators: CreatorExample[] = [
       detail: 'A quiet route with a lakeside stop.',
     },
   },
+  {
+    name: 'Lena Bites',
+    handle: 'lenabites',
+    details: '',
+    bio: '',
+    image: '/images/home/lena-bites-preview.png',
+    theme: 'lena',
+    background: '#ff674b',
+    ink: '#102f3b',
+    labels: ['All', 'Food', 'Travel', 'Lifestyle', 'Fav'],
+    recommendations: [],
+    media: {
+      type: 'video',
+      title: "Lena's Food Notes",
+      detail: 'Join my food styling course',
+      image: '/images/home/lena-bites-preview.png',
+    },
+  },
 ];
 
 function ProductGrid({ products }: { products: Product[] }) {
@@ -313,7 +331,7 @@ function CreatorCard({ index }: { index: number }) {
   const creator = creators[index] ?? creators[0]!;
   return (
     <article
-      className={styles.creatorCard}
+      className={`${styles.creatorCard} ${index === 0 ? styles.rotemScreenshotCard : index === 1 ? styles.miaScreenshotCard : index === 2 ? styles.noahScreenshotCard : index === 3 ? styles.lenaScreenshotCard : ''}`}
       data-theme={creator.theme}
       aria-label={`${creator.name}, example creator page`}
       style={
@@ -323,92 +341,97 @@ function CreatorCard({ index }: { index: number }) {
         } as CSSProperties
       }
     >
-      <div className={styles.cover}>
-        <Image src={creator.image} alt="" fill sizes="(max-width: 760px) 320px, 360px" />
-      </div>
-      <div className={styles.identity}>
-        <strong>{creator.name}</strong>
-        {creator.details ? <span>{creator.details}</span> : null}
-      </div>
-      {creator.bio ? <p className={styles.creatorBio}>{creator.bio}</p> : null}
-      <div className={styles.socialIcons} aria-label="Social platforms preview">
-        <Image src="/connectors/youtube.svg" alt="" width={16} height={16} />
-        <Image src="/connectors/pinterest.svg" alt="" width={16} height={16} />
-        <Image src="/connectors/tiktok.svg" alt="" width={16} height={16} />
-        <Image src="/connectors/instagram.svg" alt="" width={16} height={16} />
-        <LinkIcon size={15} aria-hidden="true" />
-      </div>
-      <div className={styles.cardTabs} aria-hidden="true">
-        {creator.labels.map((item, itemIndex) => (
-          <span className={itemIndex === 0 ? styles.activeLabel : ''} key={item}>
-            {item}
-          </span>
-        ))}
-      </div>
-      <div className={styles.cardFeed}>
-        {creator.recommendations.map((recommendation) => (
-          <BrandRecommendation
-            key={recommendation.brand}
-            recommendation={recommendation}
-          />
-        ))}
-        <CreatorMediaPreview media={creator.media} />
-      </div>
+      {index === 0 || index === 1 || index === 2 || index === 3 ? (
+        <Image
+          className={index === 0 ? styles.rotemPhoneScreenshot : index === 1 ? styles.miaPhoneScreenshot : index === 2 ? styles.noahPhoneScreenshot : styles.lenaPhoneScreenshot}
+          src={index === 0 ? '/images/home/rotem-phone-preview.png' : index === 1 ? '/images/home/mia-phone-preview.png' : index === 2 ? '/images/home/noah-phone-preview.png' : '/images/home/lena-phone-preview.png'}
+          alt={index === 0 ? "Rotem Smith's creator storefront preview" : index === 1 ? "Mia Chen's creator storefront preview" : index === 2 ? "Noah Carter's creator storefront preview" : "Lena Bites' creator storefront preview"}
+          fill
+          priority
+          quality={100}
+          unoptimized
+          sizes="(max-width: 760px) 320px, 360px"
+        />
+      ) : (
+        <>
+          <div className={styles.cover}>
+            <Image
+              src={creator.image}
+              alt=""
+              fill
+              sizes="(max-width: 760px) 320px, 360px"
+            />
+          </div>
+          <div className={styles.identity}>
+            <strong>{creator.name}</strong>
+            {creator.details ? <span>{creator.details}</span> : null}
+          </div>
+          {creator.bio ? <p className={styles.creatorBio}>{creator.bio}</p> : null}
+          <div className={styles.socialIcons} aria-label="Social platforms preview">
+            <Image src="/connectors/youtube.svg" alt="" width={16} height={16} />
+            <Image src="/connectors/pinterest.svg" alt="" width={16} height={16} />
+            <Image src="/connectors/tiktok.svg" alt="" width={16} height={16} />
+            <Image src="/connectors/instagram.svg" alt="" width={16} height={16} />
+            <LinkIcon size={15} aria-hidden="true" />
+          </div>
+          <div className={styles.cardTabs} aria-hidden="true">
+            {creator.labels.map((item, itemIndex) => (
+              <span className={itemIndex === 0 ? styles.activeLabel : ''} key={item}>
+                {item}
+              </span>
+            ))}
+          </div>
+          <div className={styles.cardFeed}>
+            {creator.recommendations.map((recommendation) => (
+              <BrandRecommendation
+                key={recommendation.brand}
+                recommendation={recommendation}
+              />
+            ))}
+            <CreatorMediaPreview media={creator.media} />
+          </div>
+        </>
+      )}
     </article>
   );
 }
 
 export function HomeGallery() {
-  const rail = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  function select(index: number) {
-    const target = rail.current?.children[index] as HTMLElement | undefined;
-    if (target && rail.current)
-      rail.current.scrollTo({
-        left: target.offsetLeft,
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          ? 'instant'
-          : 'smooth',
-      });
-  }
+
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduced.matches) return;
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setActive((current) => (current + 1) % creators.length);
+      }
+    }, 4000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div className={styles.gallery}>
-      <div
-        className={styles.creatorRail}
-        ref={rail}
-        onScroll={() => {
-          const element = rail.current;
-          if (element && element.scrollWidth > element.clientWidth)
-            setActive(
-              Math.round(
-                element.scrollLeft /
-                  ((element.firstElementChild as HTMLElement).offsetWidth + 16),
-              ),
-            );
-        }}
-      >
+      <div className={styles.creatorCarousel} aria-live="polite">
         {creators.map((creator, index) => (
-          <CreatorCard key={creator.handle} index={index} />
+          <div
+            className={styles.creatorSlide}
+            data-position={
+              index === active
+                ? 'active'
+                : index === (active + creators.length - 1) % creators.length
+                  ? 'previous'
+                  : index === (active + 1) % creators.length
+                    ? 'next'
+                    : 'hidden'
+            }
+            key={creator.handle}
+          >
+            <CreatorCard index={index} />
+          </div>
         ))}
-      </div>
-      <div className={styles.galleryBottom}>
-        <small>Examples of pages you can make your own.</small>
-        <div
-          className={styles.galleryControls}
-          aria-label="Choose an example creator page"
-        >
-          {creators.map((creator, index) => (
-            <button
-              key={creator.handle}
-              type="button"
-              aria-label={`Show ${creator.name}'s page`}
-              aria-pressed={active === index}
-              onClick={() => select(index)}
-            >
-              <span />
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

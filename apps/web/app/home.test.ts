@@ -15,28 +15,21 @@ describe('Swavii homepage', () => {
     expect(html).not.toMatch(/earnings|Average order|testimonial/i);
   });
 
-  it('renders Rotem’s complete example storefront', () => {
+  it('renders the Rotem phone storefront example', () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     const rotem = html.match(
       /aria-label="Rotem Cohen, example creator page"[\s\S]*?aria-label="Mia Chen, example creator page"/,
     )?.[0];
     expect(rotem).toBeDefined();
-    for (const item of [
-      'Softline Dress',
-      'Daylight Denim',
-      'Luna Structured Bag',
-      'Dune Sunglasses',
-    ])
-      expect(rotem).toContain(item);
-    expect(rotem).toContain('Rotem Cohen&#x27;s Style Notes');
-    expect(html).toContain('Examples of pages you can make your own.');
+    expect(rotem).toContain('rotem-phone-preview.png');
+    expect(rotem).toContain('Rotem Smith&#x27;s creator storefront preview');
+    expect(html).not.toContain('Examples of pages you can make your own.');
   });
 
   it('offers signup and manual recommendation walkthrough navigation', () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain('action="/auth"');
     expect(html).toContain('name="mode" value="signup"');
-    expect(html).toContain('Show Rotem Cohen&#x27;s page');
     expect(html).toContain('Next walkthrough step');
     expect(html).toContain('Previous walkthrough step');
     expect(html).toContain('/auth?mode=signup');
