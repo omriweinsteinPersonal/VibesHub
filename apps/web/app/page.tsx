@@ -106,9 +106,16 @@ export default function HomePage() {
           </div>
           <HomeGallery />
         </section>
-        <section className={styles.editorialFeatures} id="features" aria-labelledby="editorial-features-title">
+        <section
+          className={styles.editorialFeatures}
+          id="features"
+          aria-labelledby="editorial-features-title"
+        >
           <div className={styles.editorialFeatureGrid}>
-            <Link className={`${styles.editorialFeatureCard} ${styles.editorialRecommendation}`} href={signup}>
+            <Link
+              className={`${styles.editorialFeatureCard} ${styles.editorialRecommendation}`}
+              href={signup}
+            >
               <Image
                 className={styles.editorialRecommendationImage}
                 src="/images/home/recommendation-feature-v3.png"
@@ -117,7 +124,10 @@ export default function HomePage() {
                 sizes="(max-width: 900px) 100vw, 52vw"
               />
             </Link>
-            <Link className={`${styles.editorialFeatureCard} ${styles.editorialContent}`} href={signup}>
+            <Link
+              className={`${styles.editorialFeatureCard} ${styles.editorialContent}`}
+              href={signup}
+            >
               <div className={styles.editorialContentHeading}>
                 <h3>Bring your world together</h3>
               </div>
@@ -129,7 +139,10 @@ export default function HomePage() {
                 sizes="(max-width: 900px) 100vw, 28vw"
               />
             </Link>
-            <Link className={`${styles.editorialFeatureCard} ${styles.editorialSocial}`} href={signup}>
+            <Link
+              className={`${styles.editorialFeatureCard} ${styles.editorialSocial}`}
+              href={signup}
+            >
               <Image
                 className={styles.editorialSocialImage}
                 src="/images/home/social-feature-v3.png"

@@ -343,9 +343,33 @@ function CreatorCard({ index }: { index: number }) {
     >
       {index === 0 || index === 1 || index === 2 || index === 3 ? (
         <Image
-          className={index === 0 ? styles.rotemPhoneScreenshot : index === 1 ? styles.miaPhoneScreenshot : index === 2 ? styles.noahPhoneScreenshot : styles.lenaPhoneScreenshot}
-          src={index === 0 ? '/images/home/rotem-phone-preview.jpg' : index === 1 ? '/images/home/mia-phone-preview.jpg' : index === 2 ? '/images/home/noah-phone-preview.jpg' : '/images/home/lena-phone-preview.jpg'}
-          alt={index === 0 ? "Rotem Smith's creator storefront preview" : index === 1 ? "Mia Chen's creator storefront preview" : index === 2 ? "Noah Carter's creator storefront preview" : "Lena Bites' creator storefront preview"}
+          className={
+            index === 0
+              ? styles.rotemPhoneScreenshot
+              : index === 1
+                ? styles.miaPhoneScreenshot
+                : index === 2
+                  ? styles.noahPhoneScreenshot
+                  : styles.lenaPhoneScreenshot
+          }
+          src={
+            index === 0
+              ? '/images/home/rotem-phone-preview.jpg'
+              : index === 1
+                ? '/images/home/mia-phone-preview.jpg'
+                : index === 2
+                  ? '/images/home/noah-phone-preview.jpg'
+                  : '/images/home/lena-phone-preview.jpg'
+          }
+          alt={
+            index === 0
+              ? "Rotem Smith's creator storefront preview"
+              : index === 1
+                ? "Mia Chen's creator storefront preview"
+                : index === 2
+                  ? "Noah Carter's creator storefront preview"
+                  : "Lena Bites' creator storefront preview"
+          }
           fill
           priority
           loading="eager"
