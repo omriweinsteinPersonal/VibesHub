@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
+  ArrowRight,
   Camera,
   Check,
   Grid2X2,
@@ -110,6 +111,13 @@ export default function HomePage() {
           id="features"
           aria-labelledby="editorial-features-title"
         >
+          <div className={styles.editorialFeaturesHeading}>
+            <div>
+              <p>BUILD YOUR PAGE</p>
+              <h2 id="editorial-features-title">Everything you love, in one place.</h2>
+              <span>Choose the pieces that make your page feel like you.</span>
+            </div>
+          </div>
           <div className={styles.editorialFeatureGrid}>
             <Link
               className={`${styles.editorialFeatureCard} ${styles.editorialRecommendation}`}
@@ -127,28 +135,59 @@ export default function HomePage() {
               className={`${styles.editorialFeatureCard} ${styles.editorialContent}`}
               href={signup}
             >
-              <div className={styles.editorialContentHeading}>
-                <h3>Bring your world together</h3>
+              <span className={styles.editorialCardEyebrow}>MORE WAYS TO SHARE</span>
+              <div>
+                <h3>Share everything that inspires you</h3>
+                <p>
+                  Share your favorite places, photos, videos, links and everything your
+                  community will love.
+                </p>
+                <span>
+                  Explore content types <ArrowRight size={16} aria-hidden="true" />
+                </span>
               </div>
-              <Image
-                className={styles.editorialContentImage}
-                src="/images/home/content-feature-v3.png"
-                alt="Bring your world together"
-                fill
-                sizes="(max-width: 900px) 100vw, 28vw"
-              />
+              <div className={styles.editorialContentVisual} aria-hidden="true">
+                <Image
+                  src="/images/hero-editorial-market.png"
+                  alt=""
+                  fill
+                  sizes="(max-width: 900px) 100vw, 28vw"
+                />
+                <i>●</i>
+                <Play className={styles.editorialPlay} size={22} fill="currentColor" />
+              </div>
             </Link>
             <Link
               className={`${styles.editorialFeatureCard} ${styles.editorialSocial}`}
               href={signup}
             >
-              <Image
-                className={styles.editorialSocialImage}
-                src="/images/home/social-feature-v3.png"
-                alt="Bring your platforms together"
-                fill
-                sizes="(max-width: 900px) 100vw, 20vw"
-              />
+              <span className={styles.editorialCardEyebrow}>SOCIAL CONNECTIONS</span>
+              <div>
+                <h3>Bring your platforms together</h3>
+                <p>
+                  Connect your social accounts to make it easy for your audience to find
+                  and follow you, everywhere.
+                </p>
+                <span>
+                  Connect accounts <ArrowRight size={16} aria-hidden="true" />
+                </span>
+              </div>
+              <div className={styles.editorialSocialVisual} aria-hidden="true">
+                <div className={styles.editorialPhone}>
+                  <b>swavii</b>
+                  <small>Creator profile</small>
+                  <em />
+                  <em />
+                  <em />
+                </div>
+                <div className={styles.editorialSocialIcons}>
+                  <i>◎</i>
+                  <i>♪</i>
+                  <i>▶</i>
+                  <i>●</i>
+                  <i>♫</i>
+                </div>
+              </div>
             </Link>
           </div>
         </section>

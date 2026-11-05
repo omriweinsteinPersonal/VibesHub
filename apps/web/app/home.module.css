@@ -4599,30 +4599,8 @@
 .editorialRecommendationImage {
   object-fit: fill !important;
 }
-.editorialContentImage {
-  inset: 0 !important;
-  height: 100% !important;
-  object-fit: fill !important;
-  position: absolute !important;
-  width: 100% !important;
-  z-index: 1;
-}
-.editorialContentHeading {
-  max-width: 310px;
-  position: relative;
-  z-index: 3;
-}
-.editorialContentHeading h3 {
-  color: #191426;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2.25rem, 3.15vw, 4rem);
-  font-weight: 500;
-  letter-spacing: -0.055em;
-  line-height: 0.94;
-  margin: 24px 0 0;
-}
 .editorialFeatures {
-  padding-top: 30px;
+  padding-top: 72px;
 }
 .editorialRecommendation::after {
   display: none;
@@ -4815,32 +4793,6 @@
   }
 }
 
-.editorialSocial {
-  overflow: hidden;
-  padding: 0;
-  position: relative;
-}
-.editorialSocialImage {
-  inset: 0 !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  position: absolute !important;
-  transform: scale(1.16);
-  width: 100% !important;
-  z-index: 1;
-}
-@media (min-width: 901px) {
-  .editorialSocialImage {
-    transform: scale(1.17);
-  }
-}
-@media (max-width: 900px) {
-  .editorialSocialImage {
-    object-position: center top !important;
-    transform: scale(1.16);
-  }
-}
 @media (max-width: 900px) {
   .editorialRecommendation {
     aspect-ratio: 3 / 2;
